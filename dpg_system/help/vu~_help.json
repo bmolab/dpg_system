@@ -1,0 +1,310 @@
+{
+    "height": 996,
+    "width": 1336,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "vu~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/vu~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment vu~ - how loud it is",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 254,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "vu~ - how loud it is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "vu~ - how loud it is"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 478,
+            "position_y": 45,
+            "width": 818,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "vu~ shows how loud a signal is: two bars and a peak readout in dB.\n\nTHE NODES:\n\nvu~     a level meter\nmeter~  the same node\n\nvu~ IS A TAP, NOT A LINK:\nIt has no audio outlets at all, so the chain it reads cannot be altered by it.\nBranch a cord into it from anywhere and watch. There is no on/off switch\neither - bypassing a gauge would mean nothing.\n\nWHAT THE BARS SHOW:\nEach bar is one channel's average (RMS) level, moving the way a meter needle\ndoes: quick up (about 25 ms) so a transient registers, slow down (about 300\nms) so it can be read. The scale runs from -60 dB at the left to +6 dB at the\nright, coloured green to -12 dB, amber to -3 dB, red above. A thin line marks\nthe held peak: it stays put for most of a second, then falls back; it turns\nred at 0 dB and over.\n\nThe readout under the bars is the higher of the two held peaks, in dB.\n\nPatch only 'left in' and both bars show it, rather than one sitting dark.\n\nfader~ and fader_out~ carry the same meters beside their handles, so a strip\nneeds no separate vu~.\n\nSYNTAX:\nvu~\nmeter~\n\nEXAMPLE:\nmeter~\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal to measure. Patch 'right in' for a stereo reading.\n\nOUTPUTS:\n\npeak:\nThe held peak of the louder channel, as a plain amplitude (1.0 is full\nscale, 0 dB) - not in dB. Sent each frame the meter moves; nothing is sent\nwhile it is still. For patch logic: ducking, auto-gain, a warning light.\n\nRELATED:\nfader~ and fader_out~ (on the vca~ help patch) meter what passes through them.\nsnapshot~ gives the value, peak and RMS of any signal as floats.\nscope~ draws the waveform itself.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "vu~ shows how loud a signal is: two bars and a peak readout in dB.\n\nTHE NODES:\n\nvu~     a level meter\nmeter~  the same node\n\nvu~ IS A TAP, NOT A LINK:\nIt has no audio outlets at all, so the chain it reads cannot be altered by it.\nBranch a cord into it from anywhere and watch. There is no on/off switch\neither - bypassing a gauge would mean nothing.\n\nWHAT THE BARS SHOW:\nEach bar is one channel's average (RMS) level, moving the way a meter needle\ndoes: quick up (about 25 ms) so a transient registers, slow down (about 300\nms) so it can be read. The scale runs from -60 dB at the left to +6 dB at the\nright, coloured green to -12 dB, amber to -3 dB, red above. A thin line marks\nthe held peak: it stays put for most of a second, then falls back; it turns\nred at 0 dB and over.\n\nThe readout under the bars is the higher of the two held peaks, in dB.\n\nPatch only 'left in' and both bars show it, rather than one sitting dark.\n\nfader~ and fader_out~ carry the same meters beside their handles, so a strip\nneeds no separate vu~.\n\nSYNTAX:\nvu~\nmeter~\n\nEXAMPLE:\nmeter~\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal to measure. Patch 'right in' for a stereo reading.\n\nOUTPUTS:\n\npeak:\nThe held peak of the louder channel, as a plain amplitude (1.0 is full\nscale, 0 dB) - not in dB. Sent each frame the meter moves; nothing is sent\nwhile it is still. For patch logic: ducking, auto-gain, a warning light.\n\nRELATED:\nfader~ and fader_out~ (on the vca~ help patch) meter what passes through them.\nsnapshot~ gives the value, peak and RMS of any signal as floats.\nscope~ draws the waveform itself."
+        },
+        "3": {
+            "name": "vco~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 199,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 220"
+        },
+        "4": {
+            "name": "lfo~",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 290,
+            "width": 180,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "lfo~ 0.5"
+        },
+        "5": {
+            "init": "comment a slow swell",
+            "name": "comment",
+            "id": 422,
+            "position_x": 255,
+            "position_y": 290,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a slow swell",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a slow swell"
+        },
+        "6": {
+            "name": "vca~",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 168,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vca~ 0"
+        },
+        "7": {
+            "name": "vu~",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 670,
+            "width": 158,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment a tap: it has no audio outlets",
+            "name": "comment",
+            "id": 533,
+            "position_x": 255,
+            "position_y": 670,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a tap: it has no audio outlets",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a tap: it has no audio outlets"
+        },
+        "9": {
+            "name": "float",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 820,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment peak, as an amplitude",
+            "name": "comment",
+            "id": 607,
+            "position_x": 255,
+            "position_y": 820,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "peak, as an amplitude",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "peak, as an amplitude"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 892,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gain"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "peak",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

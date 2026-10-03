@@ -1,11 +1,11 @@
 {
-    "height": 1077,
-    "width": 1720,
+    "height": 1551,
+    "width": 1532,
     "position": [
         100,
         100
     ],
-    "id": 940,
+    "id": 1014,
     "name": "band_pass_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/band_pass_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 842,
+            "position_x": 654,
             "position_y": 45,
             "width": 838,
-            "height": 776,
+            "height": 1446,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These nodes select parts of a signal by how FAST they wiggle, rather than how big they are.\n\nA slow drift and a fast tremor can sit on top of each other in the same stream, \nat the same amplitude. No threshold separates them, and no amount of smoothing \nseparates them cleanly either. What tells them apart is frequency, and these \nthree nodes are the frequency tools.\n\nThey are true digital filters - Butterworth or Chebyshev designs, running at an \norder you choose. Because such a filter has to know how fast samples arrive, \nyou must tell it the sample frequency, and getting that wrong makes every other \nsetting wrong with it.\n\nTHE NODES:\n\nband_pass    one filter, whose type you choose: bandpass, lowpass, \n             highpass or bandstop\nfilter_bank  a row of bandpass filters spread across a range, sending the \n             filtered signal from each band\nspectrum     the same row of bands, but reporting how much ENERGY is in each - \n             a running picture of where the movement is\n\nUse band_pass to isolate or remove one range. Use filter_bank when you want to \nkeep working with the separated signals. Use spectrum when you only want to \nknow where the activity is - it is the one to reach for when asking whether a \nmovement is a slow sway or a fast shake.\n\nSYNTAX:\nband_pass\nfilter_bank\nspectrum\n\nINPUTS and PARAMETERS:\n\nsignal:\nThe value to filter. Receiving data here triggers the node. \nA single number per frame - these build their picture over time, from a stream.\n\nsample freq:\nHow many values arrive per second. Default 60. \nThis is the setting to get right first: the filter's idea of what \"10 Hz\" means \ncomes entirely from this number. If your data arrives at 100 frames a second and \nthis says 60, every band is in the wrong place.\n\nlow / high:\nThe edges of the range, in Hz. On band_pass these are the two edges of the one \nfilter; on filter_bank and spectrum they are the ends of the whole spread of \nbands, which are spaced logarithmically between them.\n\nband count (filter_bank and spectrum):\nHow many bands to divide the range into. Default 8.\n\nfilter type (band_pass only):\nbandpass keeps the range, bandstop removes it, \nlowpass keeps everything below high, highpass keeps everything above.\n\nfilter design:\nbutter is smooth and well behaved and is the sensible default. \ncheby1 and cheby2 cut off more sharply at the cost of ripple.\n\norder:\nHow steeply the filter cuts off, 1 to 8. Higher is sharper, and also rings more \nand reacts more slowly. Raise it only if a lower order is genuinely not \nseparating what you need.\n\nOUTPUTS: \n\nfiltered:\nband_pass sends the filtered signal. filter_bank sends a NumPy array with one \nfiltered signal per band.\n\nspectrum:\nA NumPy array with one energy value per band.\n\nA LIMIT WORTH KNOWING:\nNo filter can work above half the sample frequency - the Nyquist limit. \nAt 60 frames a second that is 30 Hz, and the nodes clamp a high setting to stay \nbelow it. Anything faster than that was never really in your data to begin with.",
+                    "value": "band_pass selects part of a signal by how FAST it wiggles, rather than by how big it is.\n\nA slow drift and a fast tremor can sit on top of each other in the same stream, at\nthe same size. No threshold separates them, and no amount of smoothing separates\nthem cleanly either. What tells them apart is frequency.\n\nThese are true digital filters - Butterworth or Chebyshev designs, at an order you\nchoose. A filter like this has to know how fast samples arrive, so you must tell\nit the sample frequency, and getting that wrong makes every other setting wrong\nwith it.\n\nTHE NODES:\n\nband_pass    one filter, whose type you choose: bandpass, lowpass, highpass\n             or bandstop\nfilter_bank  a row of bandpass filters spread across a range, sending the\n             filtered signal from every band at once\n\nUse band_pass to keep or remove one range. Use filter_bank when you want the\nsignal split into several ranges and want to keep working with the pieces.\nIf you only want to know HOW MUCH is going on in each range, use spectrum.\n\nSYNTAX:\nband_pass\nfilter_bank\n\nNeither takes arguments; everything is set on the node.\n\nEXAMPLE:\nband_pass, with filter type set to lowpass and high set to 1.0\n\nINPUTS and PARAMETERS:\n\nsignal:\nThe value to filter. Receiving data here triggers the node.\nA single number per frame - these work over time, on a stream. An array is not\nfiltered element by element; to filter several channels, use one node per channel.\n\nsample freq:\nHow many values arrive per second. Default 60.\nGet this right first: the filter's idea of what \"10 Hz\" means comes entirely from\nthis number. If your data arrives 100 times a second and this says 60, every\nfrequency setting lands in the wrong place.\n\nlow / high:\nFrequencies in Hz (cycles per second).\nOn band_pass they are the two edges of the one filter - default 10 and 20.\nlowpass uses only high, and highpass uses only low.\nOn filter_bank they are the two ends of the whole spread - default 1 and 20 - and\nthe bands between them are spaced evenly on a logarithmic scale, so each band\ncovers the same ratio of frequencies rather than the same number of Hz.\n\nfilter type (band_pass only):\nbandpass     keeps what lies between low and high\nbandstop     removes what lies between low and high\nlowpass      keeps everything slower than high\nhighpass     keeps everything faster than low\n\nband count (filter_bank only):\nHow many bands. Default 8. Changing it on filter_bank currently has no effect -\nit always makes 8 bands. (spectrum does follow it.)\n\nfilter design:\nbutter is smooth and well behaved and is the sensible default.\ncheby1 cuts off more sharply, at the cost of a ripple of about one decibel across\nthe range it keeps. cheby2 is set up here with only one decibel of attenuation in\nthe range it rejects, so it removes almost nothing - avoid it.\n\norder:\nHow steeply the filter cuts off, 1 to 8. Default 5. Higher is sharper, and also\nrings more and reacts more slowly. Raise it only if a lower order really is not\nseparating what you need.\n\nChanging any of these rebuilds the filter from scratch, so the output jumps\nbriefly while it settles again.\n\nOUTPUTS:\n\nfiltered:\nband_pass sends the filtered signal, one number per input.\nfilter_bank sends a NumPy array with one filtered signal per band, slowest band\nfirst. These are signals, swinging above and below zero - not amounts of energy.\n\nLIMITS WORTH KNOWING:\nNo filter can work above half the sample frequency - the Nyquist limit. At 60\nvalues a second that is 30 Hz. If high is set above it, the node quietly uses one\nHz below the limit instead. If low ends up above high, low is quietly moved to\nhalf of high. The widgets keep showing what you typed.\n\nRELATED:\nspectrum      the same row of bands as filter_bank, reporting the energy in each\nfilter        a simple one-pole smoother - a gentle lowpass with one setting\ndiff_filter   bands in time built from plain smoothing filters",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 760,
+                    "value": 1430,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These nodes select parts of a signal by how FAST they wiggle, rather than how big they are.\n\nA slow drift and a fast tremor can sit on top of each other in the same stream, \nat the same amplitude. No threshold separates them, and no amount of smoothing \nseparates them cleanly either. What tells them apart is frequency, and these \nthree nodes are the frequency tools.\n\nThey are true digital filters - Butterworth or Chebyshev designs, running at an \norder you choose. Because such a filter has to know how fast samples arrive, \nyou must tell it the sample frequency, and getting that wrong makes every other \nsetting wrong with it.\n\nTHE NODES:\n\nband_pass    one filter, whose type you choose: bandpass, lowpass, \n             highpass or bandstop\nfilter_bank  a row of bandpass filters spread across a range, sending the \n             filtered signal from each band\nspectrum     the same row of bands, but reporting how much ENERGY is in each - \n             a running picture of where the movement is\n\nUse band_pass to isolate or remove one range. Use filter_bank when you want to \nkeep working with the separated signals. Use spectrum when you only want to \nknow where the activity is - it is the one to reach for when asking whether a \nmovement is a slow sway or a fast shake.\n\nSYNTAX:\nband_pass\nfilter_bank\nspectrum\n\nINPUTS and PARAMETERS:\n\nsignal:\nThe value to filter. Receiving data here triggers the node. \nA single number per frame - these build their picture over time, from a stream.\n\nsample freq:\nHow many values arrive per second. Default 60. \nThis is the setting to get right first: the filter's idea of what \"10 Hz\" means \ncomes entirely from this number. If your data arrives at 100 frames a second and \nthis says 60, every band is in the wrong place.\n\nlow / high:\nThe edges of the range, in Hz. On band_pass these are the two edges of the one \nfilter; on filter_bank and spectrum they are the ends of the whole spread of \nbands, which are spaced logarithmically between them.\n\nband count (filter_bank and spectrum):\nHow many bands to divide the range into. Default 8.\n\nfilter type (band_pass only):\nbandpass keeps the range, bandstop removes it, \nlowpass keeps everything below high, highpass keeps everything above.\n\nfilter design:\nbutter is smooth and well behaved and is the sensible default. \ncheby1 and cheby2 cut off more sharply at the cost of ripple.\n\norder:\nHow steeply the filter cuts off, 1 to 8. Higher is sharper, and also rings more \nand reacts more slowly. Raise it only if a lower order is genuinely not \nseparating what you need.\n\nOUTPUTS: \n\nfiltered:\nband_pass sends the filtered signal. filter_bank sends a NumPy array with one \nfiltered signal per band.\n\nspectrum:\nA NumPy array with one energy value per band.\n\nA LIMIT WORTH KNOWING:\nNo filter can work above half the sample frequency - the Nyquist limit. \nAt 60 frames a second that is 30 Hz, and the nodes clamp a high setting to stay \nbelow it. Anything faster than that was never really in your data to begin with."
+            "text": "band_pass selects part of a signal by how FAST it wiggles, rather than by how big it is.\n\nA slow drift and a fast tremor can sit on top of each other in the same stream, at\nthe same size. No threshold separates them, and no amount of smoothing separates\nthem cleanly either. What tells them apart is frequency.\n\nThese are true digital filters - Butterworth or Chebyshev designs, at an order you\nchoose. A filter like this has to know how fast samples arrive, so you must tell\nit the sample frequency, and getting that wrong makes every other setting wrong\nwith it.\n\nTHE NODES:\n\nband_pass    one filter, whose type you choose: bandpass, lowpass, highpass\n             or bandstop\nfilter_bank  a row of bandpass filters spread across a range, sending the\n             filtered signal from every band at once\n\nUse band_pass to keep or remove one range. Use filter_bank when you want the\nsignal split into several ranges and want to keep working with the pieces.\nIf you only want to know HOW MUCH is going on in each range, use spectrum.\n\nSYNTAX:\nband_pass\nfilter_bank\n\nNeither takes arguments; everything is set on the node.\n\nEXAMPLE:\nband_pass, with filter type set to lowpass and high set to 1.0\n\nINPUTS and PARAMETERS:\n\nsignal:\nThe value to filter. Receiving data here triggers the node.\nA single number per frame - these work over time, on a stream. An array is not\nfiltered element by element; to filter several channels, use one node per channel.\n\nsample freq:\nHow many values arrive per second. Default 60.\nGet this right first: the filter's idea of what \"10 Hz\" means comes entirely from\nthis number. If your data arrives 100 times a second and this says 60, every\nfrequency setting lands in the wrong place.\n\nlow / high:\nFrequencies in Hz (cycles per second).\nOn band_pass they are the two edges of the one filter - default 10 and 20.\nlowpass uses only high, and highpass uses only low.\nOn filter_bank they are the two ends of the whole spread - default 1 and 20 - and\nthe bands between them are spaced evenly on a logarithmic scale, so each band\ncovers the same ratio of frequencies rather than the same number of Hz.\n\nfilter type (band_pass only):\nbandpass     keeps what lies between low and high\nbandstop     removes what lies between low and high\nlowpass      keeps everything slower than high\nhighpass     keeps everything faster than low\n\nband count (filter_bank only):\nHow many bands. Default 8. Changing it on filter_bank currently has no effect -\nit always makes 8 bands. (spectrum does follow it.)\n\nfilter design:\nbutter is smooth and well behaved and is the sensible default.\ncheby1 cuts off more sharply, at the cost of a ripple of about one decibel across\nthe range it keeps. cheby2 is set up here with only one decibel of attenuation in\nthe range it rejects, so it removes almost nothing - avoid it.\n\norder:\nHow steeply the filter cuts off, 1 to 8. Default 5. Higher is sharper, and also\nrings more and reacts more slowly. Raise it only if a lower order really is not\nseparating what you need.\n\nChanging any of these rebuilds the filter from scratch, so the output jumps\nbriefly while it settles again.\n\nOUTPUTS:\n\nfiltered:\nband_pass sends the filtered signal, one number per input.\nfilter_bank sends a NumPy array with one filtered signal per band, slowest band\nfirst. These are signals, swinging above and below zero - not amounts of energy.\n\nLIMITS WORTH KNOWING:\nNo filter can work above half the sample frequency - the Nyquist limit. At 60\nvalues a second that is 30 Hz. If high is set above it, the node quietly uses one\nHz below the limit instead. If low ends up above high, low is quietly moved to\nhalf of high. The widgets keep showing what you typed.\n\nRELATED:\nspectrum      the same row of bands as filter_bank, reporting the energy in each\nfilter        a simple one-pole smoother - a gentle lowpass with one setting\ndiff_filter   bands in time built from plain smoothing filters"
         },
         "3": {
             "name": "load_bang",
@@ -162,10 +162,35 @@
             "init": "signal 4.0 sin"
         },
         "6": {
-            "name": "signal",
+            "init": "comment slow sway, once every four seconds",
+            "name": "comment",
             "id": 459,
-            "position_x": 200,
+            "position_x": 264,
             "position_y": 132,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "slow sway, once every four seconds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "slow sway, once every four seconds"
+        },
+        "7": {
+            "name": "signal",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 222,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -179,7 +204,7 @@
                 },
                 "1": {
                     "name": "period",
-                    "value": 0.15,
+                    "value": 0.125,
                     "value_type": "float"
                 },
                 "2": {
@@ -203,40 +228,15 @@
                     "value_type": "int"
                 }
             },
-            "init": "signal 0.15 sin"
-        },
-        "7": {
-            "init": "comment slow sway",
-            "name": "comment",
-            "id": 496,
-            "position_x": 514,
-            "position_y": 215,
-            "width": 64,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "slow sway",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "slow sway"
+            "init": "signal 0.125 sin"
         },
         "8": {
-            "init": "comment fast tremor on top",
+            "init": "comment fast tremor, eight times a second",
             "name": "comment",
             "id": 533,
-            "position_x": 514,
-            "position_y": 255,
-            "width": 119,
+            "position_x": 264,
+            "position_y": 222,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -244,7 +244,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "fast tremor on top",
+                    "value": "fast tremor, eight times a second",
                     "value_type": "str"
                 },
                 "1": {
@@ -253,13 +253,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "fast tremor on top"
+            "comment": "fast tremor, eight times a second"
         },
         "9": {
             "name": "+",
             "id": 570,
             "position_x": 30,
-            "position_y": 255,
+            "position_y": 312,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -278,7 +278,7 @@
             "name": "plot",
             "id": 607,
             "position_x": 30,
-            "position_y": 340,
+            "position_y": 395,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -341,8 +341,8 @@
             "init": "comment the two mixed together",
             "name": "comment",
             "id": 644,
-            "position_x": 514,
-            "position_y": 525,
+            "position_x": 264,
+            "position_y": 395,
             "width": 144,
             "height": 30,
             "visibility": "show_all",
@@ -366,7 +366,7 @@
             "name": "band_pass",
             "id": 681,
             "position_x": 30,
-            "position_y": 565,
+            "position_y": 600,
             "width": 172,
             "height": 126,
             "visibility": "show_all",
@@ -390,7 +390,7 @@
                 },
                 "3": {
                     "name": "low",
-                    "value": 0.2,
+                    "value": 0.5,
                     "value_type": "float"
                 },
                 "4": {
@@ -406,10 +406,35 @@
             }
         },
         "13": {
-            "name": "plot",
+            "init": "comment lowpass: keep what is slower than high (1 Hz)",
+            "name": "comment",
             "id": 718,
+            "position_x": 264,
+            "position_y": 600,
+            "width": 285,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lowpass: keep what is slower than high (1 Hz)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "lowpass: keep what is slower than high (1 Hz)"
+        },
+        "14": {
+            "name": "plot",
+            "id": 755,
             "position_x": 30,
-            "position_y": 765,
+            "position_y": 775,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -468,21 +493,21 @@
                 }
             }
         },
-        "14": {
+        "15": {
             "name": "text_block",
-            "id": 755,
+            "id": 792,
             "annotation": true,
-            "position_x": 514,
-            "position_y": 965,
-            "width": 298,
-            "height": 40,
+            "position_x": 264,
+            "position_y": 775,
+            "width": 286,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "lowpass: the sway survives, the tremor goes\nswitch filter type to highpass to swap them",
+                    "value": "the sway survives, the tremor goes\nswitch filter type to highpass to keep\nonly the tremor (faster than low, 0.5 Hz)",
                     "value_type": "str"
                 },
                 "1": {
@@ -492,12 +517,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 290,
+                    "value": 278,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -506,13 +531,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "lowpass: the sway survives, the tremor goes\nswitch filter type to highpass to swap them"
+            "text": "the sway survives, the tremor goes\nswitch filter type to highpass to keep\nonly the tremor (faster than low, 0.5 Hz)"
         },
-        "15": {
-            "name": "spectrum",
-            "id": 792,
-            "position_x": 280,
-            "position_y": 565,
+        "16": {
+            "name": "filter_bank",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 980,
             "width": 172,
             "height": 126,
             "visibility": "show_all",
@@ -551,11 +576,51 @@
                 }
             }
         },
-        "16": {
+        "17": {
+            "name": "text_block",
+            "id": 866,
+            "annotation": true,
+            "position_x": 264,
+            "position_y": 980,
+            "width": 255,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the same mix, split into eight bands\nfrom 1 to 20 Hz",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the same mix, split into eight bands\nfrom 1 to 20 Hz"
+        },
+        "18": {
             "name": "heat_map",
-            "id": 829,
-            "position_x": 280,
-            "position_y": 765,
+            "id": 903,
+            "position_x": 30,
+            "position_y": 1155,
             "width": 208,
             "height": 150,
             "visibility": "show_all",
@@ -564,7 +629,7 @@
             "properties": {
                 "0": {
                     "name": "color",
-                    "value": "viridis",
+                    "value": "red-blue",
                     "value_type": "str"
                 },
                 "1": {
@@ -584,12 +649,12 @@
                 },
                 "4": {
                     "name": "min y",
-                    "value": 0.0,
+                    "value": -0.3,
                     "value_type": "float"
                 },
                 "5": {
                     "name": "max y",
-                    "value": 1.0,
+                    "value": 0.3,
                     "value_type": "float"
                 },
                 "6": {
@@ -604,36 +669,51 @@
                 }
             }
         },
-        "17": {
-            "init": "comment where the energy sits, band by band",
-            "name": "comment",
-            "id": 866,
-            "position_x": 514,
-            "position_y": 925,
-            "width": 224,
-            "height": 30,
+        "19": {
+            "name": "text_block",
+            "id": 940,
+            "annotation": true,
+            "position_x": 264,
+            "position_y": 1155,
+            "width": 360,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "where the energy sits, band by band",
+                    "name": "block",
+                    "value": "each band's own filtered signal, slowest at the left:\nthe band holding the tremor swings back and forth",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 352,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "where the energy sits, band by band"
+            "text": "each band's own filtered signal, slowest at the left:\nthe band holding the tremor swings back and forth"
         },
-        "18": {
+        "20": {
             "name": "close",
-            "id": 903,
+            "id": 977,
             "position_x": 24,
-            "position_y": 973,
+            "position_y": 1335,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -674,7 +754,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "1",
-            "dest_node": 459,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "on"
@@ -690,7 +770,7 @@
             "dest_input_name": "in"
         },
         "4": {
-            "source_node": 459,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
@@ -724,7 +804,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "filtered",
-            "dest_node": 718,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
@@ -734,17 +814,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 792,
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "signal"
         },
         "9": {
-            "source_node": 792,
+            "source_node": 829,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "spectrum",
-            "dest_node": 829,
+            "source_output_name": "filtered",
+            "dest_node": 903,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

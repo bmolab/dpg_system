@@ -262,112 +262,244 @@ print(build('word_trigger', 'word_trigger - reacting to what was said', body, de
 # --------------------------------------------------------------- gather_sentence
 body = """These accumulate text over time, rather than acting on one message.
 
-Speech recognition and language models emit text a fragment at a time. 
-None of it is a sentence, and most of what you want to do needs one. 
-These four assemble the stream into something whole, in different ways.
+Speech recognition and language models emit text a fragment at a time.
+None of it is a sentence, and most of what you want to do needs one.
+These three assemble the stream into something whole, in different ways.
 
 THE NODES:
 
 gather_sentence  collect fragments until a sentence ends, then send it
 string_builder   collect until you ask for it
-fifo_string      keep a window of recent text, with older parts fading
-text_change      report only the words that are NEW
+fifo_string      keep a window of recent phrases, older ones fading
 
 gather_sentence DECIDES WHERE A SENTENCE ENDS:
-'auto sentence end' looks for the punctuation that ends one. 'end on return' 
-treats a line break as the end. 'force string end' lets the patch decide. 
-'enforce spaces' fixes fragments that arrive without them, which recognition 
-output often does.
+With 'auto sentence end' on (the default), a fragment that ENDS in . ? ! ; or :
+completes the sentence and it is sent, that fragment included. So do a fragment
+ending in two dashes, and a closing bracket when the sentence began with an
+opening one. An ellipsis (...) does not end a sentence. The punctuation has to
+be the fragment's last character - 'changing. ' with a space after does not
+count.
 
-'skip framed by' ignores anything between a pair of characters - so stage 
-directions, annotations or markup in the stream do not end up in the sentence.
+'force string end' sends whatever has been collected, whenever the patch
+decides. A fragment that is exactly '<backspace>' removes the last fragment
+collected.
+
+Fragments are joined exactly as they arrive - no space is added between them.
+Recognition output usually carries its own spaces; if yours does not, use
+string_builder, which adds them. ('enforce spaces' is meant to do this here, but
+in the current code it has no effect. 'end on return' likewise never fires,
+because line breaks are removed from fragments as they arrive.)
+
+'skip framed by' takes a single character and removes everything between a
+pair of it - so with '*', 'it is *laughs* cold.' is sent as 'it is  cold.'.
+Stage directions or annotations in the stream do not end up in the sentence.
+
+string_builder WAITS TO BE ASKED:
+Every message to 'string in' is added on, with a space between pieces when
+neither side already has one. Anything at 'issue text' (a bang, a click) sends
+the collected text and starts again; the word 'clear' there empties it without
+sending.
 
 fifo_string IS THE ONE FOR A ROLLING CONTEXT:
-It holds recent text as a window, and its 'weighted out' outlet carries the 
-text with a weight per piece that DECAYS with age. That is what you want when 
-feeding something that should be influenced more by what was just said than by 
-what was said a minute ago - an image prompt, a mood, a running state.
+It keeps the most recent phrases - as many as its argument says, 4 by default -
+and pushes the oldest out as new ones arrive. A message to 'in' is split at its
+full stops into separate phrases (not after Mr, Mrs, Dr or St), each given a
+full stop of its own. A message longer than 'length_threshold' characters is
+split at commas, colons, semicolons, question and exclamation marks as well.
 
-'decay_rate' sets how fast the past fades. 'length_threshold' caps how much is 
-kept. 'progress' advances the ages without adding anything, so time can pass 
-without new text.
+Each phrase carries a weight that starts at one and falls by 'decay_rate' per
+second, reaching zero after 100 seconds at the default 0.01. 'weighted out'
+sends every phrase with its weight; 'string out' sends the phrases whose weight
+is still above zero, as text. That is what you want when feeding something that
+should be influenced more by what was just said than by what was said a minute
+ago - an image prompt, a mood, a running state.
 
-text_change REPORTS ONLY WHAT IS NEW:
-Given a stream that keeps restating the same thing, it sends only the words 
-that were not there before. 'persistence' is how many times a word must be 
-absent before it counts as new again, and 'reset_period' clears the memory 
-periodically so a word can recur.
+The weights are only brought up to date when something arrives, so the window
+does not change while nothing is being said.
 
-That is how you drive something from speech without it re-firing on every 
-repetition of the same phrase.
+'progress' is for the partial text recognition sends while a phrase is still
+being spoken: it shows in the newest place, and is replaced there when the
+finished phrase arrives at 'in'.
 
 SYNTAX:
 gather_sentence
-fifo_string
-text_change
+string_builder
+fifo_string <count: int>
 
 EXAMPLE:
-gather_sentence
+fifo_string 6
 
 INPUTS and PARAMETERS:
 
-string in / text input:
+string in (gather_sentence, string_builder) / in (fifo_string):
 The fragments.
 
-force string end / issue text:
-Emit what has been collected now.
+force string end (gather_sentence):
+Send what has been collected now.
+
+auto sentence end / skip framed by (gather_sentence):
+Whether ending punctuation completes a sentence, and a character whose pairs
+frame text to leave out.
+
+issue text (string_builder):
+Send what has been collected, or 'clear' to empty it.
 
 progress (fifo_string):
-Age the window without adding to it.
+Text still being spoken, held in the newest place.
 
-clear / dump_oldest:
-Empty it, or drop the oldest piece.
+clear / dump_oldest (fifo_string):
+Empty the window, or drop the oldest phrase.
 
-order / decay_rate / length_threshold (fifo_string):
-Which end is newest, how fast the past fades, and how much is kept.
+order (fifo_string):
+newest_at_end (the default) or newest_at_start.
 
-persistence / reset_period (text_change):
-How long a word is remembered, and how often the memory clears.
+decay_rate / length_threshold (fifo_string):
+How fast the weights fall, per second, and how long a message must be before it
+is split at every kind of punctuation.
 
-OUTPUTS: 
+OUTPUTS:
 
-sentences out / text out:
+sentences out (gather_sentence) / text out (string_builder):
 The assembled text.
 
-weighted out / string out (fifo_string):
-The window with per-piece weights, and as plain text.
+weighted out (fifo_string):
+The phrases as phrase-and-weight pairs.
 
-new words out:
-Only the words not seen recently."""
+string out (fifo_string):
+The phrases still above zero weight, as plain text.
+
+RELATED:
+text_change reports only the words in a stream that are new.
+prompt_composer turns fifo_string's weighted phrases into an image prompt.
+word_trigger reacts to particular words as they arrive."""
 
 demo = [
-    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
-    {'key': 'm1', 'init': 'message', 'pos': (30, 118), 'w': 300, 'h': 42,
-     'props': {'text in': 'the light is changing.', 'font size': '24'}},
-    {'key': 'gs', 'init': 'gather_sentence', 'pos': (30, 180), 'w': 260, 'h': 180},
-    {'key': 's1', 'init': 'string', 'pos': (30, 375), 'w': 320, 'h': 42,
+    {'key': 'f1', 'init': 'string', 'pos': (30, 62), 'w': 260, 'h': 42,
+     'props': {'text in': 'the light ', 'font size': '24', 'width': 200}},
+    {'key': 'c0', 'comment': True, 'text': 'click these in turn - fragments, as\nrecognition sends them. The first\nends in a space',
+     'pos': (420, 62)},
+    {'key': 'f2', 'init': 'string', 'pos': (30, 115), 'w': 260, 'h': 42,
+     'props': {'text in': 'is changing.', 'font size': '24', 'width': 200}},
+    {'key': 'gs', 'init': 'gather_sentence', 'pos': (30, 180), 'w': 260, 'h': 160},
+    {'key': 'c1', 'comment': True, 'text': 'held until a fragment ends a sentence',
+     'pos': (420, 180)},
+    {'key': 's1', 'init': 'string', 'pos': (30, 370), 'w': 360, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c0', 'comment': True, 'text': 'fragments in, whole sentences out',
-     'pos': (30, 425)},
-    {'key': 'fs', 'init': 'fifo_string', 'pos': (30, 465), 'w': 280, 'h': 220},
-    {'key': 's2', 'init': 'string', 'pos': (30, 700), 'w': 320, 'h': 42,
+    {'key': 'btn', 'init': 'button', 'pos': (30, 440), 'w': 88, 'h': 46},
+    {'key': 'c2', 'comment': True, 'text': 'string_builder collects the same\nfragments until this is clicked',
+     'pos': (420, 440)},
+    {'key': 'sb', 'init': 'string_builder', 'pos': (30, 505), 'w': 220, 'h': 100},
+    {'key': 's2', 'init': 'string', 'pos': (30, 630), 'w': 360, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c1', 'comment': True, 'text': 'a rolling window; older text fades',
-     'pos': (30, 750)},
-    {'key': 'tc', 'init': 'text_change', 'pos': (400, 465), 'w': 260, 'h': 180},
-    {'key': 's3', 'init': 'string', 'pos': (400, 660), 'w': 260, 'h': 42,
+    {'key': 'fs', 'init': 'fifo_string', 'pos': (30, 700), 'w': 280, 'h': 180},
+    {'key': 'c3', 'comment': True, 'text': 'each finished sentence joins a rolling\nwindow of four; the oldest falls out',
+     'pos': (420, 700)},
+    {'key': 's3', 'init': 'string', 'pos': (30, 910), 'w': 360, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c2', 'comment': True, 'text': 'click twice: the second time\nnothing is new',
-     'pos': (400, 710)},
 ]
-links = [('btn', '', 'm1', ''),
-         ('m1', 'message out', 'gs', 'string in'),
+links = [('f1', 'string out', 'gs', 'string in'),
+         ('f2', 'string out', 'gs', 'string in'),
          ('gs', 'sentences out', 's1', ''),
-         ('m1', 'message out', 'fs', 'in'), ('fs', 'string out', 's2', ''),
-         ('m1', 'message out', 'tc', 'text input'),
-         ('tc', 'new words out', 's3', '')]
+         ('f1', 'string out', 'sb', 'string in'),
+         ('f2', 'string out', 'sb', 'string in'),
+         ('btn', '', 'sb', 'issue text'),
+         ('sb', 'text out', 's2', ''),
+         ('gs', 'sentences out', 'fs', 'in'),
+         ('fs', 'string out', 's3', '')]
 print(build('gather_sentence', 'gather_sentence - assembling text over time', body,
-            demo, links, demo_width=690, text_width=800, text_height=740))
+            demo, links, demo_width=800, text_width=800, text_height=780))
+
+# ------------------------------------------------------------------ text_change
+body = """text_change reports only the words in a stream of text that are NEW.
+
+THE NODE:
+
+text_change   pass on only the words not seen recently
+
+Given a stream that keeps restating the same thing - recognition revising a
+sentence as it goes, a description of a scene that hardly changes - it sends
+only the words that were not there before. That is how you drive something from
+speech without it re-firing on every repetition of the same phrase.
+
+HOW IT DECIDES:
+Each message is split into words at spaces, lower-cased, and stripped of
+punctuation. A word it has not got in memory is new: it is sent, and
+remembered.
+
+'persistence' is how many FURTHER messages a new word keeps being sent for. At
+the default of 3, a new word appears in the output of the message that brought
+it and of the next three, whether or not they contain it - so a word stays
+'news' for a short while. At 0 a word is sent once only.
+
+'reset_period' governs forgetting. Once a word has been in memory for more than
+that many messages, it is forgotten the first time a message arrives WITHOUT
+it. After that, if it comes back, it is new again. A word that keeps being said
+is never forgotten. Both counts are in messages, not seconds.
+
+'clear' forgets everything at once.
+
+The output is the reported words joined by spaces, in the order they were first
+seen. A message with nothing new sends an empty string.
+
+SEND IT A STRING:
+Send whole text as a string - from a string node, or from recognition. A list
+of words (which is what a message node sends) is run together with no spaces
+before it is split, so it arrives as a single long word.
+
+SYNTAX:
+text_change
+
+EXAMPLE:
+text_change
+
+INPUTS and PARAMETERS:
+
+text input:
+The text. Each message is compared with what is remembered.
+
+persistence:
+How many further messages a new word keeps being reported for. Default 3.
+
+reset_period:
+How many messages a word must have been remembered before an absence makes it
+forgettable. Default 10.
+
+clear:
+Forget every word.
+
+OUTPUTS:
+
+new words out:
+The new words, as one string.
+
+RELATED:
+gather_sentence, string_builder and fifo_string assemble a text stream over
+time.
+word_trigger reacts to particular words."""
+
+demo = [
+    {'key': 'a', 'init': 'string', 'pos': (30, 62), 'w': 320, 'h': 42,
+     'props': {'text in': 'the light is changing.', 'font size': '24', 'width': 280}},
+    {'key': 'c0', 'comment': True, 'text': 'click this one first',
+     'pos': (440, 62)},
+    {'key': 'b', 'init': 'string', 'pos': (30, 115), 'w': 320, 'h': 42,
+     'props': {'text in': 'the light is fading', 'font size': '24', 'width': 280}},
+    {'key': 'c1', 'comment': True, 'text': "then this - only 'fading' is new",
+     'pos': (440, 115)},
+    {'key': 'tc', 'init': 'text_change', 'pos': (30, 180), 'w': 260, 'h': 150,
+     'props': {'persistence': 0}},
+    {'key': 'c2', 'comment': True, 'text': 'persistence 0 here, so each new word is\nreported once. At the default 3 it is\nreported for three more messages',
+     'pos': (440, 180)},
+    {'key': 's1', 'init': 'string', 'pos': (30, 360), 'w': 360, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': 'click either again: nothing is new',
+     'pos': (440, 360)},
+]
+links = [('a', 'string out', 'tc', 'text input'),
+         ('b', 'string out', 'tc', 'text input'),
+         ('tc', 'new words out', 's1', '')]
+print(build('text_change', 'text_change - only what is new', body,
+            demo, links, demo_width=780, text_width=800, text_height=700))
 
 # ------------------------------------------------------------------------ ascii
 body = """These convert between characters and their numeric codes.

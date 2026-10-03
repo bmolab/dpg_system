@@ -284,80 +284,153 @@ print(build('osc_float', 'osc widgets - controls that are already on the network
             body, demo, links, demo_width=670, text_width=800, text_height=760))
 
 # ------------------------------------------------------------- osc_query_json
-body = """Two nodes for finding out what a device offers, and for driving a cue list.
+body = """Prints the OSC namespace this patch publishes, as OSCQuery JSON.
 
-THE NODES:
+THE NODE:
 
-osc_query_json  print a device's OSCQuery description
-osc_cue         send a cue number to a target
+osc_query_json   print this app's own OSC address registry to the console
 
-osc_query_json AND THE DISCOVERY PROBLEM:
-OSC on its own is write-only in a sense: you can send to an address, but 
-nothing tells you what addresses exist. Every integration therefore begins with 
-finding out what the far end responds to, and that is usually done by reading 
-documentation that is out of date.
+WHAT IT PRINTS:
+Every OSC node you make - osc_device, osc_source, osc_target, osc_receive,
+osc_send, osc_cue, the osc widgets, the eos senders - enters its address in a
+registry the app keeps, laid out the way OSCQuery describes a namespace: a tree
+of addresses, each with its type, and for the widgets a range and current
+value. Press the button and this node prints that whole tree, indented and
+sorted, to the console the app was launched from.
 
-OSCQuery is the answer to that - a device publishes a description of its whole 
-namespace, and this node prints it. What you get back is the actual, current 
-list of addresses, their types and their ranges, from the device itself.
+So it answers "what addresses does this patch expose, and under what names",
+which is the question to ask before pointing another program or another
+machine at it. Each entry sits under the patcher it lives in and the name of
+the device or connection it uses, so two sliders with the same address on
+different devices stay apart.
 
-That turns "which address is the fader" into something you look up rather than 
-guess, and it is the first thing to reach for with an unfamiliar device.
+Each node's own 'path' option shows the single path it was given in this tree,
+or 'Registration Failed'.
 
-Note that not every device offers OSCQuery. When one does not, the way to learn 
-its namespace is the reverse: patch an osc_route with nothing matched and watch 
-'unmatched' while you touch things on the device.
+WHAT IT DOES NOT PRINT:
+It does not ask a remote device for its description - this is the app's own
+side, not the far end's. To read a remote device's namespace use oscq_browse.
 
-osc_cue:
-Sends a cue number to a named target. Cue lists are how lighting and sound 
-consoles are actually operated, so the useful interface to one is usually not 
-a fader per parameter but a cue number - the console already holds the states, 
-and the patch just says which one.
+Nodes inside a subpatcher that holds an oscq_host are entered in that
+service's own registry instead, and do not appear here.
+
+Nothing is printed into the patch: the output goes to the console only.
 
 SYNTAX:
 osc_query_json
+
+EXAMPLE:
+osc_query_json
+
+INPUTS and PARAMETERS:
+
+print osc query json:
+Print the registry.
+
+OUTPUTS:
+
+None - it prints to the console.
+
+RELATED:
+oscq_service, oscq_host and oscq_browse, which publish a namespace on the
+network and read other devices' namespaces.
+osc_cue, which used to share this page."""
+
+demo = [
+    {'key': 'dv', 'init': 'osc_device console 127.0.0.1 8000 8001', 'pos': (30, 62),
+     'w': 300, 'h': 160},
+    {'key': 'c0', 'comment': True, 'text': 'a device registers its name',
+     'pos': (360, 62)},
+    {'key': 'sl', 'init': 'osc_slider console /fader/1', 'pos': (30, 250),
+     'w': 280, 'h': 60},
+    {'key': 'c1', 'comment': True, 'text': 'a widget registers its address,\ntype, range and value',
+     'pos': (360, 250)},
+    {'key': 'qj', 'init': 'osc_query_json', 'pos': (30, 340), 'w': 260, 'h': 60},
+    {'key': 'c2', 'comment': True,
+     'text': 'press: prints the whole tree to the\nconsole, not into the patch',
+     'pos': (360, 340)},
+]
+links = []
+print(build('osc_query_json', 'osc_query_json - what this patch exposes over OSC',
+            body, demo, links, demo_width=620, text_width=790, text_height=760))
+
+
+# -------------------------------------------------------------------- osc_cue
+body = """Fires a numbered cue on a console or show controller, over OSC.
+
+THE NODE:
+
+osc_cue   send /cue/<number>/go to a named OSC target
+
+WHY A CUE NODE:
+Cue lists are how lighting and sound consoles are actually operated. The useful
+interface to one is usually not a fader per parameter but a cue number - the
+console already holds the states, and the patch just says which one to go to.
+
+WHAT IT SENDS:
+Send it a whole number and it sends one message, with no values, to
+
+    /cue/<number>/go
+
+on the target named in 'target name'. 7 sends /cue/7/go. The address shape is
+built in - there is no address to set - so check that the receiving console or
+show controller answers to that form; where it expects something else, use
+osc_send with the address it wants. It needs an osc_target or osc_device of
+that name in the patch, or nothing is sent.
+
+THE ARGUMENTS:
+With two arguments, the first is the target name: 'osc_cue console x'. With a
+single argument, the node does NOT read it as the target name - it uses the
+patch's only target if there is exactly one, and otherwise has none. The simple
+course is to create it bare and type the name into 'target name'.
+
+It enters /cue under its target in the app's OSC registry, which osc_query_json
+prints, and its 'path' option shows that entry.
+
+SYNTAX:
 osc_cue
+osc_cue <target name> <anything>
 
 EXAMPLE:
 osc_cue
 
 INPUTS and PARAMETERS:
 
-print osc query json:
-Fetch and print the description.
-
 cue # to send:
-The cue number.
+The cue number. Arriving here sends it.
 
 target name:
-Which connection to send it on.
+Which osc_target or osc_device to send through.
 
-path:
-The address, where it differs from the default.
+path (option):
+The path this node was entered under in the registry, for reading.
 
-OUTPUTS: 
+OUTPUTS:
 
-None - both act rather than pass data on. The query prints to the console the 
-patch was launched from.
+None - it sends over the network.
 
 RELATED:
-There are OSCQuery proxies in this repo for consoles that do not offer one 
-themselves - see eos_oscquery_proxy.py and digico_oscquery_proxy.py, which 
-expose a Gio and an S21 respectively."""
+osc_send, for any other message to the same target.
+eos_console and its senders, for an ETC Eos desk in particular.
+osc_query_json, which used to share this page."""
 
 demo = [
-    {'key': 'dv', 'init': 'osc_device console 127.0.0.1 8000 8001', 'pos': (30, 62),
-     'w': 300, 'h': 260},
-    {'key': 'qj', 'init': 'osc_query_json', 'pos': (30, 345), 'w': 260, 'h': 120},
-    {'key': 'c0', 'comment': True, 'text': 'prints the whole namespace of the device\nto the console, not into the patch',
-     'pos': (30, 480)},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 555), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'cu', 'init': 'osc_cue', 'pos': (30, 615), 'w': 260, 'h': 140},
-    {'key': 'c2', 'comment': True, 'text': 'the console holds the states;\nthe patch just says which one', 'pos': (30, 770)},
+    {'key': 'tg', 'init': 'osc_target console 127.0.0.1 8000', 'pos': (30, 62),
+     'w': 300, 'h': 120},
+    {'key': 'c0', 'comment': True, 'text': 'the console, named once',
+     'pos': (360, 62)},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 210), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c1', 'comment': True, 'text': 'a cue number', 'pos': (360, 210)},
+    {'key': 'cu', 'init': 'osc_cue', 'pos': (30, 280), 'w': 260, 'h': 100,
+     'props': {'target name': 'console'}},
+    {'key': 'c2', 'comment': True,
+     'text': 'sends /cue/<number>/go to console -\nthe console holds the states,\nthe patch just says which one',
+     'pos': (360, 280)},
 ]
 links = [('i1', 'int out', 'cu', 'cue # to send')]
-print(build('osc_query_json', 'osc_query_json - finding out what a device offers',
-            body, demo, links, demo_width=620, text_width=790, text_height=700))
+print(build('osc_cue', 'osc_cue - go to a cue', body, demo, links,
+            demo_width=620, text_width=790, text_height=760))
+
 
 # ------------------------------------------------------------------ pipo_motion
 body = """Two nodes that read a Pipo sensor over the network.

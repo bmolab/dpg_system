@@ -1,0 +1,273 @@
+{
+    "height": 861,
+    "width": 1452,
+    "position": [
+        100,
+        100
+    ],
+    "id": 607,
+    "name": "adc~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/adc~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment adc~ - sound in from a microphone",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 414,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "adc~ - sound in from a microphone",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "adc~ - sound in from a microphone"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 594,
+            "position_y": 45,
+            "width": 818,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "adc~ brings sound in from a microphone or an audio interface, as a signal in the ~ graph.\n\nTHE NODES:\n\nadc~  an audio input device, as a signal\nmic~  the same node\n\nadc~ IS THE MICROPHONE IN THE GRAPH:\nIts outlets are a signal like any other ~ outlet, so a voice can go straight\ninto vocoder~, vcf~, vst~, string~'s excite inlet - or record~.\n'channels' are the device inputs, counted from 1 the way an interface's front\npanel counts them: '1 2' is a stereo pair, '1' is mono on both outlets. A\nbuilt-in microphone has one input, so '1 2' falls back to mono by itself.\n\nNothing reaches the speakers unless you patch it there. With speakers rather\nthan headphones, patching adc~ to an output is a feedback loop.\n\nWHY NOT stream~?\nt.audio_source into stream~ also brings a microphone in, but every chunk waits\nfor a GUI frame on the way, so a busy patch either drops audio or lets it fall\nbehind. adc~'s device writes straight into the audio engine and the GUI never\ntouches the sound - which is what makes it safe to record from.\n\nThe device is opened at the engine's sample rate when it accepts that, so\nnothing is converted; otherwise at its own rate, converted on the way in.\n\nTHE HOLD ADAPTS:\n'latency' is how much audio adc~ keeps in hand. A built-in microphone delivers\nevery 10 ms and 25 ms is plenty; some devices (BlackHole, for one) deliver in\nbursts with 85 ms gaps. Each time the input runs dry the hold grows by half, up\nto 250 ms, so a bursty device settles by itself within a second - usually\nbefore you have pressed record.\n\nInput and output on separate devices run on separate clocks, so over minutes\none gains on the other: the stream then skips a little, or runs dry once and\nrefills. The status line counts both and shows what it is holding.\n\nSYNTAX:\nadc~ [<channel> [<channel>]]\n\nEXAMPLE:\nadc~ 1 2\n\nWith no argument it takes inputs 1 and 2. mic~ takes the same arguments.\n\nINPUTS and PARAMETERS:\n\nenable:\nOff fades out over a few ms and stops the input.\n\nlevel:\nInput gain, 0 to 2. An inlet, so a signal can ride it; the 'level depth'\noption scales whatever is patched there.\n\nin:\nThe status line: the device, the channels and the rate it opened at - or why\nit could not open. Runs dry and skips are added as they happen.\n\nchannels / device / latency (options):\nWhich inputs, which device (blank for the system default), and the starting\nhold in ms (25 by default). The device list is what was connected when the\napp started.\n\nOUTPUTS:\n\nleft out / right out:\nThe input, as a signal. With one channel, both carry it.\n\nRELATED:\nrecord~ keeps what comes in as WAV takes.\nstream~ plays arrays from the patch as a signal - the route for anything that\nis not a live input device.\nvu~ and scope~ show what is arriving.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "adc~ brings sound in from a microphone or an audio interface, as a signal in the ~ graph.\n\nTHE NODES:\n\nadc~  an audio input device, as a signal\nmic~  the same node\n\nadc~ IS THE MICROPHONE IN THE GRAPH:\nIts outlets are a signal like any other ~ outlet, so a voice can go straight\ninto vocoder~, vcf~, vst~, string~'s excite inlet - or record~.\n'channels' are the device inputs, counted from 1 the way an interface's front\npanel counts them: '1 2' is a stereo pair, '1' is mono on both outlets. A\nbuilt-in microphone has one input, so '1 2' falls back to mono by itself.\n\nNothing reaches the speakers unless you patch it there. With speakers rather\nthan headphones, patching adc~ to an output is a feedback loop.\n\nWHY NOT stream~?\nt.audio_source into stream~ also brings a microphone in, but every chunk waits\nfor a GUI frame on the way, so a busy patch either drops audio or lets it fall\nbehind. adc~'s device writes straight into the audio engine and the GUI never\ntouches the sound - which is what makes it safe to record from.\n\nThe device is opened at the engine's sample rate when it accepts that, so\nnothing is converted; otherwise at its own rate, converted on the way in.\n\nTHE HOLD ADAPTS:\n'latency' is how much audio adc~ keeps in hand. A built-in microphone delivers\nevery 10 ms and 25 ms is plenty; some devices (BlackHole, for one) deliver in\nbursts with 85 ms gaps. Each time the input runs dry the hold grows by half, up\nto 250 ms, so a bursty device settles by itself within a second - usually\nbefore you have pressed record.\n\nInput and output on separate devices run on separate clocks, so over minutes\none gains on the other: the stream then skips a little, or runs dry once and\nrefills. The status line counts both and shows what it is holding.\n\nSYNTAX:\nadc~ [<channel> [<channel>]]\n\nEXAMPLE:\nadc~ 1 2\n\nWith no argument it takes inputs 1 and 2. mic~ takes the same arguments.\n\nINPUTS and PARAMETERS:\n\nenable:\nOff fades out over a few ms and stops the input.\n\nlevel:\nInput gain, 0 to 2. An inlet, so a signal can ride it; the 'level depth'\noption scales whatever is patched there.\n\nin:\nThe status line: the device, the channels and the rate it opened at - or why\nit could not open. Runs dry and skips are added as they happen.\n\nchannels / device / latency (options):\nWhich inputs, which device (blank for the system default), and the starting\nhold in ms (25 by default). The device list is what was connected when the\napp started.\n\nOUTPUTS:\n\nleft out / right out:\nThe input, as a signal. With one channel, both carry it.\n\nRELATED:\nrecord~ keeps what comes in as WAV takes.\nstream~ plays arrays from the patch as a signal - the route for anything that\nis not a live input device.\nvu~ and scope~ show what is arriving."
+        },
+        "3": {
+            "name": "adc~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 174,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "adc~ 1 2"
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 364,
+            "position_y": 62,
+            "width": 200,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the microphone, as a signal\nnot sent to the speakers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the microphone, as a signal\nnot sent to the speakers"
+        },
+        "5": {
+            "name": "meter~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 158,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment make a sound: the level",
+            "name": "comment",
+            "id": 459,
+            "position_x": 364,
+            "position_y": 240,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "make a sound: the level",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "make a sound: the level"
+        },
+        "7": {
+            "name": "scope~",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 308,
+            "height": 248,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment and the waveform",
+            "name": "comment",
+            "id": 533,
+            "position_x": 364,
+            "position_y": 400,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and the waveform",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and the waveform"
+        },
+        "9": {
+            "name": "close",
+            "id": 570,
+            "position_x": 24,
+            "position_y": 678,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "right out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "right in"
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

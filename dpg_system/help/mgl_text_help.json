@@ -1,0 +1,440 @@
+{
+    "height": 1194,
+    "width": 1362,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "mgl_text_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_text_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl_text - text in the scene",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 353,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl_text - text in the scene",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl_text - text in the scene"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 504,
+            "position_y": 45,
+            "width": 818,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "mgl_text draws a line of text into the 3D scene.\n\nWHERE THE TEXT GOES:\nThe text starts at the origin of the chain's current coordinates and runs \nalong plus x, sitting on that line, flat in the x-y plane. Put a transform \nbefore it to place, turn or size it, like any other shape. One unit of \n'scale' makes letters about half a unit tall at the default font size.\n\nIt draws in the current colour (set with mgl_color), without lighting, and \nwith the depth test off - so it is never shaded and is drawn over everything \nbefore it in the chain, even shapes standing in front of it. Shapes drawn \nafter it can still cover it.\n\nmgl_text NEEDS A BILLBOARD TO STAY READABLE:\nFlat text turns edge-on and disappears as the camera moves. Put \nmgl_billboard before it and it keeps facing the viewer whatever the orbit \nis doing.\n\nWHAT CAN BE SENT:\nA string is drawn as it is. Anything else is turned into text first, so a \nnumber shows as that number - but a list shows with its brackets, so join a \nlist into a string before sending it. Only the plain Latin characters (space \nto tilde) are drawn; anything else is skipped. There is one line - a return \ndoes not start a new one.\n\nSYNTAX:\nmgl_text\nmgl_text <font size>\nmgl_text <font file>\n\nA number argument is the font size (48 by default), a word is the font file. \nEither order.\n\nEXAMPLE:\nmgl_text 64\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\ntext:\nWhat to draw. It stays until something else is sent.\n\nscale:\nThe size of the letters in the scene. 1 by default.\n\nfont (option):\nThe font file, Inconsolata-g.otf by default, found from the folder the \nprogram runs in. Changing it reloads the letters.\n\nsize (option):\nThe size the font is rendered at. A larger size gives sharper letters and \nalso draws them larger, since the drawn size is this times 'scale'.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing. The text does not move anything downstream.\n\nRELATED:\nmgl_billboard to keep it facing the camera; mgl_color for its colour; \nmgl_translate to place it. mgl_mesh covers the geometry nodes and used to \nshare this page. gl_text is the older equivalent.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "mgl_text draws a line of text into the 3D scene.\n\nWHERE THE TEXT GOES:\nThe text starts at the origin of the chain's current coordinates and runs \nalong plus x, sitting on that line, flat in the x-y plane. Put a transform \nbefore it to place, turn or size it, like any other shape. One unit of \n'scale' makes letters about half a unit tall at the default font size.\n\nIt draws in the current colour (set with mgl_color), without lighting, and \nwith the depth test off - so it is never shaded and is drawn over everything \nbefore it in the chain, even shapes standing in front of it. Shapes drawn \nafter it can still cover it.\n\nmgl_text NEEDS A BILLBOARD TO STAY READABLE:\nFlat text turns edge-on and disappears as the camera moves. Put \nmgl_billboard before it and it keeps facing the viewer whatever the orbit \nis doing.\n\nWHAT CAN BE SENT:\nA string is drawn as it is. Anything else is turned into text first, so a \nnumber shows as that number - but a list shows with its brackets, so join a \nlist into a string before sending it. Only the plain Latin characters (space \nto tilde) are drawn; anything else is skipped. There is one line - a return \ndoes not start a new one.\n\nSYNTAX:\nmgl_text\nmgl_text <font size>\nmgl_text <font file>\n\nA number argument is the font size (48 by default), a word is the font file. \nEither order.\n\nEXAMPLE:\nmgl_text 64\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\ntext:\nWhat to draw. It stays until something else is sent.\n\nscale:\nThe size of the letters in the scene. 1 by default.\n\nfont (option):\nThe font file, Inconsolata-g.otf by default, found from the folder the \nprogram runs in. Changing it reloads the letters.\n\nsize (option):\nThe size the font is rendered at. A larger size gives sharper letters and \nalso draws them larger, since the drawn size is this times 'scale'.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing. The text does not move anything downstream.\n\nRELATED:\nmgl_billboard to keep it facing the camera; mgl_color for its colour; \nmgl_translate to place it. mgl_mesh covers the geometry nodes and used to \nshare this page. gl_text is the older equivalent."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_mouse_events",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "comment drag on the picture to orbit",
+            "name": "comment",
+            "id": 385,
+            "position_x": 244,
+            "position_y": 120,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag on the picture to orbit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag on the picture to orbit"
+        },
+        "5": {
+            "name": "mgl_orbit_camera",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "mgl_billboard",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment keeps what follows facing the camera",
+            "name": "comment",
+            "id": 496,
+            "position_x": 244,
+            "position_y": 630,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "keeps what follows facing the camera",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "keeps what follows facing the camera"
+        },
+        "8": {
+            "name": "mgl_translate",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 88,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": -0.6,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "mgl_translate -0.6 0 0"
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 720,
+            "width": 218,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the text starts at the origin:\nmove it left to centre it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the text starts at the origin:\nmove it left to centre it"
+        },
+        "10": {
+            "name": "load_bang",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 860,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "string",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 920,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "hello",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment type new text and press return",
+            "name": "comment",
+            "id": 681,
+            "position_x": 244,
+            "position_y": 920,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "type new text and press return",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "type new text and press return"
+        },
+        "13": {
+            "name": "mgl_text",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 990,
+            "width": 93,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "font",
+                    "value": "Inconsolata-g.otf",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 1090,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "text"
+        }
+    }
+}

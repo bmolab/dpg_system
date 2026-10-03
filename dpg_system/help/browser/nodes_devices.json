@@ -1,11 +1,11 @@
 {
-    "height": 978,
-    "width": 1820,
+    "height": 1082,
+    "width": 1734,
     "position": [
         100,
         100
     ],
-    "id": 2572,
+    "id": 2794,
     "name": "nodes_devices",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_devices.json",
     "nodes": {
@@ -506,7 +506,7 @@
             "presentation_state": "show_all"
         },
         "16": {
-            "init": "help_link mpd218 mpd218 / blue_board",
+            "init": "help_link mpd218 mpd218",
             "name": "help_link",
             "position_x": 24,
             "position_y": 444,
@@ -514,7 +514,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "mpd218 / blue_board",
+                    "name": "mpd218",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -539,12 +539,12 @@
             "annotation": true,
             "position_x": 287,
             "position_y": 448,
-            "width": 194,
-            "height": 40,
+            "width": 268,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "hardware that knows itself\n(blue_board, mpd218)",
+                    "value": "a pad controller that shows its choice",
                     "value_type": "str"
                 },
                 "1": {
@@ -554,12 +554,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 186,
+                    "value": 260,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -568,14 +568,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "hardware that knows itself\n(blue_board, mpd218)",
+            "text": "a pad controller that shows its choice",
             "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "18": {
-            "init": "help_link erae erae",
+            "init": "help_link blue_board blue_board",
             "name": "help_link",
             "position_x": 24,
             "position_y": 496,
@@ -583,7 +583,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "erae",
+                    "name": "blue_board",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -608,6 +608,75 @@
             "annotation": true,
             "position_x": 287,
             "position_y": 500,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a foot controller with lights",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a foot controller with lights",
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "init": "help_link erae erae",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 548,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "erae",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 552,
             "width": 243,
             "height": 28,
             "properties": {
@@ -638,16 +707,16 @@
                 }
             },
             "text": "the Embodme Erae 2 through its API",
-            "id": 1240,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "22": {
             "init": "help_link finger_zones finger_zones",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 548,
+            "position_y": 600,
             "width": 249,
             "height": 44,
             "properties": {
@@ -667,16 +736,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1277,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "23": {
             "name": "text_block",
             "annotation": true,
             "position_x": 287,
-            "position_y": 552,
+            "position_y": 604,
             "width": 194,
             "height": 28,
             "properties": {
@@ -707,16 +776,16 @@
                 }
             },
             "text": "which finger is this touch",
-            "id": 1314,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "24": {
             "init": "comment OSC",
             "name": "comment",
             "position_x": 24,
-            "position_y": 618,
+            "position_y": 670,
             "width": 39,
             "height": 30,
             "properties": {
@@ -732,16 +801,16 @@
                 }
             },
             "comment": "OSC",
-            "id": 1351,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "25": {
             "init": "help_link osc_source OSC connections",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 652,
+            "position_y": 704,
             "width": 249,
             "height": 44,
             "properties": {
@@ -761,16 +830,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1388,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "26": {
             "name": "text_block",
             "annotation": true,
             "position_x": 287,
-            "position_y": 656,
+            "position_y": 708,
             "width": 446,
             "height": 40,
             "properties": {
@@ -801,16 +870,16 @@
                 }
             },
             "text": "the connections\n(osc_device, osc_manager, osc_source, osc_source_async, osc_target)",
-            "id": 1425,
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "27": {
             "init": "help_link osc_receive osc_receive / osc_route / osc_send",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 704,
+            "position_y": 756,
             "width": 249,
             "height": 44,
             "properties": {
@@ -830,16 +899,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1462,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "28": {
             "name": "text_block",
             "annotation": true,
             "position_x": 287,
-            "position_y": 708,
+            "position_y": 760,
             "width": 243,
             "height": 40,
             "properties": {
@@ -870,16 +939,16 @@
                 }
             },
             "text": "by address\n(osc_receive, osc_route, osc_send)",
-            "id": 1499,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "27": {
+        "29": {
             "init": "help_link osc_float OSC widgets",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 756,
+            "position_y": 808,
             "width": 249,
             "height": 44,
             "properties": {
@@ -899,16 +968,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1536,
+            "id": 1610,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "28": {
+        "30": {
             "name": "text_block",
             "annotation": true,
             "position_x": 287,
-            "position_y": 760,
+            "position_y": 812,
             "width": 576,
             "height": 52,
             "properties": {
@@ -939,82 +1008,13 @@
                 }
             },
             "text": "controls that are already on the network\n(osc_button, osc_float, osc_int, osc_knob, osc_menu, osc_message, osc_radio, osc_slider,\n osc_string, osc_toggle, osc_vector)",
-            "id": 1573,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "29": {
-            "init": "help_link osc_query_json osc_query_json / osc_cue",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 816,
-            "width": 249,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "osc_query_json / osc_cue",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 233,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "orange",
-                    "value_type": "str"
-                }
-            },
-            "id": 1610,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "30": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 287,
-            "position_y": 820,
-            "width": 231,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "finding out what a device offers\n(osc_cue, osc_query_json)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 223,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "finding out what a device offers\n(osc_cue, osc_query_json)",
             "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "31": {
-            "init": "help_link oscq_service OSCQuery service / browse / host",
+            "init": "help_link osc_query_json osc_query_json",
             "name": "help_link",
             "position_x": 24,
             "position_y": 868,
@@ -1022,7 +1022,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "OSCQuery service / browse / host",
+                    "name": "osc_query_json",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -1047,6 +1047,144 @@
             "annotation": true,
             "position_x": 287,
             "position_y": 872,
+            "width": 231,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "what this patch exposes over OSC",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "what this patch exposes over OSC",
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "init": "help_link osc_cue osc_cue",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 920,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "osc_cue",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 924,
+            "width": 101,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "go to a cue",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 93,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "go to a cue",
+            "id": 1795,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "35": {
+            "init": "help_link oscq_service OSCQuery service / browse / host",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 972,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "OSCQuery service / browse / host",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1832,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "36": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 976,
             "width": 268,
             "height": 40,
             "properties": {
@@ -1077,12 +1215,12 @@
                 }
             },
             "text": "OSC that describes itself\n(oscq_browse, oscq_host, oscq_service)",
-            "id": 1721,
+            "id": 1869,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "33": {
+        "37": {
             "init": "comment Arrays across the network",
             "name": "comment",
             "position_x": 923,
@@ -1102,12 +1240,12 @@
                 }
             },
             "comment": "Arrays across the network",
-            "id": 1758,
+            "id": 1906,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "34": {
+        "38": {
             "init": "help_link udp_numpy_send udp_numpy_send / udp_numpy_receive",
             "name": "help_link",
             "position_x": 923,
@@ -1131,12 +1269,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1795,
+            "id": 1943,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "35": {
+        "39": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1186,
@@ -1171,12 +1309,12 @@
                 }
             },
             "text": "arrays across the network\n(udp_numpy_receive, udp_numpy_send)",
-            "id": 1832,
+            "id": 1980,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "36": {
+        "40": {
             "init": "help_link tcp_numpy_send tcp send / receive",
             "name": "help_link",
             "position_x": 923,
@@ -1200,12 +1338,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1869,
+            "id": 2017,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "37": {
+        "41": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1186,
@@ -1240,12 +1378,12 @@
                 }
             },
             "text": "a connection, with guarantees\n(tcp_latent_receive, tcp_latent_send, tcp_numpy_receive, tcp_numpy_send)",
-            "id": 1906,
+            "id": 2054,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "38": {
+        "42": {
             "init": "help_link process_group process_group",
             "name": "help_link",
             "position_x": 923,
@@ -1269,12 +1407,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1943,
+            "id": 2091,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "39": {
+        "43": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1186,
@@ -1309,12 +1447,12 @@
                 }
             },
             "text": "one computation across machines",
-            "id": 1980,
+            "id": 2128,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "40": {
+        "44": {
             "init": "help_link ip_address ip_address",
             "name": "help_link",
             "position_x": 923,
@@ -1338,12 +1476,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 2017,
+            "id": 2165,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "41": {
+        "45": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1186,
@@ -1378,12 +1516,12 @@
                 }
             },
             "text": "where this machine can be reached",
-            "id": 2054,
+            "id": 2202,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "42": {
+        "46": {
             "init": "comment Show control",
             "name": "comment",
             "position_x": 923,
@@ -1403,12 +1541,12 @@
                 }
             },
             "comment": "Show control",
-            "id": 2091,
+            "id": 2239,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "43": {
+        "47": {
             "init": "help_link eos_console Eos lighting console",
             "name": "help_link",
             "position_x": 923,
@@ -1432,22 +1570,22 @@
                     "value_type": "str"
                 }
             },
-            "id": 2128,
+            "id": 2276,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "44": {
+        "48": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1186,
             "position_y": 448,
-            "width": 594,
+            "width": 508,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "driving a lighting desk\n(color_source, eos_console, eos_float, eos_int, eos_knob, eos_send, eos_slider, eos_toggle)",
+                    "value": "driving a lighting desk\n(eos_console, eos_float, eos_int, eos_knob, eos_send, eos_slider, eos_toggle)",
                     "value_type": "str"
                 },
                 "1": {
@@ -1457,7 +1595,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 586,
+                    "value": 500,
                     "value_type": "int"
                 },
                 "3": {
@@ -1471,17 +1609,86 @@
                     "value_type": "str"
                 }
             },
-            "text": "driving a lighting desk\n(color_source, eos_console, eos_float, eos_int, eos_knob, eos_send, eos_slider, eos_toggle)",
-            "id": 2165,
+            "text": "driving a lighting desk\n(eos_console, eos_float, eos_int, eos_knob, eos_send, eos_slider, eos_toggle)",
+            "id": 2313,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "45": {
-            "init": "help_link digico.fader digico.fader",
+        "49": {
+            "init": "help_link color_source color_source",
             "name": "help_link",
             "position_x": 923,
             "position_y": 496,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "color_source",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "teal",
+                    "value_type": "str"
+                }
+            },
+            "id": 2350,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "50": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1186,
+            "position_y": 500,
+            "width": 224,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "colour for one lighting channel",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "colour for one lighting channel",
+            "id": 2387,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "51": {
+            "init": "help_link digico.fader digico.fader",
+            "name": "help_link",
+            "position_x": 923,
+            "position_y": 548,
             "width": 249,
             "height": 44,
             "properties": {
@@ -1501,16 +1708,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2202,
+            "id": 2424,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "46": {
+        "52": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1186,
-            "position_y": 500,
+            "position_y": 552,
             "width": 157,
             "height": 28,
             "properties": {
@@ -1541,16 +1748,16 @@
                 }
             },
             "text": "a console fader bank",
-            "id": 2239,
+            "id": 2461,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "47": {
+        "53": {
             "init": "help_link pjlink_projector pjlink projector / control",
             "name": "help_link",
             "position_x": 923,
-            "position_y": 548,
+            "position_y": 600,
             "width": 249,
             "height": 44,
             "properties": {
@@ -1570,16 +1777,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2276,
+            "id": 2498,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "48": {
+        "54": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1186,
-            "position_y": 552,
+            "position_y": 604,
             "width": 261,
             "height": 40,
             "properties": {
@@ -1610,16 +1817,16 @@
                 }
             },
             "text": "a projector on the network\n(pjlink_projector, projector_control)",
-            "id": 2313,
+            "id": 2535,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "49": {
+        "55": {
             "init": "help_link nvx_kvm nvx_kvm",
             "name": "help_link",
             "position_x": 923,
-            "position_y": 600,
+            "position_y": 652,
             "width": 249,
             "height": 44,
             "properties": {
@@ -1639,16 +1846,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2350,
+            "id": 2572,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "50": {
+        "56": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1186,
-            "position_y": 604,
+            "position_y": 656,
             "width": 101,
             "height": 28,
             "properties": {
@@ -1679,16 +1886,16 @@
                 }
             },
             "text": "KVM over IP",
-            "id": 2387,
+            "id": 2609,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "51": {
+        "57": {
             "init": "help_link visca_camera visca_camera / ptz_camera",
             "name": "help_link",
             "position_x": 923,
-            "position_y": 652,
+            "position_y": 704,
             "width": 249,
             "height": 44,
             "properties": {
@@ -1708,16 +1915,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2424,
+            "id": 2646,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "52": {
+        "58": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1186,
-            "position_y": 656,
+            "position_y": 708,
             "width": 194,
             "height": 40,
             "properties": {
@@ -1748,16 +1955,16 @@
                 }
             },
             "text": "driving a PTZ head\n(ptz_camera, visca_camera)",
-            "id": 2461,
+            "id": 2683,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "53": {
+        "59": {
             "init": "help_link display_info display_info",
             "name": "help_link",
             "position_x": 923,
-            "position_y": 704,
+            "position_y": 756,
             "width": 249,
             "height": 44,
             "properties": {
@@ -1777,16 +1984,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2498,
+            "id": 2720,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "54": {
+        "60": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1186,
-            "position_y": 708,
+            "position_y": 760,
             "width": 163,
             "height": 28,
             "properties": {
@@ -1817,7 +2024,7 @@
                 }
             },
             "text": "which screen is where",
-            "id": 2535,
+            "id": 2757,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

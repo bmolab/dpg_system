@@ -1,11 +1,11 @@
 {
-    "height": 876,
-    "width": 1687,
+    "height": 1086,
+    "width": 1432,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 866,
     "name": "gather_sentence_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gather_sentence_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 839,
+            "position_x": 584,
             "position_y": 45,
             "width": 808,
-            "height": 756,
+            "height": 796,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These accumulate text over time, rather than acting on one message.\n\nSpeech recognition and language models emit text a fragment at a time. \nNone of it is a sentence, and most of what you want to do needs one. \nThese four assemble the stream into something whole, in different ways.\n\nTHE NODES:\n\ngather_sentence  collect fragments until a sentence ends, then send it\nstring_builder   collect until you ask for it\nfifo_string      keep a window of recent text, with older parts fading\ntext_change      report only the words that are NEW\n\ngather_sentence DECIDES WHERE A SENTENCE ENDS:\n'auto sentence end' looks for the punctuation that ends one. 'end on return' \ntreats a line break as the end. 'force string end' lets the patch decide. \n'enforce spaces' fixes fragments that arrive without them, which recognition \noutput often does.\n\n'skip framed by' ignores anything between a pair of characters - so stage \ndirections, annotations or markup in the stream do not end up in the sentence.\n\nfifo_string IS THE ONE FOR A ROLLING CONTEXT:\nIt holds recent text as a window, and its 'weighted out' outlet carries the \ntext with a weight per piece that DECAYS with age. That is what you want when \nfeeding something that should be influenced more by what was just said than by \nwhat was said a minute ago - an image prompt, a mood, a running state.\n\n'decay_rate' sets how fast the past fades. 'length_threshold' caps how much is \nkept. 'progress' advances the ages without adding anything, so time can pass \nwithout new text.\n\ntext_change REPORTS ONLY WHAT IS NEW:\nGiven a stream that keeps restating the same thing, it sends only the words \nthat were not there before. 'persistence' is how many times a word must be \nabsent before it counts as new again, and 'reset_period' clears the memory \nperiodically so a word can recur.\n\nThat is how you drive something from speech without it re-firing on every \nrepetition of the same phrase.\n\nSYNTAX:\ngather_sentence\nfifo_string\ntext_change\n\nEXAMPLE:\ngather_sentence\n\nINPUTS and PARAMETERS:\n\nstring in / text input:\nThe fragments.\n\nforce string end / issue text:\nEmit what has been collected now.\n\nprogress (fifo_string):\nAge the window without adding to it.\n\nclear / dump_oldest:\nEmpty it, or drop the oldest piece.\n\norder / decay_rate / length_threshold (fifo_string):\nWhich end is newest, how fast the past fades, and how much is kept.\n\npersistence / reset_period (text_change):\nHow long a word is remembered, and how often the memory clears.\n\nOUTPUTS: \n\nsentences out / text out:\nThe assembled text.\n\nweighted out / string out (fifo_string):\nThe window with per-piece weights, and as plain text.\n\nnew words out:\nOnly the words not seen recently.",
+                    "value": "These accumulate text over time, rather than acting on one message.\n\nSpeech recognition and language models emit text a fragment at a time.\nNone of it is a sentence, and most of what you want to do needs one.\nThese three assemble the stream into something whole, in different ways.\n\nTHE NODES:\n\ngather_sentence  collect fragments until a sentence ends, then send it\nstring_builder   collect until you ask for it\nfifo_string      keep a window of recent phrases, older ones fading\n\ngather_sentence DECIDES WHERE A SENTENCE ENDS:\nWith 'auto sentence end' on (the default), a fragment that ENDS in . ? ! ; or :\ncompletes the sentence and it is sent, that fragment included. So do a fragment\nending in two dashes, and a closing bracket when the sentence began with an\nopening one. An ellipsis (...) does not end a sentence. The punctuation has to\nbe the fragment's last character - 'changing. ' with a space after does not\ncount.\n\n'force string end' sends whatever has been collected, whenever the patch\ndecides. A fragment that is exactly '<backspace>' removes the last fragment\ncollected.\n\nFragments are joined exactly as they arrive - no space is added between them.\nRecognition output usually carries its own spaces; if yours does not, use\nstring_builder, which adds them. ('enforce spaces' is meant to do this here, but\nin the current code it has no effect. 'end on return' likewise never fires,\nbecause line breaks are removed from fragments as they arrive.)\n\n'skip framed by' takes a single character and removes everything between a\npair of it - so with '*', 'it is *laughs* cold.' is sent as 'it is  cold.'.\nStage directions or annotations in the stream do not end up in the sentence.\n\nstring_builder WAITS TO BE ASKED:\nEvery message to 'string in' is added on, with a space between pieces when\nneither side already has one. Anything at 'issue text' (a bang, a click) sends\nthe collected text and starts again; the word 'clear' there empties it without\nsending.\n\nfifo_string IS THE ONE FOR A ROLLING CONTEXT:\nIt keeps the most recent phrases - as many as its argument says, 4 by default -\nand pushes the oldest out as new ones arrive. A message to 'in' is split at its\nfull stops into separate phrases (not after Mr, Mrs, Dr or St), each given a\nfull stop of its own. A message longer than 'length_threshold' characters is\nsplit at commas, colons, semicolons, question and exclamation marks as well.\n\nEach phrase carries a weight that starts at one and falls by 'decay_rate' per\nsecond, reaching zero after 100 seconds at the default 0.01. 'weighted out'\nsends every phrase with its weight; 'string out' sends the phrases whose weight\nis still above zero, as text. That is what you want when feeding something that\nshould be influenced more by what was just said than by what was said a minute\nago - an image prompt, a mood, a running state.\n\nThe weights are only brought up to date when something arrives, so the window\ndoes not change while nothing is being said.\n\n'progress' is for the partial text recognition sends while a phrase is still\nbeing spoken: it shows in the newest place, and is replaced there when the\nfinished phrase arrives at 'in'.\n\nSYNTAX:\ngather_sentence\nstring_builder\nfifo_string <count: int>\n\nEXAMPLE:\nfifo_string 6\n\nINPUTS and PARAMETERS:\n\nstring in (gather_sentence, string_builder) / in (fifo_string):\nThe fragments.\n\nforce string end (gather_sentence):\nSend what has been collected now.\n\nauto sentence end / skip framed by (gather_sentence):\nWhether ending punctuation completes a sentence, and a character whose pairs\nframe text to leave out.\n\nissue text (string_builder):\nSend what has been collected, or 'clear' to empty it.\n\nprogress (fifo_string):\nText still being spoken, held in the newest place.\n\nclear / dump_oldest (fifo_string):\nEmpty the window, or drop the oldest phrase.\n\norder (fifo_string):\nnewest_at_end (the default) or newest_at_start.\n\ndecay_rate / length_threshold (fifo_string):\nHow fast the weights fall, per second, and how long a message must be before it\nis split at every kind of punctuation.\n\nOUTPUTS:\n\nsentences out (gather_sentence) / text out (string_builder):\nThe assembled text.\n\nweighted out (fifo_string):\nThe phrases as phrase-and-weight pairs.\n\nstring out (fifo_string):\nThe phrases still above zero weight, as plain text.\n\nRELATED:\ntext_change reports only the words in a stream that are new.\nprompt_composer turns fifo_string's weighted phrases into an image prompt.\nword_trigger reacts to particular words as they arrive.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 740,
+                    "value": 780,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,26 +90,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "These accumulate text over time, rather than acting on one message.\n\nSpeech recognition and language models emit text a fragment at a time. \nNone of it is a sentence, and most of what you want to do needs one. \nThese four assemble the stream into something whole, in different ways.\n\nTHE NODES:\n\ngather_sentence  collect fragments until a sentence ends, then send it\nstring_builder   collect until you ask for it\nfifo_string      keep a window of recent text, with older parts fading\ntext_change      report only the words that are NEW\n\ngather_sentence DECIDES WHERE A SENTENCE ENDS:\n'auto sentence end' looks for the punctuation that ends one. 'end on return' \ntreats a line break as the end. 'force string end' lets the patch decide. \n'enforce spaces' fixes fragments that arrive without them, which recognition \noutput often does.\n\n'skip framed by' ignores anything between a pair of characters - so stage \ndirections, annotations or markup in the stream do not end up in the sentence.\n\nfifo_string IS THE ONE FOR A ROLLING CONTEXT:\nIt holds recent text as a window, and its 'weighted out' outlet carries the \ntext with a weight per piece that DECAYS with age. That is what you want when \nfeeding something that should be influenced more by what was just said than by \nwhat was said a minute ago - an image prompt, a mood, a running state.\n\n'decay_rate' sets how fast the past fades. 'length_threshold' caps how much is \nkept. 'progress' advances the ages without adding anything, so time can pass \nwithout new text.\n\ntext_change REPORTS ONLY WHAT IS NEW:\nGiven a stream that keeps restating the same thing, it sends only the words \nthat were not there before. 'persistence' is how many times a word must be \nabsent before it counts as new again, and 'reset_period' clears the memory \nperiodically so a word can recur.\n\nThat is how you drive something from speech without it re-firing on every \nrepetition of the same phrase.\n\nSYNTAX:\ngather_sentence\nfifo_string\ntext_change\n\nEXAMPLE:\ngather_sentence\n\nINPUTS and PARAMETERS:\n\nstring in / text input:\nThe fragments.\n\nforce string end / issue text:\nEmit what has been collected now.\n\nprogress (fifo_string):\nAge the window without adding to it.\n\nclear / dump_oldest:\nEmpty it, or drop the oldest piece.\n\norder / decay_rate / length_threshold (fifo_string):\nWhich end is newest, how fast the past fades, and how much is kept.\n\npersistence / reset_period (text_change):\nHow long a word is remembered, and how often the memory clears.\n\nOUTPUTS: \n\nsentences out / text out:\nThe assembled text.\n\nweighted out / string out (fifo_string):\nThe window with per-piece weights, and as plain text.\n\nnew words out:\nOnly the words not seen recently."
+            "text": "These accumulate text over time, rather than acting on one message.\n\nSpeech recognition and language models emit text a fragment at a time.\nNone of it is a sentence, and most of what you want to do needs one.\nThese three assemble the stream into something whole, in different ways.\n\nTHE NODES:\n\ngather_sentence  collect fragments until a sentence ends, then send it\nstring_builder   collect until you ask for it\nfifo_string      keep a window of recent phrases, older ones fading\n\ngather_sentence DECIDES WHERE A SENTENCE ENDS:\nWith 'auto sentence end' on (the default), a fragment that ENDS in . ? ! ; or :\ncompletes the sentence and it is sent, that fragment included. So do a fragment\nending in two dashes, and a closing bracket when the sentence began with an\nopening one. An ellipsis (...) does not end a sentence. The punctuation has to\nbe the fragment's last character - 'changing. ' with a space after does not\ncount.\n\n'force string end' sends whatever has been collected, whenever the patch\ndecides. A fragment that is exactly '<backspace>' removes the last fragment\ncollected.\n\nFragments are joined exactly as they arrive - no space is added between them.\nRecognition output usually carries its own spaces; if yours does not, use\nstring_builder, which adds them. ('enforce spaces' is meant to do this here, but\nin the current code it has no effect. 'end on return' likewise never fires,\nbecause line breaks are removed from fragments as they arrive.)\n\n'skip framed by' takes a single character and removes everything between a\npair of it - so with '*', 'it is *laughs* cold.' is sent as 'it is  cold.'.\nStage directions or annotations in the stream do not end up in the sentence.\n\nstring_builder WAITS TO BE ASKED:\nEvery message to 'string in' is added on, with a space between pieces when\nneither side already has one. Anything at 'issue text' (a bang, a click) sends\nthe collected text and starts again; the word 'clear' there empties it without\nsending.\n\nfifo_string IS THE ONE FOR A ROLLING CONTEXT:\nIt keeps the most recent phrases - as many as its argument says, 4 by default -\nand pushes the oldest out as new ones arrive. A message to 'in' is split at its\nfull stops into separate phrases (not after Mr, Mrs, Dr or St), each given a\nfull stop of its own. A message longer than 'length_threshold' characters is\nsplit at commas, colons, semicolons, question and exclamation marks as well.\n\nEach phrase carries a weight that starts at one and falls by 'decay_rate' per\nsecond, reaching zero after 100 seconds at the default 0.01. 'weighted out'\nsends every phrase with its weight; 'string out' sends the phrases whose weight\nis still above zero, as text. That is what you want when feeding something that\nshould be influenced more by what was just said than by what was said a minute\nago - an image prompt, a mood, a running state.\n\nThe weights are only brought up to date when something arrives, so the window\ndoes not change while nothing is being said.\n\n'progress' is for the partial text recognition sends while a phrase is still\nbeing spoken: it shows in the newest place, and is replaced there when the\nfinished phrase arrives at 'in'.\n\nSYNTAX:\ngather_sentence\nstring_builder\nfifo_string <count: int>\n\nEXAMPLE:\nfifo_string 6\n\nINPUTS and PARAMETERS:\n\nstring in (gather_sentence, string_builder) / in (fifo_string):\nThe fragments.\n\nforce string end (gather_sentence):\nSend what has been collected now.\n\nauto sentence end / skip framed by (gather_sentence):\nWhether ending punctuation completes a sentence, and a character whose pairs\nframe text to leave out.\n\nissue text (string_builder):\nSend what has been collected, or 'clear' to empty it.\n\nprogress (fifo_string):\nText still being spoken, held in the newest place.\n\nclear / dump_oldest (fifo_string):\nEmpty the window, or drop the oldest phrase.\n\norder (fifo_string):\nnewest_at_end (the default) or newest_at_start.\n\ndecay_rate / length_threshold (fifo_string):\nHow fast the weights fall, per second, and how long a message must be before it\nis split at every kind of punctuation.\n\nOUTPUTS:\n\nsentences out (gather_sentence) / text out (string_builder):\nThe assembled text.\n\nweighted out (fifo_string):\nThe phrases as phrase-and-weight pairs.\n\nstring out (fifo_string):\nThe phrases still above zero weight, as plain text.\n\nRELATED:\ntext_change reports only the words in a stream that are new.\nprompt_composer turns fifo_string's weighted phrases into an image prompt.\nword_trigger reacts to particular words as they arrive."
         },
         "3": {
-            "name": "button",
+            "name": "string",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "message",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 118,
-            "width": 130,
+            "width": 230,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -117,19 +105,92 @@
             "properties": {
                 "0": {
                     "name": "text in",
-                    "value": "the light is changing.",
+                    "value": "the light ",
                     "value_type": "str"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
                     "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
                 }
             }
         },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 286,
+            "position_y": 62,
+            "width": 249,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click these in turn - fragments, as\nrecognition sends them. The first\nends in a space",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click these in turn - fragments, as\nrecognition sends them. The first\nends in a space"
+        },
         "5": {
-            "name": "gather_sentence",
+            "name": "string",
             "id": 422,
+            "position_x": 30,
+            "position_y": 115,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "is changing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "name": "gather_sentence",
+            "id": 459,
             "position_x": 30,
             "position_y": 180,
             "width": 179,
@@ -139,11 +200,36 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "6": {
+        "7": {
+            "init": "comment held until a fragment ends a sentence",
+            "name": "comment",
+            "id": 496,
+            "position_x": 286,
+            "position_y": 180,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "held until a fragment ends a sentence",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "held until a fragment ends a sentence"
+        },
+        "8": {
             "name": "string",
-            "id": 459,
+            "id": 533,
             "position_x": 30,
-            "position_y": 375,
+            "position_y": 370,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -162,98 +248,65 @@
                 }
             }
         },
-        "7": {
-            "init": "comment fragments in, whole sentences out",
-            "name": "comment",
-            "id": 496,
-            "position_x": 592,
-            "position_y": 425,
-            "width": 211,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "fragments in, whole sentences out",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "fragments in, whole sentences out"
-        },
-        "8": {
-            "name": "fifo_string",
-            "id": 533,
+        "9": {
+            "name": "button",
+            "id": 570,
             "position_x": 30,
-            "position_y": 465,
-            "width": 193,
-            "height": 140,
+            "position_y": 440,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
-            "name": "string",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 700,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
         "10": {
-            "init": "comment a rolling window; older text fades",
-            "name": "comment",
+            "name": "text_block",
             "id": 607,
-            "position_x": 592,
-            "position_y": 750,
-            "width": 217,
-            "height": 30,
+            "annotation": true,
+            "position_x": 286,
+            "position_y": 440,
+            "width": 231,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "a rolling window; older text fades",
+                    "name": "block",
+                    "value": "string_builder collects the same\nfragments until this is clicked",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "a rolling window; older text fades"
+            "text": "string_builder collects the same\nfragments until this is clicked"
         },
         "11": {
-            "name": "text_change",
+            "name": "string_builder",
             "id": 644,
-            "position_x": 400,
-            "position_y": 465,
-            "width": 166,
-            "height": 84,
+            "position_x": 30,
+            "position_y": 505,
+            "width": 95,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -262,8 +315,8 @@
         "12": {
             "name": "string",
             "id": 681,
-            "position_x": 400,
-            "position_y": 660,
+            "position_x": 30,
+            "position_y": 630,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -283,12 +336,24 @@
             }
         },
         "13": {
-            "name": "text_block",
+            "name": "fifo_string",
             "id": 718,
+            "position_x": 30,
+            "position_y": 700,
+            "width": 193,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "text_block",
+            "id": 755,
             "annotation": true,
-            "position_x": 592,
-            "position_y": 710,
-            "width": 206,
+            "position_x": 286,
+            "position_y": 700,
+            "width": 268,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -296,7 +361,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "click twice: the second time\nnothing is new",
+                    "value": "each finished sentence joins a rolling\nwindow of four; the oldest falls out",
                     "value_type": "str"
                 },
                 "1": {
@@ -306,7 +371,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 198,
+                    "value": 260,
                     "value_type": "int"
                 },
                 "3": {
@@ -320,13 +385,36 @@
                     "value_type": "str"
                 }
             },
-            "text": "click twice: the second time\nnothing is new"
+            "text": "each finished sentence joins a rolling\nwindow of four; the oldest falls out"
         },
-        "14": {
+        "15": {
+            "name": "string",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 910,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
             "name": "close",
-            "id": 755,
+            "id": 829,
             "position_x": 24,
-            "position_y": 772,
+            "position_y": 982,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -346,68 +434,88 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
+            "source_output_name": "string out",
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "string in"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 422,
+            "source_output_name": "string out",
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "string in"
         },
         "2": {
-            "source_node": 422,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "sentences out",
-            "dest_node": 459,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "3": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "4": {
-            "source_node": 533,
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "string out",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "5": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "message out",
             "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "text input"
+            "dest_input_name": "string in"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "string in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "issue text"
         },
         "6": {
             "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "new words out",
+            "source_output_name": "text out",
             "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "sentences out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

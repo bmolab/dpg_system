@@ -1,0 +1,775 @@
+{
+    "height": 1347,
+    "width": 1436,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "one_euro_filter_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/one_euro_filter_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment one_euro_filter - the standard adaptive smoother",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 598,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one_euro_filter - the standard adaptive smoother",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one_euro_filter - the standard adaptive smoother"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 568,
+            "position_y": 45,
+            "width": 828,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one_euro_filter is the published One Euro filter (Casiez, Roussel and Vogel, 2012):\na smoothing filter that adapts to how fast the signal is moving.\n\nIt is a plain lowpass filter whose cutoff - the speed of change it lets through -\nrises whenever the signal moves quickly. When the signal is barely moving the\ncutoff is low and jitter is smoothed away. When it moves fast the cutoff rises\nand the output keeps up instead of lagging. It is the standard answer to \"smooth\nwhen still, quick when moving\", and it is easy to tune.\n\nSYNTAX:\none_euro_filter <min_cutoff: float> <beta: float> <d_cutoff: float>\n\nAll three are optional, defaulting to 1.0, 0.0 and 1.0. Note that with beta at 0\nthe filter does not adapt at all: it is a plain lowpass at min_cutoff.\n\nEXAMPLE:\none_euro_filter 1.0 0.5 1.0\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to filter. Receiving data here triggers the node.\nA number, a NumPy array or a PyTorch tensor. Each element of an array adapts on\nits own, by its own speed. Lists are ignored - convert them to an array first.\n\nmin_cutoff:\nThe cutoff when the signal is still, in Hz (cycles per second). LOWER means\nsmoother. Tune this first: set beta to 0, then lower min_cutoff until the output\nis steady when the input is at rest - but not so low that slow movements lag.\n\nbeta:\nHow much speed raises the cutoff. Tune this second: raise it until fast\nmovements stop lagging. Higher means more responsive when moving, and a little\nmore jitter while moving.\n\nd_cutoff:\nThe cutoff, in Hz, of the smoothing applied to the filter's own speed estimate.\nThe default of 1.0 is almost always right.\n\ndt:\nMeant to set the time between samples, but it has no effect: the node times the\narrivals itself, from the clock, on every input. So the filter follows whatever\nrate your data really arrives at - and data played back faster than real time\nis filtered as if the movement itself were faster.\n\nThe first value received passes straight through, and the filter starts from it.\n\nOUTPUTS:\n\nout:\nThe filtered value, in the same form as the input.\n\nRELATED:\nadaptive_filter   the same idea with more settings, and an outlet showing how\n                  hard it is smoothing\nfilter            a plain one-pole smoother, for comparison\nkalman_filter     predicts where a smoothly moving value should be, then corrects\nphysics_filter    smooths by limiting speed and acceleration",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "one_euro_filter is the published One Euro filter (Casiez, Roussel and Vogel, 2012):\na smoothing filter that adapts to how fast the signal is moving.\n\nIt is a plain lowpass filter whose cutoff - the speed of change it lets through -\nrises whenever the signal moves quickly. When the signal is barely moving the\ncutoff is low and jitter is smoothed away. When it moves fast the cutoff rises\nand the output keeps up instead of lagging. It is the standard answer to \"smooth\nwhen still, quick when moving\", and it is easy to tune.\n\nSYNTAX:\none_euro_filter <min_cutoff: float> <beta: float> <d_cutoff: float>\n\nAll three are optional, defaulting to 1.0, 0.0 and 1.0. Note that with beta at 0\nthe filter does not adapt at all: it is a plain lowpass at min_cutoff.\n\nEXAMPLE:\none_euro_filter 1.0 0.5 1.0\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to filter. Receiving data here triggers the node.\nA number, a NumPy array or a PyTorch tensor. Each element of an array adapts on\nits own, by its own speed. Lists are ignored - convert them to an array first.\n\nmin_cutoff:\nThe cutoff when the signal is still, in Hz (cycles per second). LOWER means\nsmoother. Tune this first: set beta to 0, then lower min_cutoff until the output\nis steady when the input is at rest - but not so low that slow movements lag.\n\nbeta:\nHow much speed raises the cutoff. Tune this second: raise it until fast\nmovements stop lagging. Higher means more responsive when moving, and a little\nmore jitter while moving.\n\nd_cutoff:\nThe cutoff, in Hz, of the smoothing applied to the filter's own speed estimate.\nThe default of 1.0 is almost always right.\n\ndt:\nMeant to set the time between samples, but it has no effect: the node times the\narrivals itself, from the clock, on every input. So the filter follows whatever\nrate your data really arrives at - and data played back faster than real time\nis filtered as if the movement itself were faster.\n\nThe first value received passes straight through, and the filter starts from it.\n\nOUTPUTS:\n\nout:\nThe filtered value, in the same form as the input.\n\nRELATED:\nadaptive_filter   the same idea with more settings, and an outlet showing how\n                  hard it is smoothing\nfilter            a plain one-pole smoother, for comparison\nkalman_filter     predicts where a smoothly moving value should be, then corrects\nphysics_filter    smooths by limiting speed and acceleration"
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "square",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.7,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 5.0 square"
+        },
+        "6": {
+            "init": "comment sharp steps",
+            "name": "comment",
+            "id": 459,
+            "position_x": 264,
+            "position_y": 132,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sharp steps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sharp steps"
+        },
+        "7": {
+            "name": "signal",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 222,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "random",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.15,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 1.0 random"
+        },
+        "8": {
+            "init": "comment random noise",
+            "name": "comment",
+            "id": 533,
+            "position_x": 264,
+            "position_y": 222,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "random noise",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "random noise"
+        },
+        "9": {
+            "name": "+",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 312,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "+ 0.0"
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 395,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment sharp steps buried in noise",
+            "name": "comment",
+            "id": 644,
+            "position_x": 264,
+            "position_y": 395,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sharp steps buried in noise",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sharp steps buried in noise"
+        },
+        "12": {
+            "name": "one_euro_filter",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 600,
+            "width": 154,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min_cutoff",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "beta",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "d_cutoff",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "one_euro_filter 1.0 0.5 1.0"
+        },
+        "13": {
+            "init": "comment min_cutoff 1, beta 0.5, d_cutoff 1",
+            "name": "comment",
+            "id": 718,
+            "position_x": 264,
+            "position_y": 600,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "min_cutoff 1, beta 0.5, d_cutoff 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "min_cutoff 1, beta 0.5, d_cutoff 1"
+        },
+        "14": {
+            "name": "plot",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 745,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 264,
+            "position_y": 745,
+            "width": 274,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "still between steps, quick at the edges\nset beta to 0 and the steps go soft",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "still between steps, quick at the edges\nset beta to 0 and the steps go soft"
+        },
+        "16": {
+            "name": "filter",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 950,
+            "width": 129,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degree",
+                    "value": 0.9,
+                    "value_type": "float"
+                }
+            },
+            "init": "filter 0.9"
+        },
+        "17": {
+            "init": "comment a plain filter, for comparison",
+            "name": "comment",
+            "id": 866,
+            "position_x": 264,
+            "position_y": 950,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a plain filter, for comparison",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a plain filter, for comparison"
+        },
+        "18": {
+            "name": "plot",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 1035,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "19": {
+            "init": "comment about as quiet, but the steps are smeared",
+            "name": "comment",
+            "id": 940,
+            "position_x": 264,
+            "position_y": 1035,
+            "width": 260,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "about as quiet, but the steps are smeared",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "about as quiet, but the steps are smeared"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 1243,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "9": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

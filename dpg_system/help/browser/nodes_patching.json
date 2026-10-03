@@ -1,11 +1,11 @@
 {
-    "height": 1134,
-    "width": 1567,
+    "height": 1178,
+    "width": 1443,
     "position": [
         100,
         100
     ],
-    "id": 3016,
+    "id": 3090,
     "name": "nodes_patching",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_patching.json",
     "nodes": {
@@ -165,7 +165,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 184,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -175,7 +175,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -192,7 +192,7 @@
         "7": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 188,
             "width": 169,
             "height": 40,
@@ -234,7 +234,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 236,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -244,7 +244,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -261,7 +261,7 @@
         "9": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 240,
             "width": 218,
             "height": 28,
@@ -303,7 +303,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 288,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -313,7 +313,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -330,7 +330,7 @@
         "11": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 292,
             "width": 194,
             "height": 28,
@@ -372,7 +372,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 340,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -382,7 +382,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -399,7 +399,7 @@
         "13": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 344,
             "width": 274,
             "height": 28,
@@ -441,7 +441,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 392,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -451,7 +451,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -468,7 +468,7 @@
         "15": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 396,
             "width": 268,
             "height": 28,
@@ -510,7 +510,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 444,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -520,7 +520,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -537,7 +537,7 @@
         "17": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 448,
             "width": 169,
             "height": 28,
@@ -579,7 +579,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 496,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -589,7 +589,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -606,7 +606,7 @@
         "19": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 500,
             "width": 206,
             "height": 40,
@@ -648,7 +648,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 548,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -658,7 +658,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -675,7 +675,7 @@
         "21": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 552,
             "width": 175,
             "height": 40,
@@ -717,7 +717,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 600,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -727,7 +727,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -744,7 +744,7 @@
         "23": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 604,
             "width": 237,
             "height": 28,
@@ -786,7 +786,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 652,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -796,7 +796,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -813,7 +813,7 @@
         "25": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 656,
             "width": 243,
             "height": 28,
@@ -855,7 +855,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 704,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -865,7 +865,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -882,7 +882,7 @@
         "27": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 708,
             "width": 206,
             "height": 28,
@@ -924,7 +924,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 756,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -934,7 +934,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -951,7 +951,7 @@
         "29": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 760,
             "width": 157,
             "height": 28,
@@ -993,7 +993,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 808,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1003,7 +1003,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1020,7 +1020,7 @@
         "31": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 812,
             "width": 218,
             "height": 40,
@@ -1062,7 +1062,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 860,
-            "width": 249,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1072,7 +1072,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1089,7 +1089,7 @@
         "33": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
+            "position_x": 225,
             "position_y": 864,
             "width": 323,
             "height": 40,
@@ -1129,8 +1129,8 @@
         "34": {
             "init": "comment Seeing what happens",
             "name": "comment",
-            "position_x": 670,
-            "position_y": 150,
+            "position_x": 24,
+            "position_y": 930,
             "width": 161,
             "height": 30,
             "properties": {
@@ -1154,9 +1154,9 @@
         "35": {
             "init": "help_link print print",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 184,
-            "width": 249,
+            "position_x": 24,
+            "position_y": 964,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1166,7 +1166,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1183,8 +1183,8 @@
         "36": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 188,
+            "position_x": 225,
+            "position_y": 968,
             "width": 224,
             "height": 28,
             "properties": {
@@ -1223,9 +1223,9 @@
         "37": {
             "init": "help_link info info / type",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 236,
-            "width": 249,
+            "position_x": 24,
+            "position_y": 1016,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1235,7 +1235,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1252,8 +1252,8 @@
         "38": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 240,
+            "position_x": 225,
+            "position_y": 1020,
             "width": 298,
             "height": 40,
             "properties": {
@@ -1292,9 +1292,9 @@
         "39": {
             "init": "help_link start_trace start_trace / end_trace",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 288,
-            "width": 249,
+            "position_x": 24,
+            "position_y": 1068,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1304,7 +1304,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1321,8 +1321,8 @@
         "40": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 292,
+            "position_x": 225,
+            "position_y": 1072,
             "width": 243,
             "height": 40,
             "properties": {
@@ -1361,8 +1361,8 @@
         "41": {
             "init": "comment Lists and messages",
             "name": "comment",
-            "position_x": 670,
-            "position_y": 358,
+            "position_x": 608,
+            "position_y": 150,
             "width": 154,
             "height": 30,
             "properties": {
@@ -1386,9 +1386,9 @@
         "42": {
             "init": "help_link pack pack / pak",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 392,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 184,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1398,7 +1398,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1415,8 +1415,8 @@
         "43": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 396,
+            "position_x": 809,
+            "position_y": 188,
             "width": 218,
             "height": 40,
             "properties": {
@@ -1455,9 +1455,9 @@
         "44": {
             "init": "help_link unpack unpack",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 444,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 236,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1467,7 +1467,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1484,8 +1484,8 @@
         "45": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 448,
+            "position_x": 809,
+            "position_y": 240,
             "width": 224,
             "height": 28,
             "properties": {
@@ -1524,9 +1524,9 @@
         "46": {
             "init": "help_link append append",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 496,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 288,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1536,7 +1536,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1553,8 +1553,8 @@
         "47": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 500,
+            "position_x": 809,
+            "position_y": 292,
             "width": 323,
             "height": 28,
             "properties": {
@@ -1593,9 +1593,9 @@
         "48": {
             "init": "help_link prepend prepend",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 548,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 340,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1605,7 +1605,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1622,8 +1622,8 @@
         "49": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 552,
+            "position_x": 809,
+            "position_y": 344,
             "width": 329,
             "height": 28,
             "properties": {
@@ -1662,9 +1662,9 @@
         "50": {
             "init": "help_link concat concat",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 600,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 392,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1674,7 +1674,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1691,8 +1691,8 @@
         "51": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 604,
+            "position_x": 809,
+            "position_y": 396,
             "width": 200,
             "height": 28,
             "properties": {
@@ -1729,21 +1729,21 @@
             "presentation_state": "show_all"
         },
         "52": {
-            "init": "help_link slice_list slice_list / stream_list / sublist",
+            "init": "help_link slice_list slice_list / sublist",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 652,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 444,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "slice_list / stream_list / sublist",
+                    "name": "slice_list / sublist",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1760,14 +1760,14 @@
         "53": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 656,
-            "width": 243,
+            "position_x": 809,
+            "position_y": 448,
+            "width": 181,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "cut a list into pieces\n(slice_list, stream_list, sublist)",
+                    "value": "cut pieces out of a list\n(slice_list, sublist)",
                     "value_type": "str"
                 },
                 "1": {
@@ -1777,7 +1777,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 235,
+                    "value": 173,
                     "value_type": "int"
                 },
                 "3": {
@@ -1791,28 +1791,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "cut a list into pieces\n(slice_list, stream_list, sublist)",
+            "text": "cut pieces out of a list\n(slice_list, sublist)",
             "id": 2498,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "54": {
-            "init": "help_link length length",
+            "init": "help_link stream_list stream_list",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 704,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 496,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "length",
+                    "name": "stream_list",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1829,8 +1829,77 @@
         "55": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 708,
+            "position_x": 809,
+            "position_y": 500,
+            "width": 231,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a list as a sequence of messages",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a list as a sequence of messages",
+            "id": 2572,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "56": {
+            "init": "help_link length length",
+            "name": "help_link",
+            "position_x": 608,
+            "position_y": 548,
+            "width": 187,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "length",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 171,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2609,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "57": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 809,
+            "position_y": 552,
             "width": 329,
             "height": 28,
             "properties": {
@@ -1861,17 +1930,17 @@
                 }
             },
             "text": "output the length (or size) of the received data",
-            "id": 2572,
+            "id": 2646,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "56": {
+        "58": {
             "init": "help_link array array",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 756,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 600,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1881,7 +1950,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1890,16 +1959,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2609,
+            "id": 2683,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "57": {
+        "59": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 760,
+            "position_x": 809,
+            "position_y": 604,
             "width": 440,
             "height": 28,
             "properties": {
@@ -1930,17 +1999,17 @@
                 }
             },
             "text": "convert received data into a numpy array and optionally reshape it",
-            "id": 2646,
+            "id": 2720,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "58": {
+        "60": {
             "init": "help_link replace replace (any, dict, int)",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 808,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 652,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -1950,7 +2019,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -1959,16 +2028,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2683,
+            "id": 2757,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "59": {
+        "61": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 812,
+            "position_x": 809,
+            "position_y": 656,
             "width": 261,
             "height": 40,
             "properties": {
@@ -1999,16 +2068,16 @@
                 }
             },
             "text": "swap one value for another in passing\n(dict_replace, int_replace, replace)",
-            "id": 2720,
+            "id": 2794,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "60": {
+        "62": {
             "init": "comment Dictionaries and files",
             "name": "comment",
-            "position_x": 670,
-            "position_y": 878,
+            "position_x": 608,
+            "position_y": 722,
             "width": 184,
             "height": 30,
             "properties": {
@@ -2024,17 +2093,17 @@
                 }
             },
             "comment": "Dictionaries and files",
-            "id": 2757,
+            "id": 2831,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "61": {
+        "63": {
             "init": "help_link dict dictionaries",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 912,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 756,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -2044,7 +2113,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -2053,16 +2122,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2794,
+            "id": 2868,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "62": {
+        "64": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 916,
+            "position_x": 809,
+            "position_y": 760,
             "width": 594,
             "height": 52,
             "properties": {
@@ -2093,17 +2162,17 @@
                 }
             },
             "text": "named values travelling together\n(construct_dict, dict, dict_extract, dict_keys, dict_retrieve, dict_stream, gather_to_dict,\n unpack_dict)",
-            "id": 2831,
+            "id": 2905,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "63": {
+        "65": {
             "init": "help_link dict_search dict_search",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 972,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 816,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -2113,7 +2182,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -2122,16 +2191,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2868,
+            "id": 2942,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "64": {
+        "66": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 976,
+            "position_x": 809,
+            "position_y": 820,
             "width": 237,
             "height": 28,
             "properties": {
@@ -2162,17 +2231,17 @@
                 }
             },
             "text": "find a branch of a tree by typing",
-            "id": 2905,
+            "id": 2979,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "65": {
+        "67": {
             "init": "help_link directory_iterator directory_iterator",
             "name": "help_link",
-            "position_x": 670,
-            "position_y": 1024,
-            "width": 249,
+            "position_x": 608,
+            "position_y": 868,
+            "width": 187,
             "height": 44,
             "properties": {
                 "0": {
@@ -2182,7 +2251,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 233,
+                    "value": 171,
                     "value_type": "int"
                 },
                 "2": {
@@ -2191,16 +2260,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2942,
+            "id": 3016,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "66": {
+        "68": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 933,
-            "position_y": 1028,
+            "position_x": 809,
+            "position_y": 872,
             "width": 200,
             "height": 28,
             "properties": {
@@ -2231,7 +2300,7 @@
                 }
             },
             "text": "walk a folder, file by file",
-            "id": 2979,
+            "id": 3053,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

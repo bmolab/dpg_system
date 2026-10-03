@@ -1,11 +1,11 @@
 {
-    "height": 918,
+    "height": 970,
     "width": 1838,
     "position": [
         100,
         100
     ],
-    "id": 2313,
+    "id": 2535,
     "name": "nodes_graphics",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_graphics.json",
     "nodes": {
@@ -263,12 +263,12 @@
             "annotation": true,
             "position_x": 281,
             "position_y": 240,
-            "width": 588,
+            "width": 440,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "seeing the scene\n(mgl_camera, mgl_color, mgl_image, mgl_light, mgl_material, mgl_orbit_camera, mgl_texture)",
+                    "value": "seeing the scene\n(mgl_camera, mgl_color, mgl_light, mgl_material, mgl_orbit_camera)",
                     "value_type": "str"
                 },
                 "1": {
@@ -278,7 +278,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 580,
+                    "value": 432,
                     "value_type": "int"
                 },
                 "3": {
@@ -292,7 +292,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "seeing the scene\n(mgl_camera, mgl_color, mgl_image, mgl_light, mgl_material, mgl_orbit_camera, mgl_texture)",
+            "text": "seeing the scene\n(mgl_camera, mgl_color, mgl_light, mgl_material, mgl_orbit_camera)",
             "id": 870,
             "visibility": "show_all",
             "draggable": true,
@@ -470,12 +470,12 @@
             "annotation": true,
             "position_x": 281,
             "position_y": 412,
-            "width": 508,
+            "width": 446,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "drawing data you supply\n(mgl_line_array, mgl_mesh, mgl_model, mgl_point_cloud, mgl_surface, mgl_text)",
+                    "value": "drawing data you supply\n(mgl_line_array, mgl_mesh, mgl_model, mgl_point_cloud, mgl_surface)",
                     "value_type": "str"
                 },
                 "1": {
@@ -485,7 +485,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 500,
+                    "value": 438,
                     "value_type": "int"
                 },
                 "3": {
@@ -499,14 +499,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "drawing data you supply\n(mgl_line_array, mgl_mesh, mgl_model, mgl_point_cloud, mgl_surface, mgl_text)",
+            "text": "drawing data you supply\n(mgl_line_array, mgl_mesh, mgl_model, mgl_point_cloud, mgl_surface)",
             "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "16": {
-            "init": "help_link mgl_shader mgl_shader",
+            "init": "help_link mgl_texture mgl_texture / mgl_image",
             "name": "help_link",
             "position_x": 24,
             "position_y": 460,
@@ -514,7 +514,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "mgl_shader",
+                    "name": "mgl_texture / mgl_image",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -539,6 +539,144 @@
             "annotation": true,
             "position_x": 281,
             "position_y": 464,
+            "width": 181,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "an image on a surface\n(mgl_image, mgl_texture)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 173,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "an image on a surface\n(mgl_image, mgl_texture)",
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "init": "help_link mgl_text mgl_text",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 512,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl_text",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 516,
+            "width": 138,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "text in the scene",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "text in the scene",
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "init": "help_link mgl_shader mgl_shader",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 564,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl_shader",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 568,
             "width": 114,
             "height": 28,
             "properties": {
@@ -569,16 +707,16 @@
                 }
             },
             "text": "your own GLSL",
-            "id": 1166,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "22": {
             "init": "help_link mgl_body mgl body drawing",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 512,
+            "position_y": 616,
             "width": 243,
             "height": 44,
             "properties": {
@@ -598,16 +736,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1203,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "23": {
             "name": "text_block",
             "annotation": true,
             "position_x": 281,
-            "position_y": 516,
+            "position_y": 620,
             "width": 600,
             "height": 52,
             "properties": {
@@ -638,16 +776,16 @@
                 }
             },
             "text": "drawing a body, and what it is doing\n(body_proportions, mgl_body, mgl_body_orientation, mgl_contact_disks, mgl_orientation_disks,\n mgl_torque_arc)",
-            "id": 1240,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "24": {
             "init": "help_link mgl_smpl_mesh mgl_smpl_mesh / mgl_smpl_heatmap",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 572,
+            "position_y": 676,
             "width": 243,
             "height": 44,
             "properties": {
@@ -667,16 +805,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1277,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "25": {
             "name": "text_block",
             "annotation": true,
             "position_x": 281,
-            "position_y": 576,
+            "position_y": 680,
             "width": 237,
             "height": 40,
             "properties": {
@@ -707,12 +845,12 @@
                 }
             },
             "text": "the figure and its effort\n(mgl_smpl_heatmap, mgl_smpl_mesh)",
-            "id": 1314,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "26": {
             "init": "comment Point clouds",
             "name": "comment",
             "position_x": 941,
@@ -732,12 +870,12 @@
                 }
             },
             "comment": "Point clouds",
-            "id": 1351,
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "27": {
             "init": "help_link femto femto / femto_bolt",
             "name": "help_link",
             "position_x": 941,
@@ -761,12 +899,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1388,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "28": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
@@ -801,12 +939,12 @@
                 }
             },
             "text": "the depth camera\n(femto, femto_bolt)",
-            "id": 1425,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "29": {
             "init": "help_link pc_background pc_background / pc_denoise",
             "name": "help_link",
             "position_x": 941,
@@ -830,12 +968,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1462,
+            "id": 1610,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "30": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
@@ -870,12 +1008,12 @@
                 }
             },
             "text": "removing things\n(pc_background, pc_denoise)",
-            "id": 1499,
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "27": {
+        "31": {
             "init": "help_link pc_crop pc crop / voxel / info",
             "name": "help_link",
             "position_x": 941,
@@ -899,12 +1037,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1536,
+            "id": 1684,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "28": {
+        "32": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
@@ -939,12 +1077,12 @@
                 }
             },
             "text": "reduce and inspect\n(mgl_cluster_boxes, pc_cluster_filter, pc_crop, pc_info, pc_voxel)",
-            "id": 1573,
+            "id": 1721,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "29": {
+        "33": {
             "init": "help_link t.point_cloud_voxels t point cloud voxels / crop",
             "name": "help_link",
             "position_x": 941,
@@ -968,12 +1106,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1610,
+            "id": 1758,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "30": {
+        "34": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
@@ -1008,12 +1146,12 @@
                 }
             },
             "text": "crop, and a solid volume\n(t.point_cloud_crop, t.point_cloud_voxels)",
-            "id": 1647,
+            "id": 1795,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "31": {
+        "35": {
             "init": "comment Older GL",
             "name": "comment",
             "position_x": 941,
@@ -1033,12 +1171,12 @@
                 }
             },
             "comment": "Older GL",
-            "id": 1684,
+            "id": 1832,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "32": {
+        "36": {
             "init": "help_link gl_context gl_context / gl_enable",
             "name": "help_link",
             "position_x": 941,
@@ -1062,12 +1200,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1721,
+            "id": 1869,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "33": {
+        "37": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
@@ -1102,12 +1240,12 @@
                 }
             },
             "text": "the older scene chain\n(gl_context, gl_enable)",
-            "id": 1758,
+            "id": 1906,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "34": {
+        "38": {
             "init": "help_link gl_translate gl transforms",
             "name": "help_link",
             "position_x": 941,
@@ -1131,12 +1269,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1795,
+            "id": 1943,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "35": {
+        "39": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
@@ -1171,12 +1309,12 @@
                 }
             },
             "text": "moving what comes after\n(gl_align, gl_axis_angle_rotate, gl_quaternion_rotate, gl_rotate, gl_scale, gl_translate)",
-            "id": 1832,
+            "id": 1980,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "36": {
+        "40": {
             "init": "help_link gl_sphere gl shapes",
             "name": "help_link",
             "position_x": 941,
@@ -1200,12 +1338,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1869,
+            "id": 2017,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "37": {
+        "41": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
@@ -1240,12 +1378,12 @@
                 }
             },
             "text": "the built-in geometry\n(gl_billboard, gl_cylinder, gl_disk, gl_line, gl_nested_spheres, gl_partial_disk, gl_sphere)",
-            "id": 1906,
+            "id": 2054,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "38": {
+        "42": {
             "init": "help_link gl_light gl_light / gl_color / gl_material",
             "name": "help_link",
             "position_x": 941,
@@ -1269,12 +1407,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 1943,
+            "id": 2091,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "39": {
+        "43": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
@@ -1309,13 +1447,13 @@
                 }
             },
             "text": "(gl_color, gl_light, gl_material)",
-            "id": 1980,
+            "id": 2128,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "40": {
-            "init": "help_link gl_line_array gl lines and disks",
+        "44": {
+            "init": "help_link gl_line_array gl_line_array / vertex_buffer",
             "name": "help_link",
             "position_x": 941,
             "position_y": 652,
@@ -1323,7 +1461,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "gl lines and disks",
+                    "name": "gl_line_array / vertex_buffer",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -1338,22 +1476,22 @@
                     "value_type": "str"
                 }
             },
-            "id": 2017,
+            "id": 2165,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "41": {
+        "45": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
             "position_y": 656,
-            "width": 483,
+            "width": 237,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "drawing data and orientation\n(gl_line_array, gl_orientation_disks, gl_rotation_disk, gl_vertex_buffer)",
+                    "value": "drawing data as lines and points\n(gl_line_array, gl_vertex_buffer)",
                     "value_type": "str"
                 },
                 "1": {
@@ -1363,7 +1501,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 475,
+                    "value": 229,
                     "value_type": "int"
                 },
                 "3": {
@@ -1377,13 +1515,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "drawing data and orientation\n(gl_line_array, gl_orientation_disks, gl_rotation_disk, gl_vertex_buffer)",
-            "id": 2054,
+            "text": "drawing data as lines and points\n(gl_line_array, gl_vertex_buffer)",
+            "id": 2202,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "42": {
+        "46": {
             "init": "help_link gl_text gl_text / gl_korean_text",
             "name": "help_link",
             "position_x": 941,
@@ -1407,12 +1545,12 @@
                     "value_type": "str"
                 }
             },
-            "id": 2091,
+            "id": 2239,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "43": {
+        "47": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
@@ -1447,16 +1585,85 @@
                 }
             },
             "text": "text in the scene\n(gl_korean_text, gl_text)",
-            "id": 2128,
+            "id": 2276,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "44": {
-            "init": "help_link gl_button_grid gl_button_grid",
+        "48": {
+            "init": "help_link gl_orientation_disks gl orientation / rotation disks",
             "name": "help_link",
             "position_x": 941,
             "position_y": 756,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "gl orientation / rotation disks",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2313,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "49": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1198,
+            "position_y": 760,
+            "width": 280,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "seeing rotations\n(gl_orientation_disks, gl_rotation_disk)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "seeing rotations\n(gl_orientation_disks, gl_rotation_disk)",
+            "id": 2350,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "50": {
+            "init": "help_link gl_button_grid gl_button_grid",
+            "name": "help_link",
+            "position_x": 941,
+            "position_y": 808,
             "width": 243,
             "height": 44,
             "properties": {
@@ -1476,16 +1683,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2165,
+            "id": 2387,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "45": {
+        "51": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
-            "position_y": 760,
+            "position_y": 812,
             "width": 194,
             "height": 28,
             "properties": {
@@ -1516,16 +1723,16 @@
                 }
             },
             "text": "a sixteen-square indicator",
-            "id": 2202,
+            "id": 2424,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "46": {
+        "52": {
             "init": "help_link gl_body gl_body (alt, simple)",
             "name": "help_link",
             "position_x": 941,
-            "position_y": 808,
+            "position_y": 860,
             "width": 243,
             "height": 44,
             "properties": {
@@ -1545,16 +1752,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 2239,
+            "id": 2461,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "47": {
+        "53": {
             "name": "text_block",
             "annotation": true,
             "position_x": 1198,
-            "position_y": 812,
+            "position_y": 864,
             "width": 268,
             "height": 40,
             "properties": {
@@ -1585,7 +1792,7 @@
                 }
             },
             "text": "drawing a skeleton, the older way\n(gl_alt_body, gl_body, gl_simple_body)",
-            "id": 2276,
+            "id": 2498,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

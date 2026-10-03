@@ -284,7 +284,7 @@
             "dest_node": 385,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "joint data"
+            "dest_input_name": "pose in"
         }
     }
 }

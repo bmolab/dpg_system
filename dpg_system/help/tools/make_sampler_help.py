@@ -223,7 +223,8 @@ demo = [
     {'key': 'c3', 'comment': True, 'text': 'a short sample becomes a texture\nthat lasts as long as the movement',
      'pos': (410, 880)},
     {'key': 'vcf', 'init': 'vcf~', 'pos': (790, 325), 'w': 220, 'h': 220},
-    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (790, 520), 'w': 220, 'h': 220},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (790, 520), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
     {'key': 'c4', 'comment': True, 'text': 'patched into ~ objects, the grains\nplay only through them\nraise the fader to hear it',
      'pos': (790, 850)},
 ]

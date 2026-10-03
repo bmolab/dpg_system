@@ -1,0 +1,325 @@
+{
+    "height": 1141,
+    "width": 1389,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "quaternion_diff_and_axis_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/quaternion_diff_and_axis_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment quaternion_diff_and_axis - how much each joint is turning",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 709,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "quaternion_diff_and_axis - how much each joint is turning",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "quaternion_diff_and_axis - how much each joint is turning"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 531,
+            "position_y": 45,
+            "width": 818,
+            "height": 1036,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "This measures how much each joint is turning, and about which axis.\n\nTHE NODES:\n\nquaternion_diff_and_axis  per-joint turning, from a stream of poses\n\nHOW IT MEASURES:\nIt keeps two running averages of the incoming pose, one quicker to follow than \nthe other, and reports the rotation between them, joint by joint. While a joint \nholds still the two averages agree and the result is zero. While it turns, the \nslower average lags behind the quicker one, and the lag grows with how fast the \njoint is turning.\n\nSo it is a smoothed measure of joint rotation speed, not the change from one \nframe to the next. With the default settings the slower average trails the \nquicker one by about five frames, so a steadily turning joint reads roughly the \nangle it turns through in five frames.\n\n'smoothing A' and 'smoothing B' set the two averages. Each is the share of the \nold average kept on every frame: 0 follows the input exactly, values near 1 \nfollow it slowly. A is 0.8 and B 0.9 by default. Moving them further apart \nmakes the measure larger and slower; moving them together makes it smaller and \nquicker. If they are equal the result is always zero.\n\nThe magnitude is the per-joint turning - the natural measure of how much a \njoint is doing - and the axis says which way, which distinguishes a twist from \na bend without any anatomical assumptions.\n\nQUATERNIONS IN:\nAn array of quaternions, one row per joint, w, x, y, z - a Shadow pose of 37 or \nan active pose of 20, or any other count. The averages blend the four numbers \ndirectly, so a joint whose quaternion flips sign between frames (the same \nrotation, written the other way) produces a spike.\n\n'restart calculation' throws the averages away; the next pose starts them \nfresh. Use it after a jump - a new take, a reconnected suit.\n\nSYNTAX:\nquaternion_diff_and_axis\n\nEXAMPLE:\nquaternion_diff_and_axis\n\nINPUTS and PARAMETERS:\n\nquaternions in:\nThe pose. Each one updates both averages and sends both outputs.\n\nsmoothing A (0-1) / smoothing B (0-1):\nThe two averages - see above.\n\nrestart calculation:\nStart the averages again from the next pose.\n\nOUTPUTS: \n\nmagnitudes:\nThe turning of each joint, as an angle in radians - one number per joint.\n\naxes:\nThe axis of each joint's turning, three numbers of unit length per joint. It \ncomes with an extra leading dimension: one by joints by three.\n\nRELATED:\nsensor_to_root and tracker_root_inference work on where the body is.\ncadence_filter cleans the stream this is often fed from.\nheat_map shows all the joints at once.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1020,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "This measures how much each joint is turning, and about which axis.\n\nTHE NODES:\n\nquaternion_diff_and_axis  per-joint turning, from a stream of poses\n\nHOW IT MEASURES:\nIt keeps two running averages of the incoming pose, one quicker to follow than \nthe other, and reports the rotation between them, joint by joint. While a joint \nholds still the two averages agree and the result is zero. While it turns, the \nslower average lags behind the quicker one, and the lag grows with how fast the \njoint is turning.\n\nSo it is a smoothed measure of joint rotation speed, not the change from one \nframe to the next. With the default settings the slower average trails the \nquicker one by about five frames, so a steadily turning joint reads roughly the \nangle it turns through in five frames.\n\n'smoothing A' and 'smoothing B' set the two averages. Each is the share of the \nold average kept on every frame: 0 follows the input exactly, values near 1 \nfollow it slowly. A is 0.8 and B 0.9 by default. Moving them further apart \nmakes the measure larger and slower; moving them together makes it smaller and \nquicker. If they are equal the result is always zero.\n\nThe magnitude is the per-joint turning - the natural measure of how much a \njoint is doing - and the axis says which way, which distinguishes a twist from \na bend without any anatomical assumptions.\n\nQUATERNIONS IN:\nAn array of quaternions, one row per joint, w, x, y, z - a Shadow pose of 37 or \nan active pose of 20, or any other count. The averages blend the four numbers \ndirectly, so a joint whose quaternion flips sign between frames (the same \nrotation, written the other way) produces a spike.\n\n'restart calculation' throws the averages away; the next pose starts them \nfresh. Use it after a jump - a new take, a reconnected suit.\n\nSYNTAX:\nquaternion_diff_and_axis\n\nEXAMPLE:\nquaternion_diff_and_axis\n\nINPUTS and PARAMETERS:\n\nquaternions in:\nThe pose. Each one updates both averages and sends both outputs.\n\nsmoothing A (0-1) / smoothing B (0-1):\nThe two averages - see above.\n\nrestart calculation:\nStart the averages again from the next pose.\n\nOUTPUTS: \n\nmagnitudes:\nThe turning of each joint, as an angle in radians - one number per joint.\n\naxes:\nThe axis of each joint's turning, three numbers of unit length per joint. It \ncomes with an extra leading dimension: one by joints by three.\n\nRELATED:\nsensor_to_root and tracker_root_inference work on where the body is.\ncadence_filter cleans the stream this is often fed from.\nheat_map shows all the joints at once."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 119,
+            "height": 168,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "active_joints",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 270,
+            "width": 144,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "init": "comment the 20 active joints",
+            "name": "comment",
+            "id": 422,
+            "position_x": 264,
+            "position_y": 270,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the 20 active joints",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the 20 active joints"
+        },
+        "6": {
+            "name": "quaternion_diff_and_axis",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 197,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment how much each joint is turning",
+            "name": "comment",
+            "id": 496,
+            "position_x": 264,
+            "position_y": 350,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how much each joint is turning",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "how much each joint is turning"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 510,
+            "width": 208,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 20,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 264,
+            "position_y": 510,
+            "width": 237,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "all 20 joints at once - which\nones are actually doing something",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "all 20 joints at once - which\nones are actually doing something"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 690,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "full pose quats in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active joint quats out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternions in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "magnitudes",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

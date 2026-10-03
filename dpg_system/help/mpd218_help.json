@@ -1,6 +1,6 @@
 {
-    "height": 781,
-    "width": 1767,
+    "height": 941,
+    "width": 1471,
     "position": [
         100,
         100
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment mpd218 and blue_board - hardware that knows itself",
+            "init": "comment mpd218 - a pad controller that shows its choice",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 623,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "mpd218 and blue_board - hardware that knows itself",
+                    "value": "mpd218 - a pad controller that shows its choice",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "mpd218 and blue_board - hardware that knows itself"
+            "comment": "mpd218 - a pad controller that shows its choice"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 929,
+            "position_x": 633,
             "position_y": 45,
             "width": 798,
-            "height": 676,
+            "height": 836,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Two nodes that know a particular piece of hardware.\n\nTHE NODES:\n\nmpd218      an Akai MPD218 pad controller\nblue_board  an iRig BlueBoard foot controller\n\nWHY A NODE PER DEVICE:\nEverything these do could be done with midi_control_in and midi_note_in and a \nlist of numbers written down somewhere. What they save is the list - the pad \nand controller numbering is built in, so 'pad' and 'controller' come out \nalready meaning what they say.\n\nThey are also the place the device's oddities live. The MPD218 has banks, so \nthe same pad sends different notes depending on which bank is selected, and \n'select' handles that. The BlueBoard's buttons can be momentary or latching and \nits LEDs are addressable, so the node has a mode per button and an LED inlet \nper light.\n\nblue_board IS FOR HANDS-FREE:\nA foot controller matters when your hands are doing something else - which, for \na performer wearing a suit, is most of the time. Four buttons and four lights, \nover Bluetooth, with the lights telling you the state you cannot see because \nyou are not looking at the patch.\n\nSetting each button's mode is the thing to get right: momentary for something \nthat should last only while your foot is down, latching for something you turn \non and walk away from.\n\nSYNTAX:\nmpd218\nblue_board\n\nEXAMPLE:\nblue_board\n\nINPUTS and PARAMETERS:\n\nin port / out port:\nThe device, both directions - both of these are two-way.\n\nchannel:\nThe MIDI channel.\n\nselect (mpd218):\nWhich bank of pads.\n\nA_mode / B_mode / C_mode / D_mode (blue_board):\nMomentary or latching, per button.\n\nLED (blue_board):\nOne inlet per light.\n\nOUTPUTS: \n\npad / controller (mpd218):\nWhich pad was struck, and the knob values.\n\nA / B / C / D (blue_board):\nThe four buttons.\n\nmidi received:\nEverything else the device sent, undecoded - useful when the device does \nsomething these nodes do not cover.",
+                    "value": "A node that knows one particular piece of hardware: the Akai MPD218 pad\ncontroller.\n\nTHE NODE:\n\nmpd218   an Akai MPD218, with its pads working as a set of lit selectors\n\nWHAT IT DOES:\nIt finds the MPD218 by name when it is created and connects to it in both\ndirections - listening to it, and talking back to it to light its pads.\n\nThe pads behave like radio buttons. Strike one and it lights, the pad lit\nbefore it goes dark, and the pad comes out of 'pad'. Because only one pad is\never lit, the device itself shows which choice is current - useful for picking\na scene, a preset or a section without looking at the screen.\n\n'pad' sends the pad's NOTE NUMBER, exactly as the MPD218 sends it - which notes\nthe pads play is set in the device's own preset - not a pad count from 1 to 16.\nReleasing the lit pad sends its number again.\n\nThe knobs come out of 'controller' as a pair: [controller number, value], with\nthe value 0 to 127 as the device sends it.\n\n'select' does the same thing from the patch: send it a note number and the\nnode sends note-offs for notes 0 to 15 to the device, lights that note's pad and\nsends the number out of 'pad', as though it had been struck.\n\nWHEN THE DEVICE IS NOT THERE:\nIf no MIDI device whose name begins 'MPD218' is present, the node falls back to\nthe FIRST MIDI input and output it can find, whatever they are. On creation it\nsends note-offs for notes 0 to 15 to that output, so with something else\nplugged in, check 'in port' and 'out port' before trusting it.\n\nWHAT IT IGNORES:\nArguments - the device name is built in. The 'channel' option is shown but not\nused: notes and knobs are accepted on any channel, and the lights are sent on\nchannel 1.\n\nSYNTAX:\nmpd218\n\nEXAMPLE:\nmpd218\n\nINPUTS and PARAMETERS:\n\nselect:\nA note number: light that pad, darken the rest, send it out of 'pad'.\n\nin port / out port:\nThe MIDI ports, as menus. Both are set to the MPD218 automatically when it is\npresent.\n\nchannel (option):\nNot used by this node.\n\nOUTPUTS:\n\npad:\nThe note number of the pad struck (or selected), again when it is released.\n\ncontroller:\n[controller number, value] for each knob movement.\n\nRELATED:\nblue_board, the other device-specific node, for the iRig BlueBoard foot\ncontroller.\nmidi_note_in and midi_control_in, for any controller this node does not know.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 660,
+                    "value": 820,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,27 +90,43 @@
                     "value_type": "str"
                 }
             },
-            "text": "Two nodes that know a particular piece of hardware.\n\nTHE NODES:\n\nmpd218      an Akai MPD218 pad controller\nblue_board  an iRig BlueBoard foot controller\n\nWHY A NODE PER DEVICE:\nEverything these do could be done with midi_control_in and midi_note_in and a \nlist of numbers written down somewhere. What they save is the list - the pad \nand controller numbering is built in, so 'pad' and 'controller' come out \nalready meaning what they say.\n\nThey are also the place the device's oddities live. The MPD218 has banks, so \nthe same pad sends different notes depending on which bank is selected, and \n'select' handles that. The BlueBoard's buttons can be momentary or latching and \nits LEDs are addressable, so the node has a mode per button and an LED inlet \nper light.\n\nblue_board IS FOR HANDS-FREE:\nA foot controller matters when your hands are doing something else - which, for \na performer wearing a suit, is most of the time. Four buttons and four lights, \nover Bluetooth, with the lights telling you the state you cannot see because \nyou are not looking at the patch.\n\nSetting each button's mode is the thing to get right: momentary for something \nthat should last only while your foot is down, latching for something you turn \non and walk away from.\n\nSYNTAX:\nmpd218\nblue_board\n\nEXAMPLE:\nblue_board\n\nINPUTS and PARAMETERS:\n\nin port / out port:\nThe device, both directions - both of these are two-way.\n\nchannel:\nThe MIDI channel.\n\nselect (mpd218):\nWhich bank of pads.\n\nA_mode / B_mode / C_mode / D_mode (blue_board):\nMomentary or latching, per button.\n\nLED (blue_board):\nOne inlet per light.\n\nOUTPUTS: \n\npad / controller (mpd218):\nWhich pad was struck, and the knob values.\n\nA / B / C / D (blue_board):\nThe four buttons.\n\nmidi received:\nEverything else the device sent, undecoded - useful when the device does \nsomething these nodes do not cover."
+            "text": "A node that knows one particular piece of hardware: the Akai MPD218 pad\ncontroller.\n\nTHE NODE:\n\nmpd218   an Akai MPD218, with its pads working as a set of lit selectors\n\nWHAT IT DOES:\nIt finds the MPD218 by name when it is created and connects to it in both\ndirections - listening to it, and talking back to it to light its pads.\n\nThe pads behave like radio buttons. Strike one and it lights, the pad lit\nbefore it goes dark, and the pad comes out of 'pad'. Because only one pad is\never lit, the device itself shows which choice is current - useful for picking\na scene, a preset or a section without looking at the screen.\n\n'pad' sends the pad's NOTE NUMBER, exactly as the MPD218 sends it - which notes\nthe pads play is set in the device's own preset - not a pad count from 1 to 16.\nReleasing the lit pad sends its number again.\n\nThe knobs come out of 'controller' as a pair: [controller number, value], with\nthe value 0 to 127 as the device sends it.\n\n'select' does the same thing from the patch: send it a note number and the\nnode sends note-offs for notes 0 to 15 to the device, lights that note's pad and\nsends the number out of 'pad', as though it had been struck.\n\nWHEN THE DEVICE IS NOT THERE:\nIf no MIDI device whose name begins 'MPD218' is present, the node falls back to\nthe FIRST MIDI input and output it can find, whatever they are. On creation it\nsends note-offs for notes 0 to 15 to that output, so with something else\nplugged in, check 'in port' and 'out port' before trusting it.\n\nWHAT IT IGNORES:\nArguments - the device name is built in. The 'channel' option is shown but not\nused: notes and knobs are accepted on any channel, and the lights are sent on\nchannel 1.\n\nSYNTAX:\nmpd218\n\nEXAMPLE:\nmpd218\n\nINPUTS and PARAMETERS:\n\nselect:\nA note number: light that pad, darken the rest, send it out of 'pad'.\n\nin port / out port:\nThe MIDI ports, as menus. Both are set to the MPD218 automatically when it is\npresent.\n\nchannel (option):\nNot used by this node.\n\nOUTPUTS:\n\npad:\nThe note number of the pad struck (or selected), again when it is released.\n\ncontroller:\n[controller number, value] for each knob movement.\n\nRELATED:\nblue_board, the other device-specific node, for the iRig BlueBoard foot\ncontroller.\nmidi_note_in and midi_control_in, for any controller this node does not know."
         },
         "3": {
-            "name": "blue_board",
+            "name": "int",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 262,
-            "height": 255,
+            "width": 130,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
         },
         "4": {
-            "init": "comment set each button momentary or latching",
+            "init": "comment select a pad from the patch",
             "name": "comment",
             "id": 385,
-            "position_x": 638,
-            "position_y": 375,
-            "width": 236,
+            "position_x": 318,
+            "position_y": 62,
+            "width": 174,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -118,7 +134,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "set each button momentary or latching",
+                    "value": "select a pad from the patch",
                     "value_type": "str"
                 },
                 "1": {
@@ -127,93 +143,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "set each button momentary or latching"
+            "comment": "select a pad from the patch"
         },
         "5": {
-            "name": "int",
+            "name": "mpd218",
             "id": 422,
             "position_x": 30,
-            "position_y": 415,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "6": {
-            "name": "toggle",
-            "id": 459,
-            "position_x": 180,
-            "position_y": 415,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "7": {
-            "name": "text_block",
-            "id": 496,
-            "annotation": true,
-            "position_x": 638,
-            "position_y": 470,
-            "width": 255,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "the LED tells you a state you cannot\nsee, because you are not looking",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 247,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "the LED tells you a state you cannot\nsee, because you are not looking"
-        },
-        "8": {
-            "name": "mpd218",
-            "id": 533,
-            "position_x": 350,
-            "position_y": 62,
+            "position_y": 130,
             "width": 262,
             "height": 84,
             "visibility": "show_all",
@@ -221,11 +157,51 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 318,
+            "position_y": 130,
+            "width": 274,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "strike a pad: it lights, the last one\ngoes dark - the device shows the choice",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "strike a pad: it lights, the last one\ngoes dark - the device shows the choice"
+        },
+        "7": {
             "name": "int",
-            "id": 570,
-            "position_x": 350,
-            "position_y": 320,
+            "id": 496,
+            "position_x": 30,
+            "position_y": 400,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -249,51 +225,84 @@
                 }
             }
         },
-        "10": {
-            "name": "text_block",
-            "id": 607,
-            "annotation": true,
-            "position_x": 638,
-            "position_y": 415,
-            "width": 261,
-            "height": 40,
+        "8": {
+            "init": "comment the pad's note number, as the device sends it",
+            "name": "comment",
+            "id": 533,
+            "position_x": 318,
+            "position_y": 400,
+            "width": 285,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "pad numbering built in, so you do not\nkeep a list of note numbers anywhere",
+                    "name": "text",
+                    "value": "the pad's note number, as the device sends it",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "pad numbering built in, so you do not\nkeep a list of note numbers anywhere"
+            "comment": "the pad's note number, as the device sends it"
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment [controller number, value] from the knobs",
+            "name": "comment",
+            "id": 607,
+            "position_x": 318,
+            "position_y": 470,
+            "width": 260,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "[controller number, value] from the knobs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "[controller number, value] from the knobs"
         },
         "11": {
             "name": "close",
             "id": 644,
             "position_x": 24,
-            "position_y": 487,
+            "position_y": 542,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -313,27 +322,27 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "A",
+            "source_output_name": "int out",
             "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "select"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pad",
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "1": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 348,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "LED"
-        },
         "2": {
-            "source_node": 533,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "pad",
+            "source_output_name": "controller",
             "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,

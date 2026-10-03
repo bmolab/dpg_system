@@ -1,0 +1,320 @@
+{
+    "height": 1216,
+    "width": 1355,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "limb_size_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/limb_size_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment limb_size - adjusting the proportions of a gl_body",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 623,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "limb_size - adjusting the proportions of a gl_body",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "limb_size - adjusting the proportions of a gl_body"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 507,
+            "position_y": 45,
+            "width": 808,
+            "height": 1111,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "This adjusts the limb proportions a gl_body skeleton is drawn with.\n\nTHE NODES:\n\nlimb_size  a slider per limb, wired between a gl_body and itself\n\nWHY PROPORTIONS MATTER:\nThe suit measures orientations, and positions are worked out from those plus the \nlimb lengths. If the lengths are wrong the positions are wrong, even though \nevery orientation is correct - and the error shows up as feet that do not reach \nthe floor or hands that do not meet.\n\nHOW IT IS WIRED - A LOOP:\ngl_body's 'limb_sizes' outlet sends a dictionary of its current proportions. \nlimb_size takes that in, sets its sliders from it, and remembers it as the \nvalues 'reset' goes back to. Moving a slider sends a message to gl_body's \n'pose in' inlet, which is where gl_body takes commands:\n\n    limb_size <joint name> <length> <thickness> <thickness>\n\nSo the cord goes out of gl_body and back into it.\n\nNOTHING HAPPENS UNTIL THE DICTIONARY ARRIVES:\nThe sliders only act on limbs that are in the dictionary, so until one has come \nin, moving them does nothing - and pressing 'reset' before then raises an error. \ngl_body sends its dictionary once as it is created, which in a loaded patch is \nbefore the cord to limb_size exists. Send gl_body the message 'dump_limb_sizes' \nto have it send again; the example does this with the message box.\n\nLENGTH, AND THICKNESS:\nEach limb has three sizes: its length and two thicknesses. A slider sets the \nLENGTH. A list of three numbers sent into a slider's inlet sets all three.\n\n'symmetric' keeps left and right the same - moving a left slider moves the \nmatching right one, and the other way round - which is usually right and saves \nhalf the adjusting. The head, neck and spine have no partner.\n\nSYNTAX:\nlimb_size\n\nEXAMPLE:\nlimb_size\n\nINPUTS and PARAMETERS:\n\nlimb_sizes_dict:\nThe current proportions, from gl_body's 'limb_sizes' outlet.\n\nsymmetric:\nMirror changes between left and right. On by default.\n\nhead, neck, spine4, spine3, spine2, spine1:\nThe head and the spine, from the top down.\n\nleft_hip, left_upper_leg, left_lower_leg, left_foot, left_toes:\nThe left leg - and the same five for the right.\n\nleft_shoulder_blade, left_shoulder, left_upper_arm, left_lower_arm, \nleft_hand, left_fingers:\nThe left arm - and the same six for the right.\n\nreset:\nSend every limb back to the values in the last dictionary received.\n\nOUTPUTS: \n\nout to gl_body:\nOne 'limb_size' message per change, for gl_body's 'pose in' inlet.\n\nRELATED:\ngl_body draws the skeleton these proportions apply to.\nbody_to_joints and local_to_global_body work on the pose itself.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1095,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "This adjusts the limb proportions a gl_body skeleton is drawn with.\n\nTHE NODES:\n\nlimb_size  a slider per limb, wired between a gl_body and itself\n\nWHY PROPORTIONS MATTER:\nThe suit measures orientations, and positions are worked out from those plus the \nlimb lengths. If the lengths are wrong the positions are wrong, even though \nevery orientation is correct - and the error shows up as feet that do not reach \nthe floor or hands that do not meet.\n\nHOW IT IS WIRED - A LOOP:\ngl_body's 'limb_sizes' outlet sends a dictionary of its current proportions. \nlimb_size takes that in, sets its sliders from it, and remembers it as the \nvalues 'reset' goes back to. Moving a slider sends a message to gl_body's \n'pose in' inlet, which is where gl_body takes commands:\n\n    limb_size <joint name> <length> <thickness> <thickness>\n\nSo the cord goes out of gl_body and back into it.\n\nNOTHING HAPPENS UNTIL THE DICTIONARY ARRIVES:\nThe sliders only act on limbs that are in the dictionary, so until one has come \nin, moving them does nothing - and pressing 'reset' before then raises an error. \ngl_body sends its dictionary once as it is created, which in a loaded patch is \nbefore the cord to limb_size exists. Send gl_body the message 'dump_limb_sizes' \nto have it send again; the example does this with the message box.\n\nLENGTH, AND THICKNESS:\nEach limb has three sizes: its length and two thicknesses. A slider sets the \nLENGTH. A list of three numbers sent into a slider's inlet sets all three.\n\n'symmetric' keeps left and right the same - moving a left slider moves the \nmatching right one, and the other way round - which is usually right and saves \nhalf the adjusting. The head, neck and spine have no partner.\n\nSYNTAX:\nlimb_size\n\nEXAMPLE:\nlimb_size\n\nINPUTS and PARAMETERS:\n\nlimb_sizes_dict:\nThe current proportions, from gl_body's 'limb_sizes' outlet.\n\nsymmetric:\nMirror changes between left and right. On by default.\n\nhead, neck, spine4, spine3, spine2, spine1:\nThe head and the spine, from the top down.\n\nleft_hip, left_upper_leg, left_lower_leg, left_foot, left_toes:\nThe left leg - and the same five for the right.\n\nleft_shoulder_blade, left_shoulder, left_upper_arm, left_lower_arm, \nleft_hand, left_fingers:\nThe left arm - and the same six for the right.\n\nreset:\nSend every limb back to the values in the last dictionary received.\n\nOUTPUTS: \n\nout to gl_body:\nOne 'limb_size' message per change, for gl_body's 'pose in' inlet.\n\nRELATED:\ngl_body draws the skeleton these proportions apply to.\nbody_to_joints and local_to_global_body work on the pose itself."
+        },
+        "3": {
+            "name": "shadow",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 119,
+            "height": 168,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 270,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "dump_limb_sizes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 271,
+            "position_y": 270,
+            "width": 188,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click to fill the sliders\nfrom the body",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click to fill the sliders\nfrom the body"
+        },
+        "6": {
+            "name": "gl_body",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 144,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment the body being drawn",
+            "name": "comment",
+            "id": 496,
+            "position_x": 271,
+            "position_y": 350,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the body being drawn",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the body being drawn"
+        },
+        "8": {
+            "name": "limb_size",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 215,
+            "height": 462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 271,
+            "position_y": 560,
+            "width": 206,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a slider per limb - its\nchanges go back into gl_body",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 198,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a slider per limb - its\nchanges go back into gl_body"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 1052,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "limb_sizes",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "limb_sizes_dict"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out to gl_body",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        }
+    }
+}

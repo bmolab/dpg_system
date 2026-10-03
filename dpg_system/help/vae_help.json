@@ -1,0 +1,378 @@
+{
+    "height": 1276,
+    "width": 1603,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "vae_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/vae_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment vae - a variational autoencoder of your own",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 537,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "vae - a variational autoencoder of your own",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "vae - a variational autoencoder of your own"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 745,
+            "position_y": 45,
+            "width": 818,
+            "height": 1171,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A variational autoencoder for a model you trained yourself, on anything.\n\nTHE NODES:\n\nvae  encode to a few numbers and decode back, with a network of the sizes \n     you give it\n\nWHAT A VARIATIONAL AUTOENCODER GIVES YOU:\nAn encoder squeezes the input down to a handful of numbers - the LATENT - and a\ndecoder builds it back. What makes it worth having is how it was trained: the \nlatent space is made smooth and continuous, so every point in it decodes to \nsomething like the training examples, not only the points that came from \nreal ones.\n\nTHE NETWORK:\nThe three arguments are the input size, the hidden size and the latent size - \n784, 512 and 4 by default, the shape for 28 by 28 pixel images. The encoder \nnarrows from the input through the hidden size, a half, a quarter and an eighth \nof it, to a mean and a spread for each latent number. The decoder runs the \nsame path the other way and ends in a sigmoid, so every decoded value is \nbetween 0 and 1.\n\nAnything sent in is cut into rows of the input size (or, for 'latent in', the \nlatent size).\n\nYOU MUST GIVE IT A MODEL PATH:\nThe node does not train. 'model path' takes the path of a FILE of saved weights \n- a torch state dictionary - for a network of exactly these three sizes. Until \none is loaded the node runs an untrained network and its output is \nmeaningless.\n\nTHREE WAYS IN:\n\ninput in:\nEncode, take the MEAN of what the encoder produces, and decode that. The same \ninput always gives the same output. Only the first row of a batch is used.\n\nforward in:\nThe full training-style pass: encode, draw a random SAMPLE from the encoder's \ndistribution, decode it. The same input gives a slightly different result each \ntime. Every row of a batch is used.\n\nlatent in:\nDecode latent numbers you supply - the generative direction.\n\nSYNTAX:\nvae [input size] [hidden size] [latent size]\n\nEXAMPLE:\nvae 784 512 4\n\nINPUTS and PARAMETERS:\n\ninput in / forward in / latent in:\nAs above.\n\nmodel path:\nThe saved weights file. Required.\n\nOUTPUTS: \n\ndistribution out:\nThe mean of the encoder's distribution - on 'input in' only. Despite the name, \nnot the spread; it carries the same numbers as 'latents out' there.\n\nlatents out:\nThe latent numbers: the mean for 'input in', the sample for 'forward in', and \nwhat was sent for 'latent in'.\n\ndecoded out:\nThe decoded output, values between 0 and 1.\n\nAll three send torch tensors.\n\nRELATED:\nvposer and vposer6D are trained models of the same kind, for body poses.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1155,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A variational autoencoder for a model you trained yourself, on anything.\n\nTHE NODES:\n\nvae  encode to a few numbers and decode back, with a network of the sizes \n     you give it\n\nWHAT A VARIATIONAL AUTOENCODER GIVES YOU:\nAn encoder squeezes the input down to a handful of numbers - the LATENT - and a\ndecoder builds it back. What makes it worth having is how it was trained: the \nlatent space is made smooth and continuous, so every point in it decodes to \nsomething like the training examples, not only the points that came from \nreal ones.\n\nTHE NETWORK:\nThe three arguments are the input size, the hidden size and the latent size - \n784, 512 and 4 by default, the shape for 28 by 28 pixel images. The encoder \nnarrows from the input through the hidden size, a half, a quarter and an eighth \nof it, to a mean and a spread for each latent number. The decoder runs the \nsame path the other way and ends in a sigmoid, so every decoded value is \nbetween 0 and 1.\n\nAnything sent in is cut into rows of the input size (or, for 'latent in', the \nlatent size).\n\nYOU MUST GIVE IT A MODEL PATH:\nThe node does not train. 'model path' takes the path of a FILE of saved weights \n- a torch state dictionary - for a network of exactly these three sizes. Until \none is loaded the node runs an untrained network and its output is \nmeaningless.\n\nTHREE WAYS IN:\n\ninput in:\nEncode, take the MEAN of what the encoder produces, and decode that. The same \ninput always gives the same output. Only the first row of a batch is used.\n\nforward in:\nThe full training-style pass: encode, draw a random SAMPLE from the encoder's \ndistribution, decode it. The same input gives a slightly different result each \ntime. Every row of a batch is used.\n\nlatent in:\nDecode latent numbers you supply - the generative direction.\n\nSYNTAX:\nvae [input size] [hidden size] [latent size]\n\nEXAMPLE:\nvae 784 512 4\n\nINPUTS and PARAMETERS:\n\ninput in / forward in / latent in:\nAs above.\n\nmodel path:\nThe saved weights file. Required.\n\nOUTPUTS: \n\ndistribution out:\nThe mean of the encoder's distribution - on 'input in' only. Despite the name, \nnot the spread; it carries the same numbers as 'latents out' there.\n\nlatents out:\nThe latent numbers: the mean for 'input in', the sample for 'forward in', and \nwhat was sent for 'latent in'.\n\ndecoded out:\nThe decoded output, values between 0 and 1.\n\nAll three send torch tensors.\n\nRELATED:\nvposer and vposer6D are trained models of the same kind, for body poses."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 410,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "/path/to/vae_weights.pt",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 380,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 466,
+            "position_y": 62,
+            "width": 249,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "point this at your weights file and\nclick it - until you do, the output\nis meaningless",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "point this at your weights file and\nclick it - until you do, the output\nis meaningless"
+        },
+        "5": {
+            "name": "vector",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 160,
+            "width": 160,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vector 4"
+        },
+        "6": {
+            "init": "comment four latent numbers to decode",
+            "name": "comment",
+            "id": 459,
+            "position_x": 466,
+            "position_y": 160,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "four latent numbers to decode",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "four latent numbers to decode"
+        },
+        "7": {
+            "name": "vae",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 107,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vae 784 512 4"
+        },
+        "8": {
+            "init": "comment 784 in, 4 latent numbers, 784 back",
+            "name": "comment",
+            "id": 533,
+            "position_x": 466,
+            "position_y": 330,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "784 in, 4 latent numbers, 784 back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "784 in, 4 latent numbers, 784 back"
+        },
+        "9": {
+            "name": "plot",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 580,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 784,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 784.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "10": {
+            "init": "comment the decoded values, all between 0 and 1",
+            "name": "comment",
+            "id": 607,
+            "position_x": 466,
+            "position_y": 580,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the decoded values, all between 0 and 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the decoded values, all between 0 and 1"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 788,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "model path"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "latent in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "decoded out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

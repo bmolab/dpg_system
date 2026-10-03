@@ -376,97 +376,262 @@ print(build('gl_sphere', 'gl shapes - the built-in geometry', body, demo, links,
             demo_width=580, text_width=800, text_height=740))
 
 # -------------------------------------------------------------- gl_line_array
-body = """These draw geometry that comes from data, and orientation as something you can see.
+body = """These draw geometry that comes from data rather than a built-in shape.
 
 THE NODES:
 
-gl_line_array         many lines at once, from an array
-gl_vertex_buffer      raw vertex data, drawn in a mode you choose
-gl_rotation_disk      a disk showing one quaternion's orientation
-gl_orientation_disks  a disk per joint, showing a whole pose's orientations
+gl_line_array     many lines at once, from an array - built for trails of motion
+gl_vertex_buffer  raw vertex data, drawn as points, lines or triangles
 
 gl_line_array IS BUILT FOR MOTION:
 Drawing a trail or a set of trajectories as separate line nodes does not scale. 
-This takes the whole array and draws it in one go, and its options are about 
-making motion legible rather than about geometry.
+This takes the whole array and draws it in one go. 'array' is points by lines 
+by coordinates: each line is one column, its first point the head of the 
+trail, so a rolling buffer of joint positions draws as one trail per joint.
 
-'alpha_fade' lets older parts of a trail die away. 'accent_motion' brightens 
-and thickens the lines where they are moving fastest, so speed reads directly 
-off the drawing. 'selected_joints' restricts it to the ones you care about, 
-which matters as soon as a full body's worth of trails becomes a thicket.
+Its options are about making motion legible rather than about geometry. 
+'alpha_fade' (on by default) fades each line from its first point to its last, 
+so a trail dies away behind its head. 'accent_motion' measures how far each 
+point moved since the previous array and makes the lines only as bright as 
+that movement times 'accent_scale', so a still trail disappears and a fast one 
+shines; 'accent_colour' shows the same speed as colour instead, along a 
+dark-to-yellow scale. 'selected_joints' restricts it to the lines you care 
+about, which matters as soon as a full body's worth of trails becomes a 
+thicket.
 
 That accenting is the difference between a plot of a movement and a picture of 
-one. A trail at constant width tells you where something went; one that 
-thickens where it accelerated tells you how.
+one. A trail drawn at constant brightness tells you where something went; one 
+that lights up where it moved fast tells you how.
 
-THE ORIENTATION DISKS:
-A quaternion is four numbers and you cannot read it. A disk drawn in the plane 
-of the rotation, at the joint it belongs to, you can - a twist is visible as a 
-twist, and a whole body's worth is visible at once.
+COLOURS:
+Each of the first 20 lines has its own colour, white to begin with: set 
+'color index' to a line number and pick its colour with 'color_control'. 
+Index -1 recolours them all. Lines past the twentieth share the twentieth's 
+colour.
 
-gl_rotation_disk shows one; gl_orientation_disks takes a pose and shows them 
-all. 'ring_width' and 'width is fraction' control how heavy each ring is, 
-either absolutely or in proportion to its size.
+LIGHTING AND DEPTH ARE OFF FROM HERE ON:
+gl_line_array switches lighting and the depth test off while it draws and 
+only switches them back after everything downstream of it has drawn. So 
+shapes chained after it are drawn unlit and without depth. Give it a branch 
+of its own - split the chain cord before it, as here.
 
 gl_vertex_buffer:
-Vertex data drawn directly, with 'draw_mode' choosing points, lines, triangles 
-and so on. The escape hatch for geometry none of the other nodes produces.
+Vertex data drawn directly, with 'draw_mode' choosing how the vertices are 
+joined. The escape hatch for geometry none of the other nodes produces. It 
+draws in the chain's current colour and material, and until data arrives it 
+shows 64 random points in the unit cube. Points shrink with distance from 
+the viewer.
 """ + OLDER + """
 SYNTAX:
 gl_line_array
-gl_orientation_disks
+gl_vertex_buffer
+
+Neither takes arguments.
 
 EXAMPLE:
 gl_line_array
 
 INPUTS and PARAMETERS:
 
-array / vertex_data:
-The geometry. These accept streaming data and can be replaced every frame.
+gl chain in:
+The chain. This triggers the drawing.
 
-line_width / alpha_fade:
-The basic appearance and how trails die away.
+array (gl_line_array):
+Points by lines by coordinates (2, 3 or 4 of them). Anything not three 
+dimensional is not drawn: a single line still needs the middle dimension, 
+points by 1 by 3. Keep the shape the same while 'accent_motion' is on - 
+a change of shape with it on raises an error.
 
-accent_motion / accent_colour / accent_scale:
-How much the lines respond to speed, and in what way.
+alpha_fade / line_width (gl_line_array):
+The fade along each line, and the width of the lines.
 
-selected_joints:
-Which to draw.
+accent_motion / accent_colour / accent_scale (gl_line_array):
+Whether speed shows, whether as brightness or colour, and the gain on it 
+(50 by default) - the movement since the last array is multiplied by this 
+and capped at full brightness.
 
-quaternion in / axis-angle:
-The orientation to show.
+selected_joints (gl_line_array):
+Line numbers to draw, separated by spaces. Empty draws them all.
 
-scale / slices / rings / ring_width:
-The disks' size and detail.
+color index / color_control (gl_line_array):
+Per-line colours, as above.
+
+vertex_data (gl_vertex_buffer):
+An array of vertices, one per row, with 2, 3 or 4 coordinates - or a cloud 
+frame from the point cloud nodes, whose 'point_cloud' entry is used. It can 
+be replaced every frame.
 
 draw_mode (gl_vertex_buffer):
-Points, lines, triangles.
+GL_POINTS (the default), GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, 
+GL_TRIANGLES, GL_TRIANGLE_STRIP or GL_TRIANGLE_FAN.
 
-OUTPUTS: 
+size (gl_vertex_buffer):
+The point size, 1 by default.
+
+OUTPUTS:
 
 gl chain out:
 The chain, continuing.
 
 RELATED:
-mgl_line_array is the newer equivalent with more control over the accenting. 
-The motion capture nodes produce the poses these draw."""
+mgl_line_array is the newer equivalent of gl_line_array, with more control 
+over the accenting. np.rolling_buffer builds trails from a stream. 
+gl_orientation_disks and gl_rotation_disk, which used to share this page, 
+draw orientations."""
 
 demo = chain() + [
-    {'key': 'la', 'init': 'gl_line_array', 'pos': (30, 516), 'w': 260, 'h': 300},
-    {'key': 'c0', 'comment': True, 'text': 'patch an array of line points in\nraise accent_motion to see speed',
-     'pos': (30, 831)},
-    {'key': 'od', 'init': 'gl_orientation_disks', 'pos': (30, 906), 'w': 260, 'h': 280},
-    {'key': 'c2', 'comment': True, 'text': 'a disk per joint: a twist looks like one',
-     'pos': (30, 1201)},
-    {'key': 'vb', 'init': 'gl_vertex_buffer', 'pos': (320, 516), 'w': 240, 'h': 180},
-    {'key': 'c3', 'comment': True, 'text': 'raw vertices, when nothing else fits',
-     'pos': (320, 711)},
+    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 540), 'w': 88, 'h': 42},
+    {'key': 'nr', 'init': 'np.rand 30 4 3', 'pos': (30, 610), 'w': 140, 'h': 160,
+     'props': {'min': -0.3, 'max': 0.3}},
+    {'key': 'c0', 'comment': True, 'text': '30 points on each of 4 lines',
+     'pos': (30, 610)},
+    {'key': 'la', 'init': 'gl_line_array', 'pos': (30, 800), 'w': 220, 'h': 280},
+    {'key': 'c1', 'comment': True,
+     'text': 'alpha_fade: each line fades from\nits first point to its last',
+     'pos': (30, 800)},
+    {'key': 'vb', 'init': 'gl_vertex_buffer', 'pos': (30, 1110), 'w': 200, 'h': 120,
+     'props': {'draw_mode': 'GL_POINTS', 'size': 4.0}},
+    {'key': 'c2', 'comment': True,
+     'text': 'on its own branch of the chain:\n64 random points until vertex_data arrives',
+     'pos': (30, 1110)},
 ]
 links = CHAIN_LINKS + [
     ('lgt', 'gl chain out', 'la', 'gl chain in'),
-    ('la', 'gl chain out', 'od', 'gl chain in')]
-print(build('gl_line_array', 'gl_line_array - drawing data and orientation', body,
-            demo, links, demo_width=600, text_width=800, text_height=760))
+    ('lgt', 'gl chain out', 'vb', 'gl chain in'),
+    ('lb', 'out', 'nr', ''),
+    ('nr', 'random array', 'la', 'array')]
+print(build('gl_line_array', 'gl_line_array - drawing data as lines and points', body,
+            demo, links, demo_width=600, text_width=800, text_height=1000))
+
+# ------------------------------------------------------- gl_orientation_disks
+body = """These draw rotations as disks, so an orientation can be seen rather than read.
+
+THE NODES:
+
+gl_orientation_disks  a set of disks, each turned to face along its own 
+                      rotation axis and sized by its angle
+gl_rotation_disk      three coloured disks, one in each axis plane, sized by 
+                      the parts of one quaternion
+
+A rotation is three or four numbers and you cannot read it. A disk lying in 
+the plane of the rotation, as large as the rotation is, you can: the 
+direction it faces is the axis, and its size is how far it has turned.
+
+gl_orientation_disks:
+'axis-angle' takes one row per disk. A row of three is a rotation vector - 
+its direction is the axis and its length the angle in radians - and the disk 
+is drawn facing along that axis with a radius of the angle times 'scale'. 
+A row of four is an axis followed by a size, and the radius is that size 
+times 'scale'. A disk with no rotation is not drawn.
+
+Each disk is a ring: 'ring_width' is taken off the inside of it, either as 
+a distance or, with 'width is fraction' ticked, as a fraction of the radius 
+(three-number rows only). A disk smaller than the ring width is drawn solid.
+
+All the disks are drawn at the same place - the origin of the chain's 
+current coordinates - one over another. They do not place themselves at 
+joints: to show a body's joints, draw one set per joint after a transform 
+that moves it there, or overlay several rotations at one spot to compare 
+them.
+
+Each disk has its own colour, sent to 'color 0', 'color 1' and so on as red 
+green blue alpha from 0 to 1. The colours are drawn as glowing (emissive), 
+so they show the same whatever the lights do. The six default colours are 
+translucent, so overlapping disks show through each other where blending 
+is on.
+
+gl_rotation_disk:
+Takes a quaternion, w first, on 'quaternion in'. It draws a red disk in the 
+x-y plane whose radius is the quaternion's x part, a blue one in the y-z 
+plane sized by its y part, and a green one in the x-z plane sized by its z 
+part, each times the scale. For a turn about a single axis only one disk 
+shows, and its size is the sine of half the angle; no turn at all draws 
+nothing. Its colours are set on the material, so they show only with 
+lighting on, and the green stays in force for whatever is chained after it.
+""" + OLDER + """
+SYNTAX:
+gl_orientation_disks <count> <scale> <slices> <rings>
+gl_rotation_disk
+
+All four arguments are optional: 6 disks, scale 0.5, 32 slices, 1 ring.
+
+EXAMPLE:
+gl_orientation_disks 3 0.25
+
+INPUTS and PARAMETERS:
+
+gl chain in:
+The chain. This triggers the drawing.
+
+axis-angle (gl_orientation_disks):
+One row per disk, as above. It needs at least as many rows as there are 
+disks; extra rows are ignored, and too few raise an error.
+
+scale (gl_orientation_disks):
+Radius per radian (or per unit of size, for four-number rows).
+
+slices / rings (gl_orientation_disks):
+How finely each disk is divided around and across. More slices makes a 
+rounder disk.
+
+ring_width / width is fraction (gl_orientation_disks):
+How much of each disk is cut away from the middle, as above. 0.1 by default.
+
+color 0, color 1 ... (gl_orientation_disks):
+One inlet per disk, red green blue alpha.
+
+quaternion in (gl_rotation_disk):
+The orientation, w x y z.
+
+the second 'gl chain in' (gl_rotation_disk):
+Despite its name, the number box under the chain inlet is the scale, 1 by 
+default. It is read when a quaternion arrives, so a change shows with the 
+next quaternion.
+
+shading / style (options):
+Smooth, flat or no normals; and fill, outline or points. 'style' affects 
+gl_orientation_disks only.
+
+OUTPUTS:
+
+gl chain out:
+The chain, continuing.
+
+RELATED:
+mgl_orientation_disks is the newer equivalent. gl_quaternion_rotate and 
+gl_axis_angle_rotate turn the chain by such rotations instead of showing 
+them. gl_line_array, which used to share this page, draws motion trails."""
+
+demo = chain() + [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 540), 'w': 88, 'h': 42},
+    {'key': 'nr', 'init': 'np.rand 3 3', 'pos': (30, 610), 'w': 140, 'h': 140,
+     'props': {'min': -1.5, 'max': 1.5}},
+    {'key': 'c0', 'comment': True, 'text': 'three random rotation vectors,\none row per disk',
+     'pos': (30, 610)},
+    {'key': 'od', 'init': 'gl_orientation_disks 3 0.25', 'pos': (30, 780), 'w': 220, 'h': 280},
+    {'key': 'c1', 'comment': True,
+     'text': 'each disk faces along its axis,\nits radius is the angle times scale',
+     'pos': (30, 780)},
+    {'key': 'tr', 'init': 'gl_translate 0.5 0 0', 'pos': (30, 1090), 'w': 160, 'h': 110,
+     'props': {'x': 0.5, 'y': 0.0, 'z': 0.0}},
+    {'key': 'm1', 'init': 'message', 'pos': (30, 1230), 'w': 200, 'h': 42,
+     'props': {'text in': '0.85 0.3 0.25 0.35', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'a quaternion, w x y z', 'pos': (30, 1230)},
+    {'key': 'rd', 'init': 'gl_rotation_disk', 'pos': (30, 1300), 'w': 200, 'h': 180},
+    {'key': 'c3', 'comment': True,
+     'text': 'red, blue and green disks\nsized by x, y and z',
+     'pos': (30, 1300)},
+]
+links = CHAIN_LINKS + [
+    ('lgt', 'gl chain out', 'od', 'gl chain in'),
+    ('lgt', 'gl chain out', 'tr', 'gl chain in'),
+    ('tr', 'gl chain out', 'rd', 'gl chain in'),
+    ('lb', 'out', 'nr', ''),
+    ('nr', 'random array', 'od', 'axis-angle'),
+    ('lb', 'out', 'm1', ''),
+    ('m1', 'message out', 'rd', 'quaternion in')]
+print(build('gl_orientation_disks', 'gl_orientation_disks - seeing rotations', body,
+            demo, links, demo_width=600, text_width=800, text_height=1100))
 
 # -------------------------------------------------------------------- gl_text
 body = """These draw text into the scene.

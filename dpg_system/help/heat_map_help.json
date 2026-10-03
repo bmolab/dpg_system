@@ -1,0 +1,685 @@
+{
+    "height": 1641,
+    "width": 1467,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "heat_map_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/heat_map_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment heat_map, heat_scroll - an array as colour",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "heat_map, heat_scroll - an array as colour",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "heat_map, heat_scroll - an array as colour"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 619,
+            "position_y": 45,
+            "width": 808,
+            "height": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "heat_map shows an array as a block of colour - each number one cell, its colour\nset by its value. heat_scroll is the same node, keeping history.\n\nTHE NODES:\n\nheat_map      the array IS the picture, replaced whole each time\nheat_scroll   each array is one COLUMN, and earlier columns stay, scrolling\n\nThey are one node. The name you type sets which way it starts, and the\n'update_mode' option switches between them afterwards - so a heat_map can become\na heat_scroll without being replaced.\n\nThe difference is what an incoming array MEANS:\n\nheat_map      Send 32 numbers and you see 32 cells, replaced entirely by the\n              next array. A two-dimensional array is shown as a grid. Use it\n              for something that has a shape now - a spectrum, a matrix, a set\n              of joint values. The display adjusts itself to the array's size.\nheat_scroll   Each array, whatever its shape, is laid out as one column of\n              cells, and the earlier columns stay on screen. Use it for\n              something whose history matters - a spectrum over time, a body's\n              joints over the last few seconds.\n\nSwitching to heat_scroll sets the sample count to 200 if it was 1, because a\nscroll of one column is not a scroll.\n\nSET min y AND max y, OR YOU WILL SEE NOTHING:\nThis is the commonest reason a heat map looks broken. The colours are stretched\nbetween these two numbers - min y gets the colour at one end of the map, max y\nthe colour at the other - and anything outside is flattened to the end colour.\nThey start at 0 and 1.\n\nA signal running 0 to 0.1 on a 0-to-1 scale is a barely-visible smudge; a signal\nrunning 0 to 3000 on the same scale is a solid block. Neither is wrong, and\nneither tells you anything. Find out what range your data actually occupies and\nset these to match. If a display is blank, uniform or saturated, check this\nbefore suspecting anything upstream.\n\nTHE COLOUR MAPS:\nviridis is the default and the sensible choice for data, because it is even -\nequal steps in value look like equal steps in colour, and it survives being\nprinted in grey. jet is the familiar rainbow and is the one to avoid for anything\nquantitative: it invents boundaries where the data has none. greys, hot and cool\nsuit quantities that run from nothing upwards; red-blue and the other two-sided\nmaps suit values where zero is meaningful and you want to see which side of it\nyou are on - set min y and max y the same distance either side of zero.\n\nSYNTAX:\nheat_map\nheat_scroll\n\nNo arguments; everything is set in the node's options.\n\nEXAMPLE:\nheat_scroll\n\nINPUTS and PARAMETERS:\n\ny:\nThe data - a NumPy array, a list, a PyTorch tensor or a single number - or the\nword 'dump'. This is the only inlet.\n\nIn the options:\n\ncolor:\nWhich colour map. Default viridis.\n\nwidth / height:\nThe size of the display, in pixels. You can also drag the bar under it.\n\nsample count:\nFor heat_map, the number of cells across - set automatically from the array.\nFor heat_scroll, how many columns of history are kept.\n\nmin y / max y:\nThe values given the two end colours. Set these.\n\nupdate_mode:\nheat_map or heat_scroll.\n\nnumber format:\nHow each cell's value is written on it, such as %.2f; empty for no numbers.\nDefault %.3f. The numbers are hidden automatically while the cells are narrower\nthan 40 pixels or shorter than 16, and come back when there is room.\n\nSEND IT 'dump' TO GET THE DATA BACK OUT:\nSend the word 'dump' and the buffer comes out of the outlet as a NumPy array: for\nheat_map, the array last shown (for a grid, only its first row); for heat_scroll,\nonly the FIRST row - the history of the first element. Nothing comes out of the\noutlet at any other time.\n\nOUTPUTS:\n\nThe single outlet sends the buffer, and only in reply to 'dump'.\n\nRELATED:\nplot       a graph of values over time\nspectrum   a natural source: the energy in each frequency band\nvector     shows an array as numbers rather than colours",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1520,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "heat_map shows an array as a block of colour - each number one cell, its colour\nset by its value. heat_scroll is the same node, keeping history.\n\nTHE NODES:\n\nheat_map      the array IS the picture, replaced whole each time\nheat_scroll   each array is one COLUMN, and earlier columns stay, scrolling\n\nThey are one node. The name you type sets which way it starts, and the\n'update_mode' option switches between them afterwards - so a heat_map can become\na heat_scroll without being replaced.\n\nThe difference is what an incoming array MEANS:\n\nheat_map      Send 32 numbers and you see 32 cells, replaced entirely by the\n              next array. A two-dimensional array is shown as a grid. Use it\n              for something that has a shape now - a spectrum, a matrix, a set\n              of joint values. The display adjusts itself to the array's size.\nheat_scroll   Each array, whatever its shape, is laid out as one column of\n              cells, and the earlier columns stay on screen. Use it for\n              something whose history matters - a spectrum over time, a body's\n              joints over the last few seconds.\n\nSwitching to heat_scroll sets the sample count to 200 if it was 1, because a\nscroll of one column is not a scroll.\n\nSET min y AND max y, OR YOU WILL SEE NOTHING:\nThis is the commonest reason a heat map looks broken. The colours are stretched\nbetween these two numbers - min y gets the colour at one end of the map, max y\nthe colour at the other - and anything outside is flattened to the end colour.\nThey start at 0 and 1.\n\nA signal running 0 to 0.1 on a 0-to-1 scale is a barely-visible smudge; a signal\nrunning 0 to 3000 on the same scale is a solid block. Neither is wrong, and\nneither tells you anything. Find out what range your data actually occupies and\nset these to match. If a display is blank, uniform or saturated, check this\nbefore suspecting anything upstream.\n\nTHE COLOUR MAPS:\nviridis is the default and the sensible choice for data, because it is even -\nequal steps in value look like equal steps in colour, and it survives being\nprinted in grey. jet is the familiar rainbow and is the one to avoid for anything\nquantitative: it invents boundaries where the data has none. greys, hot and cool\nsuit quantities that run from nothing upwards; red-blue and the other two-sided\nmaps suit values where zero is meaningful and you want to see which side of it\nyou are on - set min y and max y the same distance either side of zero.\n\nSYNTAX:\nheat_map\nheat_scroll\n\nNo arguments; everything is set in the node's options.\n\nEXAMPLE:\nheat_scroll\n\nINPUTS and PARAMETERS:\n\ny:\nThe data - a NumPy array, a list, a PyTorch tensor or a single number - or the\nword 'dump'. This is the only inlet.\n\nIn the options:\n\ncolor:\nWhich colour map. Default viridis.\n\nwidth / height:\nThe size of the display, in pixels. You can also drag the bar under it.\n\nsample count:\nFor heat_map, the number of cells across - set automatically from the array.\nFor heat_scroll, how many columns of history are kept.\n\nmin y / max y:\nThe values given the two end colours. Set these.\n\nupdate_mode:\nheat_map or heat_scroll.\n\nnumber format:\nHow each cell's value is written on it, such as %.2f; empty for no numbers.\nDefault %.3f. The numbers are hidden automatically while the cells are narrower\nthan 40 pixels or shorter than 16, and come back when there is room.\n\nSEND IT 'dump' TO GET THE DATA BACK OUT:\nSend the word 'dump' and the buffer comes out of the outlet as a NumPy array: for\nheat_map, the array last shown (for a grid, only its first row); for heat_scroll,\nonly the FIRST row - the history of the first element. Nothing comes out of the\noutlet at any other time.\n\nOUTPUTS:\n\nThe single outlet sends the buffer, and only in reply to 'dump'.\n\nRELATED:\nplot       a graph of values over time\nspectrum   a natural source: the energy in each frequency band\nvector     shows an array as numbers rather than colours"
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment click for a new array of 32 numbers",
+            "name": "comment",
+            "id": 385,
+            "position_x": 291,
+            "position_y": 62,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click for a new array of 32 numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click for a new array of 32 numbers"
+        },
+        "5": {
+            "name": "np.rand",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 117,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rand 32"
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 225,
+            "width": 208,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 291,
+            "position_y": 225,
+            "width": 249,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "heat_map: the array IS the picture,\nreplaced whole each time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "heat_map: the array IS the picture,\nreplaced whole each time"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 208,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 32,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 20.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 291,
+            "position_y": 400,
+            "width": 274,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the SAME data with max y at 20 -\nnearly blank. If a display looks wrong,\ncheck min y and max y first",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the SAME data with max y at 20 -\nnearly blank. If a display looks wrong,\ncheck min y and max y first"
+        },
+        "10": {
+            "name": "toggle",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 580,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "name": "metro",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 635,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "12": {
+            "init": "comment ten new arrays a second",
+            "name": "comment",
+            "id": 681,
+            "position_x": 291,
+            "position_y": 635,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "ten new arrays a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "ten new arrays a second"
+        },
+        "13": {
+            "name": "np.rand",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 123,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.rand 8"
+        },
+        "14": {
+            "name": "heat_scroll",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 825,
+            "width": 208,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_scroll",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 291,
+            "position_y": 825,
+            "width": 298,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "heat_scroll: each array of 8 is one column,\nand the last 60 stay on screen",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "heat_scroll: each array of 8 is one column,\nand the last 60 stay on screen"
+        },
+        "16": {
+            "name": "message",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 1005,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "dump",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "name": "text_block",
+            "id": 866,
+            "annotation": true,
+            "position_x": 291,
+            "position_y": 1005,
+            "width": 243,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click 'dump' and the top heat_map\nhands back the array it is showing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click 'dump' and the top heat_map\nhands back the array it is showing"
+        },
+        "18": {
+            "name": "info",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 1065,
+            "width": 235,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 1137,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

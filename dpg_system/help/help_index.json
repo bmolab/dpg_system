@@ -78,8 +78,10 @@
   ],
   "slice_list": [
     "slice_list",
-    "stream_list",
     "sublist"
+  ],
+  "stream_list": [
+    "stream_list"
   ],
   "start_trace": [
     "end_trace",
@@ -116,13 +118,15 @@
   ],
   "eos_console": [
     "eos_console",
-    "color_source",
     "eos_send",
     "eos_int",
     "eos_float",
     "eos_slider",
     "eos_knob",
     "eos_toggle"
+  ],
+  "color_source": [
+    "color_source"
   ],
   "_erae_nodes": [
     "--- erae_nodes.py ---"
@@ -152,7 +156,9 @@
     "--- gemma_node.py ---"
   ],
   "gemma": [
-    "gemma",
+    "gemma"
+  ],
+  "neuronpedia_search": [
     "neuronpedia_search"
   ],
   "_gl_nodes": [
@@ -169,9 +175,11 @@
   ],
   "gl_line_array": [
     "gl_line_array",
-    "gl_vertex_buffer",
-    "gl_rotation_disk",
-    "gl_orientation_disks"
+    "gl_vertex_buffer"
+  ],
+  "gl_orientation_disks": [
+    "gl_orientation_disks",
+    "gl_rotation_disk"
   ],
   "gl_sphere": [
     "gl_sphere",
@@ -436,7 +444,9 @@
     "midi_aftertouch_out"
   ],
   "mpd218": [
-    "mpd218",
+    "mpd218"
+  ],
+  "blue_board": [
     "blue_board"
   ],
   "mpe_in": [
@@ -458,7 +468,9 @@
     "mgl_orbit_camera",
     "mgl_light",
     "mgl_material",
-    "mgl_color",
+    "mgl_color"
+  ],
+  "mgl_texture": [
     "mgl_texture",
     "mgl_image"
   ],
@@ -472,7 +484,9 @@
     "mgl_model",
     "mgl_point_cloud",
     "mgl_surface",
-    "mgl_line_array",
+    "mgl_line_array"
+  ],
+  "mgl_text": [
     "mgl_text"
   ],
   "mgl_sphere": [
@@ -507,7 +521,9 @@
     "body_to_joints",
     "shadow_body_to_joints",
     "local_to_global_body",
-    "global_to_local_body",
+    "global_to_local_body"
+  ],
+  "limb_size": [
     "limb_size"
   ],
   "cadence_filter": [
@@ -534,7 +550,9 @@
   ],
   "sensor_to_root": [
     "sensor_to_root",
-    "tracker_root_inference",
+    "tracker_root_inference"
+  ],
+  "quaternion_diff_and_axis": [
     "quaternion_diff_and_axis"
   ],
   "shadow": [
@@ -544,7 +562,9 @@
   ],
   "take": [
     "take",
-    "take_dict",
+    "take_dict"
+  ],
+  "json_npz_frame_picker": [
     "json_npz_frame_picker"
   ],
   "_movesense_nodes": [
@@ -722,7 +742,9 @@
     "osc_vector"
   ],
   "osc_query_json": [
-    "osc_query_json",
+    "osc_query_json"
+  ],
+  "osc_cue": [
     "osc_cue"
   ],
   "osc_receive": [
@@ -760,7 +782,9 @@
     "--- plot_nodes.py ---"
   ],
   "plot": [
-    "plot",
+    "plot"
+  ],
+  "heat_map": [
     "heat_map",
     "heat_scroll"
   ],
@@ -783,7 +807,9 @@
   ],
   "weighted_prompt": [
     "weighted_prompt",
-    "ambient_prompt",
+    "ambient_prompt"
+  ],
+  "prompt_composer": [
     "prompt_composer"
   ],
   "_pybullet_nodes": [
@@ -855,12 +881,16 @@
   ],
   "adaptive_filter": [
     "adaptive_filter",
-    "adaptive_quaternion_filter",
+    "adaptive_quaternion_filter"
+  ],
+  "one_euro_filter": [
     "one_euro_filter"
   ],
   "band_pass": [
     "band_pass",
-    "filter_bank",
+    "filter_bank"
+  ],
+  "spectrum": [
     "spectrum"
   ],
   "diff": [
@@ -1078,9 +1108,11 @@
     "string~"
   ],
   "record~": [
-    "adc~",
-    "mic~",
     "record~"
+  ],
+  "adc~": [
+    "adc~",
+    "mic~"
   ],
   "shaper~": [
     "envelope~",
@@ -1090,21 +1122,31 @@
     "shaper~"
   ],
   "snapshot~": [
+    "snapshot~"
+  ],
+  "capture~": [
     "array~",
+    "capture~"
+  ],
+  "place~": [
+    "place~"
+  ],
+  "scope~": [
+    "scope~"
+  ],
+  "stream~": [
     "audio_in~",
-    "capture~",
-    "place~",
-    "scope~",
-    "snapshot~",
     "stream~"
   ],
   "vca~": [
     "fader_out~",
     "fader~",
-    "meter~",
     "mix~",
     "pan~",
-    "vca~",
+    "vca~"
+  ],
+  "vu~": [
+    "meter~",
     "vu~"
   ],
   "vcf~": [
@@ -1154,7 +1196,9 @@
   "gather_sentence": [
     "gather_sentence",
     "string_builder",
-    "fifo_string",
+    "fifo_string"
+  ],
+  "text_change": [
     "text_change"
   ],
   "string_replace": [
@@ -1477,7 +1521,9 @@
   ],
   "vposer": [
     "vposer",
-    "vposer6D",
+    "vposer6D"
+  ],
+  "vae": [
     "vae"
   ],
   "_visca_nodes": [

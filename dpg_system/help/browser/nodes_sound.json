@@ -1,11 +1,11 @@
 {
-    "height": 1038,
-    "width": 1629,
+    "height": 1238,
+    "width": 1870,
     "position": [
         100,
         100
     ],
-    "id": 2757,
+    "id": 3238,
     "name": "nodes_sound",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_sound.json",
     "nodes": {
@@ -299,7 +299,7 @@
             "presentation_state": "show_all"
         },
         "10": {
-            "init": "help_link record~ record~ / adc~ / mic~",
+            "init": "help_link adc~ adc~ / mic~",
             "name": "help_link",
             "position_x": 24,
             "position_y": 288,
@@ -307,7 +307,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "record~ / adc~ / mic~",
+                    "name": "adc~ / mic~",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -332,12 +332,12 @@
             "annotation": true,
             "position_x": 275,
             "position_y": 292,
-            "width": 181,
+            "width": 194,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "sound in, and takes kept\n(adc~, mic~, record~)",
+                    "value": "sound in from a microphone\n(adc~, mic~)",
                     "value_type": "str"
                 },
                 "1": {
@@ -347,7 +347,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 173,
+                    "value": 186,
                     "value_type": "int"
                 },
                 "3": {
@@ -361,14 +361,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "sound in, and takes kept\n(adc~, mic~, record~)",
+            "text": "sound in from a microphone\n(adc~, mic~)",
             "id": 944,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "12": {
-            "init": "help_link t.audio_source t.audio_source",
+            "init": "help_link record~ record~",
             "name": "help_link",
             "position_x": 24,
             "position_y": 340,
@@ -376,7 +376,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.audio_source",
+                    "name": "record~",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -401,6 +401,75 @@
             "annotation": true,
             "position_x": 275,
             "position_y": 344,
+            "width": 95,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "takes kept",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 87,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "takes kept",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "help_link t.audio_source t.audio_source",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 392,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.audio_source",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 396,
             "width": 188,
             "height": 28,
             "properties": {
@@ -431,16 +500,16 @@
                 }
             },
             "text": "the microphone as tensors",
-            "id": 1018,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "16": {
             "init": "comment Time",
             "name": "comment",
             "position_x": 24,
-            "position_y": 410,
+            "position_y": 462,
             "width": 46,
             "height": 30,
             "properties": {
@@ -456,16 +525,16 @@
                 }
             },
             "comment": "Time",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "17": {
             "init": "help_link adsr~ adsr~ / line~ / ramp~",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 444,
+            "position_y": 496,
             "width": 237,
             "height": 44,
             "properties": {
@@ -485,16 +554,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1092,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "18": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 448,
+            "position_y": 500,
             "width": 212,
             "height": 40,
             "properties": {
@@ -525,16 +594,16 @@
                 }
             },
             "text": "shapes in time, at audio rate\n(adsr~, line~, ramp~)",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "19": {
             "init": "help_link clock~ clock~ / metro~",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 496,
+            "position_y": 548,
             "width": 237,
             "height": 44,
             "properties": {
@@ -554,16 +623,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1166,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "20": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 500,
+            "position_y": 552,
             "width": 194,
             "height": 40,
             "properties": {
@@ -594,16 +663,16 @@
                 }
             },
             "text": "a beat exact to the sample\n(clock~, metro~)",
-            "id": 1203,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "21": {
             "init": "comment Shaping",
             "name": "comment",
             "position_x": 24,
-            "position_y": 566,
+            "position_y": 618,
             "width": 69,
             "height": 30,
             "properties": {
@@ -619,16 +688,16 @@
                 }
             },
             "comment": "Shaping",
-            "id": 1240,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "22": {
             "init": "help_link vcf~ filters",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 600,
+            "position_y": 652,
             "width": 237,
             "height": 44,
             "properties": {
@@ -648,16 +717,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1277,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "23": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 604,
+            "position_y": 656,
             "width": 243,
             "height": 40,
             "properties": {
@@ -688,16 +757,16 @@
                 }
             },
             "text": "shaping by frequency\n(formant~, vcf~, vocoder~, vowel~)",
-            "id": 1314,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "24": {
             "init": "help_link fold~ distortion",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 652,
+            "position_y": 704,
             "width": 237,
             "height": 44,
             "properties": {
@@ -717,16 +786,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1351,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "25": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 656,
+            "position_y": 708,
             "width": 366,
             "height": 40,
             "properties": {
@@ -757,16 +826,16 @@
                 }
             },
             "text": "harmonics that were not there\n(*~, crush~, decimate~, distort~, fold~, mult~, ring~)",
-            "id": 1388,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "26": {
             "init": "help_link shaper~ shapers and lookups",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 704,
+            "position_y": 756,
             "width": 237,
             "height": 44,
             "properties": {
@@ -786,16 +855,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1425,
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "27": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 708,
+            "position_y": 760,
             "width": 317,
             "height": 40,
             "properties": {
@@ -826,16 +895,16 @@
                 }
             },
             "text": "a drawn curve, applied every sample\n(envelope~, lookup~, scaler~, scale~, shaper~)",
-            "id": 1462,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "28": {
             "init": "help_link delay~ delay~ / echo~",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 756,
+            "position_y": 808,
             "width": 237,
             "height": 44,
             "properties": {
@@ -855,16 +924,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1499,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "27": {
+        "29": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 760,
+            "position_y": 812,
             "width": 305,
             "height": 40,
             "properties": {
@@ -895,16 +964,16 @@
                 }
             },
             "text": "repeats, and the short ones you cannot patch\n(delay~, echo~)",
-            "id": 1536,
+            "id": 1610,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "28": {
+        "30": {
             "init": "help_link clean~ conditioning",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 808,
+            "position_y": 860,
             "width": 237,
             "height": 44,
             "properties": {
@@ -924,16 +993,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1573,
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "29": {
+        "31": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 812,
+            "position_y": 864,
             "width": 280,
             "height": 40,
             "properties": {
@@ -964,16 +1033,16 @@
                 }
             },
             "text": "conditioning before it is heard\n(clean~, condition~, one_euro~, smooth~)",
-            "id": 1610,
+            "id": 1684,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "30": {
+        "32": {
             "init": "help_link vst~ vst~ / plugin~",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 860,
+            "position_y": 912,
             "width": 237,
             "height": 44,
             "properties": {
@@ -993,16 +1062,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1647,
+            "id": 1721,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "31": {
+        "33": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 864,
+            "position_y": 916,
             "width": 243,
             "height": 40,
             "properties": {
@@ -1033,16 +1102,16 @@
                 }
             },
             "text": "somebody else's effect, patched in\n(plugin~, vst~)",
-            "id": 1684,
+            "id": 1758,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "32": {
+        "34": {
             "init": "comment Physical models",
             "name": "comment",
-            "position_x": 713,
-            "position_y": 150,
+            "position_x": 24,
+            "position_y": 982,
             "width": 131,
             "height": 30,
             "properties": {
@@ -1058,16 +1127,16 @@
                 }
             },
             "comment": "Physical models",
-            "id": 1721,
+            "id": 1795,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "33": {
+        "35": {
             "init": "help_link modal~ struck models",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 184,
+            "position_x": 24,
+            "position_y": 1016,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1087,16 +1156,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1758,
+            "id": 1832,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "34": {
+        "36": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 188,
+            "position_x": 275,
+            "position_y": 1020,
             "width": 600,
             "height": 52,
             "properties": {
@@ -1127,16 +1196,16 @@
                 }
             },
             "text": "hit it, hear it ring\n(bounce~, drop~, drum~, modal~, pluck~, rain~, rattle~, resonator~, shaker~, skin~, strike~,\n string~)",
-            "id": 1795,
+            "id": 1869,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "35": {
+        "37": {
             "init": "help_link bow~ friction models",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 244,
+            "position_x": 24,
+            "position_y": 1076,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1156,16 +1225,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1832,
+            "id": 1906,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "36": {
+        "38": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 248,
+            "position_x": 275,
+            "position_y": 1080,
             "width": 613,
             "height": 40,
             "properties": {
@@ -1196,16 +1265,16 @@
                 }
             },
             "text": "stick, slip, sing\n(bowed~, bowing~, bow~, coin~, creak~, engine~, glass~, motor~, rub~, spin~, strain~, stroke~)",
-            "id": 1869,
+            "id": 1943,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "37": {
+        "39": {
             "init": "help_link wind~ blown models",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 296,
+            "position_x": 24,
+            "position_y": 1128,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1225,16 +1294,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1906,
+            "id": 1980,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "38": {
+        "40": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 300,
+            "position_x": 275,
+            "position_y": 1132,
             "width": 625,
             "height": 40,
             "properties": {
@@ -1265,16 +1334,16 @@
                 }
             },
             "text": "no trigger, only breath\n(blow~, brass~, bubbles~, flute~, gurgle~, horn~, pipe~, reed~, swish~, vessel~, whoosh~, wind~)",
-            "id": 1943,
+            "id": 2017,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "39": {
+        "41": {
             "init": "comment Levels and output",
             "name": "comment",
-            "position_x": 713,
-            "position_y": 366,
+            "position_x": 960,
+            "position_y": 150,
             "width": 146,
             "height": 30,
             "properties": {
@@ -1290,90 +1359,21 @@
                 }
             },
             "comment": "Levels and output",
-            "id": 1980,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "40": {
-            "init": "help_link vca~ levels and mixing",
-            "name": "help_link",
-            "position_x": 713,
-            "position_y": 400,
-            "width": 237,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "levels and mixing",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 221,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "pink",
-                    "value_type": "str"
-                }
-            },
-            "id": 2017,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "41": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 964,
-            "position_y": 404,
-            "width": 348,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "how loud, and where\n(fader_out~, fader~, meter~, mix~, pan~, vca~, vu~)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 340,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "how loud, and where\n(fader_out~, fader~, meter~, mix~, pan~, vca~, vu~)",
             "id": 2054,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "42": {
-            "init": "help_link audio_out~ audio_out~",
+            "init": "help_link vca~ levels and mixing",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 452,
+            "position_x": 960,
+            "position_y": 184,
             "width": 237,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "audio_out~",
+                    "name": "levels and mixing",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -1396,8 +1396,284 @@
         "43": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 456,
+            "position_x": 1211,
+            "position_y": 188,
+            "width": 268,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how loud, and where\n(fader_out~, fader~, mix~, pan~, vca~)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how loud, and where\n(fader_out~, fader~, mix~, pan~, vca~)",
+            "id": 2128,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "44": {
+            "init": "help_link vu~ vu~ / meter~",
+            "name": "help_link",
+            "position_x": 960,
+            "position_y": 236,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "vu~ / meter~",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2165,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "45": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 240,
+            "width": 120,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how loud it is\n(meter~, vu~)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 112,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how loud it is\n(meter~, vu~)",
+            "id": 2202,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "46": {
+            "init": "help_link scope~ scope~",
+            "name": "help_link",
+            "position_x": 960,
+            "position_y": 288,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scope~",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2239,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "47": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 292,
+            "width": 151,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the waveform, drawn",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 143,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the waveform, drawn",
+            "id": 2276,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "48": {
+            "init": "help_link place~ place~",
+            "name": "help_link",
+            "position_x": 960,
+            "position_y": 340,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "place~",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2313,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "49": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 344,
+            "width": 200,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a source among the speakers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a source among the speakers",
+            "id": 2350,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "50": {
+            "init": "help_link audio_out~ audio_out~",
+            "name": "help_link",
+            "position_x": 960,
+            "position_y": 392,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "audio_out~",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2387,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "51": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 396,
             "width": 206,
             "height": 28,
             "properties": {
@@ -1428,21 +1704,46 @@
                 }
             },
             "text": "where sound leaves the patch",
-            "id": 2128,
+            "id": 2424,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "44": {
-            "init": "help_link snapshot~ signal to data",
+        "52": {
+            "init": "comment Between sound and data",
+            "name": "comment",
+            "position_x": 960,
+            "position_y": 462,
+            "width": 184,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Between sound and data",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Between sound and data",
+            "id": 2461,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "53": {
+            "init": "help_link stream~ stream~ / audio_in~",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 504,
+            "position_x": 960,
+            "position_y": 496,
             "width": 237,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "signal to data",
+                    "name": "stream~ / audio_in~",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -1453,26 +1754,26 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "pink",
+                    "value": "olive",
                     "value_type": "str"
                 }
             },
-            "id": 2165,
+            "id": 2498,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "45": {
+        "54": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 508,
-            "width": 434,
+            "position_x": 1211,
+            "position_y": 500,
+            "width": 188,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "carrying audio back to the patch\n(array~, audio_in~, capture~, place~, scope~, snapshot~, stream~)",
+                    "value": "arrays played as a signal\n(audio_in~, stream~)",
                     "value_type": "str"
                 },
                 "1": {
@@ -1482,7 +1783,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 426,
+                    "value": 180,
                     "value_type": "int"
                 },
                 "3": {
@@ -1496,17 +1797,155 @@
                     "value_type": "str"
                 }
             },
-            "text": "carrying audio back to the patch\n(array~, audio_in~, capture~, place~, scope~, snapshot~, stream~)",
-            "id": 2202,
+            "text": "arrays played as a signal\n(audio_in~, stream~)",
+            "id": 2535,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "46": {
+        "55": {
+            "init": "help_link capture~ capture~ / array~",
+            "name": "help_link",
+            "position_x": 960,
+            "position_y": 548,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "capture~ / array~",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "olive",
+                    "value_type": "str"
+                }
+            },
+            "id": 2572,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "56": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 552,
+            "width": 188,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "every sample, as an array\n(array~, capture~)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "every sample, as an array\n(array~, capture~)",
+            "id": 2609,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "57": {
+            "init": "help_link snapshot~ snapshot~",
+            "name": "help_link",
+            "position_x": 960,
+            "position_y": 600,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "snapshot~",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "olive",
+                    "value_type": "str"
+                }
+            },
+            "id": 2646,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "58": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1211,
+            "position_y": 604,
+            "width": 218,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a signal's value, once a frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a signal's value, once a frame",
+            "id": 2683,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "59": {
             "init": "comment Samplers",
             "name": "comment",
-            "position_x": 713,
-            "position_y": 574,
+            "position_x": 960,
+            "position_y": 670,
             "width": 77,
             "height": 30,
             "properties": {
@@ -1522,16 +1961,16 @@
                 }
             },
             "comment": "Samplers",
-            "id": 2239,
+            "id": 2720,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "47": {
+        "60": {
             "init": "help_link polyphonic_sampler polyphonic / granular / scratch",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 608,
+            "position_x": 960,
+            "position_y": 704,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1547,20 +1986,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "olive",
+                    "value": "green",
                     "value_type": "str"
                 }
             },
-            "id": 2276,
+            "id": 2757,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "48": {
+        "61": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 612,
+            "position_x": 1211,
+            "position_y": 708,
             "width": 619,
             "height": 52,
             "properties": {
@@ -1591,16 +2030,16 @@
                 }
             },
             "text": "voices allocated for you\n(granular_sampler, granular_sampler~, polyphonic_sampler, polyphonic_sampler~, scratch_sampler,\n scratch_sampler~)",
-            "id": 2313,
+            "id": 2794,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "49": {
+        "62": {
             "init": "help_link sampler_engine sampler engine / voices",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 668,
+            "position_x": 960,
+            "position_y": 764,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1616,20 +2055,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "olive",
+                    "value": "green",
                     "value_type": "str"
                 }
             },
-            "id": 2350,
+            "id": 2831,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "50": {
+        "63": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 672,
+            "position_x": 1211,
+            "position_y": 768,
             "width": 354,
             "height": 40,
             "properties": {
@@ -1660,16 +2099,16 @@
                 }
             },
             "text": "the engine and its voices\n(multi_voice_sampler, sampler_engine, sampler_voice)",
-            "id": 2387,
+            "id": 2868,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "51": {
+        "64": {
             "init": "help_link effort_fader effort / muscle faders",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 720,
+            "position_x": 960,
+            "position_y": 816,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1685,20 +2124,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "olive",
+                    "value": "green",
                     "value_type": "str"
                 }
             },
-            "id": 2424,
+            "id": 2905,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "52": {
+        "65": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 724,
+            "position_x": 1211,
+            "position_y": 820,
             "width": 391,
             "height": 40,
             "properties": {
@@ -1729,16 +2168,16 @@
                 }
             },
             "text": "a moving body playing sounds\n(crossfade_scanner, effort_fader, muscle_activation_fader)",
-            "id": 2461,
+            "id": 2942,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "53": {
+        "66": {
             "init": "comment Speech analysis",
             "name": "comment",
-            "position_x": 713,
-            "position_y": 790,
+            "position_x": 960,
+            "position_y": 886,
             "width": 131,
             "height": 30,
             "properties": {
@@ -1754,16 +2193,16 @@
                 }
             },
             "comment": "Speech analysis",
-            "id": 2498,
+            "id": 2979,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "54": {
+        "67": {
             "init": "help_link speech_envelope speech_envelope(~)",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 824,
+            "position_x": 960,
+            "position_y": 920,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1779,20 +2218,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 2535,
+            "id": 3016,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "55": {
+        "68": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 828,
+            "position_x": 1211,
+            "position_y": 924,
             "width": 249,
             "height": 40,
             "properties": {
@@ -1823,16 +2262,16 @@
                 }
             },
             "text": "loudness on two time scales\n(speech_envelope, speech_envelope~)",
-            "id": 2572,
+            "id": 3053,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "56": {
+        "69": {
             "init": "help_link speech_pitch speech_pitch(~) / speech_prosody",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 876,
+            "position_x": 960,
+            "position_y": 972,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1848,20 +2287,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 2609,
+            "id": 3090,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "57": {
+        "70": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 880,
+            "position_x": 1211,
+            "position_y": 976,
             "width": 311,
             "height": 40,
             "properties": {
@@ -1892,16 +2331,16 @@
                 }
             },
             "text": "the melody\n(speech_pitch, speech_pitch~, speech_prosody)",
-            "id": 2646,
+            "id": 3127,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "58": {
+        "71": {
             "init": "help_link speech_spectral speech timbre",
             "name": "help_link",
-            "position_x": 713,
-            "position_y": 928,
+            "position_x": 960,
+            "position_y": 1024,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1917,20 +2356,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 2683,
+            "id": 3164,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "59": {
+        "72": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 964,
-            "position_y": 932,
+            "position_x": 1211,
+            "position_y": 1028,
             "width": 526,
             "height": 40,
             "properties": {
@@ -1961,7 +2400,7 @@
                 }
             },
             "text": "timbre\n(speech_spectral, speech_spectral~, speech_voice_quality, speech_voice_quality~)",
-            "id": 2720,
+            "id": 3201,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

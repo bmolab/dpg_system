@@ -1,11 +1,11 @@
 {
-    "height": 987,
-    "width": 1643,
+    "height": 1132,
+    "width": 1385,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 644,
     "name": "vca~_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/vca~_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 785,
+            "position_x": 527,
             "position_y": 45,
             "width": 818,
             "height": 796,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These set how loud things are and where they sit, and let you see it.\n\nTHE NODES:\n\nvca~        a voltage controlled amplifier\nmix~        a mixer with per-input levels and a master\npan~        an equal-power panner, -1 hard left to +1 hard right\nfader~      a channel fader with a desk taper and a dB readout\nfader_out~  a fader and an output socket in one\nmeter~      a level meter\nvu~         the same node\n\nvca~ VERSUS mult~:\nvca~ is an amplifier: it clamps negative gain, and its knob SUMS with whatever \nis patched to the gain inlet. So the usual patch is the knob at zero with an \nadsr~ into gain. But because it clamps, an LFO into a vca~ loses its negative \nhalf. When either signal is bipolar - ring modulation, amplitude modulation, \na shaped modulator - use mult~ instead, which keeps it.\n\nfader~ IS A DESK FADER, NOT A GAIN KNOB:\nUnity sits at three quarters of the travel, with +6 dB above it and 60 dB of \ndB-linear reach below, and the bottom twentieth fades to true silence. \nThat taper is why it feels right under the hand where a linear gain does not. \nThe handle is also an inlet, so automation rides the same taper.\n\nfader_out~ exists because almost every patch begins by making a fader~ and an \naudio_out~ and joining them. The split between them is still right when a \npatch has several sources into one socket - this is just the common pair.\n\nmeter~ IS A TAP, NOT A LINK:\nIt has no audio outlets at all, so the chain it reads cannot be altered by it. \nBranch a cord into it and watch.\n\nSYNTAX:\nvca~\nmix~ <count: int>\nfader_out~ <channel> <channel>\n\nEXAMPLE:\nmix~ 6\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal. Patch the right inlet and these work in stereo, one gain or \nposition driving both.\n\ngain (vca~):\nSummed with the knob. Patch an envelope here.\n\nresponse (vca~):\nThe curve of the gain - linear or something more perceptual.\n\nin 1, in 2, ... / master (mix~):\nThe inputs and the overall level. Cords summing into one inlet already mix, \nso this node exists for the levels, which are themselves modulatable.\n\nposition (pan~):\n-1 to +1.\n\nfader / pan / mute (fader~, fader_out~):\nThe handle, the position and the cut.\n\nOUTPUTS: \n\nleft out / right out:\nThe signal.\n\npeak (meter~):\nThe level, in dB, so the patch can see what a person sees.",
+                    "value": "These set how loud things are and where they sit.\n\nTHE NODES:\n\nvca~        a voltage controlled amplifier\nmix~        a mixer with per-input levels and a master\npan~        an equal-power panner, -1 hard left to +1 hard right\nfader~      a channel fader with a desk taper, meters and a dB readout\nfader_out~  a fader and an output socket in one\n\nvca~ VERSUS mult~:\nvca~ is an amplifier: it clamps negative gain to zero, and its knob SUMS with\nwhatever is patched to the gain inlet. The knob starts at 1, so the usual\npatch is 'vca~ 0' - the knob at zero - with an adsr~ into gain. Because it\nclamps, an LFO into a vca~ loses its negative half. When either signal is\nbipolar - ring modulation, amplitude modulation, a shaped modulator - use\nmult~ instead, which keeps it.\n\n'response' is 'linear' (the gain as it is) or 'exponential' (the gain cubed,\nwhich sounds closer to an even fade as an envelope closes).\n\nmix~ IS FOR THE LEVELS:\nCords summing into one inlet already mix, so this node exists for the levels,\nwhich are themselves modulatable. It is mono: one 'signal' outlet.\n\nfader~ IS A DESK FADER, NOT A GAIN KNOB:\nUnity sits at three quarters of the travel, with +6 dB above it and 60 dB of\ndB-linear reach below, and the bottom twentieth fades to true silence.\nThat taper is why it feels right under the hand where a linear gain does not.\nThe handle is also an inlet, so automation rides the same taper. Beside the\nhandle are two level meters (after the fader), and a readout shows its gain in dB.\nThere is no bypass - the bottom of the throw is its off - but there is a mute,\nwhich silences the channel and leaves the handle where it was, so unmuting\ncomes back to the balance you had.\n\nfader_out~ exists because almost every patch begins by making a fader~ and an\naudio_out~ and joining them. It is fader~ with its output going straight to\nthe device channels named in its arguments ('channels' option), and still\nsending left and right out of its outlets, so a meter or record~ can take the\nsame signal. The device itself is engine-wide and is chosen on an audio_out~.\nThe split between fader~ and audio_out~ is still right when a patch has\nseveral sources into one socket - this is just the common pair.\n\nSYNTAX:\nvca~ [<gain>] [linear | exponential]\nmix~ [<inputs, 2 to 16>]\npan~\nfader~\nfader_out~ [<channel> <channel>]\n\nEXAMPLE:\nvca~ 0\nmix~ 6\nfader_out~ 3 4\n\nmix~ has 4 inputs by default, fader_out~ lands on channels 1 and 2.\n\nINPUTS and PARAMETERS:\n\nleft in / right in (vca~):\nThe signal. Patch the right inlet and it works in stereo, one gain curve\ndriving both; unpatched, 'right out' carries the same signal as 'left out'.\n\ngain (vca~):\nThe knob, summed with whatever is patched here. Patch an envelope.\n\nresponse (vca~):\nlinear or exponential.\n\nin 1, in 2, ... / level 1, level 2, ... / master (mix~):\nThe inputs, their levels and the overall level, all starting at 1.\n\nin / position (pan~):\nThe signal, and where it sits: -1 to +1.\n\nleft / right (fader~, fader_out~):\nThe signal; patch 'right' for stereo.\n\nfader / pan / mute (fader~, fader_out~):\nThe handle (0 to 1, unity at 0.75), the equal-power pan (-1 to +1), and the\ncut.\n\nbypass (vca~, pan~) / enable (mix~):\nThe switch on the node's face.\n\nOUTPUTS:\n\nleft out / right out (vca~, pan~):\nThe signal.\n\nsignal (mix~):\nThe mix.\n\nleft / right (fader~, fader_out~):\nThe signal after the fader.\n\nRELATED:\nvu~ and meter~ show the level of any signal.\nmult~ for bipolar multiplication. audio_out~ is the socket on its own.\nplace~ positions a source among more than two speakers.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These set how loud things are and where they sit, and let you see it.\n\nTHE NODES:\n\nvca~        a voltage controlled amplifier\nmix~        a mixer with per-input levels and a master\npan~        an equal-power panner, -1 hard left to +1 hard right\nfader~      a channel fader with a desk taper and a dB readout\nfader_out~  a fader and an output socket in one\nmeter~      a level meter\nvu~         the same node\n\nvca~ VERSUS mult~:\nvca~ is an amplifier: it clamps negative gain, and its knob SUMS with whatever \nis patched to the gain inlet. So the usual patch is the knob at zero with an \nadsr~ into gain. But because it clamps, an LFO into a vca~ loses its negative \nhalf. When either signal is bipolar - ring modulation, amplitude modulation, \na shaped modulator - use mult~ instead, which keeps it.\n\nfader~ IS A DESK FADER, NOT A GAIN KNOB:\nUnity sits at three quarters of the travel, with +6 dB above it and 60 dB of \ndB-linear reach below, and the bottom twentieth fades to true silence. \nThat taper is why it feels right under the hand where a linear gain does not. \nThe handle is also an inlet, so automation rides the same taper.\n\nfader_out~ exists because almost every patch begins by making a fader~ and an \naudio_out~ and joining them. The split between them is still right when a \npatch has several sources into one socket - this is just the common pair.\n\nmeter~ IS A TAP, NOT A LINK:\nIt has no audio outlets at all, so the chain it reads cannot be altered by it. \nBranch a cord into it and watch.\n\nSYNTAX:\nvca~\nmix~ <count: int>\nfader_out~ <channel> <channel>\n\nEXAMPLE:\nmix~ 6\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal. Patch the right inlet and these work in stereo, one gain or \nposition driving both.\n\ngain (vca~):\nSummed with the knob. Patch an envelope here.\n\nresponse (vca~):\nThe curve of the gain - linear or something more perceptual.\n\nin 1, in 2, ... / master (mix~):\nThe inputs and the overall level. Cords summing into one inlet already mix, \nso this node exists for the levels, which are themselves modulatable.\n\nposition (pan~):\n-1 to +1.\n\nfader / pan / mute (fader~, fader_out~):\nThe handle, the position and the cut.\n\nOUTPUTS: \n\nleft out / right out:\nThe signal.\n\npeak (meter~):\nThe level, in dB, so the patch can see what a person sees."
+            "text": "These set how loud things are and where they sit.\n\nTHE NODES:\n\nvca~        a voltage controlled amplifier\nmix~        a mixer with per-input levels and a master\npan~        an equal-power panner, -1 hard left to +1 hard right\nfader~      a channel fader with a desk taper, meters and a dB readout\nfader_out~  a fader and an output socket in one\n\nvca~ VERSUS mult~:\nvca~ is an amplifier: it clamps negative gain to zero, and its knob SUMS with\nwhatever is patched to the gain inlet. The knob starts at 1, so the usual\npatch is 'vca~ 0' - the knob at zero - with an adsr~ into gain. Because it\nclamps, an LFO into a vca~ loses its negative half. When either signal is\nbipolar - ring modulation, amplitude modulation, a shaped modulator - use\nmult~ instead, which keeps it.\n\n'response' is 'linear' (the gain as it is) or 'exponential' (the gain cubed,\nwhich sounds closer to an even fade as an envelope closes).\n\nmix~ IS FOR THE LEVELS:\nCords summing into one inlet already mix, so this node exists for the levels,\nwhich are themselves modulatable. It is mono: one 'signal' outlet.\n\nfader~ IS A DESK FADER, NOT A GAIN KNOB:\nUnity sits at three quarters of the travel, with +6 dB above it and 60 dB of\ndB-linear reach below, and the bottom twentieth fades to true silence.\nThat taper is why it feels right under the hand where a linear gain does not.\nThe handle is also an inlet, so automation rides the same taper. Beside the\nhandle are two level meters (after the fader), and a readout shows its gain in dB.\nThere is no bypass - the bottom of the throw is its off - but there is a mute,\nwhich silences the channel and leaves the handle where it was, so unmuting\ncomes back to the balance you had.\n\nfader_out~ exists because almost every patch begins by making a fader~ and an\naudio_out~ and joining them. It is fader~ with its output going straight to\nthe device channels named in its arguments ('channels' option), and still\nsending left and right out of its outlets, so a meter or record~ can take the\nsame signal. The device itself is engine-wide and is chosen on an audio_out~.\nThe split between fader~ and audio_out~ is still right when a patch has\nseveral sources into one socket - this is just the common pair.\n\nSYNTAX:\nvca~ [<gain>] [linear | exponential]\nmix~ [<inputs, 2 to 16>]\npan~\nfader~\nfader_out~ [<channel> <channel>]\n\nEXAMPLE:\nvca~ 0\nmix~ 6\nfader_out~ 3 4\n\nmix~ has 4 inputs by default, fader_out~ lands on channels 1 and 2.\n\nINPUTS and PARAMETERS:\n\nleft in / right in (vca~):\nThe signal. Patch the right inlet and it works in stereo, one gain curve\ndriving both; unpatched, 'right out' carries the same signal as 'left out'.\n\ngain (vca~):\nThe knob, summed with whatever is patched here. Patch an envelope.\n\nresponse (vca~):\nlinear or exponential.\n\nin 1, in 2, ... / level 1, level 2, ... / master (mix~):\nThe inputs, their levels and the overall level, all starting at 1.\n\nin / position (pan~):\nThe signal, and where it sits: -1 to +1.\n\nleft / right (fader~, fader_out~):\nThe signal; patch 'right' for stereo.\n\nfader / pan / mute (fader~, fader_out~):\nThe handle (0 to 1, unity at 0.75), the equal-power pan (-1 to +1), and the\ncut.\n\nbypass (vca~, pan~) / enable (mix~):\nThe switch on the node's face.\n\nOUTPUTS:\n\nleft out / right out (vca~, pan~):\nThe signal.\n\nsignal (mix~):\nThe mix.\n\nleft / right (fader~, fader_out~):\nThe signal after the fader.\n\nRELATED:\nvu~ and meter~ show the level of any signal.\nmult~ for bipolar multiplication. audio_out~ is the socket on its own.\nplace~ positions a source among more than two speakers."
         },
         "3": {
             "name": "vco~",
@@ -108,8 +108,8 @@
         "4": {
             "name": "adsr~",
             "id": 385,
-            "position_x": 300,
-            "position_y": 62,
+            "position_x": 30,
+            "position_y": 290,
             "width": 187,
             "height": 154,
             "visibility": "show_all",
@@ -121,8 +121,8 @@
             "init": "comment tick the gate to open the envelope",
             "name": "comment",
             "id": 422,
-            "position_x": 513,
-            "position_y": 272,
+            "position_x": 255,
+            "position_y": 290,
             "width": 217,
             "height": 30,
             "visibility": "show_all",
@@ -146,20 +146,21 @@
             "name": "vca~",
             "id": 459,
             "position_x": 30,
-            "position_y": 315,
+            "position_y": 500,
             "width": 168,
             "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "init": "vca~ 0"
         },
         "7": {
             "init": "comment knob at zero, envelope into gain",
             "name": "comment",
             "id": 496,
-            "position_x": 513,
-            "position_y": 485,
+            "position_x": 255,
+            "position_y": 500,
             "width": 205,
             "height": 30,
             "visibility": "show_all",
@@ -180,47 +181,10 @@
             "comment": "knob at zero, envelope into gain"
         },
         "8": {
-            "name": "meter~",
-            "id": 533,
-            "position_x": 300,
-            "position_y": 315,
-            "width": 158,
-            "height": 100,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "init": "comment a tap: it has no audio outlets",
-            "name": "comment",
-            "id": 570,
-            "position_x": 513,
-            "position_y": 525,
-            "width": 193,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a tap: it has no audio outlets",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a tap: it has no audio outlets"
-        },
-        "10": {
             "name": "fader_out~",
-            "id": 607,
+            "id": 533,
             "position_x": 30,
-            "position_y": 545,
+            "position_y": 690,
             "width": 70,
             "height": 308,
             "visibility": "show_all",
@@ -229,12 +193,12 @@
             "properties": {},
             "init": "fader_out~ 1 2"
         },
-        "11": {
+        "9": {
             "init": "comment unity sits three quarters up the throw",
             "name": "comment",
-            "id": 644,
-            "position_x": 513,
-            "position_y": 780,
+            "id": 570,
+            "position_x": 255,
+            "position_y": 690,
             "width": 242,
             "height": 30,
             "visibility": "show_all",
@@ -254,11 +218,11 @@
             },
             "comment": "unity sits three quarters up the throw"
         },
-        "12": {
+        "10": {
             "name": "close",
-            "id": 681,
+            "id": 607,
             "position_x": 24,
-            "position_y": 883,
+            "position_y": 1028,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -300,16 +264,6 @@
             "source_output_index": 0,
             "source_output_name": "left out",
             "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "left in"
-        },
-        "3": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "left out",
-            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "left"

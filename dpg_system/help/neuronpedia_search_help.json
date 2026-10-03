@@ -1,0 +1,349 @@
+{
+    "height": 1021,
+    "width": 1620,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "neuronpedia_search_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/neuronpedia_search_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment neuronpedia_search - finding the feature to steer",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 611,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "neuronpedia_search - finding the feature to steer",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "neuronpedia_search - finding the feature to steer"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 772,
+            "position_y": 45,
+            "width": 808,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Finds the sparse-autoencoder feature to steer, by describing it.\n\nTHE NODE:\n\nneuronpedia_search   ask Neuronpedia for features matching a description\n\nWHAT IT IS FOR:\ngemma steers by feature NUMBER, and there are sixteen thousand of them. You do\nnot want to read them all. Type a description of what you want more or less of\nand this node asks Neuronpedia - a public website holding explanations of these\nfeatures, contributed by people and by automatic labelling - which features fit.\n\nIt needs the internet. Nothing is sent until you press 'search' (or send it a\nmessage); typing in the boxes does not search.\n\nWHAT COMES BACK:\nEach search takes the best three matches and adds them to a list the node keeps\nfor as long as it exists. What goes out is that whole list, as text:\n\n    [[4253, \"strong emotions\", 1], [12514, \"intense feelings\", 2]]\n\nEach entry is [index, description, count]. The description is the first\nexplanation Neuronpedia holds for the feature. The count is NOT a vote on the\nwebsite: it is how many of your searches so far have returned that feature.\nSearch for \"anger\", then \"rage\", then \"fury\", and a feature that turns up all\nthree times has a count of 3.\n\nThat matters downstream, because gemma reads the third number as a weight - a\nfeature that keeps coming back is pushed harder. Searching around a concept\nfrom several directions is therefore a way of building a steering mix. The list\nonly grows; delete and recreate the node to start a new one.\n\nMODEL AND LAYER MUST MATCH:\nA feature index only means anything for the model and layer it was found in -\nthe same number in a different layer is a different concept, and nothing warns\nyou. The defaults, gemma-2-9b and 20-gemmascope-res-16k, are the pair the gemma\nnode uses.\n\nProblems - no search text, a timeout after fifteen seconds, a network or server\nerror, no results - are printed to the console, and nothing is sent.\n\nSYNTAX:\nneuronpedia_search\n\nEXAMPLE:\nneuronpedia_search\n\nINPUTS and PARAMETERS:\n\nsearch text:\nWhat to look for, in plain words.\n\nmodel:\nThe Neuronpedia model id. gemma-2-9b by default.\n\nlayer:\nThe Neuronpedia layer and autoencoder id. 20-gemmascope-res-16k by default.\n\nsearch:\nAsk. Any message arriving here searches too.\n\nOUTPUTS:\n\nresults:\nEvery feature found so far, as a text list of [index, description, count].\n\nRELATED:\ngemma, whose 'interventions' inlet takes this output as it is.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Finds the sparse-autoencoder feature to steer, by describing it.\n\nTHE NODE:\n\nneuronpedia_search   ask Neuronpedia for features matching a description\n\nWHAT IT IS FOR:\ngemma steers by feature NUMBER, and there are sixteen thousand of them. You do\nnot want to read them all. Type a description of what you want more or less of\nand this node asks Neuronpedia - a public website holding explanations of these\nfeatures, contributed by people and by automatic labelling - which features fit.\n\nIt needs the internet. Nothing is sent until you press 'search' (or send it a\nmessage); typing in the boxes does not search.\n\nWHAT COMES BACK:\nEach search takes the best three matches and adds them to a list the node keeps\nfor as long as it exists. What goes out is that whole list, as text:\n\n    [[4253, \"strong emotions\", 1], [12514, \"intense feelings\", 2]]\n\nEach entry is [index, description, count]. The description is the first\nexplanation Neuronpedia holds for the feature. The count is NOT a vote on the\nwebsite: it is how many of your searches so far have returned that feature.\nSearch for \"anger\", then \"rage\", then \"fury\", and a feature that turns up all\nthree times has a count of 3.\n\nThat matters downstream, because gemma reads the third number as a weight - a\nfeature that keeps coming back is pushed harder. Searching around a concept\nfrom several directions is therefore a way of building a steering mix. The list\nonly grows; delete and recreate the node to start a new one.\n\nMODEL AND LAYER MUST MATCH:\nA feature index only means anything for the model and layer it was found in -\nthe same number in a different layer is a different concept, and nothing warns\nyou. The defaults, gemma-2-9b and 20-gemmascope-res-16k, are the pair the gemma\nnode uses.\n\nProblems - no search text, a timeout after fifteen seconds, a network or server\nerror, no results - are printed to the console, and nothing is sent.\n\nSYNTAX:\nneuronpedia_search\n\nEXAMPLE:\nneuronpedia_search\n\nINPUTS and PARAMETERS:\n\nsearch text:\nWhat to look for, in plain words.\n\nmodel:\nThe Neuronpedia model id. gemma-2-9b by default.\n\nlayer:\nThe Neuronpedia layer and autoencoder id. 20-gemmascope-res-16k by default.\n\nsearch:\nAsk. Any message arriving here searches too.\n\nOUTPUTS:\n\nresults:\nEvery feature found so far, as a text list of [index, description, count].\n\nRELATED:\ngemma, whose 'interventions' inlet takes this output as it is."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 370,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "strong emotions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment describe what you want more of",
+            "name": "comment",
+            "id": 385,
+            "position_x": 426,
+            "position_y": 62,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "describe what you want more of",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "describe what you want more of"
+        },
+        "5": {
+            "name": "neuronpedia_search",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 320,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 426,
+            "position_y": 130,
+            "width": 255,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "press search - it needs the internet\nmodel and layer must match gemma",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "press search - it needs the internet\nmodel and layer must match gemma"
+        },
+        "7": {
+            "name": "text_display",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 334,
+            "height": 210,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "height",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "wrap",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "max_lines",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "autoscroll",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 426,
+            "position_y": 370,
+            "width": 261,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "[index, description, count] for every\nfeature found so far - count is how\nmany of YOUR searches returned it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "[index, description, count] for every\nfeature found so far - count is how\nmany of YOUR searches returned it"
+        },
+        "9": {
+            "init": "comment this text goes straight into gemma's interventions",
+            "name": "comment",
+            "id": 570,
+            "position_x": 426,
+            "position_y": 620,
+            "width": 316,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "this text goes straight into gemma's interventions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "this text goes straight into gemma's interventions"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 610,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "search text"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "results",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        }
+    }
+}

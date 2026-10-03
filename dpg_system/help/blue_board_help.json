@@ -1,0 +1,278 @@
+{
+    "height": 941,
+    "width": 1441,
+    "position": [
+        100,
+        100
+    ],
+    "id": 607,
+    "name": "blue_board_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/blue_board_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment blue_board - a foot controller with lights",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "blue_board - a foot controller with lights",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "blue_board - a foot controller with lights"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 603,
+            "position_y": 45,
+            "width": 798,
+            "height": 836,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A node that knows one particular piece of hardware: the iRig BlueBoard\nfoot controller.\n\nTHE NODE:\n\nblue_board   an iRig BlueBoard - four foot buttons, four lights, over Bluetooth\n\nblue_board IS FOR HANDS-FREE:\nA foot controller matters when your hands are doing something else - which, for\na performer wearing a suit, is most of the time. Four buttons and four lights,\nwith the lights telling you the state you cannot see because you are not\nlooking at the patch.\n\nIt finds the BlueBoard by name when it is created and connects in both\ndirections: it hears the buttons and drives the lights.\n\nA MODE PER BUTTON:\nEach button has a menu beside its outlet, and setting it is the thing to get\nright:\n\n    momentary   1 while your foot is down, 0 when it lifts, and the light\n                follows your foot. The default.\n    toggle      each press flips between 1 and 0 and the light shows which;\n                lifting your foot sends nothing. For something you turn on\n                and walk away from.\n    raw         1 down and 0 up, like momentary, but the node leaves the\n                light alone.\n\nTHE LIGHTS FROM THE PATCH:\nBeside each button is a checkbox inlet labelled LED - four of them, one per\nbutton, in order A to D. Ticking one lights that button's lamp and unticking it\nputs it out, so the patch can show a state the foot did not set. In momentary\nand toggle modes it also sets the button's state, and if that changes, the new\nstate comes out of the button's outlet - so the light and the outlet never\ndisagree. In raw mode it only drives the light.\n\nWHEN THE DEVICE IS NOT THERE:\nIf no MIDI device named 'iRig BlueBoard Bluetooth' (or beginning so) is\npresent, the node falls back to the FIRST MIDI input and output it can find,\nwhatever they are - check 'in port' and 'out port'. The buttons are heard as\ncontrollers 20 to 23 on any channel, and the lights are sent as those\ncontrollers on channel 1.\n\nWHAT IT IGNORES:\nArguments - the device name is built in. The 'channel' option is shown but not\nused.\n\nSYNTAX:\nblue_board\n\nEXAMPLE:\nblue_board\n\nINPUTS and PARAMETERS:\n\nLED (four of them, A to D):\nLight or darken that button's lamp.\n\nmode menus (one per button):\nmomentary, toggle or raw. momentary by default.\n\nin port / out port:\nThe MIDI ports, as menus. Both are set to the BlueBoard automatically when it\nis paired and present.\n\nchannel (option):\nNot used by this node.\n\nOUTPUTS:\n\nA / B / C / D:\nThe four buttons, 1 or 0, as the mode decides.\n\nRELATED:\nmpd218, the other device-specific node, for the Akai MPD218 pad controller.\nmidi_control_in, for a foot controller this node does not know.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A node that knows one particular piece of hardware: the iRig BlueBoard\nfoot controller.\n\nTHE NODE:\n\nblue_board   an iRig BlueBoard - four foot buttons, four lights, over Bluetooth\n\nblue_board IS FOR HANDS-FREE:\nA foot controller matters when your hands are doing something else - which, for\na performer wearing a suit, is most of the time. Four buttons and four lights,\nwith the lights telling you the state you cannot see because you are not\nlooking at the patch.\n\nIt finds the BlueBoard by name when it is created and connects in both\ndirections: it hears the buttons and drives the lights.\n\nA MODE PER BUTTON:\nEach button has a menu beside its outlet, and setting it is the thing to get\nright:\n\n    momentary   1 while your foot is down, 0 when it lifts, and the light\n                follows your foot. The default.\n    toggle      each press flips between 1 and 0 and the light shows which;\n                lifting your foot sends nothing. For something you turn on\n                and walk away from.\n    raw         1 down and 0 up, like momentary, but the node leaves the\n                light alone.\n\nTHE LIGHTS FROM THE PATCH:\nBeside each button is a checkbox inlet labelled LED - four of them, one per\nbutton, in order A to D. Ticking one lights that button's lamp and unticking it\nputs it out, so the patch can show a state the foot did not set. In momentary\nand toggle modes it also sets the button's state, and if that changes, the new\nstate comes out of the button's outlet - so the light and the outlet never\ndisagree. In raw mode it only drives the light.\n\nWHEN THE DEVICE IS NOT THERE:\nIf no MIDI device named 'iRig BlueBoard Bluetooth' (or beginning so) is\npresent, the node falls back to the FIRST MIDI input and output it can find,\nwhatever they are - check 'in port' and 'out port'. The buttons are heard as\ncontrollers 20 to 23 on any channel, and the lights are sent as those\ncontrollers on channel 1.\n\nWHAT IT IGNORES:\nArguments - the device name is built in. The 'channel' option is shown but not\nused.\n\nSYNTAX:\nblue_board\n\nEXAMPLE:\nblue_board\n\nINPUTS and PARAMETERS:\n\nLED (four of them, A to D):\nLight or darken that button's lamp.\n\nmode menus (one per button):\nmomentary, toggle or raw. momentary by default.\n\nin port / out port:\nThe MIDI ports, as menus. Both are set to the BlueBoard automatically when it\nis paired and present.\n\nchannel (option):\nNot used by this node.\n\nOUTPUTS:\n\nA / B / C / D:\nThe four buttons, 1 or 0, as the mode decides.\n\nRELATED:\nmpd218, the other device-specific node, for the Akai MPD218 pad controller.\nmidi_control_in, for a foot controller this node does not know."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment lights button A's lamp from the patch",
+            "name": "comment",
+            "id": 385,
+            "position_x": 318,
+            "position_y": 62,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lights button A's lamp from the patch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "lights button A's lamp from the patch"
+        },
+        "5": {
+            "name": "blue_board",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 262,
+            "height": 255,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 318,
+            "position_y": 130,
+            "width": 255,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "set each button momentary, toggle or\nraw in the menu beside its outlet",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "set each button momentary, toggle or\nraw in the menu beside its outlet"
+        },
+        "7": {
+            "name": "int",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 460,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment button A: 1 or 0",
+            "name": "comment",
+            "id": 533,
+            "position_x": 318,
+            "position_y": 460,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "button A: 1 or 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "button A: 1 or 0"
+        },
+        "9": {
+            "name": "close",
+            "id": 570,
+            "position_x": 24,
+            "position_y": 532,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "LED"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "A",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

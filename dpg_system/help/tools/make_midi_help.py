@@ -346,37 +346,147 @@ print(build('midi_pitchbend_in', 'midi expression - bend and pressure', body, de
             links, demo_width=620, text_width=790, text_height=700))
 
 # ---------------------------------------------------------------------- mpd218
-body = """Two nodes that know a particular piece of hardware.
+body = """A node that knows one particular piece of hardware: the Akai MPD218 pad
+controller.
 
-THE NODES:
+THE NODE:
 
-mpd218      an Akai MPD218 pad controller
-blue_board  an iRig BlueBoard foot controller
+mpd218   an Akai MPD218, with its pads working as a set of lit selectors
 
-WHY A NODE PER DEVICE:
-Everything these do could be done with midi_control_in and midi_note_in and a 
-list of numbers written down somewhere. What they save is the list - the pad 
-and controller numbering is built in, so 'pad' and 'controller' come out 
-already meaning what they say.
+WHAT IT DOES:
+It finds the MPD218 by name when it is created and connects to it in both
+directions - listening to it, and talking back to it to light its pads.
 
-They are also the place the device's oddities live. The MPD218 has banks, so 
-the same pad sends different notes depending on which bank is selected, and 
-'select' handles that. The BlueBoard's buttons can be momentary or latching and 
-its LEDs are addressable, so the node has a mode per button and an LED inlet 
-per light.
+The pads behave like radio buttons. Strike one and it lights, the pad lit
+before it goes dark, and the pad comes out of 'pad'. Because only one pad is
+ever lit, the device itself shows which choice is current - useful for picking
+a scene, a preset or a section without looking at the screen.
 
-blue_board IS FOR HANDS-FREE:
-A foot controller matters when your hands are doing something else - which, for 
-a performer wearing a suit, is most of the time. Four buttons and four lights, 
-over Bluetooth, with the lights telling you the state you cannot see because 
-you are not looking at the patch.
+'pad' sends the pad's NOTE NUMBER, exactly as the MPD218 sends it - which notes
+the pads play is set in the device's own preset - not a pad count from 1 to 16.
+Releasing the lit pad sends its number again.
 
-Setting each button's mode is the thing to get right: momentary for something 
-that should last only while your foot is down, latching for something you turn 
-on and walk away from.
+The knobs come out of 'controller' as a pair: [controller number, value], with
+the value 0 to 127 as the device sends it.
+
+'select' does the same thing from the patch: send it a note number and the
+node sends note-offs for notes 0 to 15 to the device, lights that note's pad and
+sends the number out of 'pad', as though it had been struck.
+
+WHEN THE DEVICE IS NOT THERE:
+If no MIDI device whose name begins 'MPD218' is present, the node falls back to
+the FIRST MIDI input and output it can find, whatever they are. On creation it
+sends note-offs for notes 0 to 15 to that output, so with something else
+plugged in, check 'in port' and 'out port' before trusting it.
+
+WHAT IT IGNORES:
+Arguments - the device name is built in. The 'channel' option is shown but not
+used: notes and knobs are accepted on any channel, and the lights are sent on
+channel 1.
 
 SYNTAX:
 mpd218
+
+EXAMPLE:
+mpd218
+
+INPUTS and PARAMETERS:
+
+select:
+A note number: light that pad, darken the rest, send it out of 'pad'.
+
+in port / out port:
+The MIDI ports, as menus. Both are set to the MPD218 automatically when it is
+present.
+
+channel (option):
+Not used by this node.
+
+OUTPUTS:
+
+pad:
+The note number of the pad struck (or selected), again when it is released.
+
+controller:
+[controller number, value] for each knob movement.
+
+RELATED:
+blue_board, the other device-specific node, for the iRig BlueBoard foot
+controller.
+midi_note_in and midi_control_in, for any controller this node does not know."""
+
+demo = [
+    {'key': 'i0', 'init': 'int', 'pos': (30, 62), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c0', 'comment': True, 'text': 'select a pad from the patch',
+     'pos': (330, 62)},
+    {'key': 'mp', 'init': 'mpd218', 'pos': (30, 130), 'w': 280, 'h': 240},
+    {'key': 'c1', 'comment': True,
+     'text': 'strike a pad: it lights, the last one\ngoes dark - the device shows the choice',
+     'pos': (330, 130)},
+    {'key': 'i2', 'init': 'int', 'pos': (30, 400), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c2', 'comment': True, 'text': 'the pad\'s note number, as the device sends it',
+     'pos': (330, 400)},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 470), 'w': 240, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': '[controller number, value] from the knobs',
+     'pos': (330, 470)},
+]
+links = [('i0', 'int out', 'mp', 'select'),
+         ('mp', 'pad', 'i2', ''),
+         ('mp', 'controller', 'l1', '')]
+print(build('mpd218', 'mpd218 - a pad controller that shows its choice', body,
+            demo, links, demo_width=660, text_width=790, text_height=820))
+
+
+# ------------------------------------------------------------------ blue_board
+body = """A node that knows one particular piece of hardware: the iRig BlueBoard
+foot controller.
+
+THE NODE:
+
+blue_board   an iRig BlueBoard - four foot buttons, four lights, over Bluetooth
+
+blue_board IS FOR HANDS-FREE:
+A foot controller matters when your hands are doing something else - which, for
+a performer wearing a suit, is most of the time. Four buttons and four lights,
+with the lights telling you the state you cannot see because you are not
+looking at the patch.
+
+It finds the BlueBoard by name when it is created and connects in both
+directions: it hears the buttons and drives the lights.
+
+A MODE PER BUTTON:
+Each button has a menu beside its outlet, and setting it is the thing to get
+right:
+
+    momentary   1 while your foot is down, 0 when it lifts, and the light
+                follows your foot. The default.
+    toggle      each press flips between 1 and 0 and the light shows which;
+                lifting your foot sends nothing. For something you turn on
+                and walk away from.
+    raw         1 down and 0 up, like momentary, but the node leaves the
+                light alone.
+
+THE LIGHTS FROM THE PATCH:
+Beside each button is a checkbox inlet labelled LED - four of them, one per
+button, in order A to D. Ticking one lights that button's lamp and unticking it
+puts it out, so the patch can show a state the foot did not set. In momentary
+and toggle modes it also sets the button's state, and if that changes, the new
+state comes out of the button's outlet - so the light and the outlet never
+disagree. In raw mode it only drives the light.
+
+WHEN THE DEVICE IS NOT THERE:
+If no MIDI device named 'iRig BlueBoard Bluetooth' (or beginning so) is
+present, the node falls back to the FIRST MIDI input and output it can find,
+whatever they are - check 'in port' and 'out port'. The buttons are heard as
+controllers 20 to 23 on any channel, and the lights are sent as those
+controllers on channel 1.
+
+WHAT IT IGNORES:
+Arguments - the device name is built in. The 'channel' option is shown but not
+used.
+
+SYNTAX:
 blue_board
 
 EXAMPLE:
@@ -384,47 +494,40 @@ blue_board
 
 INPUTS and PARAMETERS:
 
+LED (four of them, A to D):
+Light or darken that button's lamp.
+
+mode menus (one per button):
+momentary, toggle or raw. momentary by default.
+
 in port / out port:
-The device, both directions - both of these are two-way.
+The MIDI ports, as menus. Both are set to the BlueBoard automatically when it
+is paired and present.
 
-channel:
-The MIDI channel.
+channel (option):
+Not used by this node.
 
-select (mpd218):
-Which bank of pads.
+OUTPUTS:
 
-A_mode / B_mode / C_mode / D_mode (blue_board):
-Momentary or latching, per button.
+A / B / C / D:
+The four buttons, 1 or 0, as the mode decides.
 
-LED (blue_board):
-One inlet per light.
-
-OUTPUTS: 
-
-pad / controller (mpd218):
-Which pad was struck, and the knob values.
-
-A / B / C / D (blue_board):
-The four buttons.
-
-midi received:
-Everything else the device sent, undecoded - useful when the device does 
-something these nodes do not cover."""
+RELATED:
+mpd218, the other device-specific node, for the Akai MPD218 pad controller.
+midi_control_in, for a foot controller this node does not know."""
 
 demo = [
-    {'key': 'bb', 'init': 'blue_board', 'pos': (30, 62), 'w': 280, 'h': 300},
-    {'key': 'c0', 'comment': True, 'text': 'set each button momentary or latching',
-     'pos': (30, 375)},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 415), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'tog', 'init': 'toggle', 'pos': (180, 415), 'w': 45, 'h': 42},
-    {'key': 'c1', 'comment': True, 'text': 'the LED tells you a state you cannot\nsee, because you are not looking',
-     'pos': (30, 470)},
-    {'key': 'mp', 'init': 'mpd218', 'pos': (350, 62), 'w': 280, 'h': 240},
-    {'key': 'i2', 'init': 'int', 'pos': (350, 320), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c3', 'comment': True, 'text': 'pad numbering built in, so you do not\nkeep a list of note numbers anywhere',
-     'pos': (350, 375)},
+    {'key': 'tog', 'init': 'toggle', 'pos': (30, 62), 'w': 45, 'h': 42},
+    {'key': 'c0', 'comment': True, 'text': 'lights button A\'s lamp from the patch',
+     'pos': (330, 62)},
+    {'key': 'bb', 'init': 'blue_board', 'pos': (30, 130), 'w': 280, 'h': 300},
+    {'key': 'c1', 'comment': True,
+     'text': 'set each button momentary, toggle or\nraw in the menu beside its outlet',
+     'pos': (330, 130)},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 460), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c2', 'comment': True, 'text': 'button A: 1 or 0',
+     'pos': (330, 460)},
 ]
-links = [('bb', 'A', 'i1', ''), ('tog', '', 'bb', 'LED'),
-         ('mp', 'pad', 'i2', '')]
-print(build('mpd218', 'mpd218 and blue_board - hardware that knows itself', body,
-            demo, links, demo_width=660, text_width=790, text_height=660))
+links = [('tog', '', 'bb', 'LED'), ('bb', 'A', 'i1', '')]
+print(build('blue_board', 'blue_board - a foot controller with lights', body,
+            demo, links, demo_width=660, text_width=790, text_height=820))

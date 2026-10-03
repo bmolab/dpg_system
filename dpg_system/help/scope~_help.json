@@ -1,0 +1,191 @@
+{
+    "height": 861,
+    "width": 1513,
+    "position": [
+        100,
+        100
+    ],
+    "id": 496,
+    "name": "scope~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scope~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment scope~ - the waveform, drawn",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 353,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scope~ - the waveform, drawn",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scope~ - the waveform, drawn"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 655,
+            "position_y": 45,
+            "width": 818,
+            "height": 756,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "scope~ draws a signal's waveform: an oscilloscope with a trigger.\n\nTHE NODES:\n\nscope~  an oscilloscope: every sample, drawn\n\nWHY NOT plot?\nplot takes one value a frame, so an audio signal reaching it through snapshot~\nis aliased beyond recognition: sixty samples a second of something oscillating\nat 440 Hz is noise. scope~ keeps every sample in a ring buffer and draws a\nwindow of it, so what you see is the waveform.\n\nTHE TRIGGER HOLDS IT STILL:\nUntriggered ('free'), each frame starts at an unrelated point in the cycle and\na steady tone scrolls and tears. 'rising' (the default) and 'falling' start the\nwindow where the signal crosses 'level' - zero by default, so a zero crossing -\ngoing up or down, and a periodic signal then stands still. What moves on the\nscreen is what is actually changing in the sound. The level shows as a faint\nline.\n\n'noise reject' is the trigger's tolerance for wobble: a crossing only counts\nonce the signal has been clear of the level by that much on the other side.\nRaise it until a noisy trace sits still; too high and quiet material stops\ntriggering.\n\nWith nothing to trigger on - silence, or a cycle longer than the window - the\nlast trace is held for half a second, then the display runs free, so it goes\nback to showing the truth rather than freezing on a stale waveform.\n\nTHE READOUT:\n'window' shows how long the window is and, when triggered, the frequency\nimplied by the spacing of the crossings.\n\nSYNTAX:\nscope~ [<samples>] [free | rising | falling]\n\nEXAMPLE:\nscope~ 1024 falling\n\nWith no arguments the window is 512 samples, triggered rising.\n\nINPUTS and PARAMETERS:\n\nenable:\nOff stops the trace.\n\nin:\nThe signal.\n\nsync:\nfree, rising or falling.\n\nlevel:\nThe value the trace starts on.\n\ntime:\nHow much time is on screen, in ms. It and the 'samples' option are two\nhandles on the same thing: move one and the other follows.\n\nsamples / noise reject / min y / max y / width / height (options):\nThe window in samples (16 to 16384), the trigger's tolerance (0 by default),\nthe vertical range (-1 to 1 by default), and the size of the display (300 by\n128 by default; the strip under the display drags it bigger).\n\nOUTPUTS:\n\narray:\nThe window on screen, every frame, lined up on the trigger - for a patch that\nwants to measure what it is looking at. Where the trigger is beside the point,\ncapture~ is the better source.\n\nRELATED:\ncapture~ (and array~) for the samples as arrays.\nsnapshot~ for a control signal's value. vu~ for a level.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 740,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "scope~ draws a signal's waveform: an oscilloscope with a trigger.\n\nTHE NODES:\n\nscope~  an oscilloscope: every sample, drawn\n\nWHY NOT plot?\nplot takes one value a frame, so an audio signal reaching it through snapshot~\nis aliased beyond recognition: sixty samples a second of something oscillating\nat 440 Hz is noise. scope~ keeps every sample in a ring buffer and draws a\nwindow of it, so what you see is the waveform.\n\nTHE TRIGGER HOLDS IT STILL:\nUntriggered ('free'), each frame starts at an unrelated point in the cycle and\na steady tone scrolls and tears. 'rising' (the default) and 'falling' start the\nwindow where the signal crosses 'level' - zero by default, so a zero crossing -\ngoing up or down, and a periodic signal then stands still. What moves on the\nscreen is what is actually changing in the sound. The level shows as a faint\nline.\n\n'noise reject' is the trigger's tolerance for wobble: a crossing only counts\nonce the signal has been clear of the level by that much on the other side.\nRaise it until a noisy trace sits still; too high and quiet material stops\ntriggering.\n\nWith nothing to trigger on - silence, or a cycle longer than the window - the\nlast trace is held for half a second, then the display runs free, so it goes\nback to showing the truth rather than freezing on a stale waveform.\n\nTHE READOUT:\n'window' shows how long the window is and, when triggered, the frequency\nimplied by the spacing of the crossings.\n\nSYNTAX:\nscope~ [<samples>] [free | rising | falling]\n\nEXAMPLE:\nscope~ 1024 falling\n\nWith no arguments the window is 512 samples, triggered rising.\n\nINPUTS and PARAMETERS:\n\nenable:\nOff stops the trace.\n\nin:\nThe signal.\n\nsync:\nfree, rising or falling.\n\nlevel:\nThe value the trace starts on.\n\ntime:\nHow much time is on screen, in ms. It and the 'samples' option are two\nhandles on the same thing: move one and the other follows.\n\nsamples / noise reject / min y / max y / width / height (options):\nThe window in samples (16 to 16384), the trigger's tolerance (0 by default),\nthe vertical range (-1 to 1 by default), and the size of the display (300 by\n128 by default; the strip under the display drags it bigger).\n\nOUTPUTS:\n\narray:\nThe window on screen, every frame, lined up on the trigger - for a patch that\nwants to measure what it is looking at. Where the trigger is beside the point,\ncapture~ is the better source.\n\nRELATED:\ncapture~ (and array~) for the samples as arrays.\nsnapshot~ for a control signal's value. vu~ for a level."
+        },
+        "3": {
+            "name": "vco~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 199,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 220"
+        },
+        "4": {
+            "name": "scope~",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 300,
+            "width": 308,
+            "height": 248,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 364,
+            "position_y": 300,
+            "width": 261,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "triggered on the rising zero crossing\nset sync to free to see it tear",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "triggered on the rising zero crossing\nset sync to free to see it tear"
+        },
+        "6": {
+            "name": "close",
+            "id": 459,
+            "position_x": 24,
+            "position_y": 578,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

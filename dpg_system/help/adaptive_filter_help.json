@@ -1,6 +1,6 @@
 {
-    "height": 1035,
-    "width": 1661,
+    "height": 1941,
+    "width": 1467,
     "position": [
         100,
         100
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 793,
+            "position_x": 599,
             "position_y": 45,
             "width": 828,
-            "height": 796,
+            "height": 1836,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These filters vary their own smoothing according to how fast the signal is moving.\n\nA plain filter forces one choice on you: smooth enough to kill the noise, or \nresponsive enough to keep up with real movement. You cannot have both, because \nthe filter cannot tell the difference between the two.\n\nThese can, using one simple assumption: when the signal is barely moving, \nwhatever movement there is is probably noise, so smooth hard; when it is moving \nquickly, that is probably real, so get out of the way. The result follows fast \ngestures closely and sits still when nothing is happening.\n\nTHE NODES:\n\nadaptive_filter             for ordinary numbers and arrays\nadaptive_quaternion_filter  the same idea for quaternions, where the \n                            \"distance\" between two values is an angle\none_euro_filter             the published One Euro filter, the standard \n                            version of this idea\n\nadaptive_filter gives you the most control and reports the smoothing it chose. \none_euro_filter has fewer knobs and a well-documented tuning procedure. \nIf you are new to these, start with one_euro_filter.\n\nSYNTAX:\nadaptive_filter <power: float>\none_euro_filter <min_cutoff> <beta> <d_cutoff>\n\nEXAMPLE:\none_euro_filter 1.0 0.5 1.0\n\nINPUTS and PARAMETERS - adaptive_filter:\n\nin:\nThe value to filter. Receiving data here triggers the node.\n\npower:\nHow sharply the filter reacts to speed. \nLow values behave almost like a plain filter; high values snap open on the \nslightest movement. Default 2.0.\n\nresponsiveness:\nThe base smoothing used when the signal is still, from 0 to 1. \nThis is the \"how calm is calm\" end of the trade.\n\nsignal range:\nHow large a movement counts as fast. Set it to roughly the size of the \nexcursions you care about; the node judges speed relative to this.\n\nsmooth response / offset response:\nHow quickly the filter's own smoothing setting is allowed to change. \nRaise them if you can hear or see the filter switching character abruptly.\n\nreset response:\nA button that clears the adaption and starts again.\n\nINPUTS and PARAMETERS - one_euro_filter:\n\ninput:\nThe value to filter. Receiving data here triggers the node.\n\nmin_cutoff:\nThe smoothing used when the signal is still. LOWER means smoother. \nThis is the first thing to tune: set beta to 0, then lower min_cutoff until \nthe signal is still when you are.\n\nbeta:\nHow much speed opens the filter up. Tune this second: raise it until fast \nmovements stop lagging. Higher means more responsive when moving.\n\nd_cutoff:\nSmoothing applied to the filter's own speed estimate. \nThe default of 1.0 is almost always right; leave it alone unless the filter is \nreacting erratically to jittery input.\n\ndt:\nThe time between samples, in seconds. Default 1/60. \nIt must match your real frame rate or the speed estimate is wrong and beta \nmeans something other than what you set.\n\nOUTPUTS: \n\nout:\nThe filtered value.\n\ndegree out (adaptive_filter only):\nThe smoothing degree the filter chose on this frame. \nWorth plotting while tuning - it shows you directly when the filter is opening \nup and when it is clamping down.",
+                    "value": "adaptive_filter smooths a signal by an amount that changes with how far it is moving.\n\nA plain filter forces one choice on you: smooth enough to kill the noise, or\nresponsive enough to keep up with real movement. It cannot have both, because it\ncannot tell the two apart.\n\nadaptive_filter makes a simple assumption that lets it try: when the input stays\nclose to the output, the difference is probably noise, so smooth hard; when the\ninput pulls far away from it, that is probably real movement, so follow quickly.\nThe result keeps up with sharp gestures and sits still when nothing is happening.\n\nTHE NODES:\n\nadaptive_filter             for numbers, NumPy arrays and PyTorch tensors\nadaptive_quaternion_filter  a variant for one quaternion (a rotation), which\n                            keeps its output at length 1\n\nHOW IT DECIDES:\nOn every input it measures the gap between the new value and its current output,\ndivides it by 'signal range', and smooths that gap a little ('offset response').\nIt raises the result to the power 'power' to get the share of the new value to\ntake this time, capped at 'responsiveness'. Small gaps give tiny steps and heavy\nsmoothing; a gap the size of 'signal range' or larger gives the full\n'responsiveness'. For an array the gap is averaged over all the elements, so the\nwhole array is smoothed by one shared amount.\n\nSYNTAX:\nadaptive_filter <power: float>\nadaptive_quaternion_filter <power: float>\n\nEXAMPLE:\nadaptive_filter 2.0\n\nINPUTS and PARAMETERS - adaptive_filter:\n\nin:\nThe value to filter. Receiving data here triggers the node.\n\npower:\nHow sharply the filter tells small gaps from large ones. Default 2.0, or the\nargument. At 0 it is a plain filter that always takes the 'responsiveness' share.\nHigher values smooth small gaps harder and wait for a gap near 'signal range'\nbefore opening up - a sharper divide between noise and movement.\n\nresponsiveness:\nThe largest share of the new value the filter will take in one step, 0 to 1.\nDefault 0.95. This is the FAST end of the trade: lower it to keep some smoothing\neven during big movements.\n\nsignal range:\nThe size of gap that counts as real movement. Default 1.0. Set it to roughly the\nsize of the movements you care about - this is the most important setting.\nToo large and everything looks like noise, so the output lags; too small and\neverything looks like movement, so the noise comes through.\n\noffset response:\nSmoothing of the measured gap, from 0 to 1. Default 0.9. Higher stops a single\nnoisy value from opening the filter, but reacts a little later to real movement.\n\nsmooth response:\nSmoothing of the share taken, from 0 to 1. Default 0. Raise it if the filter\nvisibly switches between calm and quick too abruptly.\n\nreset response:\nA button that throws the current output away; it restarts from zero and catches\nup with the input.\n\nINPUTS and PARAMETERS - adaptive_quaternion_filter:\n\nThe same idea, with these differences:\n\nin:\nA quaternion as four numbers - a list, NumPy array or PyTorch tensor. Lists are\nconverted. The output is rescaled to length 1 after every step, so it stays a\nvalid rotation.\n\npower:\nDefault 1.0.\n\nresponsiveness:\nHere this is the most smoothing applied, used when the input is still - the share\nof the PREVIOUS output kept on each step. Default 0.05, which smooths very little;\nraise it towards 0.9 for real smoothing. This is the opposite sense from\nadaptive_filter.\n\nsignal range:\nDefault 0.1. The gap is the average difference between the four numbers of the\nnew quaternion and those of the output.\n\noffset response / smooth response:\nAs on adaptive_filter; both default to 0.5.\n\nnoise floor:\nPresent, but it currently has no effect.\n\nA quaternion and its negative are the same rotation, but this filter does not\nknow that: if your source flips sign, the filter treats it as a sudden big\nmovement and follows it at once, unsmoothed.\n\nIt is meant for ONE quaternion. Given an array of several, it rescales the whole\narray to length 1 together, which leaves each quaternion shorter than 1.\n\nOUTPUTS:\n\ndegree out:\nHow much the filter followed on this frame. On adaptive_filter it is the share of\nthe new value taken: near 0 when still, rising towards 'responsiveness' on a big\nmovement. Worth plotting while tuning - it shows you directly when the filter is\nopening up and when it is clamping down. On adaptive_quaternion_filter it is the\nshare of the old output kept, so it reads the other way up.\n\nout:\nThe filtered value.\n\nRELATED:\none_euro_filter   the published One Euro filter: the same idea, adapting to\n                  speed, with a well-documented tuning procedure\nfilter            a plain one-pole smoother, for comparison\nkalman_filter     smoothing by predicting where a smoothly moving value should be",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 780,
+                    "value": 1820,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These filters vary their own smoothing according to how fast the signal is moving.\n\nA plain filter forces one choice on you: smooth enough to kill the noise, or \nresponsive enough to keep up with real movement. You cannot have both, because \nthe filter cannot tell the difference between the two.\n\nThese can, using one simple assumption: when the signal is barely moving, \nwhatever movement there is is probably noise, so smooth hard; when it is moving \nquickly, that is probably real, so get out of the way. The result follows fast \ngestures closely and sits still when nothing is happening.\n\nTHE NODES:\n\nadaptive_filter             for ordinary numbers and arrays\nadaptive_quaternion_filter  the same idea for quaternions, where the \n                            \"distance\" between two values is an angle\none_euro_filter             the published One Euro filter, the standard \n                            version of this idea\n\nadaptive_filter gives you the most control and reports the smoothing it chose. \none_euro_filter has fewer knobs and a well-documented tuning procedure. \nIf you are new to these, start with one_euro_filter.\n\nSYNTAX:\nadaptive_filter <power: float>\none_euro_filter <min_cutoff> <beta> <d_cutoff>\n\nEXAMPLE:\none_euro_filter 1.0 0.5 1.0\n\nINPUTS and PARAMETERS - adaptive_filter:\n\nin:\nThe value to filter. Receiving data here triggers the node.\n\npower:\nHow sharply the filter reacts to speed. \nLow values behave almost like a plain filter; high values snap open on the \nslightest movement. Default 2.0.\n\nresponsiveness:\nThe base smoothing used when the signal is still, from 0 to 1. \nThis is the \"how calm is calm\" end of the trade.\n\nsignal range:\nHow large a movement counts as fast. Set it to roughly the size of the \nexcursions you care about; the node judges speed relative to this.\n\nsmooth response / offset response:\nHow quickly the filter's own smoothing setting is allowed to change. \nRaise them if you can hear or see the filter switching character abruptly.\n\nreset response:\nA button that clears the adaption and starts again.\n\nINPUTS and PARAMETERS - one_euro_filter:\n\ninput:\nThe value to filter. Receiving data here triggers the node.\n\nmin_cutoff:\nThe smoothing used when the signal is still. LOWER means smoother. \nThis is the first thing to tune: set beta to 0, then lower min_cutoff until \nthe signal is still when you are.\n\nbeta:\nHow much speed opens the filter up. Tune this second: raise it until fast \nmovements stop lagging. Higher means more responsive when moving.\n\nd_cutoff:\nSmoothing applied to the filter's own speed estimate. \nThe default of 1.0 is almost always right; leave it alone unless the filter is \nreacting erratically to jittery input.\n\ndt:\nThe time between samples, in seconds. Default 1/60. \nIt must match your real frame rate or the speed estimate is wrong and beta \nmeans something other than what you set.\n\nOUTPUTS: \n\nout:\nThe filtered value.\n\ndegree out (adaptive_filter only):\nThe smoothing degree the filter chose on this frame. \nWorth plotting while tuning - it shows you directly when the filter is opening \nup and when it is clamping down."
+            "text": "adaptive_filter smooths a signal by an amount that changes with how far it is moving.\n\nA plain filter forces one choice on you: smooth enough to kill the noise, or\nresponsive enough to keep up with real movement. It cannot have both, because it\ncannot tell the two apart.\n\nadaptive_filter makes a simple assumption that lets it try: when the input stays\nclose to the output, the difference is probably noise, so smooth hard; when the\ninput pulls far away from it, that is probably real movement, so follow quickly.\nThe result keeps up with sharp gestures and sits still when nothing is happening.\n\nTHE NODES:\n\nadaptive_filter             for numbers, NumPy arrays and PyTorch tensors\nadaptive_quaternion_filter  a variant for one quaternion (a rotation), which\n                            keeps its output at length 1\n\nHOW IT DECIDES:\nOn every input it measures the gap between the new value and its current output,\ndivides it by 'signal range', and smooths that gap a little ('offset response').\nIt raises the result to the power 'power' to get the share of the new value to\ntake this time, capped at 'responsiveness'. Small gaps give tiny steps and heavy\nsmoothing; a gap the size of 'signal range' or larger gives the full\n'responsiveness'. For an array the gap is averaged over all the elements, so the\nwhole array is smoothed by one shared amount.\n\nSYNTAX:\nadaptive_filter <power: float>\nadaptive_quaternion_filter <power: float>\n\nEXAMPLE:\nadaptive_filter 2.0\n\nINPUTS and PARAMETERS - adaptive_filter:\n\nin:\nThe value to filter. Receiving data here triggers the node.\n\npower:\nHow sharply the filter tells small gaps from large ones. Default 2.0, or the\nargument. At 0 it is a plain filter that always takes the 'responsiveness' share.\nHigher values smooth small gaps harder and wait for a gap near 'signal range'\nbefore opening up - a sharper divide between noise and movement.\n\nresponsiveness:\nThe largest share of the new value the filter will take in one step, 0 to 1.\nDefault 0.95. This is the FAST end of the trade: lower it to keep some smoothing\neven during big movements.\n\nsignal range:\nThe size of gap that counts as real movement. Default 1.0. Set it to roughly the\nsize of the movements you care about - this is the most important setting.\nToo large and everything looks like noise, so the output lags; too small and\neverything looks like movement, so the noise comes through.\n\noffset response:\nSmoothing of the measured gap, from 0 to 1. Default 0.9. Higher stops a single\nnoisy value from opening the filter, but reacts a little later to real movement.\n\nsmooth response:\nSmoothing of the share taken, from 0 to 1. Default 0. Raise it if the filter\nvisibly switches between calm and quick too abruptly.\n\nreset response:\nA button that throws the current output away; it restarts from zero and catches\nup with the input.\n\nINPUTS and PARAMETERS - adaptive_quaternion_filter:\n\nThe same idea, with these differences:\n\nin:\nA quaternion as four numbers - a list, NumPy array or PyTorch tensor. Lists are\nconverted. The output is rescaled to length 1 after every step, so it stays a\nvalid rotation.\n\npower:\nDefault 1.0.\n\nresponsiveness:\nHere this is the most smoothing applied, used when the input is still - the share\nof the PREVIOUS output kept on each step. Default 0.05, which smooths very little;\nraise it towards 0.9 for real smoothing. This is the opposite sense from\nadaptive_filter.\n\nsignal range:\nDefault 0.1. The gap is the average difference between the four numbers of the\nnew quaternion and those of the output.\n\noffset response / smooth response:\nAs on adaptive_filter; both default to 0.5.\n\nnoise floor:\nPresent, but it currently has no effect.\n\nA quaternion and its negative are the same rotation, but this filter does not\nknow that: if your source flips sign, the filter treats it as a sudden big\nmovement and follows it at once, unsmoothed.\n\nIt is meant for ONE quaternion. Given an array of several, it rescales the whole\narray to length 1 together, which leaves each quaternion shorter than 1.\n\nOUTPUTS:\n\ndegree out:\nHow much the filter followed on this frame. On adaptive_filter it is the share of\nthe new value taken: near 0 when still, rising towards 'responsiveness' on a big\nmovement. Worth plotting while tuning - it shows you directly when the filter is\nopening up and when it is clamping down. On adaptive_quaternion_filter it is the\nshare of the old output kept, so it reads the other way up.\n\nout:\nThe filtered value.\n\nRELATED:\none_euro_filter   the published One Euro filter: the same idea, adapting to\n                  speed, with a well-documented tuning procedure\nfilter            a plain one-pole smoother, for comparison\nkalman_filter     smoothing by predicting where a smoothly moving value should be"
         },
         "3": {
             "name": "load_bang",
@@ -162,28 +162,35 @@
             "init": "signal 5.0 square"
         },
         "6": {
-            "name": "toggle",
+            "init": "comment sharp steps",
+            "name": "comment",
             "id": 459,
-            "position_x": 200,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
+            "position_x": 264,
+            "position_y": 132,
+            "width": 76,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "text",
+                    "value": "sharp steps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
                 }
-            }
+            },
+            "comment": "sharp steps"
         },
         "7": {
-            "name": "metro",
+            "name": "signal",
             "id": 496,
-            "position_x": 200,
-            "position_y": 112,
+            "position_x": 30,
+            "position_y": 222,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -197,35 +204,62 @@
                 },
                 "1": {
                     "name": "period",
-                    "value": 16.0,
+                    "value": 1.0,
                     "value_type": "float"
                 },
                 "2": {
-                    "name": "units",
-                    "value": "milliseconds",
+                    "name": "shape",
+                    "value": "random",
                     "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.15,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
                 }
             },
-            "init": "metro 16"
+            "init": "signal 1.0 random"
         },
         "8": {
-            "name": "random.gauss",
+            "init": "comment random noise",
+            "name": "comment",
             "id": 533,
-            "position_x": 200,
-            "position_y": 192,
-            "width": 117,
-            "height": 70,
+            "position_x": 264,
+            "position_y": 222,
+            "width": 82,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "random.gauss 0.0 0.1"
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "random noise",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "random noise"
         },
         "9": {
             "name": "+",
             "id": 570,
             "position_x": 30,
-            "position_y": 232,
+            "position_y": 312,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -241,11 +275,74 @@
             "init": "+ 0.0"
         },
         "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 395,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
             "init": "comment sharp steps buried in noise",
             "name": "comment",
-            "id": 607,
-            "position_x": 514,
-            "position_y": 312,
+            "id": 644,
+            "position_x": 264,
+            "position_y": 395,
             "width": 174,
             "height": 30,
             "visibility": "show_all",
@@ -265,173 +362,52 @@
             },
             "comment": "sharp steps buried in noise"
         },
-        "11": {
-            "name": "plot",
-            "id": 644,
+        "12": {
+            "name": "adaptive_filter",
+            "id": 681,
             "position_x": 30,
-            "position_y": 350,
-            "width": 208,
-            "height": 178,
+            "position_y": 600,
+            "width": 185,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "color",
-                    "value": "none",
-                    "value_type": "str"
+                    "name": "power",
+                    "value": 2.0,
+                    "value_type": "float"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
+                    "name": "responsiveness",
+                    "value": 0.95,
+                    "value_type": "float"
                 },
                 "2": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
+                    "name": "signal range",
+                    "value": 1.0,
+                    "value_type": "float"
                 },
                 "3": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "str"
-                },
-                "4": {
-                    "name": "update style",
-                    "value": "input is stream of samples",
-                    "value_type": "str"
-                },
-                "5": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "6": {
-                    "name": "min x",
+                    "name": "smooth response",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "7": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": -1.2,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 1.2,
-                    "value_type": "float"
-                }
-            }
-        },
-        "12": {
-            "name": "one_euro_filter",
-            "id": 681,
-            "position_x": 30,
-            "position_y": 550,
-            "width": 154,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "min_cutoff",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "beta",
-                    "value": 0.5,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "d_cutoff",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "3": {
-                    "name": "dt",
-                    "value": 0.0166,
+                "4": {
+                    "name": "offset response",
+                    "value": 0.9,
                     "value_type": "float"
                 }
             },
-            "init": "one_euro_filter 1.0 0.5 1.0"
+            "init": "adaptive_filter 2.0"
         },
         "13": {
-            "name": "plot",
-            "id": 718,
-            "position_x": 30,
-            "position_y": 710,
-            "width": 208,
-            "height": 178,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "none",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "str"
-                },
-                "4": {
-                    "name": "update style",
-                    "value": "input is stream of samples",
-                    "value_type": "str"
-                },
-                "5": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": -1.2,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 1.2,
-                    "value_type": "float"
-                }
-            }
-        },
-        "14": {
-            "init": "comment still between steps, quick at the edges",
+            "init": "comment power 2, everything else at its defaults",
             "name": "comment",
-            "id": 755,
-            "position_x": 514,
-            "position_y": 895,
-            "width": 248,
+            "id": 718,
+            "position_x": 264,
+            "position_y": 600,
+            "width": 254,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -439,7 +415,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "still between steps, quick at the edges",
+                    "value": "power 2, everything else at its defaults",
                     "value_type": "str"
                 },
                 "1": {
@@ -448,32 +424,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "still between steps, quick at the edges"
+            "comment": "power 2, everything else at its defaults"
         },
-        "15": {
-            "name": "filter",
-            "id": 792,
-            "position_x": 280,
-            "position_y": 550,
-            "width": 129,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "degree",
-                    "value": 0.9,
-                    "value_type": "float"
-                }
-            },
-            "init": "filter 0.9"
-        },
-        "16": {
+        "14": {
             "name": "plot",
-            "id": 829,
-            "position_x": 280,
-            "position_y": 710,
+            "id": 755,
+            "position_x": 30,
+            "position_y": 840,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -532,13 +489,101 @@
                 }
             }
         },
+        "15": {
+            "init": "comment out: still between steps, quick at the edges",
+            "name": "comment",
+            "id": 792,
+            "position_x": 264,
+            "position_y": 840,
+            "width": 279,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "out: still between steps, quick at the edges",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "out: still between steps, quick at the edges"
+        },
+        "16": {
+            "name": "plot",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 1045,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
         "17": {
             "name": "text_block",
             "id": 866,
             "annotation": true,
-            "position_x": 514,
-            "position_y": 935,
-            "width": 249,
+            "position_x": 264,
+            "position_y": 1045,
+            "width": 305,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -546,7 +591,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "a plain filter for comparison:\nas quiet, but the steps are smeared",
+                    "value": "degree out: near 0 while the input is still,\nleaping up on each step",
                     "value_type": "str"
                 },
                 "1": {
@@ -556,7 +601,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 241,
+                    "value": 297,
                     "value_type": "int"
                 },
                 "3": {
@@ -570,13 +615,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "a plain filter for comparison:\nas quiet, but the steps are smeared"
+            "text": "degree out: near 0 while the input is still,\nleaping up on each step"
         },
         "18": {
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 918,
+            "position_y": 1253,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -613,26 +658,16 @@
             "dest_input_name": "on"
         },
         "2": {
-            "source_node": 459,
+            "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
+            "source_output_name": "1",
             "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "on"
         },
         "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "trigger"
-        },
-        "4": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -642,27 +677,27 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
-            "source_node": 533,
+        "4": {
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
+            "source_output_name": "",
             "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "operand"
         },
-        "6": {
+        "5": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "7": {
+        "6": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
@@ -670,33 +705,23 @@
             "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "input"
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "8": {
             "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 718,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "9": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "result",
-            "dest_node": 792,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "10": {
-            "source_node": 792,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
+            "source_output_name": "degree out",
             "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,

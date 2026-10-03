@@ -214,87 +214,176 @@ print(build('repeat', 'repeat - the same value, in a known order', body, demo, l
             demo_width=400, text_width=780, text_height=560))
 
 # ------------------------------------------------------------------- list ops
-body = """These nodes cut lists into pieces and feed them out.
+body = """These nodes cut pieces out of a list.
 
 THE NODES:
 
 slice_list    cut a list in two at a position you choose
-sublist       pull out particular positions, by index
-stream_list   send every element in turn, one after another
+sublist       take an element or a range, by index
 
-slice_list divides once and gives you both halves on separate outlets - 
-the first N elements and everything after. Use it to peel a header off a 
-message, or to split a packed reading into the part you want and the rest.
+slice_list divides once and gives you both halves on separate outlets -
+the start of the list up to the cut, and everything after. Use it to peel a
+header off a message, or to split a packed reading into the part you want and
+the rest.
 
-sublist picks elements out by index. Give it the indices and it returns just 
-those, in the order you asked for - which also means it can reorder or repeat.
+sublist uses the same index notation as Python. One number takes that single
+element - the element itself, not a list holding it. Counting starts at 0, and
+a negative number counts back from the end, so -1 is the last. Two numbers with
+a colon take a range as a list: 1:3 is elements 1 and 2. Leave a side blank to
+run to that end - 2: is everything from element 2 on - and add a third number
+for a step: ::2 is every second element. The default, a bare colon, passes the
+whole list.
 
-stream_list turns a list into a sequence of separate messages, sent one after 
-another as fast as the patch will take them. This is how you make something 
-that expects single values process a whole list.
+A COMMA GOES DEEPER, IT DOES NOT PICK SEVERAL:
+In sublist, commas do not make a selection of separate elements. Each part
+after a comma indexes into the RESULT of the part before it, so '0, 2' is
+element 2 of element 0 - for a list of lists, row 0 and column 2. After a
+range, the next part indexes the range, not each element in it: ':, 0' is
+simply element 0.
 
 SYNTAX:
-slice_list <position: int>
+slice_list
 sublist <indices>
-stream_list
+
+slice_list takes no argument - set 'slice after' on the node.
 
 EXAMPLE:
-slice_list 2
+sublist 1:3
 
 INPUTS and PARAMETERS:
 
-list input / list in:
-The list. Receiving it triggers the node. 
-A string is split on spaces first, so a message works as a list.
+list input (slice_list) / list in (sublist):
+The list. Receiving it triggers the node.
+slice_list splits a string at its spaces first; sublist converts whatever
+arrives to a list, so a string of numbers or words works as one.
 
 slice after (slice_list):
-The position to cut at. The first outlet gets everything up to and including 
-this index; the second gets the rest. 
-If the list is too short to cut, everything goes to the first outlet and the 
-second sends nothing.
+The position to cut at, counted from 0; default 0. The first outlet gets
+everything up to and including this position; the second gets the rest.
+If the list is too short to cut, the whole list goes to the first outlet and
+the second sends an empty list.
 
-Indices (sublist):
-Which positions to take, counted from 0.
-
-output only if slice 2 (slice_list):
-When checked, the node stays silent unless there is genuinely something in the 
-second half - so a list too short to cut produces nothing at all rather than 
+output only if slice 2 (slice_list option):
+When checked, the node stays silent unless there is genuinely something in the
+second half - so a list too short to cut produces nothing at all rather than
 passing through whole. Use it when a short list means "not ready".
 
-OUTPUTS: 
+Indices (sublist):
+What to take, as above. Changing it re-sends from the last list received.
+A position past the end of the list prints an error in the console and sends
+None; an empty list sends nothing.
 
-slice 1 out / slice 2 out:
-The two halves.
+OUTPUTS:
+
+slice 1 out / slice 2 out (slice_list):
+The two halves. The second is sent first.
 
 output (sublist):
-The chosen elements, as a list.
+The element, or the list of elements, taken.
 
-stream out (stream_list):
-Each element in turn, as separate messages."""
+RELATED:
+stream_list sends a list's elements one at a time, as separate messages.
+unpack sends each element of a list from its own outlet."""
 
 demo = [
     {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click to send the list',
+     'pos': (300, 62)},
     {'key': 'm1', 'init': 'message', 'pos': (30, 118), 'w': 250, 'h': 42,
      'props': {'text in': '10 20 30 40 50', 'font size': '24'}},
-    {'key': 'sl', 'init': 'slice_list 1', 'pos': (30, 180), 'w': 160, 'h': 100,
+    {'key': 'sl', 'init': 'slice_list', 'pos': (30, 180), 'w': 180, 'h': 110,
      'props': {'slice after': 1, 'output only if slice 2': False}},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 300), 'w': 180, 'h': 42,
+    {'key': 'c1', 'comment': True, 'text': "'slice after' is 1: the cut falls\nafter position 1",
+     'pos': (300, 180)},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 315), 'w': 200, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'l2', 'init': 'list', 'pos': (240, 300), 'w': 180, 'h': 42,
+    {'key': 'c2', 'comment': True, 'text': 'slice 1: the first two', 'pos': (300, 315)},
+    {'key': 'l2', 'init': 'list', 'pos': (30, 370), 'w': 200, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c0', 'comment': True, 'text': 'first two, then the rest', 'pos': (30, 350)},
-    {'key': 'st', 'init': 'stream_list', 'pos': (30, 395), 'w': 150, 'h': 60},
-    {'key': 'a1', 'init': 'accumulate', 'pos': (30, 470), 'w': 140, 'h': 100},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 585), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c1', 'comment': True, 'text': 'every element arrives separately: 150',
-     'pos': (30, 635)},
+    {'key': 'c3', 'comment': True, 'text': 'slice 2: the rest', 'pos': (300, 370)},
+    {'key': 'su', 'init': 'sublist 1:3', 'pos': (30, 440), 'w': 240, 'h': 100},
+    {'key': 'c4', 'comment': True, 'text': 'a range: elements 1 and 2, as a list',
+     'pos': (300, 440)},
+    {'key': 'l3', 'init': 'list', 'pos': (30, 565), 'w': 200, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'su2', 'init': 'sublist -1', 'pos': (30, 635), 'w': 240, 'h': 100},
+    {'key': 'c5', 'comment': True, 'text': 'one index: the last element itself',
+     'pos': (300, 635)},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 760), 'w': 127, 'h': 42, 'props': INT},
 ]
 links = [('btn', '', 'm1', ''), ('m1', 'message out', 'sl', 'list input'),
          ('sl', 'slice 1 out', 'l1', ''), ('sl', 'slice 2 out', 'l2', ''),
-         ('m1', 'message out', 'st', 'list in'),
-         ('st', 'stream out', 'a1', 'in')]
-print(build('slice_list', 'slice_list - cut a list into pieces', body, demo, links,
-            demo_width=440, text_width=790, text_height=620))
+         ('m1', 'message out', 'su', 'list in'), ('su', 'output', 'l3', ''),
+         ('m1', 'message out', 'su2', 'list in'), ('su2', 'output', 'i1', '')]
+print(build('slice_list', 'slice_list and sublist - cut pieces out of a list',
+            body, demo, links, demo_width=600, text_width=790, text_height=660))
+
+# ---------------------------------------------------------------- stream_list
+body = """stream_list sends the elements of a list one at a time, as separate messages.
+
+THE NODE:
+
+stream_list   send every element in turn, one after another
+
+It turns one list into a sequence of separate messages. This is how you make
+something that expects single values - an accumulator, a counter, a node that
+draws one point - process a whole list.
+
+THE WHOLE SEQUENCE HAPPENS AT ONCE:
+There is no timing between the elements. Each one is sent, and everything
+downstream of it finishes, before the next is sent - so by the time anything
+else in the patch runs, the whole list has gone through. If you want the
+elements spaced out in time, drive a counter from a metro and pick each element
+out with sublist instead.
+
+WHAT COUNTS AS AN ELEMENT:
+Whatever arrives is first made into a list: a string of numbers or words is
+split at its spaces, and a single value becomes a list of one. Each element is
+sent as it is, so an element that is itself a list goes out as a list, and an
+array goes out one row at a time.
+
+A bang sends the last list again.
+
+SYNTAX:
+stream_list
+
+EXAMPLE:
+stream_list
+
+INPUTS and PARAMETERS:
+
+list in:
+The list. Each one received is streamed out at once.
+
+OUTPUTS:
+
+stream out:
+Each element in turn, as separate messages.
+
+RELATED:
+slice_list cuts a list in two; sublist takes an element or a range.
+unpack sends each element from its own outlet, all at once.
+accumulate sums whatever arrives, so it totals a streamed list."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click to send the list', 'pos': (300, 62)},
+    {'key': 'm1', 'init': 'message', 'pos': (30, 118), 'w': 250, 'h': 42,
+     'props': {'text in': '10 20 30 40 50', 'font size': '24'}},
+    {'key': 'st', 'init': 'stream_list', 'pos': (30, 185), 'w': 150, 'h': 60},
+    {'key': 'c1', 'comment': True, 'text': 'five separate messages: 10, 20, 30, 40, 50',
+     'pos': (300, 185)},
+    {'key': 'a1', 'init': 'accumulate', 'pos': (30, 270), 'w': 140, 'h': 110},
+    {'key': 'c2', 'comment': True, 'text': "adds each one as it arrives - 'reset'\nsets it back to zero",
+     'pos': (300, 270)},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 405), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c3', 'comment': True, 'text': '150 after one click; each click adds 150',
+     'pos': (300, 405)},
+]
+links = [('btn', '', 'm1', ''), ('m1', 'message out', 'st', 'list in'),
+         ('st', 'stream out', 'a1', 'in'), ('a1', 'sum', 'i1', '')]
+print(build('stream_list', 'stream_list - a list as a sequence of messages',
+            body, demo, links, demo_width=640, text_width=790, text_height=560))
 
 # -------------------------------------------------------------------- tracing
 body = """start_trace and end_trace print what the patch is doing, between the two of them.

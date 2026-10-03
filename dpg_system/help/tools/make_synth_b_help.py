@@ -218,7 +218,8 @@ demo = [
      'pos': (30, 640)},
     {'key': 'vco', 'init': 'vco~ 220', 'pos': (30, 680), 'w': 220, 'h': 200},
     {'key': 'vca', 'init': 'vca~', 'pos': (30, 895), 'w': 220, 'h': 160},
-    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 1070), 'w': 220, 'h': 220},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 1070), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
     {'key': 'c3', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 1305)},
 ]
 links = [('ck', 'count', 'i1', ''),

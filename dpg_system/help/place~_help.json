@@ -1,0 +1,386 @@
+{
+    "height": 1394,
+    "width": 1374,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "place~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/place~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment place~ - a source among the speakers",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 451,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "place~ - a source among the speakers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "place~ - a source among the speakers"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 516,
+            "position_y": 45,
+            "width": 818,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "place~ puts a source somewhere among the speakers.\n\nTHE NODES:\n\nplace~  a spatializer: one signal in, one outlet per speaker\n\nONE OUTLET PER SPEAKER:\nPatch the outlets onward to audio_out~'s inputs. Several place~ into one\noutput sum at its inlets, which is how each source gets its own position in\nthe room. The speaker count (2 to 16, 4 by default) is fixed when the node is\nmade. The intended place in a channel strip is\nsource -> fader~ -> clean~ -> place~ -> audio_out~.\n\nSTEREO IS A FACT RATHER THAN A SWITCH:\nPatch only 'left in' and the source is a single point. Patch 'right in' too and\nthe pair is two points, held apart by 'width' around the pan position. Width\nstarts at 2 divided by the speaker count, which on a ring puts the pair on\nneighbouring speakers.\n\nRING:\nThe outlets are speakers equally spaced around a circle, in order. 'pan' is the\ndirection: 0 front centre, plus or minus 0.5 the sides, plus or minus 1 the\nrear, where the two ends meet - so a ramp from -1 to 1 goes once round. Front\ncentre falls midway between out 1 and out 2, and increasing pan moves toward\nout 2, out 3 and on; for four speakers, out 1 front-left, out 2 front-right,\nout 3 rear-right, out 4 rear-left. A sound is in at most two neighbouring\nspeakers at a time, which keeps it sharp as it moves.\n\nCORNERS:\nWith 4 or 8 speakers, the 'space' option 'corners' reads the outlets as the\ncorners of the room instead: front-left, front-right, rear-left, rear-right,\nthen (with 8) the same four on the top layer - the first four are the bottom.\nThe position is three equal-power faders: 'pan' (now labelled left/right),\n'front/rear' and 'top/bottom', each -1 to +1. Those two extra controls only\nshow in corners mode. Other speaker counts fall back to the ring.\n\nTWO SPEAKERS:\nplace~ 2 is a stereo pair whatever 'space' says: pan runs from hard left at -1\nto hard right at +1, equal-power.\n\nAll the position controls are inlets, so an lfo~ orbits a sound and effort\ndata pushes it around the room. Moves are smoothed across each audio block,\nso a sweep does not click.\n\nSYNTAX:\nplace~ [<speakers>] [ring | corners]\n\nEXAMPLE:\nplace~ 8 corners\n\nINPUTS and PARAMETERS:\n\nbypass:\nStands aside: left and right pass straight to out 1 and out 2.\n\nleft in / right in:\nThe source. Patch 'right in' for a stereo source.\n\npan:\n-1 to +1: around the ring, or left to right in corners and on a pair.\n\nwidth:\n0 to 2: how far apart a stereo pair is held. Ignored for a mono source.\n\nfront/rear / top/bottom:\n-1 to +1, corners mode only: -1 is front and top, +1 rear and bottom.\ntop/bottom does something only with 8 speakers, where there is a top layer.\n\nspace (option):\nring or corners.\n\nOUTPUTS:\n\nout 1, out 2, ...:\nOne per speaker.\n\nRELATED:\naudio_out~ is the socket the outlets go to.\npan~ is a plain stereo panner; fader~ and fader_out~ (on the vca~ help page)\npan as part of a channel strip. clean~ is the stage before.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "place~ puts a source somewhere among the speakers.\n\nTHE NODES:\n\nplace~  a spatializer: one signal in, one outlet per speaker\n\nONE OUTLET PER SPEAKER:\nPatch the outlets onward to audio_out~'s inputs. Several place~ into one\noutput sum at its inlets, which is how each source gets its own position in\nthe room. The speaker count (2 to 16, 4 by default) is fixed when the node is\nmade. The intended place in a channel strip is\nsource -> fader~ -> clean~ -> place~ -> audio_out~.\n\nSTEREO IS A FACT RATHER THAN A SWITCH:\nPatch only 'left in' and the source is a single point. Patch 'right in' too and\nthe pair is two points, held apart by 'width' around the pan position. Width\nstarts at 2 divided by the speaker count, which on a ring puts the pair on\nneighbouring speakers.\n\nRING:\nThe outlets are speakers equally spaced around a circle, in order. 'pan' is the\ndirection: 0 front centre, plus or minus 0.5 the sides, plus or minus 1 the\nrear, where the two ends meet - so a ramp from -1 to 1 goes once round. Front\ncentre falls midway between out 1 and out 2, and increasing pan moves toward\nout 2, out 3 and on; for four speakers, out 1 front-left, out 2 front-right,\nout 3 rear-right, out 4 rear-left. A sound is in at most two neighbouring\nspeakers at a time, which keeps it sharp as it moves.\n\nCORNERS:\nWith 4 or 8 speakers, the 'space' option 'corners' reads the outlets as the\ncorners of the room instead: front-left, front-right, rear-left, rear-right,\nthen (with 8) the same four on the top layer - the first four are the bottom.\nThe position is three equal-power faders: 'pan' (now labelled left/right),\n'front/rear' and 'top/bottom', each -1 to +1. Those two extra controls only\nshow in corners mode. Other speaker counts fall back to the ring.\n\nTWO SPEAKERS:\nplace~ 2 is a stereo pair whatever 'space' says: pan runs from hard left at -1\nto hard right at +1, equal-power.\n\nAll the position controls are inlets, so an lfo~ orbits a sound and effort\ndata pushes it around the room. Moves are smoothed across each audio block,\nso a sweep does not click.\n\nSYNTAX:\nplace~ [<speakers>] [ring | corners]\n\nEXAMPLE:\nplace~ 8 corners\n\nINPUTS and PARAMETERS:\n\nbypass:\nStands aside: left and right pass straight to out 1 and out 2.\n\nleft in / right in:\nThe source. Patch 'right in' for a stereo source.\n\npan:\n-1 to +1: around the ring, or left to right in corners and on a pair.\n\nwidth:\n0 to 2: how far apart a stereo pair is held. Ignored for a mono source.\n\nfront/rear / top/bottom:\n-1 to +1, corners mode only: -1 is front and top, +1 rear and bottom.\ntop/bottom does something only with 8 speakers, where there is a top layer.\n\nspace (option):\nring or corners.\n\nOUTPUTS:\n\nout 1, out 2, ...:\nOne per speaker.\n\nRELATED:\naudio_out~ is the socket the outlets go to.\npan~ is a plain stereo panner; fader~ and fader_out~ (on the vca~ help page)\npan as part of a channel strip. clean~ is the stage before."
+        },
+        "3": {
+            "name": "vco~",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 199,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 220"
+        },
+        "4": {
+            "name": "fader~",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 300,
+            "width": 61,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fader",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "5": {
+            "init": "comment raise the fader to hear it",
+            "name": "comment",
+            "id": 422,
+            "position_x": 255,
+            "position_y": 300,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise the fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise the fader to hear it"
+        },
+        "6": {
+            "name": "lfo~",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 670,
+            "width": 180,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "lfo~ 0.1 ramp"
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 255,
+            "position_y": 670,
+            "width": 231,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a slow ramp: once round the ring\nevery ten seconds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a slow ramp: once round the ring\nevery ten seconds"
+        },
+        "8": {
+            "name": "place~",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 870,
+            "width": 151,
+            "height": 168,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "place~ 4"
+        },
+        "9": {
+            "init": "comment four speakers in a ring",
+            "name": "comment",
+            "id": 570,
+            "position_x": 255,
+            "position_y": 870,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "four speakers in a ring",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "four speakers in a ring"
+        },
+        "10": {
+            "name": "audio_out~",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 1120,
+            "width": 70,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "audio_out~ 1 2 3 4"
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 255,
+            "position_y": 1120,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "with only two speakers you hear\nit pass across the front",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "with only two speakers you hear\nit pass across the front"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 1290,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pan"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out 1",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out 2",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "right in"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out 3",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 3"
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out 4",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 4"
+        }
+    }
+}

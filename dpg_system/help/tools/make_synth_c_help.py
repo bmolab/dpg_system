@@ -86,133 +86,494 @@ links = [('sl', 'float out', 'sg', 'value'),
 print(build('clean~', 'clean~ and one_euro~ - conditioning before it is heard',
             body, demo, links, demo_width=590, text_width=800, text_height=700))
 
-# ------------------------------------------------------------- data bridges
-body = """These carry audio back into the ordinary node world, at three different rates.
+# ------------------------------------------------------------------ snapshot~
+body = """snapshot~ carries a signal's value back into the ordinary node world, once a frame.
 
-The audio graph runs every sample; the patch runs once a frame. Anything that 
-has to cross between them loses something, and which of these you want depends 
-on what you can afford to lose.
+The audio graph runs every sample; the patch runs once a frame. snapshot~
+crosses between them by taking one reading per frame, which is right for a
+control signal and wrong for audio.
 
 THE NODES:
 
-snapshot~  one value per frame, as an ordinary float
-capture~   every sample, as a numpy array
-array~     the same node
-stream~    the other way: an array from the patch, played as a signal
-audio_in~  the same node
-scope~     every sample, drawn
-place~     not a bridge - a spatializer, included here because it is the last 
-           stage before the output
+snapshot~  a signal's value, peak and level, as ordinary floats
 
 snapshot~ IS FOR CONTROL SIGNALS:
-Patch any ~ signal in and the current value appears on the node face and goes 
-out at frame rate, ready for number boxes, math nodes, OSC, anything. 
-An adsr~ or an lfo~ becomes an ordinary float stream. For a slow-moving control 
+Patch any ~ signal in and the current value appears on the node face and goes
+out at frame rate, ready for number boxes, math nodes, OSC, anything.
+An adsr~ or an lfo~ becomes an ordinary float stream. For a slow-moving control
 signal that is exactly right.
 
-For an audio signal it is not. Sixty samples a second of something oscillating 
-at 440 Hz is noise - the waveform is gone, aliased beyond recognition. 
-This is the commonest mistake with these nodes: a plot fed through snapshot~ 
-showing something that looks like a signal and is not.
+For an audio signal it is not. Sixty samples a second of something oscillating
+at 440 Hz is noise - the waveform is gone, aliased beyond recognition.
+This is the commonest mistake with this node: a plot fed through snapshot~
+showing something that looks like a signal and is not. Use capture~ for the
+samples, or scope~ to look at them.
 
-capture~ AND scope~ KEEP EVERYTHING:
-Both use a ring buffer holding every sample. capture~ hands you the array, so 
-plot, spectrum, numpy and torch nodes can work on the actual waveform. 
-scope~ draws it directly, with a trigger, which is what you want when the 
-question is "what does this look like" rather than "what is this value".
+PEAK AND RMS ARE THE HONEST LEVEL:
+'peak' (the largest size the signal reached) and 'rms' (its average power)
+cover every sample since the previous reading, not one block, so a transient
+shorter than a frame still counts. They are the right way to follow an audio
+signal's LEVEL at frame rate, where following its value is meaningless.
 
-capture~ IS ALSO THE WAY INTO TORCH:
-Its 'format' option makes the chunks numpy arrays, or torch tensors on the CPU 
-('torch cpu' - no copy, the tensor shares the chunk's memory) or on the Mac's 
-GPU ('torch mps'). That is the bridge from any live signal to t.rfft, t.cwt or 
-a model, so nothing else in the patch has to carry tensors.
-
-stream~ GOES THE OTHER WAY:
-An array arriving on 'audio in' - a capture~ elsewhere, record~'s take, any 
-numpy or torch chain - comes out as a signal, so data can drive vocoder~, 
-excite string~, or reach a vst~ or a speech node. It is the one way arrays 
-enter the ~ world, as capture~ is the one way out. Set 'rate' to the rate the 
-chunks were made at. 'latency' is how much to hold 
-before starting: too little and a bursty source runs dry, counted on 
-'underruns'; a backlog past the 'max backlog' option is skipped, counted on 
-'dropped' - set it to 0 for speech or anything else that arrives faster than 
-it plays.
-
-For a microphone or interface, adc~ is the better route: its device writes 
-straight into the audio engine instead of waiting on GUI frames, so a busy 
-patch cannot drop or delay it. See the record~ help patch.
-
-place~ PUTS IT SOMEWHERE:
-One outlet per speaker, patched onward to audio_out~'s inputs. Several place~ 
-into one output sum at its inlets, which is how each source gets its own 
-position in the room. Stereo is a fact rather than a switch: patch 'right in' 
-and the pair is held apart by 'width'.
+ON CHANGE OR CONTINUOUS:
+By default ('on change') the outlets send only when the value has moved by
+more than 'deadband', so a resting signal does not push sixty identical floats
+a second into the patch. 'continuous' sends every frame. A bang sends a
+reading now, whatever the mode.
 
 SYNTAX:
 snapshot~
-capture~
-stream~ <rate> <latency ms>
-scope~
 
 EXAMPLE:
-scope~
+snapshot~
 
 INPUTS and PARAMETERS:
+
+enable:
+Off stops it reading.
 
 in:
 The signal.
 
-bang (snapshot~, capture~):
-Ask for a value or an array now.
+bang:
+Send a reading now.
 
-sync / level / time (scope~):
-The trigger, where it triggers, and how much of the buffer to show.
+value (on the face):
+The newest value, shown to 'precision' decimal places.
 
-left in / right in / pan / width / front-rear / top-bottom (place~):
-The source and where to put it.
+mode / deadband / precision (options):
+'on change' (default) or 'continuous'; how far the value must move before
+'on change' sends again (0 by default); and the number of decimals shown
+(3 by default).
 
-OUTPUTS: 
+OUTPUTS:
 
-value / peak / rms (snapshot~):
-The current value, and its peak and average over the frame - the last two 
-being the honest way to follow an audio signal's LEVEL at frame rate, 
-where following its value is meaningless.
+value:
+The newest sample of the signal.
 
-array (capture~, scope~):
-The samples - numpy, or a torch tensor if capture~'s 'format' says so.
+peak:
+The largest absolute value since the previous reading.
 
-dropped (capture~):
-How many blocks were missed, so you know whether the patch is keeping up.
+rms:
+The root-mean-square level since the previous reading.
 
-rate (capture~):
-The engine's sample rate, sent once, for whatever the array is patched into.
+The three go out right to left, so whatever 'value' drives already has the
+matching peak and rms.
 
-left out / right out, underruns / dropped (stream~):
-The signal, and how often it ran dry or had to skip ahead."""
+RELATED:
+capture~ (and array~) hands over every sample as an array.
+scope~ draws the waveform. vu~ shows a level as bars.
+stream~ goes the other way: arrays from the patch into the ~ graph."""
 
 demo = [
-    {'key': 'lfo', 'init': 'lfo~ 0.5', 'pos': (30, 62), 'w': 200, 'h': 160},
-    {'key': 'sn', 'init': 'snapshot~', 'pos': (30, 240), 'w': 220, 'h': 180},
-    {'key': 'f1', 'init': 'float', 'pos': (30, 435), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c0', 'comment': True, 'text': 'right for a slow control signal',
-     'pos': (30, 485)},
-    {'key': 'vco', 'init': 'vco~ 220', 'pos': (300, 62), 'w': 220, 'h': 200},
-    {'key': 'sc', 'init': 'scope~', 'pos': (300, 280), 'w': 260, 'h': 220},
-    {'key': 'c1', 'comment': True, 'text': 'audio needs every sample, not one a frame',
-     'pos': (300, 510)},
-    {'key': 'cp', 'init': 'capture~', 'pos': (30, 525), 'w': 220, 'h': 180},
-    {'key': 'p1', 'init': 'plot', 'pos': (30, 720), 'w': 208, 'h': 176,
+    {'key': 'lfo', 'init': 'lfo~ 0.5', 'pos': (30, 62), 'w': 180, 'h': 145},
+    {'key': 'c0', 'comment': True, 'text': 'a slow control signal', 'pos': (290, 62)},
+    {'key': 'sn', 'init': 'snapshot~', 'pos': (30, 260), 'w': 220, 'h': 140},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 450), 'w': 130, 'h': 42, 'props': FLT},
+    {'key': 'c1', 'comment': True, 'text': 'one value a frame - right for this',
+     'pos': (290, 450)},
+]
+links = [('lfo', 'signal', 'sn', 'in'), ('sn', 'value', 'f1', '')]
+print(build('snapshot~', "snapshot~ - a signal's value, once a frame", body,
+            demo, links, demo_width=560, text_width=810, text_height=740))
+
+# ------------------------------------------------------------ capture~ / array~
+body = """capture~ hands a live signal to the patch as arrays - every sample, not one a frame.
+
+THE NODES:
+
+capture~  every sample of a signal, as numpy arrays or torch tensors
+array~    the same node
+
+capture~ KEEPS EVERYTHING:
+The audio engine writes every sample into a ring buffer, and once a frame
+capture~ sends some of it out as an array, so plot, spectrum, numpy and torch
+nodes can work on the actual waveform. snapshot~, which samples one value a
+frame, cannot do that for an audio signal.
+
+TWO MODES:
+'latest' (the default) sends the newest 'size' samples every frame. Frames and
+audio blocks do not divide evenly, so successive arrays overlap or skip a
+little. Right for a display or a spectrum, where you want the current window
+and do not care about continuity.
+
+'continuous' sends gapless chunks of exactly 'size' samples, in order, every
+sample delivered once. A frame that has gathered two chunks sends two; a
+partial remainder waits for the next frame, so the length never varies. Right
+for analysis, recording or anything cumulative. If the patch falls far enough
+behind that samples are lost, 'dropped' says how many.
+
+'size' is 512 by default, the engine's audio block; any value from 16 to 32768
+works.
+
+capture~ IS ALSO THE WAY INTO TORCH:
+Its 'format' option makes the chunks numpy arrays, or torch tensors on the CPU
+('torch cpu' - no copy, the tensor shares the chunk's memory) or on the Mac's
+GPU ('torch mps'). That is the bridge from any live signal to t.rfft, t.cwt or
+a model, so nothing else in the patch has to carry tensors.
+
+ON BANG:
+Set 'send' to 'on bang' and nothing goes out until a bang arrives; each bang
+then sends the newest window. Use it with 'latest' mode.
+
+SYNTAX:
+capture~ [<size>] [latest | continuous]
+
+EXAMPLE:
+capture~ 1024 continuous
+
+INPUTS and PARAMETERS:
+
+enable:
+Off stops it capturing.
+
+in:
+The signal.
+
+bang:
+Send an array now.
+
+size / mode / send / format (options):
+Samples per array; 'latest' or 'continuous'; 'every frame' or 'on bang'; and
+'numpy', 'torch cpu' or 'torch mps'.
+
+OUTPUTS:
+
+array:
+The samples - 1-D numpy, or a torch tensor if 'format' says so.
+
+dropped:
+In continuous mode, how many samples were lost because the patch fell behind -
+so you know whether it is keeping up.
+
+rate:
+The engine's sample rate, sent once at the start, for whatever the array is
+patched into (stream~'s 'rate', a speech node, a spectrum).
+
+RELATED:
+snapshot~ gives one value a frame, with peak and level.
+scope~ draws the same kind of ring buffer, with a trigger.
+stream~ (and audio_in~) goes the other way: arrays into the ~ graph.
+record~ keeps every sample as a WAV take."""
+
+demo = [
+    {'key': 'vco', 'init': 'vco~ 220', 'pos': (30, 62), 'w': 200, 'h': 185},
+    {'key': 'c0', 'comment': True, 'text': 'an audio signal', 'pos': (290, 62)},
+    {'key': 'cp', 'init': 'capture~', 'pos': (30, 300), 'w': 220, 'h': 160},
+    {'key': 'c1', 'comment': True, 'text': 'the newest 512 samples, every frame',
+     'pos': (290, 300)},
+    {'key': 'p1', 'init': 'plot', 'pos': (30, 510), 'w': 208, 'h': 180,
      'props': {'color': 'none', 'width': 200, 'height': 128, 'style': 'line',
                'update style': 'input is multi-channel sample', 'sample count': 512,
                'min x': 0.0, 'max x': 512.0, 'min y': -1.0, 'max y': 1.0}},
     {'key': 'c2', 'comment': True, 'text': 'the real waveform, as an array',
-     'pos': (30, 905)},
+     'pos': (290, 510)},
 ]
-links = [('lfo', 'signal', 'sn', 'in'), ('sn', 'value', 'f1', ''),
-         ('vco', 'left out', 'sc', 'in'),
-         ('vco', 'left out', 'cp', 'in'), ('cp', 'array', 'p1', 'y')]
-print(build('snapshot~', 'snapshot~ - carrying audio back to the patch', body,
+links = [('vco', 'left out', 'cp', 'in'), ('cp', 'array', 'p1', 'y')]
+print(build('capture~', 'capture~ - every sample, as an array', body,
             demo, links, demo_width=590, text_width=810, text_height=740))
+
+# ------------------------------------------------------------ stream~ / audio_in~
+body = """stream~ plays arrays from the patch as a signal - the one way data enters the ~ graph.
+
+THE NODES:
+
+stream~    arrays or tensors from the patch, played as a signal
+audio_in~  the same node
+
+stream~ IS capture~ BACKWARDS:
+An array arriving on 'audio in' - a capture~ elsewhere, record~'s take, a
+speech node, any numpy or torch chain - comes out as a signal, so data can
+drive vocoder~, excite string~, or reach a vst~. It is the one way arrays
+enter the ~ world, as capture~ is the one way out.
+
+Chunks may be 1-D (mono), (channels, frames) or (frames, channels) - the
+longer side is taken as time. A stereo chunk fills both outlets; a mono one
+sends the same signal from both.
+
+RATE AND LATENCY:
+Set 'rate' to the sample rate the chunks were made at - there is no way to
+read it off the numbers. It is an inlet, so a sample_rate or rate outlet can
+set it; stream~ converts to the engine's rate as it plays, so a 16 kHz source
+plays at the right speed.
+
+Chunks arrive in bursts, once a frame or whenever a device delivers, and the
+audio engine plays evenly, so stream~ holds 'latency' ms in hand before it
+starts. Too little and a bursty source runs dry, counted on 'underruns' - it
+then waits until 'latency' has built up again. Too much and the sound lags.
+
+MAX BACKLOG:
+A live source that falls behind should skip rather than play late, so audio
+queued beyond 'max backlog' (250 ms by default) is skipped and counted on
+'dropped'. That is wrong for anything that arrives faster than it plays -
+speech synthesis delivers a whole phrase in a fraction of its length - so set
+'max backlog' to 0 to keep everything and play it out in order (the queue
+holds about 20 seconds).
+
+For a microphone or interface, adc~ is the better route: its device writes
+straight into the audio engine instead of waiting on GUI frames, so a busy
+patch cannot drop or delay it.
+
+SYNTAX:
+stream~ [<rate> [<latency ms>]]
+
+EXAMPLE:
+stream~ 16000 80
+
+With no arguments the rate is the engine's and the latency 50 ms.
+
+INPUTS and PARAMETERS:
+
+enable:
+Off fades out and stops; whatever was queued is discarded.
+
+audio in:
+The chunks to play.
+
+rate:
+The sample rate of the chunks, in Hz.
+
+latency:
+How much to hold before starting, in ms.
+
+level:
+Output gain, 0 to 2. An inlet, so a signal can ride it; the 'level depth'
+option scales whatever is patched there.
+
+max backlog (option):
+In ms: queued audio past this is skipped. 0 keeps everything.
+
+OUTPUTS:
+
+left out / right out:
+The signal.
+
+underruns:
+How many times it has run dry, as a running count, sent when it changes.
+
+dropped:
+How many samples have been skipped or refused because the queue was full, as
+a running count, sent when it changes.
+
+RELATED:
+capture~ (and array~) is the way out: signal to arrays.
+adc~ (and mic~) brings a live input device in directly.
+record~ saves a signal as WAV takes."""
+
+demo = [
+    {'key': 'vco', 'init': 'vco~ 220', 'pos': (30, 62), 'w': 200, 'h': 185},
+    {'key': 'cp', 'init': 'capture~ 512 continuous', 'pos': (30, 300), 'w': 220, 'h': 160},
+    {'key': 'c0', 'comment': True, 'text': 'a signal turned into arrays...',
+     'pos': (290, 300)},
+    {'key': 'st', 'init': 'stream~', 'pos': (30, 510), 'w': 240, 'h': 240},
+    {'key': 'c1', 'comment': True, 'text': '...and played as a signal again',
+     'pos': (290, 510)},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 810), 'w': 70, 'h': 310,
+     'props': {'fader': 0.0}},
+    {'key': 'c2', 'comment': True, 'text': 'raise the fader to hear it',
+     'pos': (290, 810)},
+]
+links = [('vco', 'left out', 'cp', 'in'),
+         ('cp', 'array', 'st', 'audio in'),
+         ('cp', 'rate', 'st', 'rate'),
+         ('st', 'left out', 'fo', 'left'),
+         ('st', 'right out', 'fo', 'right')]
+print(build('stream~', 'stream~ - arrays played as a signal', body,
+            demo, links, demo_width=590, text_width=810, text_height=760))
+
+# ----------------------------------------------------------------------- scope~
+body = """scope~ draws a signal's waveform: an oscilloscope with a trigger.
+
+THE NODES:
+
+scope~  an oscilloscope: every sample, drawn
+
+WHY NOT plot?
+plot takes one value a frame, so an audio signal reaching it through snapshot~
+is aliased beyond recognition: sixty samples a second of something oscillating
+at 440 Hz is noise. scope~ keeps every sample in a ring buffer and draws a
+window of it, so what you see is the waveform.
+
+THE TRIGGER HOLDS IT STILL:
+Untriggered ('free'), each frame starts at an unrelated point in the cycle and
+a steady tone scrolls and tears. 'rising' (the default) and 'falling' start the
+window where the signal crosses 'level' - zero by default, so a zero crossing -
+going up or down, and a periodic signal then stands still. What moves on the
+screen is what is actually changing in the sound. The level shows as a faint
+line.
+
+'noise reject' is the trigger's tolerance for wobble: a crossing only counts
+once the signal has been clear of the level by that much on the other side.
+Raise it until a noisy trace sits still; too high and quiet material stops
+triggering.
+
+With nothing to trigger on - silence, or a cycle longer than the window - the
+last trace is held for half a second, then the display runs free, so it goes
+back to showing the truth rather than freezing on a stale waveform.
+
+THE READOUT:
+'window' shows how long the window is and, when triggered, the frequency
+implied by the spacing of the crossings.
+
+SYNTAX:
+scope~ [<samples>] [free | rising | falling]
+
+EXAMPLE:
+scope~ 1024 falling
+
+With no arguments the window is 512 samples, triggered rising.
+
+INPUTS and PARAMETERS:
+
+enable:
+Off stops the trace.
+
+in:
+The signal.
+
+sync:
+free, rising or falling.
+
+level:
+The value the trace starts on.
+
+time:
+How much time is on screen, in ms. It and the 'samples' option are two
+handles on the same thing: move one and the other follows.
+
+samples / noise reject / min y / max y / width / height (options):
+The window in samples (16 to 16384), the trigger's tolerance (0 by default),
+the vertical range (-1 to 1 by default), and the size of the display (300 by
+128 by default; the strip under the display drags it bigger).
+
+OUTPUTS:
+
+array:
+The window on screen, every frame, lined up on the trigger - for a patch that
+wants to measure what it is looking at. Where the trigger is beside the point,
+capture~ is the better source.
+
+RELATED:
+capture~ (and array~) for the samples as arrays.
+snapshot~ for a control signal's value. vu~ for a level."""
+
+demo = [
+    {'key': 'vco', 'init': 'vco~ 220', 'pos': (30, 62), 'w': 200, 'h': 185},
+    {'key': 'sc', 'init': 'scope~', 'pos': (30, 300), 'w': 310, 'h': 250},
+    {'key': 'c0', 'comment': True, 'text': 'triggered on the rising zero crossing\nset sync to free to see it tear',
+     'pos': (380, 300)},
+]
+links = [('vco', 'left out', 'sc', 'in')]
+print(build('scope~', 'scope~ - the waveform, drawn', body,
+            demo, links, demo_width=680, text_width=810, text_height=740))
+
+# ----------------------------------------------------------------------- place~
+body = """place~ puts a source somewhere among the speakers.
+
+THE NODES:
+
+place~  a spatializer: one signal in, one outlet per speaker
+
+ONE OUTLET PER SPEAKER:
+Patch the outlets onward to audio_out~'s inputs. Several place~ into one
+output sum at its inlets, which is how each source gets its own position in
+the room. The speaker count (2 to 16, 4 by default) is fixed when the node is
+made. The intended place in a channel strip is
+source -> fader~ -> clean~ -> place~ -> audio_out~.
+
+STEREO IS A FACT RATHER THAN A SWITCH:
+Patch only 'left in' and the source is a single point. Patch 'right in' too and
+the pair is two points, held apart by 'width' around the pan position. Width
+starts at 2 divided by the speaker count, which on a ring puts the pair on
+neighbouring speakers.
+
+RING:
+The outlets are speakers equally spaced around a circle, in order. 'pan' is the
+direction: 0 front centre, plus or minus 0.5 the sides, plus or minus 1 the
+rear, where the two ends meet - so a ramp from -1 to 1 goes once round. Front
+centre falls midway between out 1 and out 2, and increasing pan moves toward
+out 2, out 3 and on; for four speakers, out 1 front-left, out 2 front-right,
+out 3 rear-right, out 4 rear-left. A sound is in at most two neighbouring
+speakers at a time, which keeps it sharp as it moves.
+
+CORNERS:
+With 4 or 8 speakers, the 'space' option 'corners' reads the outlets as the
+corners of the room instead: front-left, front-right, rear-left, rear-right,
+then (with 8) the same four on the top layer - the first four are the bottom.
+The position is three equal-power faders: 'pan' (now labelled left/right),
+'front/rear' and 'top/bottom', each -1 to +1. Those two extra controls only
+show in corners mode. Other speaker counts fall back to the ring.
+
+TWO SPEAKERS:
+place~ 2 is a stereo pair whatever 'space' says: pan runs from hard left at -1
+to hard right at +1, equal-power.
+
+All the position controls are inlets, so an lfo~ orbits a sound and effort
+data pushes it around the room. Moves are smoothed across each audio block,
+so a sweep does not click.
+
+SYNTAX:
+place~ [<speakers>] [ring | corners]
+
+EXAMPLE:
+place~ 8 corners
+
+INPUTS and PARAMETERS:
+
+bypass:
+Stands aside: left and right pass straight to out 1 and out 2.
+
+left in / right in:
+The source. Patch 'right in' for a stereo source.
+
+pan:
+-1 to +1: around the ring, or left to right in corners and on a pair.
+
+width:
+0 to 2: how far apart a stereo pair is held. Ignored for a mono source.
+
+front/rear / top/bottom:
+-1 to +1, corners mode only: -1 is front and top, +1 rear and bottom.
+top/bottom does something only with 8 speakers, where there is a top layer.
+
+space (option):
+ring or corners.
+
+OUTPUTS:
+
+out 1, out 2, ...:
+One per speaker.
+
+RELATED:
+audio_out~ is the socket the outlets go to.
+pan~ is a plain stereo panner; fader~ and fader_out~ (on the vca~ help page)
+pan as part of a channel strip. clean~ is the stage before."""
+
+demo = [
+    {'key': 'vco', 'init': 'vco~ 220', 'pos': (30, 62), 'w': 200, 'h': 185},
+    {'key': 'fd', 'init': 'fader~', 'pos': (30, 300), 'w': 70, 'h': 310,
+     'props': {'fader': 0.0}},
+    {'key': 'c0', 'comment': True, 'text': 'raise the fader to hear it',
+     'pos': (290, 300)},
+    {'key': 'lfo', 'init': 'lfo~ 0.1 ramp', 'pos': (30, 670), 'w': 180, 'h': 145},
+    {'key': 'c1', 'comment': True, 'text': 'a slow ramp: once round the ring\nevery ten seconds',
+     'pos': (290, 670)},
+    {'key': 'pl', 'init': 'place~ 4', 'pos': (30, 870), 'w': 200, 'h': 200},
+    {'key': 'c2', 'comment': True, 'text': 'four speakers in a ring',
+     'pos': (290, 870)},
+    {'key': 'ao', 'init': 'audio_out~ 1 2 3 4', 'pos': (30, 1120), 'w': 200, 'h': 180},
+    {'key': 'c3', 'comment': True, 'text': 'with only two speakers you hear\nit pass across the front',
+     'pos': (290, 1120)},
+]
+links = [('vco', 'left out', 'fd', 'left'),
+         ('fd', 'left', 'pl', 'left in'),
+         ('lfo', 'signal', 'pl', 'pan'),
+         ('pl', 'out 1', 'ao', 'left in'),
+         ('pl', 'out 2', 'ao', 'right in'),
+         ('pl', 'out 3', 'ao', 'in 3'),
+         ('pl', 'out 4', 'ao', 'in 4')]
+print(build('place~', 'place~ - a source among the speakers', body,
+            demo, links, demo_width=590, text_width=810, text_height=760))
 
 # ------------------------------------------------------ additive~, shape_modes
 body = """Two nodes that each build something from a description rather than a preset.
@@ -372,11 +733,13 @@ demo = [
     {'key': 'c1', 'comment': True,
      'text': 'its table is now your shape, not a preset\nclick strike to hear it',
      'pos': (30, 865)},
-    {'key': 'f1', 'init': 'fader_out~ 1 2', 'pos': (30, 910), 'w': 220, 'h': 220},
+    {'key': 'f1', 'init': 'fader_out~ 1 2', 'pos': (30, 910), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
     {'key': 'ad', 'init': 'additive~ 220', 'pos': (30, 1250), 'w': 320, 'h': 300},
     {'key': 'c2', 'comment': True, 'text': 'draw the partials; stretch makes it a bell',
      'pos': (30, 1615)},
-    {'key': 'f2', 'init': 'fader_out~ 1 2', 'pos': (30, 1660), 'w': 220, 'h': 220},
+    {'key': 'f2', 'init': 'fader_out~ 1 2', 'pos': (30, 1660), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
     {'key': 'c3', 'comment': True, 'text': 'raise a fader to hear it', 'pos': (30, 1985)},
 ]
 links = [('sm', 'modes', 'md', 'modes'),
@@ -486,7 +849,8 @@ demo = [
     {'key': 'c1', 'comment': True,
      'text': 'a plugin, patched like any unit\npick knobs in the param n source options',
      'pos': (30, 980)},
-    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 1030), 'w': 220, 'h': 220},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 1030), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
     {'key': 'c2', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 1350)},
 ]
 links = [('ck', 'trigger', 'md', 'strike'),

@@ -1,11 +1,11 @@
 {
-    "height": 1500,
-    "width": 1659,
+    "height": 1792,
+    "width": 1363,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 792,
     "name": "mgl_mesh_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_mesh_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 801,
+            "position_x": 505,
             "position_y": 45,
             "width": 818,
-            "height": 796,
+            "height": 1116,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These draw geometry you supply, rather than a shape they already know.\n\nTHE NODES:\n\nmgl_mesh        vertices and faces you hand it\nmgl_model       geometry loaded from a file\nmgl_point_cloud a set of points\nmgl_surface     a height field drawn as a surface\nmgl_line_array  many lines at once, with per-line colour and width\nmgl_text        text in the scene\n\nmgl_line_array IS THE ONE BUILT FOR MOTION:\nDrawing a trail or a set of trajectories as separate line nodes does not scale. \nThis takes the whole array at once and draws it in one go, and its options are \nabout making motion legible rather than about geometry: 'alpha_fade' and \n'fade_rate' let older parts of a trail die away; 'accent_motion' brightens and \nthickens the lines where they are moving fastest, so speed reads directly; \n'perspective_width' keeps distant lines from vanishing.\n\nThose accent controls are the difference between a plot of a movement and a \npicture of it. A trail drawn at constant width and brightness tells you where \nsomething went; one that thickens where it accelerated tells you how.\n\nmgl_surface FOR A FIELD:\nGive it a 2D array of heights and it draws the surface. That is the way to see \na spectrum over time, a distance field, a correlation matrix - anything where \nthe interesting thing is the shape of a 2D function rather than its numbers.\n\nmgl_text NEEDS A BILLBOARD:\nText drawn in 3D turns edge-on and disappears as the camera moves. \nPut mgl_billboard before it and it stays facing the viewer.\n\nSYNTAX:\nmgl_point_cloud\nmgl_line_array\nmgl_model <path>\n\nEXAMPLE:\nmgl_line_array\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\nmesh / array / file_path:\nThe geometry. These inlets accept streaming data - a point cloud or a line \narray can be replaced every frame.\n\nscale / center / fit (mgl_mesh, mgl_model):\nHow to place the loaded geometry. 'fit' scales it to a sensible size, which \nsaves guessing at the units a model file was saved in.\n\nline_width / alpha_fade / fade_rate (mgl_line_array):\nThe basic appearance of the lines and how they die away.\n\naccent_motion / accent_brightness / accent_scale / accent_width:\nHow much the lines respond to speed, and in what way.\n\nuse_line_colors / color index / color_control:\nWhether each line carries its own colour, and where that comes from.\n\nOUTPUTS: \n\nmgl chain out:\nThe chain, continuing.\n\nA NOTE ON DATA ARRIVING FAST:\nThese inlets take streaming data, and the data can arrive on another thread. \nThe nodes store what arrives and draw it on the next render from the main \nthread, so a fast source cannot outrun the renderer or corrupt a frame - it \nsimply means some frames are skipped, which is the right behaviour.",
+                    "value": "These draw geometry you supply, rather than a shape they already know.\n\nTHE NODES:\n\nmgl_mesh         a mesh handed to it down a cord: corners and triangles\nmgl_model        a mesh loaded from a file\nmgl_point_cloud  a set of points\nmgl_surface      a grid of points drawn as a continuous surface\nmgl_line_array   many lines at once, built for trails of motion\n\nAll but mgl_line_array are mgl shapes: they are lit, take the current colour \nand material, and share the shape inputs 'mode' (solid, wireframe or \npoints), 'cull', 'point_size', 'round' and 'texture'. mgl_line_array draws \nin the current colour without lighting.\n\nmgl_mesh TAKES A MESH FROM THE PATCH:\nOn 'mesh' it takes a dictionary with 'vertices' (n by 3), 'faces' (m by 3 \ncorner indices) and optionally 'normals' - what shape_modes sends - or a \nlist of [vertices, faces], or a bare n by 3 array of corners with no faces. \nNormals are worked out from the faces when none come with it. Faces that \npoint past the last corner are thrown away, leaving just the corners. \nCorners without faces want 'mode' set to points: in solid mode they are \njoined three at a time, in the order they came. The 'holding' \nline says what it last received - 'nothing yet', so many points, or so many \ncorners and triangles - which tells a mesh that never arrived from one drawn \nsomewhere you are not looking.\n\nmgl_model LOADS A FILE:\nName the file in 'file_path' (anything trimesh reads: obj, stl, ply, glb...). \nA file holding several meshes is merged into one. 'uv_mode' can replace the \nfile's own texture coordinates with a projection - sphere, cylinder, \nplane_xy, plane_xz ('box' currently falls back to sphere) - applied the \nnext time the file loads; click 'generate_uv' to reload it now.\n\nmgl_point_cloud FOR POINTS:\n'points' takes an n by 3 array (or a flat list of x y z triples), or a cloud \nframe from the point cloud nodes - a dictionary whose 'point_cloud' entry \nholds the points and which may carry per-point 'weights' (0 to 1) and a \n'voxel_size'. 'weights' chooses whether the weights set each point's size, \nbrightness, both, or neither; 'blend' additive (the default) lets dense \nregions glow rather than the nearest point hiding the rest; 'draw at voxel size' draws \neach point at the frame's voxel size in the scene rather than at \n'point_size' pixels. Points that are not finite numbers are dropped. \nA new node starts in points mode with culling off; a saved one keeps the \n'mode' and 'cull' it was saved with.\n\nmgl_surface FOR A GRID:\n'points' takes a rows by columns by 3 array of positions, and joins \nneighbours into a smooth surface, lit on both sides. It is a grid of 3D \npoints, not a list of heights: to draw a height field, build the x and z \nof each grid point and put the height in y.\n\nmgl_line_array IS THE ONE BUILT FOR MOTION:\n'array' takes points by lines by 3 - each line is one column, newest point \nfirst - or a points by 3 array for a single line. It draws the whole array \nat once, and its options are about making motion legible: 'alpha_fade' and \n'fade_rate' let older parts of a trail die away; 'accent_motion' measures \nhow far each point moved since the last array and lets that speed brighten \nthe lines ('accent_brightness'), colour them along a dark-to-yellow scale \n('accent_colour'), and thicken them ('accent_width'), each with its own \nscale. A trail drawn at constant width and brightness tells you where \nsomething went; one that brightens where it moved fast tells you how.\n\nSYNTAX:\nmgl_mesh\nmgl_model\nmgl_point_cloud\nmgl_surface\nmgl_line_array\n\nNone of them takes arguments.\n\nEXAMPLE:\nmgl_point_cloud\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\nmesh / file_path / points / array:\nThe geometry. Data can arrive as often as you like and on any thread: the \nnodes store it, and build what they draw on the next render.\n\nscale / center (mgl_mesh, mgl_model):\nScale multiplies the size. 'center' moves the middle of the mesh to the \norigin - the average corner for mgl_mesh, the centre of mass for mgl_model.\n\nfit (mgl_mesh):\nScales the mesh so its farthest corner is one unit out, which saves guessing \nat the units it was made in.\n\nuv_mode / uv_scale / generate_uv (mgl_model):\nTexture coordinates, as above.\n\nweights / blend / draw at voxel size (mgl_point_cloud):\nAs above.\n\nline_width:\nThe width in pixels. 'perspective_width' makes it shrink with distance.\n\nalpha_fade / fade_rate (mgl_line_array):\nFade along each line from its newest point; 'fade_rate' above 1 shortens \nthe bright part, below 1 holds it longer.\n\naccent_motion / accent_brightness / accent_scale / accent_colour / \naccent_colour_scale / white_hot / accent_width / accent_width_scale / \naccent_width_curve / accent_width_max (mgl_line_array):\nWhether speed shows, and how: each accent has a switch and a scale, \n'white_hot' carries the top of the colour scale on into white, and the \nwidth accent has a curve and a ceiling.\n\nselected_lines (mgl_line_array):\nLine numbers to draw, separated by spaces. Empty draws them all.\n\nuse_line_colors / color index / color_control (mgl_line_array):\nWith 'use_line_colors' ticked each line has its own colour: set 'color \nindex' to a line number and pick its colour; index -1 recolours every line.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_sphere and the other built-in shapes. shape_modes and the point cloud \nnodes produce data for these. mgl_text draws text in the scene and used to \nshare this page. gl_line_array is the older equivalent of mgl_line_array.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 780,
+                    "value": 1100,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These draw geometry you supply, rather than a shape they already know.\n\nTHE NODES:\n\nmgl_mesh        vertices and faces you hand it\nmgl_model       geometry loaded from a file\nmgl_point_cloud a set of points\nmgl_surface     a height field drawn as a surface\nmgl_line_array  many lines at once, with per-line colour and width\nmgl_text        text in the scene\n\nmgl_line_array IS THE ONE BUILT FOR MOTION:\nDrawing a trail or a set of trajectories as separate line nodes does not scale. \nThis takes the whole array at once and draws it in one go, and its options are \nabout making motion legible rather than about geometry: 'alpha_fade' and \n'fade_rate' let older parts of a trail die away; 'accent_motion' brightens and \nthickens the lines where they are moving fastest, so speed reads directly; \n'perspective_width' keeps distant lines from vanishing.\n\nThose accent controls are the difference between a plot of a movement and a \npicture of it. A trail drawn at constant width and brightness tells you where \nsomething went; one that thickens where it accelerated tells you how.\n\nmgl_surface FOR A FIELD:\nGive it a 2D array of heights and it draws the surface. That is the way to see \na spectrum over time, a distance field, a correlation matrix - anything where \nthe interesting thing is the shape of a 2D function rather than its numbers.\n\nmgl_text NEEDS A BILLBOARD:\nText drawn in 3D turns edge-on and disappears as the camera moves. \nPut mgl_billboard before it and it stays facing the viewer.\n\nSYNTAX:\nmgl_point_cloud\nmgl_line_array\nmgl_model <path>\n\nEXAMPLE:\nmgl_line_array\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\nmesh / array / file_path:\nThe geometry. These inlets accept streaming data - a point cloud or a line \narray can be replaced every frame.\n\nscale / center / fit (mgl_mesh, mgl_model):\nHow to place the loaded geometry. 'fit' scales it to a sensible size, which \nsaves guessing at the units a model file was saved in.\n\nline_width / alpha_fade / fade_rate (mgl_line_array):\nThe basic appearance of the lines and how they die away.\n\naccent_motion / accent_brightness / accent_scale / accent_width:\nHow much the lines respond to speed, and in what way.\n\nuse_line_colors / color index / color_control:\nWhether each line carries its own colour, and where that comes from.\n\nOUTPUTS: \n\nmgl chain out:\nThe chain, continuing.\n\nA NOTE ON DATA ARRIVING FAST:\nThese inlets take streaming data, and the data can arrive on another thread. \nThe nodes store what arrives and draw it on the next render from the main \nthread, so a fast source cannot outrun the renderer or corrupt a frame - it \nsimply means some frames are skipped, which is the right behaviour."
+            "text": "These draw geometry you supply, rather than a shape they already know.\n\nTHE NODES:\n\nmgl_mesh         a mesh handed to it down a cord: corners and triangles\nmgl_model        a mesh loaded from a file\nmgl_point_cloud  a set of points\nmgl_surface      a grid of points drawn as a continuous surface\nmgl_line_array   many lines at once, built for trails of motion\n\nAll but mgl_line_array are mgl shapes: they are lit, take the current colour \nand material, and share the shape inputs 'mode' (solid, wireframe or \npoints), 'cull', 'point_size', 'round' and 'texture'. mgl_line_array draws \nin the current colour without lighting.\n\nmgl_mesh TAKES A MESH FROM THE PATCH:\nOn 'mesh' it takes a dictionary with 'vertices' (n by 3), 'faces' (m by 3 \ncorner indices) and optionally 'normals' - what shape_modes sends - or a \nlist of [vertices, faces], or a bare n by 3 array of corners with no faces. \nNormals are worked out from the faces when none come with it. Faces that \npoint past the last corner are thrown away, leaving just the corners. \nCorners without faces want 'mode' set to points: in solid mode they are \njoined three at a time, in the order they came. The 'holding' \nline says what it last received - 'nothing yet', so many points, or so many \ncorners and triangles - which tells a mesh that never arrived from one drawn \nsomewhere you are not looking.\n\nmgl_model LOADS A FILE:\nName the file in 'file_path' (anything trimesh reads: obj, stl, ply, glb...). \nA file holding several meshes is merged into one. 'uv_mode' can replace the \nfile's own texture coordinates with a projection - sphere, cylinder, \nplane_xy, plane_xz ('box' currently falls back to sphere) - applied the \nnext time the file loads; click 'generate_uv' to reload it now.\n\nmgl_point_cloud FOR POINTS:\n'points' takes an n by 3 array (or a flat list of x y z triples), or a cloud \nframe from the point cloud nodes - a dictionary whose 'point_cloud' entry \nholds the points and which may carry per-point 'weights' (0 to 1) and a \n'voxel_size'. 'weights' chooses whether the weights set each point's size, \nbrightness, both, or neither; 'blend' additive (the default) lets dense \nregions glow rather than the nearest point hiding the rest; 'draw at voxel size' draws \neach point at the frame's voxel size in the scene rather than at \n'point_size' pixels. Points that are not finite numbers are dropped. \nA new node starts in points mode with culling off; a saved one keeps the \n'mode' and 'cull' it was saved with.\n\nmgl_surface FOR A GRID:\n'points' takes a rows by columns by 3 array of positions, and joins \nneighbours into a smooth surface, lit on both sides. It is a grid of 3D \npoints, not a list of heights: to draw a height field, build the x and z \nof each grid point and put the height in y.\n\nmgl_line_array IS THE ONE BUILT FOR MOTION:\n'array' takes points by lines by 3 - each line is one column, newest point \nfirst - or a points by 3 array for a single line. It draws the whole array \nat once, and its options are about making motion legible: 'alpha_fade' and \n'fade_rate' let older parts of a trail die away; 'accent_motion' measures \nhow far each point moved since the last array and lets that speed brighten \nthe lines ('accent_brightness'), colour them along a dark-to-yellow scale \n('accent_colour'), and thicken them ('accent_width'), each with its own \nscale. A trail drawn at constant width and brightness tells you where \nsomething went; one that brightens where it moved fast tells you how.\n\nSYNTAX:\nmgl_mesh\nmgl_model\nmgl_point_cloud\nmgl_surface\nmgl_line_array\n\nNone of them takes arguments.\n\nEXAMPLE:\nmgl_point_cloud\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\nmesh / file_path / points / array:\nThe geometry. Data can arrive as often as you like and on any thread: the \nnodes store it, and build what they draw on the next render.\n\nscale / center (mgl_mesh, mgl_model):\nScale multiplies the size. 'center' moves the middle of the mesh to the \norigin - the average corner for mgl_mesh, the centre of mass for mgl_model.\n\nfit (mgl_mesh):\nScales the mesh so its farthest corner is one unit out, which saves guessing \nat the units it was made in.\n\nuv_mode / uv_scale / generate_uv (mgl_model):\nTexture coordinates, as above.\n\nweights / blend / draw at voxel size (mgl_point_cloud):\nAs above.\n\nline_width:\nThe width in pixels. 'perspective_width' makes it shrink with distance.\n\nalpha_fade / fade_rate (mgl_line_array):\nFade along each line from its newest point; 'fade_rate' above 1 shortens \nthe bright part, below 1 holds it longer.\n\naccent_motion / accent_brightness / accent_scale / accent_colour / \naccent_colour_scale / white_hot / accent_width / accent_width_scale / \naccent_width_curve / accent_width_max (mgl_line_array):\nWhether speed shows, and how: each accent has a switch and a scale, \n'white_hot' carries the top of the colour scale on into white, and the \nwidth accent has a curve and a ceiling.\n\nselected_lines (mgl_line_array):\nLine numbers to draw, separated by spaces. Empty draws them all.\n\nuse_line_colors / color index / color_control (mgl_line_array):\nWith 'use_line_colors' ticked each line has its own colour: set 'color \nindex' to a line number and pick its colour; index -1 recolours every line.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_sphere and the other built-in shapes. shape_modes and the point cloud \nnodes produce data for these. mgl_text draws text in the scene and used to \nshare this page. gl_line_array is the older equivalent of mgl_line_array."
         },
         "3": {
             "name": "mgl_context",
@@ -107,14 +107,54 @@
                     "name": "auto_render",
                     "value": true,
                     "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_mouse_events",
+                    "value": true,
+                    "value_type": "bool"
                 }
             }
         },
         "4": {
-            "name": "mgl_orbit_camera",
+            "init": "comment drag on the picture to orbit",
+            "name": "comment",
             "id": 385,
+            "position_x": 244,
+            "position_y": 120,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag on the picture to orbit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag on the picture to orbit"
+        },
+        "5": {
+            "name": "mgl_orbit_camera",
+            "id": 422,
             "position_x": 30,
-            "position_y": 200,
+            "position_y": 440,
             "width": 188,
             "height": 126,
             "visibility": "show_all",
@@ -122,49 +162,92 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "5": {
-            "name": "mgl_light",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 435,
-            "width": 201,
-            "height": 220,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
         "6": {
-            "name": "mgl_display",
+            "name": "load_bang",
             "id": 459,
-            "position_x": 330,
-            "position_y": 200,
-            "width": 129,
-            "height": 72,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 88,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "7": {
-            "name": "mgl_line_array",
+            "name": "np.rand",
             "id": 496,
             "position_x": 30,
-            "position_y": 660,
+            "position_y": 700,
+            "width": 123,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "np.rand 40 3 3"
+        },
+        "8": {
+            "init": "comment 40 points on each of 3 lines",
+            "name": "comment",
+            "id": 533,
+            "position_x": 244,
+            "position_y": 700,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "40 points on each of 3 lines",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "40 points on each of 3 lines"
+        },
+        "9": {
+            "name": "mgl_line_array",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 890,
             "width": 179,
             "height": 360,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "alpha_fade",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
         },
-        "8": {
+        "10": {
             "name": "text_block",
-            "id": 533,
+            "id": 607,
             "annotation": true,
-            "position_x": 485,
-            "position_y": 1055,
-            "width": 286,
+            "position_x": 244,
+            "position_y": 890,
+            "width": 231,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -172,7 +255,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "patch an array of line points in\nraise accent_motion to make speed visible",
+                    "value": "alpha_fade: each line fades from\nits first point to its last",
                     "value_type": "str"
                 },
                 "1": {
@@ -182,7 +265,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 278,
+                    "value": 223,
                     "value_type": "int"
                 },
                 "3": {
@@ -196,45 +279,39 @@
                     "value_type": "str"
                 }
             },
-            "text": "patch an array of line points in\nraise accent_motion to make speed visible"
+            "text": "alpha_fade: each line fades from\nits first point to its last"
         },
-        "9": {
-            "name": "mgl_billboard",
-            "id": 570,
+        "11": {
+            "name": "np.rand",
+            "id": 644,
             "position_x": 30,
-            "position_y": 1130,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "10": {
-            "name": "mgl_text",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 1235,
-            "width": 93,
-            "height": 70,
+            "position_y": 1320,
+            "width": 123,
+            "height": 98,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "font",
-                    "value": "Inconsolata-g.otf",
-                    "value_type": "str"
+                    "name": "min",
+                    "value": -0.6,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 0.6,
+                    "value_type": "float"
                 }
-            }
+            },
+            "init": "np.rand 500 3"
         },
-        "11": {
-            "init": "comment the billboard keeps the text readable",
+        "12": {
+            "init": "comment 500 points in a cube",
             "name": "comment",
-            "id": 644,
-            "position_x": 485,
-            "position_y": 1410,
-            "width": 236,
+            "id": 681,
+            "position_x": 244,
+            "position_y": 1320,
+            "width": 131,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -242,7 +319,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "the billboard keeps the text readable",
+                    "value": "500 points in a cube",
                     "value_type": "str"
                 },
                 "1": {
@@ -251,13 +328,36 @@
                     "value_type": "str"
                 }
             },
-            "comment": "the billboard keeps the text readable"
+            "comment": "500 points in a cube"
         },
-        "12": {
+        "13": {
+            "name": "mgl_point_cloud",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 1490,
+            "width": 136,
+            "height": 168,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "mode",
+                    "value": "points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "cull",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "14": {
             "name": "close",
-            "id": 681,
+            "id": 755,
             "position_x": 24,
-            "position_y": 1335,
+            "position_y": 1688,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -278,7 +378,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "mgl_chain",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"
@@ -288,43 +388,13 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "ui",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "ui"
         },
         "2": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "mgl chain out",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "mgl chain in"
-        },
-        "3": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "texture_tag",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "texture_tag"
-        },
-        "4": {
             "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "mgl chain out",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "mgl chain in"
-        },
-        "5": {
-            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "mgl chain out",
@@ -333,15 +403,55 @@
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"
         },
-        "6": {
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "array"
+        },
+        "5": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "mgl chain out",
-            "dest_node": 607,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"
+        },
+        "6": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "points"
         }
     }
 }

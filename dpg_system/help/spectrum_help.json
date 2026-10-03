@@ -1,0 +1,569 @@
+{
+    "height": 1391,
+    "width": 1489,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "spectrum_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/spectrum_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment spectrum - how much movement at each speed",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "spectrum - how much movement at each speed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "spectrum - how much movement at each speed"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 611,
+            "position_y": 45,
+            "width": 838,
+            "height": 1286,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "spectrum tells you how much movement there is in each range of speeds - a running\npicture of WHERE the activity is, from slow to fast.\n\nIt splits the incoming signal into a row of frequency bands, exactly as\nfilter_bank does, but instead of sending the filtered signals it sends the ENERGY\nin each band: how strongly the signal is moving at that speed right now.\n\nThat is the question to ask when you want to know whether a movement is a slow\nsway or a fast shake, or how lively something is, without caring about the exact\nshape of the wave.\n\nHOW THE ENERGY IS MEASURED:\nA filtered band is a wave swinging above and below zero, so its value alone keeps\npassing through zero even while the band is busy. spectrum combines the value with\nhow fast it is changing, scaled to suit the band's frequency, which gives a steady\nreading instead of a flicker. A steady wave of size A (swinging from minus A to\nplus A) in the middle of a band reads about A squared - a wave of size 1 reads\nabout 1, and a wave of size 0.3 reads about 0.09.\n\nSYNTAX:\nspectrum\n\nNo arguments; everything is set on the node.\n\nEXAMPLE:\nspectrum, at its defaults: 8 bands from 1 to 20 Hz, at 60 samples a second\n\nINPUTS and PARAMETERS:\n\nsignal:\nThe value to analyse. Receiving data here triggers the node. A single number per\nframe - the picture is built over time, from a stream.\n\nsample freq:\nHow many values arrive per second. Default 60. Get this right first: every band's\nposition comes from it. See also the note on other rates below.\n\nlow / high:\nThe two ends of the whole spread of bands, in Hz (cycles per second). Default 1\nand 20. The bands are spaced evenly on a logarithmic scale between them, so each\ncovers the same ratio of frequencies. The default band edges are about\n1, 1.5, 2.1, 3.1, 4.5, 6.5, 9.5, 13.8 and 20 Hz.\n\nband count:\nHow many bands to divide the range into. Default 8.\n\nfilter design:\nbutter is the sensible default. cheby1 gives sharper band edges with about one\ndecibel of ripple. cheby2 is set up with only one decibel of attenuation outside\neach band, so its bands barely separate anything - avoid it.\n\norder:\nHow sharply each band's edges cut off, 1 to 8. Default 5.\n\nChanging any of these rebuilds the filters, so the readings jump briefly while\nthey settle again.\n\nOUTPUTS:\n\nspectrum:\nA NumPy array with one energy value per band, slowest band first, never negative.\nSend it to a heat_map, or to a plot set to 'buffer holds one sample of input', to\nsee it - and set their max y to suit: small movements give small numbers, because\nthe reading goes with the SQUARE of the size.\n\nLIMITS WORTH KNOWING:\nNo filter can work above half the sample frequency - at 60 values a second,\n30 Hz. A high setting above that is quietly moved to one Hz below it, and a low\nsetting above high is quietly moved to half of high.\n\nThe scaling that steadies the reading is fixed for 60 samples a second. At other\nsample frequencies the bands are still in the right place, but the readings\nwobble and are no longer a clean size squared - too low above 60, too high below.\n\nA movement on the border between two bands is shared between them, and anything\noutside low to high is not reported at all.\n\nRELATED:\nfilter_bank   the same bands, sending the filtered signals themselves\nband_pass     one filter, to keep or remove a single range\nheat_map      the natural display for a spectrum; heat_scroll shows it over time\nt.fft         a full frequency analysis of a whole window of samples at once",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 830,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1270,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "spectrum tells you how much movement there is in each range of speeds - a running\npicture of WHERE the activity is, from slow to fast.\n\nIt splits the incoming signal into a row of frequency bands, exactly as\nfilter_bank does, but instead of sending the filtered signals it sends the ENERGY\nin each band: how strongly the signal is moving at that speed right now.\n\nThat is the question to ask when you want to know whether a movement is a slow\nsway or a fast shake, or how lively something is, without caring about the exact\nshape of the wave.\n\nHOW THE ENERGY IS MEASURED:\nA filtered band is a wave swinging above and below zero, so its value alone keeps\npassing through zero even while the band is busy. spectrum combines the value with\nhow fast it is changing, scaled to suit the band's frequency, which gives a steady\nreading instead of a flicker. A steady wave of size A (swinging from minus A to\nplus A) in the middle of a band reads about A squared - a wave of size 1 reads\nabout 1, and a wave of size 0.3 reads about 0.09.\n\nSYNTAX:\nspectrum\n\nNo arguments; everything is set on the node.\n\nEXAMPLE:\nspectrum, at its defaults: 8 bands from 1 to 20 Hz, at 60 samples a second\n\nINPUTS and PARAMETERS:\n\nsignal:\nThe value to analyse. Receiving data here triggers the node. A single number per\nframe - the picture is built over time, from a stream.\n\nsample freq:\nHow many values arrive per second. Default 60. Get this right first: every band's\nposition comes from it. See also the note on other rates below.\n\nlow / high:\nThe two ends of the whole spread of bands, in Hz (cycles per second). Default 1\nand 20. The bands are spaced evenly on a logarithmic scale between them, so each\ncovers the same ratio of frequencies. The default band edges are about\n1, 1.5, 2.1, 3.1, 4.5, 6.5, 9.5, 13.8 and 20 Hz.\n\nband count:\nHow many bands to divide the range into. Default 8.\n\nfilter design:\nbutter is the sensible default. cheby1 gives sharper band edges with about one\ndecibel of ripple. cheby2 is set up with only one decibel of attenuation outside\neach band, so its bands barely separate anything - avoid it.\n\norder:\nHow sharply each band's edges cut off, 1 to 8. Default 5.\n\nChanging any of these rebuilds the filters, so the readings jump briefly while\nthey settle again.\n\nOUTPUTS:\n\nspectrum:\nA NumPy array with one energy value per band, slowest band first, never negative.\nSend it to a heat_map, or to a plot set to 'buffer holds one sample of input', to\nsee it - and set their max y to suit: small movements give small numbers, because\nthe reading goes with the SQUARE of the size.\n\nLIMITS WORTH KNOWING:\nNo filter can work above half the sample frequency - at 60 values a second,\n30 Hz. A high setting above that is quietly moved to one Hz below it, and a low\nsetting above high is quietly moved to half of high.\n\nThe scaling that steadies the reading is fixed for 60 samples a second. At other\nsample frequencies the bands are still in the right place, but the readings\nwobble and are no longer a clean size squared - too low above 60, too high below.\n\nA movement on the border between two bands is shared between them, and anything\noutside low to high is not reported at all.\n\nRELATED:\nfilter_bank   the same bands, sending the filtered signals themselves\nband_pass     one filter, to keep or remove a single range\nheat_map      the natural display for a spectrum; heat_scroll shows it over time\nt.fft         a full frequency analysis of a whole window of samples at once"
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 66,
+            "width": 22,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 132,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 sin"
+        },
+        "6": {
+            "init": "comment slow sway, once every four seconds",
+            "name": "comment",
+            "id": 459,
+            "position_x": 264,
+            "position_y": 132,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "slow sway, once every four seconds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "slow sway, once every four seconds"
+        },
+        "7": {
+            "name": "signal",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 222,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 0.125,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 0.125 sin"
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 264,
+            "position_y": 222,
+            "width": 311,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "fast tremor of size 0.3, eight times a second\ndrag its period to move it between bands",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 303,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "fast tremor of size 0.3, eight times a second\ndrag its period to move it between bands"
+        },
+        "9": {
+            "name": "+",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 312,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "+ 0.0"
+        },
+        "10": {
+            "init": "comment the two mixed together",
+            "name": "comment",
+            "id": 607,
+            "position_x": 264,
+            "position_y": 312,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the two mixed together",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the two mixed together"
+        },
+        "11": {
+            "name": "spectrum",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 172,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "band count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "filter design",
+                    "value": "butter",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "order",
+                    "value": 5,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "low",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "high",
+                    "value": 20.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "sample freq",
+                    "value": 60.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "init": "comment eight bands from 1 to 20 Hz",
+            "name": "comment",
+            "id": 681,
+            "position_x": 264,
+            "position_y": 400,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "eight bands from 1 to 20 Hz",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "eight bands from 1 to 20 Hz"
+        },
+        "13": {
+            "name": "heat_map",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 575,
+            "width": 208,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.1,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "name": "text_block",
+            "id": 755,
+            "annotation": true,
+            "position_x": 264,
+            "position_y": 575,
+            "width": 317,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the tremor lights the band from 6.5 to 9.5 Hz,\nreading about 0.09 - 0.3 squared. The sway is\nslower than 1 Hz, so it does not show at all",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 309,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the tremor lights the band from 6.5 to 9.5 Hz,\nreading about 0.09 - 0.3 squared. The sway is\nslower than 1 Hz, so it does not show at all"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 755,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "signal"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "spectrum",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

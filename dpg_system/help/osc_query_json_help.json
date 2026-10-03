@@ -1,6 +1,6 @@
 {
-    "height": 870,
-    "width": 1364,
+    "height": 881,
+    "width": 1333,
     "position": [
         100,
         100
@@ -29,7 +29,7 @@
             }
         },
         "1": {
-            "init": "comment osc_query_json - finding out what a device offers",
+            "init": "comment osc_query_json - what this patch exposes over OSC",
             "name": "comment",
             "id": 274,
             "position_x": 24,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "osc_query_json - finding out what a device offers",
+                    "value": "osc_query_json - what this patch exposes over OSC",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "osc_query_json - finding out what a device offers"
+            "comment": "osc_query_json - what this patch exposes over OSC"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 526,
+            "position_x": 495,
             "position_y": 45,
             "width": 798,
-            "height": 716,
+            "height": 776,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Two nodes for finding out what a device offers, and for driving a cue list.\n\nTHE NODES:\n\nosc_query_json  print a device's OSCQuery description\nosc_cue         send a cue number to a target\n\nosc_query_json AND THE DISCOVERY PROBLEM:\nOSC on its own is write-only in a sense: you can send to an address, but \nnothing tells you what addresses exist. Every integration therefore begins with \nfinding out what the far end responds to, and that is usually done by reading \ndocumentation that is out of date.\n\nOSCQuery is the answer to that - a device publishes a description of its whole \nnamespace, and this node prints it. What you get back is the actual, current \nlist of addresses, their types and their ranges, from the device itself.\n\nThat turns \"which address is the fader\" into something you look up rather than \nguess, and it is the first thing to reach for with an unfamiliar device.\n\nNote that not every device offers OSCQuery. When one does not, the way to learn \nits namespace is the reverse: patch an osc_route with nothing matched and watch \n'unmatched' while you touch things on the device.\n\nosc_cue:\nSends a cue number to a named target. Cue lists are how lighting and sound \nconsoles are actually operated, so the useful interface to one is usually not \na fader per parameter but a cue number - the console already holds the states, \nand the patch just says which one.\n\nSYNTAX:\nosc_query_json\nosc_cue\n\nEXAMPLE:\nosc_cue\n\nINPUTS and PARAMETERS:\n\nprint osc query json:\nFetch and print the description.\n\ncue # to send:\nThe cue number.\n\ntarget name:\nWhich connection to send it on.\n\npath:\nThe address, where it differs from the default.\n\nOUTPUTS: \n\nNone - both act rather than pass data on. The query prints to the console the \npatch was launched from.\n\nRELATED:\nThere are OSCQuery proxies in this repo for consoles that do not offer one \nthemselves - see eos_oscquery_proxy.py and digico_oscquery_proxy.py, which \nexpose a Gio and an S21 respectively.",
+                    "value": "Prints the OSC namespace this patch publishes, as OSCQuery JSON.\n\nTHE NODE:\n\nosc_query_json   print this app's own OSC address registry to the console\n\nWHAT IT PRINTS:\nEvery OSC node you make - osc_device, osc_source, osc_target, osc_receive,\nosc_send, osc_cue, the osc widgets, the eos senders - enters its address in a\nregistry the app keeps, laid out the way OSCQuery describes a namespace: a tree\nof addresses, each with its type, and for the widgets a range and current\nvalue. Press the button and this node prints that whole tree, indented and\nsorted, to the console the app was launched from.\n\nSo it answers \"what addresses does this patch expose, and under what names\",\nwhich is the question to ask before pointing another program or another\nmachine at it. Each entry sits under the patcher it lives in and the name of\nthe device or connection it uses, so two sliders with the same address on\ndifferent devices stay apart.\n\nEach node's own 'path' option shows the single path it was given in this tree,\nor 'Registration Failed'.\n\nWHAT IT DOES NOT PRINT:\nIt does not ask a remote device for its description - this is the app's own\nside, not the far end's. To read a remote device's namespace use oscq_browse.\n\nNodes inside a subpatcher that holds an oscq_host are entered in that\nservice's own registry instead, and do not appear here.\n\nNothing is printed into the patch: the output goes to the console only.\n\nSYNTAX:\nosc_query_json\n\nEXAMPLE:\nosc_query_json\n\nINPUTS and PARAMETERS:\n\nprint osc query json:\nPrint the registry.\n\nOUTPUTS:\n\nNone - it prints to the console.\n\nRELATED:\noscq_service, oscq_host and oscq_browse, which publish a namespace on the\nnetwork and read other devices' namespaces.\nosc_cue, which used to share this page.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 700,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Two nodes for finding out what a device offers, and for driving a cue list.\n\nTHE NODES:\n\nosc_query_json  print a device's OSCQuery description\nosc_cue         send a cue number to a target\n\nosc_query_json AND THE DISCOVERY PROBLEM:\nOSC on its own is write-only in a sense: you can send to an address, but \nnothing tells you what addresses exist. Every integration therefore begins with \nfinding out what the far end responds to, and that is usually done by reading \ndocumentation that is out of date.\n\nOSCQuery is the answer to that - a device publishes a description of its whole \nnamespace, and this node prints it. What you get back is the actual, current \nlist of addresses, their types and their ranges, from the device itself.\n\nThat turns \"which address is the fader\" into something you look up rather than \nguess, and it is the first thing to reach for with an unfamiliar device.\n\nNote that not every device offers OSCQuery. When one does not, the way to learn \nits namespace is the reverse: patch an osc_route with nothing matched and watch \n'unmatched' while you touch things on the device.\n\nosc_cue:\nSends a cue number to a named target. Cue lists are how lighting and sound \nconsoles are actually operated, so the useful interface to one is usually not \na fader per parameter but a cue number - the console already holds the states, \nand the patch just says which one.\n\nSYNTAX:\nosc_query_json\nosc_cue\n\nEXAMPLE:\nosc_cue\n\nINPUTS and PARAMETERS:\n\nprint osc query json:\nFetch and print the description.\n\ncue # to send:\nThe cue number.\n\ntarget name:\nWhich connection to send it on.\n\npath:\nThe address, where it differs from the default.\n\nOUTPUTS: \n\nNone - both act rather than pass data on. The query prints to the console the \npatch was launched from.\n\nRELATED:\nThere are OSCQuery proxies in this repo for consoles that do not offer one \nthemselves - see eos_oscquery_proxy.py and digico_oscquery_proxy.py, which \nexpose a Gio and an S21 respectively."
+            "text": "Prints the OSC namespace this patch publishes, as OSCQuery JSON.\n\nTHE NODE:\n\nosc_query_json   print this app's own OSC address registry to the console\n\nWHAT IT PRINTS:\nEvery OSC node you make - osc_device, osc_source, osc_target, osc_receive,\nosc_send, osc_cue, the osc widgets, the eos senders - enters its address in a\nregistry the app keeps, laid out the way OSCQuery describes a namespace: a tree\nof addresses, each with its type, and for the widgets a range and current\nvalue. Press the button and this node prints that whole tree, indented and\nsorted, to the console the app was launched from.\n\nSo it answers \"what addresses does this patch expose, and under what names\",\nwhich is the question to ask before pointing another program or another\nmachine at it. Each entry sits under the patcher it lives in and the name of\nthe device or connection it uses, so two sliders with the same address on\ndifferent devices stay apart.\n\nEach node's own 'path' option shows the single path it was given in this tree,\nor 'Registration Failed'.\n\nWHAT IT DOES NOT PRINT:\nIt does not ask a remote device for its description - this is the app's own\nside, not the far end's. To read a remote device's namespace use oscq_browse.\n\nNodes inside a subpatcher that holds an oscq_host are entered in that\nservice's own registry instead, and do not appear here.\n\nNothing is printed into the patch: the output goes to the console only.\n\nSYNTAX:\nosc_query_json\n\nEXAMPLE:\nosc_query_json\n\nINPUTS and PARAMETERS:\n\nprint osc query json:\nPrint the registry.\n\nOUTPUTS:\n\nNone - it prints to the console.\n\nRELATED:\noscq_service, oscq_host and oscq_browse, which publish a namespace on the\nnetwork and read other devices' namespaces.\nosc_cue, which used to share this page."
         },
         "3": {
             "name": "osc_device",
@@ -106,24 +106,50 @@
             "init": "osc_device console 127.0.0.1 8000 8001"
         },
         "4": {
-            "name": "osc_query_json",
+            "init": "comment a device registers its name",
+            "name": "comment",
             "id": 385,
-            "position_x": 30,
-            "position_y": 345,
-            "width": 95,
-            "height": 28,
+            "position_x": 216,
+            "position_y": 62,
+            "width": 174,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a device registers its name",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a device registers its name"
         },
         "5": {
-            "name": "text_block",
+            "name": "osc_slider",
             "id": 422,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "osc_slider console /fader/1"
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
             "annotation": true,
             "position_x": 216,
-            "position_y": 480,
-            "width": 280,
+            "position_y": 250,
+            "width": 224,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -131,7 +157,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "prints the whole namespace of the device\nto the console, not into the patch",
+                    "value": "a widget registers its address,\ntype, range and value",
                     "value_type": "str"
                 },
                 "1": {
@@ -141,7 +167,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 272,
+                    "value": 216,
                     "value_type": "int"
                 },
                 "3": {
@@ -155,43 +181,15 @@
                     "value_type": "str"
                 }
             },
-            "text": "prints the whole namespace of the device\nto the console, not into the patch"
-        },
-        "6": {
-            "name": "int",
-            "id": 459,
-            "position_x": 30,
-            "position_y": 555,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
+            "text": "a widget registers its address,\ntype, range and value"
         },
         "7": {
-            "name": "osc_cue",
+            "name": "osc_query_json",
             "id": 496,
             "position_x": 30,
-            "position_y": 615,
-            "width": 160,
-            "height": 42,
+            "position_y": 340,
+            "width": 95,
+            "height": 28,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -202,8 +200,8 @@
             "id": 533,
             "annotation": true,
             "position_x": 216,
-            "position_y": 770,
-            "width": 212,
+            "position_y": 340,
+            "width": 249,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -211,7 +209,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "the console holds the states;\nthe patch just says which one",
+                    "value": "press: prints the whole tree to the\nconsole, not into the patch",
                     "value_type": "str"
                 },
                 "1": {
@@ -221,7 +219,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 204,
+                    "value": 241,
                     "value_type": "int"
                 },
                 "3": {
@@ -235,13 +233,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "the console holds the states;\nthe patch just says which one"
+            "text": "press: prints the whole tree to the\nconsole, not into the patch"
         },
         "9": {
             "name": "close",
             "id": 570,
             "position_x": 24,
-            "position_y": 687,
+            "position_y": 398,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -256,16 +254,5 @@
             }
         }
     },
-    "links": {
-        "0": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "int out",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "cue # to send"
-        }
-    }
+    "links": {}
 }

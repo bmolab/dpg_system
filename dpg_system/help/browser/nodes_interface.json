@@ -1,11 +1,11 @@
 {
-    "height": 1022,
-    "width": 1443,
+    "height": 1074,
+    "width": 1407,
     "position": [
         100,
         100
     ],
-    "id": 2757,
+    "id": 2831,
     "name": "nodes_interface",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_interface.json",
     "nodes": {
@@ -165,7 +165,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 184,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -175,7 +175,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -192,7 +192,7 @@
         "7": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 188,
             "width": 231,
             "height": 40,
@@ -234,7 +234,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 236,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -244,7 +244,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -261,7 +261,7 @@
         "9": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 240,
             "width": 151,
             "height": 40,
@@ -303,7 +303,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 288,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -313,7 +313,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -330,7 +330,7 @@
         "11": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 292,
             "width": 188,
             "height": 28,
@@ -372,7 +372,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 340,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -382,7 +382,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -399,7 +399,7 @@
         "13": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 344,
             "width": 200,
             "height": 28,
@@ -441,7 +441,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 392,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -451,7 +451,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -468,7 +468,7 @@
         "15": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 396,
             "width": 181,
             "height": 28,
@@ -510,7 +510,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 444,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -520,7 +520,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -537,7 +537,7 @@
         "17": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 448,
             "width": 163,
             "height": 28,
@@ -579,7 +579,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 496,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -589,7 +589,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -606,7 +606,7 @@
         "19": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 500,
             "width": 218,
             "height": 28,
@@ -648,7 +648,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 548,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -658,7 +658,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -675,7 +675,7 @@
         "21": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 552,
             "width": 188,
             "height": 28,
@@ -742,7 +742,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 652,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -752,7 +752,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -769,7 +769,7 @@
         "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 656,
             "width": 231,
             "height": 40,
@@ -811,7 +811,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 704,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -821,7 +821,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -838,7 +838,7 @@
         "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 708,
             "width": 261,
             "height": 28,
@@ -880,7 +880,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 756,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -890,7 +890,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -907,7 +907,7 @@
         "28": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 760,
             "width": 206,
             "height": 28,
@@ -949,7 +949,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 808,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -959,7 +959,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -976,7 +976,7 @@
         "30": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 238,
             "position_y": 812,
             "width": 157,
             "height": 40,
@@ -1016,7 +1016,7 @@
         "31": {
             "init": "comment Gestures",
             "name": "comment",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 150,
             "width": 77,
             "height": 30,
@@ -1041,9 +1041,9 @@
         "32": {
             "init": "help_link momentary momentary sliders",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 184,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1053,7 +1053,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1070,7 +1070,7 @@
         "33": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 188,
             "width": 440,
             "height": 40,
@@ -1110,9 +1110,9 @@
         "34": {
             "init": "help_link joy_stick joy_stick / momentary_xy",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 236,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1122,7 +1122,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1139,7 +1139,7 @@
         "35": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 240,
             "width": 188,
             "height": 40,
@@ -1179,9 +1179,9 @@
         "36": {
             "init": "help_link mouse mouse",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 288,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1191,7 +1191,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1208,7 +1208,7 @@
         "37": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 292,
             "width": 181,
             "height": 28,
@@ -1248,9 +1248,9 @@
         "38": {
             "init": "help_link keys keys",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 340,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1260,7 +1260,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1277,7 +1277,7 @@
         "39": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 344,
             "width": 231,
             "height": 28,
@@ -1317,7 +1317,7 @@
         "40": {
             "init": "comment Text, lists and tables",
             "name": "comment",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 410,
             "width": 184,
             "height": 30,
@@ -1342,9 +1342,9 @@
         "41": {
             "init": "help_link string string / list / message",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 444,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1354,7 +1354,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1371,7 +1371,7 @@
         "42": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 448,
             "width": 280,
             "height": 40,
@@ -1411,9 +1411,9 @@
         "43": {
             "init": "help_link text text / text_display",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 496,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1423,7 +1423,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1440,7 +1440,7 @@
         "44": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 500,
             "width": 188,
             "height": 40,
@@ -1480,9 +1480,9 @@
         "45": {
             "init": "help_link vector vector",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 548,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1492,7 +1492,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1509,7 +1509,7 @@
         "46": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 552,
             "width": 261,
             "height": 28,
@@ -1549,9 +1549,9 @@
         "47": {
             "init": "help_link table table",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 600,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1561,7 +1561,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1578,7 +1578,7 @@
         "48": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 604,
             "width": 206,
             "height": 28,
@@ -1618,9 +1618,9 @@
         "49": {
             "init": "help_link param_widgets param_ widgets",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 652,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1630,7 +1630,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1647,7 +1647,7 @@
         "50": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 656,
             "width": 594,
             "height": 40,
@@ -1687,7 +1687,7 @@
         "51": {
             "init": "comment Curves and plots",
             "name": "comment",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 722,
             "width": 138,
             "height": 30,
@@ -1712,9 +1712,9 @@
         "52": {
             "init": "help_link envelope envelope",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 756,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1724,7 +1724,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1741,7 +1741,7 @@
         "53": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 760,
             "width": 237,
             "height": 28,
@@ -1781,9 +1781,9 @@
         "54": {
             "init": "help_link shape_sequencer shape / function sequencer",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 808,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1793,7 +1793,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1810,7 +1810,7 @@
         "55": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 812,
             "width": 329,
             "height": 40,
@@ -1850,9 +1850,9 @@
         "56": {
             "init": "help_link profile profile",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 860,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
@@ -1862,7 +1862,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1879,7 +1879,7 @@
         "57": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 864,
             "width": 237,
             "height": 28,
@@ -1917,21 +1917,21 @@
             "presentation_state": "show_all"
         },
         "58": {
-            "init": "help_link plot plot / heat_map / heat_scroll",
+            "init": "help_link plot plot",
             "name": "help_link",
-            "position_x": 577,
+            "position_x": 559,
             "position_y": 912,
-            "width": 218,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "plot / heat_map / heat_scroll",
+                    "name": "plot",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 184,
                     "value_type": "int"
                 },
                 "2": {
@@ -1948,14 +1948,14 @@
         "59": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 809,
+            "position_x": 773,
             "position_y": 916,
-            "width": 212,
-            "height": 40,
+            "width": 237,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "seeing the numbers\n(heat_map, heat_scroll, plot)",
+                    "value": "a graph of the numbers going past",
                     "value_type": "str"
                 },
                 "1": {
@@ -1965,7 +1965,76 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 204,
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a graph of the numbers going past",
+            "id": 2720,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "60": {
+            "init": "help_link heat_map heat_map / heat_scroll",
+            "name": "help_link",
+            "position_x": 559,
+            "position_y": 964,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "heat_map / heat_scroll",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "pink",
+                    "value_type": "str"
+                }
+            },
+            "id": 2757,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "61": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 773,
+            "position_y": 968,
+            "width": 175,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "an array as colour\n(heat_map, heat_scroll)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
                     "value_type": "int"
                 },
                 "3": {
@@ -1979,8 +2048,8 @@
                     "value_type": "str"
                 }
             },
-            "text": "seeing the numbers\n(heat_map, heat_scroll, plot)",
-            "id": 2720,
+            "text": "an array as colour\n(heat_map, heat_scroll)",
+            "id": 2794,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

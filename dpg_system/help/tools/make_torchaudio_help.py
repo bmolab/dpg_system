@@ -69,8 +69,8 @@ patch stalls and blocks pile up past a few seconds, the newest are dropped and
 counted here.
 
 RELATED:
-adc~ (record~ help patch) is the microphone as a signal; capture~ (snapshot~
-help patch) turns any signal into arrays or tensors."""
+adc~ is the microphone as a signal; capture~ turns any signal into arrays or
+tensors."""
 
 PLOT_CHUNK = {'color': 'none', 'width': 200, 'height': 128, 'style': 'line',
               'update style': 'input is multi-channel sample', 'sample count': 1024,

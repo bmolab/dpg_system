@@ -1,11 +1,11 @@
 {
-    "height": 944,
-    "width": 1758,
+    "height": 1621,
+    "width": 1457,
     "position": [
         100,
         100
     ],
-    "id": 607,
+    "id": 570,
     "name": "sensor_to_root_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/sensor_to_root_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 900,
+            "position_x": 599,
             "position_y": 45,
             "width": 818,
-            "height": 776,
+            "height": 1516,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These work out where the body actually is, from sensors that are not where \nthe body's origin is.\n\nTHE NODES:\n\nsensor_to_root            turn a lower-back sensor position into the pelvis\ntracker_root_inference    correct the root using a model of the thigh tracker\nquaternion_diff_and_axis  how much each joint turned, and about which axis\n\nTHE PROBLEM BOTH ROOT NODES SOLVE:\nA skeleton's root is the pelvis, and the pelvis is inside the body. No sensor is \nthere. What you have is a sensor on the lower back at about belt height, or a \ntracker on the left thigh - and the difference between where the sensor is and \nwhere the root is has to be modelled, not measured.\n\nsensor_to_root applies a fixed offset in pelvis-local coordinates, rotated by \nthe pelvis orientation. Because the offset is expressed in the body's frame \nrather than the world's, it stays correct as the performer turns and bends, \nwhich a world-space offset would not.\n\ntracker_root_inference addresses a different failure. The Shadow system infers \nroot position from the thigh tracker but does not know exactly where on the \nthigh it is mounted, and the error shows up as VERTICAL DRIFT when the left leg \nis raised - lift the knee and the whole body appears to rise. This node models \nthe mounting position, predicts where the tracker should be, compares that with \nwhere it says it is, and corrects the difference.\n\nIf a performer seems to grow taller when they lift a leg, that is this.\n\nquaternion_diff_and_axis:\nReports how much each joint rotated between frames, and about which axis. \nThe magnitude is a per-joint speed - the natural measure of how much a joint is \ndoing - and the axis says which way, which distinguishes a twist from a bend \nwithout any anatomical assumptions.\n\nIts two smoothing inlets let you take the difference at two timescales at once, \nso a fast wobble and a slow turn can be told apart.\n\nSYNTAX:\nsensor_to_root\ntracker_root_inference\n\nEXAMPLE:\nquaternion_diff_and_axis\n\nINPUTS and PARAMETERS:\n\nsensor pos / pelvis quat (sensor_to_root):\nWhere the sensor is, and which way the pelvis faces.\n\npositions / pose / limb_lengths (tracker_root_inference):\nThe inferred positions, the orientations, and the proportions the model needs.\n\nquaternions in:\nThe pose, for the difference node.\n\nsmoothing A / smoothing B:\nTwo independent smoothings, for looking at two timescales.\n\nrestart calculation:\nClear the history and begin again.\n\nOUTPUTS: \n\nroot pos / corrected root:\nThe corrected root position.\n\ncorrected positions:\nEvery joint, shifted by the correction.\n\ncorrection / tracker model pos:\nWhat was applied, and where the model thinks the tracker is - worth watching \nwhile tuning, since it shows whether the model is plausible before you trust \nwhat it produces.\n\nmagnitudes / axes:\nPer-joint rotation speed, and the axis of each.",
+                    "value": "These work out where the body actually is, from sensors that are not where \nthe body's origin is.\n\nTHE NODES:\n\nsensor_to_root          turn a lower-back sensor position into the pelvis\ntracker_root_inference  correct the root using a model of where a thigh \n                        tracker is mounted\n\nTHE PROBLEM BOTH NODES SOLVE:\nA skeleton's root is the pelvis, and the pelvis is inside the body. No sensor is \nthere. What you have is a sensor on the lower back at about belt height, or a \ntracker on a thigh - and the difference between where the sensor is and where \nthe root is has to be modelled, not measured.\n\nsensor_to_root:\nApplies a fixed offset in pelvis-local coordinates, rotated by the pelvis \norientation. Because the offset is expressed in the body's frame rather than \nthe world's, it stays correct as the performer turns and bends, which a \nworld-space offset would not.\n\nThe offset is 'offset_x', 'offset_y' and 'offset_z', in metres: x to the right, \ny up, z forward. The default puts the root 0.12 m forward of the sensor.\n\nThe sensor position comes either from 'sensor pos' - three numbers - or, with \n'use_positions' ticked, from the Shadow positions array at 'positions', \nreading the tracker that 'tracker_index' (0 to 3) picks. Either way the \ncalculation runs when something arrives at 'sensor pos'; with 'use_positions' \non, whatever arrives there only triggers it.\n\nThe pelvis orientation comes from 'pelvis quat' if anything has arrived there, \notherwise from the pelvis anchor of a pose at 'pose' (20 or 37 joints). \nQuaternions are w, x, y, z. With neither, the offset is added unrotated.\n\ntracker_root_inference:\nAddresses a different failure. The Shadow system infers root position from a \nthigh tracker but does not know exactly where on the thigh it is mounted, and \nthe error shows up as VERTICAL DRIFT when that leg is raised - lift the knee \nand the whole body appears to rise. This node models the mounting position, \npredicts where the tracker should be, compares that with where it says it is, \nand moves the root by the difference.\n\nIf a performer seems to grow taller when they lift a leg, that is this.\n\nThe mounting is described by four settings: 'thigh_side' (left or right - \nright by default), 'tracker_down_thigh' (metres from the hip down the thigh, \n0.15), 'tracker_radial_offset' (metres out from the bone, 0.08) and \n'tracker_circumference_angle' (degrees around the thigh: 0 and 180 are the two \nsides, 90 and 270 the front and back). 'tracker_index' picks which of the four \nShadow trackers it is.\n\nThe thigh and hip lengths default to the Shadow skeleton's. A dictionary from \nsmpl_beta_editor at 'limb_lengths' replaces them with a particular body's.\n\nUntil a pose has arrived it cannot place the tracker, and passes the root \nthrough unchanged.\n\nBoth nodes replace ONLY the root - the pelvis anchor - in 'corrected \npositions'. The other joints are passed through unchanged.\n\nSYNTAX:\nsensor_to_root\ntracker_root_inference\n\nEXAMPLE:\nsensor_to_root\n\nINPUTS and PARAMETERS (sensor_to_root):\n\nsensor pos:\nThe sensor position, three numbers - or just a trigger, with use_positions on.\n\npelvis quat:\nThe pelvis orientation, w, x, y, z.\n\npositions:\nThe full Shadow positions array, used with use_positions.\n\npose:\nA 20- or 37-joint pose, for the pelvis orientation when pelvis quat is unused.\n\noffset_x / offset_y / offset_z:\nThe offset from sensor to root, in the pelvis's own frame.\n\ntracker_index:\nWhich Shadow tracker, 0 to 3, to read from positions.\n\nuse_positions:\nTake the sensor position from the positions array.\n\nINPUTS and PARAMETERS (tracker_root_inference):\n\npositions:\nThe Shadow positions array, 37 rows of three. Each one triggers a correction.\n\npose:\nA 20- or 37-joint pose, for the pelvis and hip orientations.\n\nlimb_lengths:\nBody proportions from smpl_beta_editor.\n\nthigh_side / tracker_down_thigh / tracker_radial_offset / \ntracker_circumference_angle / tracker_index:\nWhere the tracker is - see above.\n\nenabled:\nOff passes the positions and root through unchanged.\n\nOUTPUTS (sensor_to_root): \n\nroot pos:\nThe root position.\n\ncorrected positions:\nThe positions array with the root replaced. Only sent with use_positions.\n\nOUTPUTS (tracker_root_inference): \n\ncorrected root:\nThe corrected root position.\n\ncorrection:\nWhat was subtracted from the root.\n\ntracker model pos:\nWhere the model thinks the tracker is - worth watching while tuning, since it \nshows whether the model is plausible before you trust what it produces.\n\ncorrected positions:\nThe positions array with the root replaced.\n\nRELATED:\nshadow supplies the positions and the pose.\nsmpl_beta_editor supplies body proportions.\nquaternion_diff_and_axis measures how much each joint is turning.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 760,
+                    "value": 1500,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These work out where the body actually is, from sensors that are not where \nthe body's origin is.\n\nTHE NODES:\n\nsensor_to_root            turn a lower-back sensor position into the pelvis\ntracker_root_inference    correct the root using a model of the thigh tracker\nquaternion_diff_and_axis  how much each joint turned, and about which axis\n\nTHE PROBLEM BOTH ROOT NODES SOLVE:\nA skeleton's root is the pelvis, and the pelvis is inside the body. No sensor is \nthere. What you have is a sensor on the lower back at about belt height, or a \ntracker on the left thigh - and the difference between where the sensor is and \nwhere the root is has to be modelled, not measured.\n\nsensor_to_root applies a fixed offset in pelvis-local coordinates, rotated by \nthe pelvis orientation. Because the offset is expressed in the body's frame \nrather than the world's, it stays correct as the performer turns and bends, \nwhich a world-space offset would not.\n\ntracker_root_inference addresses a different failure. The Shadow system infers \nroot position from the thigh tracker but does not know exactly where on the \nthigh it is mounted, and the error shows up as VERTICAL DRIFT when the left leg \nis raised - lift the knee and the whole body appears to rise. This node models \nthe mounting position, predicts where the tracker should be, compares that with \nwhere it says it is, and corrects the difference.\n\nIf a performer seems to grow taller when they lift a leg, that is this.\n\nquaternion_diff_and_axis:\nReports how much each joint rotated between frames, and about which axis. \nThe magnitude is a per-joint speed - the natural measure of how much a joint is \ndoing - and the axis says which way, which distinguishes a twist from a bend \nwithout any anatomical assumptions.\n\nIts two smoothing inlets let you take the difference at two timescales at once, \nso a fast wobble and a slow turn can be told apart.\n\nSYNTAX:\nsensor_to_root\ntracker_root_inference\n\nEXAMPLE:\nquaternion_diff_and_axis\n\nINPUTS and PARAMETERS:\n\nsensor pos / pelvis quat (sensor_to_root):\nWhere the sensor is, and which way the pelvis faces.\n\npositions / pose / limb_lengths (tracker_root_inference):\nThe inferred positions, the orientations, and the proportions the model needs.\n\nquaternions in:\nThe pose, for the difference node.\n\nsmoothing A / smoothing B:\nTwo independent smoothings, for looking at two timescales.\n\nrestart calculation:\nClear the history and begin again.\n\nOUTPUTS: \n\nroot pos / corrected root:\nThe corrected root position.\n\ncorrected positions:\nEvery joint, shifted by the correction.\n\ncorrection / tracker model pos:\nWhat was applied, and where the model thinks the tracker is - worth watching \nwhile tuning, since it shows whether the model is plausible before you trust \nwhat it produces.\n\nmagnitudes / axes:\nPer-joint rotation speed, and the axis of each."
+            "text": "These work out where the body actually is, from sensors that are not where \nthe body's origin is.\n\nTHE NODES:\n\nsensor_to_root          turn a lower-back sensor position into the pelvis\ntracker_root_inference  correct the root using a model of where a thigh \n                        tracker is mounted\n\nTHE PROBLEM BOTH NODES SOLVE:\nA skeleton's root is the pelvis, and the pelvis is inside the body. No sensor is \nthere. What you have is a sensor on the lower back at about belt height, or a \ntracker on a thigh - and the difference between where the sensor is and where \nthe root is has to be modelled, not measured.\n\nsensor_to_root:\nApplies a fixed offset in pelvis-local coordinates, rotated by the pelvis \norientation. Because the offset is expressed in the body's frame rather than \nthe world's, it stays correct as the performer turns and bends, which a \nworld-space offset would not.\n\nThe offset is 'offset_x', 'offset_y' and 'offset_z', in metres: x to the right, \ny up, z forward. The default puts the root 0.12 m forward of the sensor.\n\nThe sensor position comes either from 'sensor pos' - three numbers - or, with \n'use_positions' ticked, from the Shadow positions array at 'positions', \nreading the tracker that 'tracker_index' (0 to 3) picks. Either way the \ncalculation runs when something arrives at 'sensor pos'; with 'use_positions' \non, whatever arrives there only triggers it.\n\nThe pelvis orientation comes from 'pelvis quat' if anything has arrived there, \notherwise from the pelvis anchor of a pose at 'pose' (20 or 37 joints). \nQuaternions are w, x, y, z. With neither, the offset is added unrotated.\n\ntracker_root_inference:\nAddresses a different failure. The Shadow system infers root position from a \nthigh tracker but does not know exactly where on the thigh it is mounted, and \nthe error shows up as VERTICAL DRIFT when that leg is raised - lift the knee \nand the whole body appears to rise. This node models the mounting position, \npredicts where the tracker should be, compares that with where it says it is, \nand moves the root by the difference.\n\nIf a performer seems to grow taller when they lift a leg, that is this.\n\nThe mounting is described by four settings: 'thigh_side' (left or right - \nright by default), 'tracker_down_thigh' (metres from the hip down the thigh, \n0.15), 'tracker_radial_offset' (metres out from the bone, 0.08) and \n'tracker_circumference_angle' (degrees around the thigh: 0 and 180 are the two \nsides, 90 and 270 the front and back). 'tracker_index' picks which of the four \nShadow trackers it is.\n\nThe thigh and hip lengths default to the Shadow skeleton's. A dictionary from \nsmpl_beta_editor at 'limb_lengths' replaces them with a particular body's.\n\nUntil a pose has arrived it cannot place the tracker, and passes the root \nthrough unchanged.\n\nBoth nodes replace ONLY the root - the pelvis anchor - in 'corrected \npositions'. The other joints are passed through unchanged.\n\nSYNTAX:\nsensor_to_root\ntracker_root_inference\n\nEXAMPLE:\nsensor_to_root\n\nINPUTS and PARAMETERS (sensor_to_root):\n\nsensor pos:\nThe sensor position, three numbers - or just a trigger, with use_positions on.\n\npelvis quat:\nThe pelvis orientation, w, x, y, z.\n\npositions:\nThe full Shadow positions array, used with use_positions.\n\npose:\nA 20- or 37-joint pose, for the pelvis orientation when pelvis quat is unused.\n\noffset_x / offset_y / offset_z:\nThe offset from sensor to root, in the pelvis's own frame.\n\ntracker_index:\nWhich Shadow tracker, 0 to 3, to read from positions.\n\nuse_positions:\nTake the sensor position from the positions array.\n\nINPUTS and PARAMETERS (tracker_root_inference):\n\npositions:\nThe Shadow positions array, 37 rows of three. Each one triggers a correction.\n\npose:\nA 20- or 37-joint pose, for the pelvis and hip orientations.\n\nlimb_lengths:\nBody proportions from smpl_beta_editor.\n\nthigh_side / tracker_down_thigh / tracker_radial_offset / \ntracker_circumference_angle / tracker_index:\nWhere the tracker is - see above.\n\nenabled:\nOff passes the positions and root through unchanged.\n\nOUTPUTS (sensor_to_root): \n\nroot pos:\nThe root position.\n\ncorrected positions:\nThe positions array with the root replaced. Only sent with use_positions.\n\nOUTPUTS (tracker_root_inference): \n\ncorrected root:\nThe corrected root position.\n\ncorrection:\nWhat was subtracted from the root.\n\ntracker model pos:\nWhere the model thinks the tracker is - worth watching while tuning, since it \nshows whether the model is plausible before you trust what it produces.\n\ncorrected positions:\nThe positions array with the root replaced.\n\nRELATED:\nshadow supplies the positions and the pose.\nsmpl_beta_editor supplies body proportions.\nquaternion_diff_and_axis measures how much each joint is turning."
         },
         "3": {
             "name": "shadow",
@@ -105,10 +105,68 @@
             "properties": {}
         },
         "4": {
-            "name": "tracker_root_inference",
+            "name": "sensor_to_root",
             "id": 385,
             "position_x": 30,
-            "position_y": 400,
+            "position_y": 270,
+            "width": 172,
+            "height": 168,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "use_positions",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 314,
+            "position_y": 270,
+            "width": 255,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the lower-back tracker, moved to\nthe pelvis by a body-relative offset",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the lower-back tracker, moved to\nthe pelvis by a body-relative offset"
+        },
+        "6": {
+            "name": "tracker_root_inference",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 600,
             "width": 258,
             "height": 196,
             "visibility": "show_all",
@@ -116,12 +174,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "5": {
+        "7": {
             "init": "comment fixes the body rising when a leg lifts",
             "name": "comment",
-            "id": 422,
-            "position_x": 584,
-            "position_y": 615,
+            "id": 496,
+            "position_x": 314,
+            "position_y": 600,
             "width": 242,
             "height": 30,
             "visibility": "show_all",
@@ -141,116 +199,11 @@
             },
             "comment": "fixes the body rising when a leg lifts"
         },
-        "6": {
-            "name": "quaternion_diff_and_axis",
-            "id": 459,
-            "position_x": 30,
-            "position_y": 660,
-            "width": 197,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "7": {
-            "name": "heat_map",
-            "id": 496,
-            "position_x": 350,
-            "position_y": 660,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 20,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 0.3,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                }
-            }
-        },
         "8": {
-            "name": "text_block",
-            "id": 533,
-            "annotation": true,
-            "position_x": 584,
-            "position_y": 820,
-            "width": 286,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "per-joint rotation speed, all at once\nwhich joints are actually doing something",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 278,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "per-joint rotation speed, all at once\nwhich joints are actually doing something"
-        },
-        "9": {
             "name": "close",
-            "id": 570,
+            "id": 533,
             "position_x": 24,
-            "position_y": 840,
+            "position_y": 826,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -291,20 +244,30 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "body 1 quaternions",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "sensor pos"
+        },
+        "3": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "body 1 positions",
             "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "quaternions in"
+            "dest_input_name": "positions"
         },
-        "3": {
-            "source_node": 459,
+        "4": {
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "magnitudes",
-            "dest_node": 496,
+            "source_output_name": "body 1 quaternions",
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "y"
+            "dest_input_name": "pose"
         }
     }
 }

@@ -1,11 +1,11 @@
 {
-    "height": 918,
-    "width": 681,
+    "height": 606,
+    "width": 1290,
     "position": [
         100,
         100
     ],
-    "id": 1684,
+    "id": 1832,
     "name": "nodes_text",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_text.json",
     "nodes": {
@@ -332,12 +332,12 @@
             "annotation": true,
             "position_x": 238,
             "position_y": 292,
-            "width": 397,
+            "width": 317,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "assembling text over time\n(fifo_string, gather_sentence, string_builder, text_change)",
+                    "value": "assembling text over time\n(fifo_string, gather_sentence, string_builder)",
                     "value_type": "str"
                 },
                 "1": {
@@ -347,7 +347,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 389,
+                    "value": 309,
                     "value_type": "int"
                 },
                 "3": {
@@ -361,14 +361,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "assembling text over time\n(fifo_string, gather_sentence, string_builder, text_change)",
+            "text": "assembling text over time\n(fifo_string, gather_sentence, string_builder)",
             "id": 944,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "12": {
-            "init": "help_link string_replace string replacement",
+            "init": "help_link text_change text_change",
             "name": "help_link",
             "position_x": 24,
             "position_y": 340,
@@ -376,7 +376,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "string replacement",
+                    "name": "text_change",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -401,6 +401,75 @@
             "annotation": true,
             "position_x": 238,
             "position_y": 344,
+            "width": 132,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "only what is new",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 124,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "only what is new",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "help_link string_replace string replacement",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 392,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "string replacement",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 396,
             "width": 378,
             "height": 40,
             "properties": {
@@ -431,16 +500,16 @@
                 }
             },
             "text": "substituting and cleaning up\n(printable, string_replace, unescape_text, word_replace)",
-            "id": 1018,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "16": {
             "init": "help_link text_file text_file / text_editor",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 392,
+            "position_y": 444,
             "width": 200,
             "height": 44,
             "properties": {
@@ -460,16 +529,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "17": {
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 396,
+            "position_y": 448,
             "width": 200,
             "height": 40,
             "properties": {
@@ -500,16 +569,16 @@
                 }
             },
             "text": "a body of text in the patch\n(text_editor, text_file)",
-            "id": 1092,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "18": {
             "init": "help_link word_trigger word triggers",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 444,
+            "position_y": 496,
             "width": 200,
             "height": 44,
             "properties": {
@@ -529,16 +598,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "19": {
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 448,
+            "position_y": 500,
             "width": 403,
             "height": 40,
             "properties": {
@@ -569,16 +638,16 @@
                 }
             },
             "text": "reacting to what was said\n(first_letter_trigger, fuzzy_match, word_gate, word_trigger)",
-            "id": 1166,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "20": {
             "init": "comment Language",
             "name": "comment",
-            "position_x": 24,
-            "position_y": 514,
+            "position_x": 701,
+            "position_y": 150,
             "width": 77,
             "height": 30,
             "properties": {
@@ -594,16 +663,16 @@
                 }
             },
             "comment": "Language",
-            "id": 1203,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "21": {
             "init": "help_link rephrase rephrase / lemma",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 548,
+            "position_x": 701,
+            "position_y": 184,
             "width": 200,
             "height": 44,
             "properties": {
@@ -623,16 +692,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1240,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "22": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 552,
+            "position_x": 915,
+            "position_y": 188,
             "width": 157,
             "height": 40,
             "properties": {
@@ -663,16 +732,16 @@
                 }
             },
             "text": "working from grammar\n(lemma, rephrase)",
-            "id": 1277,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "23": {
             "init": "help_link spacy_vector spacy vectors / similarity",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 600,
+            "position_x": 701,
+            "position_y": 236,
             "width": 200,
             "height": 44,
             "properties": {
@@ -692,16 +761,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1314,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 604,
+            "position_x": 915,
+            "position_y": 240,
             "width": 335,
             "height": 40,
             "properties": {
@@ -732,16 +801,16 @@
                 }
             },
             "text": "meaning as a measurable quantity\n(spacy_confusion, spacy_similarity, spacy_vector)",
-            "id": 1351,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "25": {
             "init": "help_link translate translate / translate_api",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 652,
+            "position_x": 701,
+            "position_y": 288,
             "width": 200,
             "height": 44,
             "properties": {
@@ -761,16 +830,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1388,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 656,
+            "position_x": 915,
+            "position_y": 292,
             "width": 194,
             "height": 40,
             "properties": {
@@ -801,16 +870,16 @@
                 }
             },
             "text": "free and official routes\n(translate, translate_api)",
-            "id": 1425,
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "27": {
             "init": "help_link context_tracker context_tracker",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 704,
+            "position_x": 701,
+            "position_y": 340,
             "width": 200,
             "height": 44,
             "properties": {
@@ -830,16 +899,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1462,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "28": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 708,
+            "position_x": 915,
+            "position_y": 344,
             "width": 188,
             "height": 28,
             "properties": {
@@ -870,90 +939,21 @@
                 }
             },
             "text": "the world the words build",
-            "id": 1499,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "27": {
-            "init": "help_link weighted_prompt weighted / ambient prompts",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 756,
-            "width": 200,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "weighted / ambient prompts",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 184,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "orange",
-                    "value_type": "str"
-                }
-            },
-            "id": 1536,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "28": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 238,
-            "position_y": 760,
-            "width": 342,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "balance you can move\n(ambient_prompt, prompt_composer, weighted_prompt)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 334,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "balance you can move\n(ambient_prompt, prompt_composer, weighted_prompt)",
             "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "29": {
-            "init": "help_link cairo_layout cairo_layout / llm_layout",
+            "init": "help_link weighted_prompt weighted / ambient prompts",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 808,
+            "position_x": 701,
+            "position_y": 392,
             "width": 200,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "cairo_layout / llm_layout",
+                    "name": "weighted / ambient prompts",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -976,8 +976,146 @@
         "30": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 812,
+            "position_x": 915,
+            "position_y": 396,
+            "width": 237,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "balance you can move\n(ambient_prompt, weighted_prompt)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "balance you can move\n(ambient_prompt, weighted_prompt)",
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "31": {
+            "init": "help_link prompt_composer prompt_composer",
+            "name": "help_link",
+            "position_x": 701,
+            "position_y": 444,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "prompt_composer",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "32": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 915,
+            "position_y": 448,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "live text within a budget",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "live text within a budget",
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "init": "help_link cairo_layout cairo_layout / llm_layout",
+            "name": "help_link",
+            "position_x": 701,
+            "position_y": 496,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "cairo_layout / llm_layout",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 915,
+            "position_y": 500,
             "width": 194,
             "height": 40,
             "properties": {
@@ -1008,7 +1146,7 @@
                 }
             },
             "text": "text as a picture\n(cairo_layout, llm_layout)",
-            "id": 1647,
+            "id": 1795,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

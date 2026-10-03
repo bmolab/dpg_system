@@ -1,11 +1,11 @@
 {
-    "height": 1038,
-    "width": 1851,
+    "height": 1090,
+    "width": 1783,
     "position": [
         100,
         100
     ],
-    "id": 2794,
+    "id": 3016,
     "name": "nodes_body",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_body.json",
     "nodes": {
@@ -633,12 +633,12 @@
             "annotation": true,
             "position_x": 281,
             "position_y": 552,
-            "width": 440,
+            "width": 280,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "where the body actually is\n(quaternion_diff_and_axis, sensor_to_root, tracker_root_inference)",
+                    "value": "where the body actually is\n(sensor_to_root, tracker_root_inference)",
                     "value_type": "str"
                 },
                 "1": {
@@ -648,7 +648,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 432,
+                    "value": 272,
                     "value_type": "int"
                 },
                 "3": {
@@ -662,7 +662,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "where the body actually is\n(quaternion_diff_and_axis, sensor_to_root, tracker_root_inference)",
+            "text": "where the body actually is\n(sensor_to_root, tracker_root_inference)",
             "id": 1277,
             "visibility": "show_all",
             "draggable": true,
@@ -807,10 +807,79 @@
             "presentation_state": "show_all"
         },
         "25": {
+            "init": "help_link json_npz_frame_picker json_npz_frame_picker",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 704,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "json_npz_frame_picker",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 708,
+            "width": 181,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "reviewing flagged frames",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 173,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "reviewing flagged frames",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
             "init": "comment Poses and joints",
             "name": "comment",
             "position_x": 24,
-            "position_y": 722,
+            "position_y": 774,
             "width": 138,
             "height": 30,
             "properties": {
@@ -826,16 +895,16 @@
                 }
             },
             "comment": "Poses and joints",
-            "id": 1462,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "28": {
             "init": "help_link pose poses",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 756,
+            "position_y": 808,
             "width": 243,
             "height": 44,
             "properties": {
@@ -855,16 +924,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1499,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "27": {
+        "29": {
             "name": "text_block",
             "annotation": true,
             "position_x": 281,
-            "position_y": 760,
+            "position_y": 812,
             "width": 502,
             "height": 40,
             "properties": {
@@ -895,82 +964,13 @@
                 }
             },
             "text": "carrying, editing and comparing poses\n(active_joints, active_pose, calibrate_pose, pose, pose_adjust, target_pose)",
-            "id": 1536,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "28": {
-            "init": "help_link body_to_joints body / joints",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 808,
-            "width": 243,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "body / joints",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 227,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "violet",
-                    "value_type": "str"
-                }
-            },
-            "id": 1573,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "29": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 281,
-            "position_y": 812,
-            "width": 613,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "local, global, and per joint\n(body_to_joints, global_to_local_body, limb_size, local_to_global_body, shadow_body_to_joints)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 605,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "local, global, and per joint\n(body_to_joints, global_to_local_body, limb_size, local_to_global_body, shadow_body_to_joints)",
             "id": 1610,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "30": {
-            "init": "help_link take take / take_dict / picker",
+            "init": "help_link body_to_joints body / joints",
             "name": "help_link",
             "position_x": 24,
             "position_y": 860,
@@ -978,7 +978,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "take / take_dict / picker",
+                    "name": "body / joints",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -1003,12 +1003,12 @@
             "annotation": true,
             "position_x": 281,
             "position_y": 864,
-            "width": 280,
+            "width": 545,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "recording, playing back, reviewing\n(json_npz_frame_picker, take, take_dict)",
+                    "value": "local, global, and per joint\n(body_to_joints, global_to_local_body, local_to_global_body, shadow_body_to_joints)",
                     "value_type": "str"
                 },
                 "1": {
@@ -1018,7 +1018,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 272,
+                    "value": 537,
                     "value_type": "int"
                 },
                 "3": {
@@ -1032,16 +1032,154 @@
                     "value_type": "str"
                 }
             },
-            "text": "recording, playing back, reviewing\n(json_npz_frame_picker, take, take_dict)",
+            "text": "local, global, and per joint\n(body_to_joints, global_to_local_body, local_to_global_body, shadow_body_to_joints)",
             "id": 1684,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "32": {
+            "init": "help_link quaternion_diff_and_axis quaternion_diff_and_axis",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 912,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "quaternion_diff_and_axis",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 916,
+            "width": 218,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "how much each joint is turning",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "how much each joint is turning",
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "init": "help_link take take / take_dict",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 964,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "take / take_dict",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 1795,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "35": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 281,
+            "position_y": 968,
+            "width": 237,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "recording and playing back motion\n(take, take_dict)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "recording and playing back motion\n(take, take_dict)",
+            "id": 1832,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "36": {
             "init": "comment SMPL bodies",
             "name": "comment",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 150,
             "width": 100,
             "height": 30,
@@ -1058,15 +1196,15 @@
                 }
             },
             "comment": "SMPL bodies",
-            "id": 1721,
+            "id": 1869,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "33": {
+        "37": {
             "init": "help_link shadow_to_smpl shadow / smpl conversions",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 184,
             "width": 243,
             "height": 44,
@@ -1087,15 +1225,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 1758,
+            "id": 1906,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "34": {
+        "38": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 188,
             "width": 520,
             "height": 52,
@@ -1127,15 +1265,15 @@
                 }
             },
             "text": "joint order, format, up axis\n(active_to_smpl, quats_flip_y_z, shadow_to_smpl, smpl_to_active, smpl_to_quats,\n smpl_trans_to_y_up)",
-            "id": 1795,
+            "id": 1943,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "35": {
+        "39": {
             "init": "help_link smpl_pose smpl_pose / body / take",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 244,
             "width": 243,
             "height": 44,
@@ -1156,15 +1294,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 1832,
+            "id": 1980,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "36": {
+        "40": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 248,
             "width": 348,
             "height": 40,
@@ -1196,15 +1334,15 @@
                 }
             },
             "text": "the body, its shape and its posture\n(smpl_beta_editor, smpl_body, smpl_pose, smpl_take)",
-            "id": 1869,
+            "id": 2017,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "37": {
+        "41": {
             "init": "help_link smpl_pose_adjust smpl corrections",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 296,
             "width": 243,
             "height": 44,
@@ -1225,15 +1363,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 1906,
+            "id": 2054,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "38": {
+        "42": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 300,
             "width": 354,
             "height": 40,
@@ -1265,15 +1403,15 @@
                 }
             },
             "text": "frames, yaw and the floor\n(floor_zero, smpl_mag_yaw_correct, smpl_pose_adjust)",
-            "id": 1943,
+            "id": 2091,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "39": {
+        "43": {
             "init": "help_link smpl_pose_to_joints smpl pose / quats to joints",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 348,
             "width": 243,
             "height": 44,
@@ -1294,15 +1432,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 1980,
+            "id": 2128,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "40": {
+        "44": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 352,
             "width": 298,
             "height": 40,
@@ -1334,15 +1472,15 @@
                 }
             },
             "text": "one outlet per joint\n(smpl_pose_to_joints, smpl_quats_to_joints)",
-            "id": 2017,
+            "id": 2165,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "41": {
+        "45": {
             "init": "comment Effort and dynamics",
             "name": "comment",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 418,
             "width": 161,
             "height": 30,
@@ -1359,15 +1497,15 @@
                 }
             },
             "comment": "Effort and dynamics",
-            "id": 2054,
+            "id": 2202,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "42": {
+        "46": {
             "init": "help_link smpl_torque smpl_torque",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 452,
             "width": 243,
             "height": 44,
@@ -1388,15 +1526,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 2091,
+            "id": 2239,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "43": {
+        "47": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 456,
             "width": 175,
             "height": 28,
@@ -1428,15 +1566,15 @@
                 }
             },
             "text": "what the body had to do",
-            "id": 2128,
+            "id": 2276,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "44": {
+        "48": {
             "init": "help_link torque_gang torque gangs",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 504,
             "width": 243,
             "height": 44,
@@ -1457,15 +1595,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 2165,
+            "id": 2313,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "45": {
+        "49": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 508,
             "width": 255,
             "height": 40,
@@ -1497,15 +1635,15 @@
                 }
             },
             "text": "joints heard as one\n(gang, torque_gang, torque_residual)",
-            "id": 2202,
+            "id": 2350,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "46": {
+        "50": {
             "init": "help_link smpl_ragdoll smpl_ragdoll / ragdoll_blend_ui",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 556,
             "width": 243,
             "height": 44,
@@ -1526,15 +1664,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 2239,
+            "id": 2387,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "47": {
+        "51": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 560,
             "width": 231,
             "height": 40,
@@ -1566,15 +1704,15 @@
                 }
             },
             "text": "letting go of part of the body\n(ragdoll_blend_ui, smpl_ragdoll)",
-            "id": 2276,
+            "id": 2424,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "48": {
+        "52": {
             "init": "help_link smpl_resist smpl_resist",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 608,
             "width": 243,
             "height": 44,
@@ -1595,15 +1733,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 2313,
+            "id": 2461,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "49": {
+        "53": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 612,
             "width": 274,
             "height": 28,
@@ -1635,15 +1773,15 @@
                 }
             },
             "text": "a body that resists going with the flow",
-            "id": 2350,
+            "id": 2498,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "50": {
+        "54": {
             "init": "help_link pybullet_body pybullet_body",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 660,
             "width": 243,
             "height": 44,
@@ -1664,15 +1802,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 2387,
+            "id": 2535,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "51": {
+        "55": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 664,
             "width": 169,
             "height": 28,
@@ -1704,15 +1842,15 @@
                 }
             },
             "text": "a body that falls over",
-            "id": 2424,
+            "id": 2572,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "52": {
+        "56": {
             "init": "help_link effort_fader effort / muscle faders",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 712,
             "width": 243,
             "height": 44,
@@ -1733,15 +1871,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 2461,
+            "id": 2609,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "53": {
+        "57": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 716,
             "width": 391,
             "height": 40,
@@ -1773,15 +1911,15 @@
                 }
             },
             "text": "a moving body playing sounds\n(crossfade_scanner, effort_fader, muscle_activation_fader)",
-            "id": 2498,
+            "id": 2646,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "54": {
+        "58": {
             "init": "comment Drawing bodies",
             "name": "comment",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 782,
             "width": 123,
             "height": 30,
@@ -1798,15 +1936,15 @@
                 }
             },
             "comment": "Drawing bodies",
-            "id": 2535,
+            "id": 2683,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "55": {
+        "59": {
             "init": "help_link mgl_body mgl body drawing",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 816,
             "width": 243,
             "height": 44,
@@ -1827,15 +1965,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 2572,
+            "id": 2720,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "56": {
+        "60": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 820,
             "width": 600,
             "height": 52,
@@ -1867,15 +2005,15 @@
                 }
             },
             "text": "drawing a body, and what it is doing\n(body_proportions, mgl_body, mgl_body_orientation, mgl_contact_disks, mgl_orientation_disks,\n mgl_torque_arc)",
-            "id": 2609,
+            "id": 2757,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "57": {
+        "61": {
             "init": "help_link mgl_smpl_mesh mgl_smpl_mesh / mgl_smpl_heatmap",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 876,
             "width": 243,
             "height": 44,
@@ -1896,15 +2034,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 2646,
+            "id": 2794,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "58": {
+        "62": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 880,
             "width": 237,
             "height": 40,
@@ -1936,15 +2074,15 @@
                 }
             },
             "text": "the figure and its effort\n(mgl_smpl_heatmap, mgl_smpl_mesh)",
-            "id": 2683,
+            "id": 2831,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "59": {
+        "63": {
             "init": "help_link gl_body gl_body (alt, simple)",
             "name": "help_link",
-            "position_x": 954,
+            "position_x": 886,
             "position_y": 928,
             "width": 243,
             "height": 44,
@@ -1965,15 +2103,15 @@
                     "value_type": "str"
                 }
             },
-            "id": 2720,
+            "id": 2868,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "60": {
+        "64": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1211,
+            "position_x": 1143,
             "position_y": 932,
             "width": 268,
             "height": 40,
@@ -2005,7 +2143,76 @@
                 }
             },
             "text": "drawing a skeleton, the older way\n(gl_alt_body, gl_body, gl_simple_body)",
-            "id": 2757,
+            "id": 2905,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "65": {
+            "init": "help_link limb_size limb_size",
+            "name": "help_link",
+            "position_x": 886,
+            "position_y": 980,
+            "width": 243,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "limb_size",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 227,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "olive",
+                    "value_type": "str"
+                }
+            },
+            "id": 2942,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "66": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1143,
+            "position_y": 984,
+            "width": 268,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "adjusting the proportions of a gl_body",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "adjusting the proportions of a gl_body",
+            "id": 2979,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

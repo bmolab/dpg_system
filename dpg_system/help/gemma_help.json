@@ -1,6 +1,6 @@
 {
-    "height": 993,
-    "width": 2084,
+    "height": 1044,
+    "width": 1584,
     "position": [
         100,
         100
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1236,
+            "position_x": 736,
             "position_y": 45,
             "width": 808,
-            "height": 756,
+            "height": 916,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "A language model you can reach inside and push.\n\nTHE NODES:\n\ngemma                Gemma 2, with feature steering\nneuronpedia_search   find the feature to steer, by describing it\n\nTHIS IS NOT THE SAME NODE AS gemma_4:\ngemma_4 is a chat model you prompt. This is Gemma 2 with a sparse autoencoder\nattached, which lets you reach into the middle of the network and turn\nindividual CONCEPTS up or down while it writes.\n\nPrompting asks the model to write about something. Steering changes what it is\nthinking about, which is a different kind of control and produces a different\nkind of text - the subject can stay put while the disposition underneath it\nshifts.\n\nHOW STEERING WORKS, IN PRACTICE:\nThe sparse autoencoder decomposes what is happening inside a layer into many\nthousands of features, most of which turn out to correspond to something a\nperson can name - \"strong emotions\", \"dogs\", a place, a register. Each has a\nNUMBER.\n\n'interventions' takes those numbers. 'intervention_strength' says how hard to\npush, and 'intervention_active' switches the whole thing on and off so you can\nhear the difference against the same prompt and seed.\n\nPush gently. A small strength colours the writing; a large one makes the model\nobsessive and eventually incoherent, in a way that is interesting once and\ntiresome after that.\n\nneuronpedia_search IS HOW YOU FIND THE NUMBER:\nYou do not want to read sixteen thousand features. Type a description - what you\nwant more or less of - and it asks Neuronpedia, which holds explanations of\nthese features contributed by other people, and returns the best three as\n\n    [index, description, votes]\n\nThe index is what gemma wants. The votes are how much agreement there is that\nthe explanation is right, which is worth reading: a feature with a confident\nexplanation behaves more like its label than one with a tentative one.\n\n'model' and 'layer' must MATCH what gemma is running. A feature index only means\nanything for the model and layer it was found in - the same number in a\ndifferent layer is a different concept entirely, and nothing will warn you.\n\nTHE MODEL AND ITS SAE ARE A SET:\nEach entry pairs a model with the Gemma Scope autoencoder trained on it, and a\nlayer. The larger models are quantised to four bits to fit. Changing the model\nmeans changing the autoencoder and re-finding your features.\n\n'start', 'pause' and 'reset' control the generation; 'delay' paces it.\n'temperature', 'top_k' and 'top_p' are the ordinary sampling controls.\n\nSYNTAX:\ngemma\nneuronpedia_search\n\nEXAMPLE:\nneuronpedia_search\n\nINPUTS and PARAMETERS:\n\nprompt:\nWhat to write about.\n\ninterventions / intervention_strength / intervention_active:\nWhich features to push, how hard, and whether to push at all.\n\ntemperature / top_k / top_p / delay:\nSampling, and pacing.\n\nstart / pause / reset:\nRun, hold, begin again.\n\nsearch text / model / layer / search:\nWhat to look for, where, and go.\n\nOUTPUTS: \n\ngenerated_text:\nWhat it wrote.\n\nresults:\nUp to three [index, description, votes] triples.\n\nRELATED:\ngemma_4 for ordinary chat, which is faster and better at answering.\nThe steering here is the interesting one; gemma_4 is the useful one.",
+                    "value": "A language model you can reach inside and push.\n\nTHE NODE:\n\ngemma   Gemma 2, with feature steering through a sparse autoencoder\n\nSTATUS - READ THIS FIRST:\nIn this build the node is a working skeleton, not a working model. The lines\nthat load Gemma 2 and its autoencoder, run the model and apply the steering are\nall commented out in gemma_node.py, so pressing 'start' writes the placeholder\nword TEST! once per step instead of real text. The controls, the pacing and the\nsteering bookkeeping all run, which is what this page describes. Its module is\nalso not in dpg_system's import list at present, so the node only exists when\nthat is added.\n\nTHIS IS NOT THE SAME NODE AS gemma_4:\ngemma_4 is a chat model you prompt. This is Gemma 2 with a sparse autoencoder\nattached, which lets you reach into the middle of the network and turn\nindividual CONCEPTS up or down while it writes.\n\nPrompting asks the model to write about something. Steering changes what it is\nthinking about, which is a different kind of control and produces a different\nkind of text - the subject can stay put while the disposition underneath it\nshifts.\n\nHOW STEERING WORKS:\nThe sparse autoencoder decomposes what is happening inside one layer into\nsixteen thousand features, most of which turn out to correspond to something a\nperson can name - \"strong emotions\", \"dogs\", a place, a register. Each has an\nindex number. Steering adds a feature's direction back into that layer while\nthe model writes.\n\n'interventions' takes a list of features as text, in exactly the form\nneuronpedia_search puts out:\n\n    [[4253, \"strong emotions\", 1], [8398, \"dogs\", 2]]\n\nEach entry is [index, description, weight]. Only the index and the third number\nare used: a feature is pushed by 'intervention_strength' times its weight, and\nan entry whose weight is 0 is skipped. Text that does not read as a list is\ntreated as an empty list.\n\n'intervention_active' switches the whole thing on and off, and with\n'intervention_strength' at 0 nothing is pushed either. Both, and the\ninterventions themselves, are read again at every step, so you can change them\nwhile it writes and hear the difference against the same prompt.\n\nPush gently. A small strength colours the writing; a large one makes the model\nobsessive and eventually incoherent.\n\nTHE MODEL IS FIXED:\nThe model and its autoencoder are a set, chosen in the code rather than on the\nnode: Gemma 2 9B quantised to four bits, with the Gemma Scope autoencoder for\nlayer 20, sixteen thousand features wide. Feature indices only mean anything\nfor that model and layer, which is why neuronpedia_search defaults to the same\npair.\n\nHOW IT WRITES:\n'start' begins a run from the prompt. It writes up to fifty steps, then carries\non from what it has written for up to ten more rounds of fifty. 'delay' is the\npause between steps in seconds, read again at each step. 'pause' holds it where\nit is and 'start' lets it go on; 'reset' stops it and clears the text. While a\nrun is going, 'start' does not begin a second one.\n\nSYNTAX:\ngemma\n\nEXAMPLE:\ngemma\n\nINPUTS and PARAMETERS:\n\nprompt:\nThe text it begins from.\n\ndelay:\nSeconds between steps. 1.0 by default.\n\ntemperature / top_k / top_p:\nThe ordinary sampling controls: 0.7, 50 and 0.9 by default. In this skeleton\ntop_k and top_p are read, and temperature is not used at all.\n\nintervention_active:\nSteering on or off. Off by default.\n\nintervention_strength:\nHow hard to push, a whole number. 0 by default.\n\ninterventions:\nThe features, as a text list of [index, description, weight]. '[]' by default.\n\nstart / pause / reset:\nRun, hold, stop and clear.\n\nOUTPUTS:\n\ngenerated_text:\nEverything written so far in this run, sent again after every step - not just\nthe newest word.\n\nRELATED:\nneuronpedia_search finds the feature numbers by description, and its output\ngoes straight into 'interventions'.\ngemma_4 for ordinary chat, which is faster and better at answering.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 740,
+                    "value": 900,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "A language model you can reach inside and push.\n\nTHE NODES:\n\ngemma                Gemma 2, with feature steering\nneuronpedia_search   find the feature to steer, by describing it\n\nTHIS IS NOT THE SAME NODE AS gemma_4:\ngemma_4 is a chat model you prompt. This is Gemma 2 with a sparse autoencoder\nattached, which lets you reach into the middle of the network and turn\nindividual CONCEPTS up or down while it writes.\n\nPrompting asks the model to write about something. Steering changes what it is\nthinking about, which is a different kind of control and produces a different\nkind of text - the subject can stay put while the disposition underneath it\nshifts.\n\nHOW STEERING WORKS, IN PRACTICE:\nThe sparse autoencoder decomposes what is happening inside a layer into many\nthousands of features, most of which turn out to correspond to something a\nperson can name - \"strong emotions\", \"dogs\", a place, a register. Each has a\nNUMBER.\n\n'interventions' takes those numbers. 'intervention_strength' says how hard to\npush, and 'intervention_active' switches the whole thing on and off so you can\nhear the difference against the same prompt and seed.\n\nPush gently. A small strength colours the writing; a large one makes the model\nobsessive and eventually incoherent, in a way that is interesting once and\ntiresome after that.\n\nneuronpedia_search IS HOW YOU FIND THE NUMBER:\nYou do not want to read sixteen thousand features. Type a description - what you\nwant more or less of - and it asks Neuronpedia, which holds explanations of\nthese features contributed by other people, and returns the best three as\n\n    [index, description, votes]\n\nThe index is what gemma wants. The votes are how much agreement there is that\nthe explanation is right, which is worth reading: a feature with a confident\nexplanation behaves more like its label than one with a tentative one.\n\n'model' and 'layer' must MATCH what gemma is running. A feature index only means\nanything for the model and layer it was found in - the same number in a\ndifferent layer is a different concept entirely, and nothing will warn you.\n\nTHE MODEL AND ITS SAE ARE A SET:\nEach entry pairs a model with the Gemma Scope autoencoder trained on it, and a\nlayer. The larger models are quantised to four bits to fit. Changing the model\nmeans changing the autoencoder and re-finding your features.\n\n'start', 'pause' and 'reset' control the generation; 'delay' paces it.\n'temperature', 'top_k' and 'top_p' are the ordinary sampling controls.\n\nSYNTAX:\ngemma\nneuronpedia_search\n\nEXAMPLE:\nneuronpedia_search\n\nINPUTS and PARAMETERS:\n\nprompt:\nWhat to write about.\n\ninterventions / intervention_strength / intervention_active:\nWhich features to push, how hard, and whether to push at all.\n\ntemperature / top_k / top_p / delay:\nSampling, and pacing.\n\nstart / pause / reset:\nRun, hold, begin again.\n\nsearch text / model / layer / search:\nWhat to look for, where, and go.\n\nOUTPUTS: \n\ngenerated_text:\nWhat it wrote.\n\nresults:\nUp to three [index, description, votes] triples.\n\nRELATED:\ngemma_4 for ordinary chat, which is faster and better at answering.\nThe steering here is the interesting one; gemma_4 is the useful one."
+            "text": "A language model you can reach inside and push.\n\nTHE NODE:\n\ngemma   Gemma 2, with feature steering through a sparse autoencoder\n\nSTATUS - READ THIS FIRST:\nIn this build the node is a working skeleton, not a working model. The lines\nthat load Gemma 2 and its autoencoder, run the model and apply the steering are\nall commented out in gemma_node.py, so pressing 'start' writes the placeholder\nword TEST! once per step instead of real text. The controls, the pacing and the\nsteering bookkeeping all run, which is what this page describes. Its module is\nalso not in dpg_system's import list at present, so the node only exists when\nthat is added.\n\nTHIS IS NOT THE SAME NODE AS gemma_4:\ngemma_4 is a chat model you prompt. This is Gemma 2 with a sparse autoencoder\nattached, which lets you reach into the middle of the network and turn\nindividual CONCEPTS up or down while it writes.\n\nPrompting asks the model to write about something. Steering changes what it is\nthinking about, which is a different kind of control and produces a different\nkind of text - the subject can stay put while the disposition underneath it\nshifts.\n\nHOW STEERING WORKS:\nThe sparse autoencoder decomposes what is happening inside one layer into\nsixteen thousand features, most of which turn out to correspond to something a\nperson can name - \"strong emotions\", \"dogs\", a place, a register. Each has an\nindex number. Steering adds a feature's direction back into that layer while\nthe model writes.\n\n'interventions' takes a list of features as text, in exactly the form\nneuronpedia_search puts out:\n\n    [[4253, \"strong emotions\", 1], [8398, \"dogs\", 2]]\n\nEach entry is [index, description, weight]. Only the index and the third number\nare used: a feature is pushed by 'intervention_strength' times its weight, and\nan entry whose weight is 0 is skipped. Text that does not read as a list is\ntreated as an empty list.\n\n'intervention_active' switches the whole thing on and off, and with\n'intervention_strength' at 0 nothing is pushed either. Both, and the\ninterventions themselves, are read again at every step, so you can change them\nwhile it writes and hear the difference against the same prompt.\n\nPush gently. A small strength colours the writing; a large one makes the model\nobsessive and eventually incoherent.\n\nTHE MODEL IS FIXED:\nThe model and its autoencoder are a set, chosen in the code rather than on the\nnode: Gemma 2 9B quantised to four bits, with the Gemma Scope autoencoder for\nlayer 20, sixteen thousand features wide. Feature indices only mean anything\nfor that model and layer, which is why neuronpedia_search defaults to the same\npair.\n\nHOW IT WRITES:\n'start' begins a run from the prompt. It writes up to fifty steps, then carries\non from what it has written for up to ten more rounds of fifty. 'delay' is the\npause between steps in seconds, read again at each step. 'pause' holds it where\nit is and 'start' lets it go on; 'reset' stops it and clears the text. While a\nrun is going, 'start' does not begin a second one.\n\nSYNTAX:\ngemma\n\nEXAMPLE:\ngemma\n\nINPUTS and PARAMETERS:\n\nprompt:\nThe text it begins from.\n\ndelay:\nSeconds between steps. 1.0 by default.\n\ntemperature / top_k / top_p:\nThe ordinary sampling controls: 0.7, 50 and 0.9 by default. In this skeleton\ntop_k and top_p are read, and temperature is not used at all.\n\nintervention_active:\nSteering on or off. Off by default.\n\nintervention_strength:\nHow hard to push, a whole number. 0 by default.\n\ninterventions:\nThe features, as a text list of [index, description, weight]. '[]' by default.\n\nstart / pause / reset:\nRun, hold, stop and clear.\n\nOUTPUTS:\n\ngenerated_text:\nEverything written so far in this run, sent again after every step - not just\nthe newest word.\n\nRELATED:\nneuronpedia_search finds the feature numbers by description, and its output\ngoes straight into 'interventions'.\ngemma_4 for ordinary chat, which is faster and better at answering."
         },
         "3": {
             "name": "string",
@@ -105,7 +105,7 @@
             "properties": {
                 "0": {
                     "name": "text in",
-                    "value": "strong emotions",
+                    "value": "[[4253, \"strong emotions\", 1]]",
                     "value_type": "str"
                 },
                 "1": {
@@ -121,55 +121,112 @@
             }
         },
         "4": {
-            "name": "neuronpedia_search",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 120,
-            "width": 320,
-            "height": 200,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "list",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 335,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "6": {
             "name": "text_block",
-            "id": 459,
+            "id": 385,
             "annotation": true,
-            "position_x": 926,
-            "position_y": 385,
-            "width": 280,
-            "height": 88,
+            "position_x": 426,
+            "position_y": 62,
+            "width": 274,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "describe what you want more of, and it\nreturns [index, description, votes].\nThe index is what gemma wants\nmodel and layer MUST match gemma - the\nsame number in another layer is a\ndifferent concept, and nothing warns you",
+                    "value": "[index, description, weight] - the same\nform neuronpedia_search sends out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "[index, description, weight] - the same\nform neuronpedia_search sends out"
+        },
+        "5": {
+            "name": "gemma",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 140,
+            "width": 340,
+            "height": 520,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 426,
+            "position_y": 140,
+            "width": 268,
+            "height": 64,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "switch intervention_active on and off\nagainst the same prompt. Push GENTLY -\na large strength makes it obsessive,\nthen incoherent",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "switch intervention_active on and off\nagainst the same prompt. Push GENTLY -\na large strength makes it obsessive,\nthen incoherent"
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 426,
+            "position_y": 400,
+            "width": 280,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "in this build it writes TEST! at each\nstep - the model lines are commented out",
                     "value_type": "str"
                 },
                 "1": {
@@ -184,7 +241,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 72,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -193,25 +250,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "describe what you want more of, and it\nreturns [index, description, votes].\nThe index is what gemma wants\nmodel and layer MUST match gemma - the\nsame number in another layer is a\ndifferent concept, and nothing warns you"
-        },
-        "7": {
-            "name": "gemma",
-            "id": 496,
-            "position_x": 560,
-            "position_y": 62,
-            "width": 340,
-            "height": 520,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
+            "text": "in this build it writes TEST! at each\nstep - the model lines are commented out"
         },
         "8": {
             "name": "text_display",
             "id": 533,
-            "position_x": 560,
-            "position_y": 610,
+            "position_x": 30,
+            "position_y": 700,
             "width": 334,
             "height": 210,
             "visibility": "show_all",
@@ -251,90 +296,60 @@
             }
         },
         "9": {
-            "name": "text_block",
+            "init": "comment the whole text so far, resent each step",
+            "name": "comment",
             "id": 570,
-            "annotation": true,
-            "position_x": 926,
-            "position_y": 845,
-            "width": 268,
-            "height": 88,
+            "position_x": 426,
+            "position_y": 700,
+            "width": 248,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "switch intervention_active on and off\nagainst the same prompt to hear what\nthe feature is actually doing\npush GENTLY - a small strength colours\nthe writing, a large one makes it\nobsessive and then incoherent",
+                    "name": "text",
+                    "value": "the whole text so far, resent each step",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 260,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 72,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "switch intervention_active on and off\nagainst the same prompt to hear what\nthe feature is actually doing\npush GENTLY - a small strength colours\nthe writing, a large one makes it\nobsessive and then incoherent"
+            "comment": "the whole text so far, resent each step"
         },
         "10": {
-            "name": "text_block",
+            "init": "comment neuronpedia_search finds the feature numbers",
+            "name": "comment",
             "id": 607,
-            "annotation": true,
-            "position_x": 926,
-            "position_y": 600,
-            "width": 268,
-            "height": 64,
+            "position_x": 426,
+            "position_y": 950,
+            "width": 279,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "prompting asks it to write ABOUT\nsomething. Steering changes what it is\nthinking about - the subject can stay\nput while the disposition shifts",
+                    "name": "text",
+                    "value": "neuronpedia_search finds the feature numbers",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 260,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 48,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "prompting asks it to write ABOUT\nsomething. Steering changes what it is\nthinking about - the subject can stay\nput while the disposition shifts"
+            "comment": "neuronpedia_search finds the feature numbers"
         },
         "11": {
             "name": "close",
             "id": 644,
             "position_x": 24,
-            "position_y": 850,
+            "position_y": 940,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -355,23 +370,13 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "string out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "search text"
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "results",
             "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "interventions"
         },
-        "2": {
-            "source_node": 496,
+        "1": {
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "generated_text",

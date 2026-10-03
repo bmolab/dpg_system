@@ -1,0 +1,210 @@
+{
+    "height": 1381,
+    "width": 1324,
+    "position": [
+        100,
+        100
+    ],
+    "id": 533,
+    "name": "json_npz_frame_picker_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/json_npz_frame_picker_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment json_npz_frame_picker - reviewing flagged frames",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 598,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "json_npz_frame_picker - reviewing flagged frames",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "json_npz_frame_picker - reviewing flagged frames"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 476,
+            "position_y": 45,
+            "width": 808,
+            "height": 1276,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "This picks flagged frames out of an analysis report, one at a time, so you \ncan look at them.\n\nTHE NODES:\n\njson_npz_frame_picker  send the file and frame of a randomly chosen \n                       flagged event\n\nWHAT IT IS FOR:\nAn offline analysis run produces a list of interesting frames - flagged \nglitches, detected bursts - as a json file. Each press of 'next' picks one of \nthose events AT RANDOM and sends the file path and the frame number, so the \npatch can jump straight to it. It is what turns a list of numbers in a report \ninto something you can look at, one case at a time.\n\nIt is a random draw, not a walk through the list: the same event can come up \ntwice, and there is no going back to the previous one.\n\nTHE FILE IT READS:\nA json dictionary whose keys are .npz file paths, each holding a list of \nevents. An event is a dictionary with:\n\n    frame         the frame number\n    jerk_indices  the SMPL joint numbers flagged at that frame\n    jerk_values   a value for each of those joints\n    prev_acc      passed through as it is\n    acc           passed through as it is\n\nEvents without a 'frame' are skipped. An event missing any of the other four \nstops the file loading.\n\nThe file is read when 'json path' changes, and on the first 'next' if nothing \nis loaded yet. The default path is the report location on the lab machine.\n\nONLY ONE JOINT:\nType an SMPL joint name into 'joint' - left_wrist, right_knee, spine3 and so on - \nand only events that flagged that joint are picked. Leave it empty for any \nevent. A name that is not an SMPL joint, or one no event flagged, raises an \nerror rather than sending anything.\n\nWith a joint set, 'prev_acc' and 'acc' come out of each other's outlets - the \ntwo are swapped. Without one they are the right way round.\n\nSYNTAX:\njson_npz_frame_picker\n\nEXAMPLE:\njson_npz_frame_picker\n\nINPUTS and PARAMETERS:\n\nnext:\nPick an event and send it.\n\njson path:\nThe report file.\n\njoint:\nOnly pick events that flagged this SMPL joint. Empty for any.\n\nOUTPUTS: \n\nAll are sent on each pick, the path first and the frame second, so a take_dict \nfed by both has loaded the file before it is asked for the frame.\n\nnpz path:\nThe file the event is in.\n\nevent frame:\nThe frame number.\n\njoints:\nThe names of the flagged joints.\n\njerk values / jerk index:\nThe flagged values, and the joint numbers they belong to.\n\nprev_acc / acc:\nWhatever the report stored under those names (but see above).\n\nRELATED:\ntake_dict loads the file and shows the frame.\ncheck_burst and cadence_filter find this kind of event in a live stream.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1260,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "This picks flagged frames out of an analysis report, one at a time, so you \ncan look at them.\n\nTHE NODES:\n\njson_npz_frame_picker  send the file and frame of a randomly chosen \n                       flagged event\n\nWHAT IT IS FOR:\nAn offline analysis run produces a list of interesting frames - flagged \nglitches, detected bursts - as a json file. Each press of 'next' picks one of \nthose events AT RANDOM and sends the file path and the frame number, so the \npatch can jump straight to it. It is what turns a list of numbers in a report \ninto something you can look at, one case at a time.\n\nIt is a random draw, not a walk through the list: the same event can come up \ntwice, and there is no going back to the previous one.\n\nTHE FILE IT READS:\nA json dictionary whose keys are .npz file paths, each holding a list of \nevents. An event is a dictionary with:\n\n    frame         the frame number\n    jerk_indices  the SMPL joint numbers flagged at that frame\n    jerk_values   a value for each of those joints\n    prev_acc      passed through as it is\n    acc           passed through as it is\n\nEvents without a 'frame' are skipped. An event missing any of the other four \nstops the file loading.\n\nThe file is read when 'json path' changes, and on the first 'next' if nothing \nis loaded yet. The default path is the report location on the lab machine.\n\nONLY ONE JOINT:\nType an SMPL joint name into 'joint' - left_wrist, right_knee, spine3 and so on - \nand only events that flagged that joint are picked. Leave it empty for any \nevent. A name that is not an SMPL joint, or one no event flagged, raises an \nerror rather than sending anything.\n\nWith a joint set, 'prev_acc' and 'acc' come out of each other's outlets - the \ntwo are swapped. Without one they are the right way round.\n\nSYNTAX:\njson_npz_frame_picker\n\nEXAMPLE:\njson_npz_frame_picker\n\nINPUTS and PARAMETERS:\n\nnext:\nPick an event and send it.\n\njson path:\nThe report file.\n\njoint:\nOnly pick events that flagged this SMPL joint. Empty for any.\n\nOUTPUTS: \n\nAll are sent on each pick, the path first and the frame second, so a take_dict \nfed by both has loaded the file before it is asked for the frame.\n\nnpz path:\nThe file the event is in.\n\nevent frame:\nThe frame number.\n\njoints:\nThe names of the flagged joints.\n\njerk values / jerk index:\nThe flagged values, and the joint numbers they belong to.\n\nprev_acc / acc:\nWhatever the report stored under those names (but see above).\n\nRELATED:\ntake_dict loads the file and shows the frame.\ncheck_burst and cadence_filter find this kind of event in a live stream."
+        },
+        "3": {
+            "name": "json_npz_frame_picker",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 148,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment next picks a flagged event at random",
+            "name": "comment",
+            "id": 385,
+            "position_x": 204,
+            "position_y": 62,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "next picks a flagged event at random",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "next picks a flagged event at random"
+        },
+        "5": {
+            "name": "take_dict",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 140,
+            "height": 511,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment loads that file and jumps to the frame",
+            "name": "comment",
+            "id": 459,
+            "position_x": 204,
+            "position_y": 320,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "loads that file and jumps to the frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "loads that file and jumps to the frame"
+        },
+        "7": {
+            "name": "close",
+            "id": 496,
+            "position_x": 24,
+            "position_y": 861,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "npz path",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "load"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "event frame",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "frame"
+        }
+    }
+}

@@ -1,11 +1,11 @@
 {
-    "height": 970,
-    "width": 829,
+    "height": 710,
+    "width": 1376,
     "position": [
         100,
         100
     ],
-    "id": 1684,
+    "id": 1832,
     "name": "nodes_ai",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_ai.json",
     "nodes": {
@@ -165,7 +165,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 184,
-            "width": 200,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
@@ -175,7 +175,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -192,7 +192,7 @@
         "7": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
+            "position_x": 219,
             "position_y": 188,
             "width": 249,
             "height": 40,
@@ -230,21 +230,21 @@
             "presentation_state": "show_all"
         },
         "8": {
-            "init": "help_link gemma gemma / neuronpedia_search",
+            "init": "help_link gemma gemma",
             "name": "help_link",
             "position_x": 24,
             "position_y": 236,
-            "width": 200,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "gemma / neuronpedia_search",
+                    "name": "gemma",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -261,14 +261,14 @@
         "9": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
+            "position_x": 219,
             "position_y": 240,
             "width": 206,
-            "height": 40,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "steering a model from inside\n(gemma, neuronpedia_search)",
+                    "value": "steering a model from inside",
                     "value_type": "str"
                 },
                 "1": {
@@ -283,7 +283,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -292,28 +292,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "steering a model from inside\n(gemma, neuronpedia_search)",
+            "text": "steering a model from inside",
             "id": 870,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "10": {
-            "init": "help_link qwen_moe qwen_moe",
+            "init": "help_link neuronpedia_search neuronpedia_search",
             "name": "help_link",
             "position_x": 24,
             "position_y": 288,
-            "width": 200,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "qwen_moe",
+                    "name": "neuronpedia_search",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -330,8 +330,77 @@
         "11": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
+            "position_x": 219,
             "position_y": 292,
+            "width": 206,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "finding the feature to steer",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 198,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "finding the feature to steer",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link qwen_moe qwen_moe",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 340,
+            "width": 181,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "qwen_moe",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 165,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 219,
+            "position_y": 344,
             "width": 261,
             "height": 28,
             "properties": {
@@ -362,17 +431,17 @@
                 }
             },
             "text": "a mixture of experts, in this process",
-            "id": 944,
+            "id": 1018,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "14": {
             "init": "help_link bonsai_2 bonsai_2",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 340,
-            "width": 200,
+            "position_y": 392,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
@@ -382,7 +451,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -391,16 +460,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 981,
+            "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "15": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 344,
+            "position_x": 219,
+            "position_y": 396,
             "width": 218,
             "height": 28,
             "properties": {
@@ -431,16 +500,16 @@
                 }
             },
             "text": "a 27B model in seven gigabytes",
-            "id": 1018,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "16": {
             "init": "comment Vision",
             "name": "comment",
             "position_x": 24,
-            "position_y": 410,
+            "position_y": 462,
             "width": 62,
             "height": 30,
             "properties": {
@@ -456,17 +525,17 @@
                 }
             },
             "comment": "Vision",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "17": {
             "init": "help_link vision_describe vision_describe models",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 444,
-            "width": 200,
+            "position_y": 496,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
@@ -476,7 +545,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -485,16 +554,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1092,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "18": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 448,
+            "position_x": 219,
+            "position_y": 500,
             "width": 551,
             "height": 40,
             "properties": {
@@ -525,17 +594,17 @@
                 }
             },
             "text": "what is in this picture\n(vision_describe, vision_describe_gemma, vision_describe_qwen, vision_describe_smol)",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "19": {
             "init": "help_link depth_anything depth_anything",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 496,
-            "width": 200,
+            "position_y": 548,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
@@ -545,7 +614,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -554,16 +623,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1166,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 500,
+            "position_x": 219,
+            "position_y": 552,
             "width": 169,
             "height": 28,
             "properties": {
@@ -594,17 +663,17 @@
                 }
             },
             "text": "depth from one picture",
-            "id": 1203,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "21": {
             "init": "help_link clip_embedding clip_embedding (length)",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 548,
-            "width": 200,
+            "position_y": 600,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
@@ -614,7 +683,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -623,16 +692,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1240,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "22": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 552,
+            "position_x": 219,
+            "position_y": 604,
             "width": 274,
             "height": 40,
             "properties": {
@@ -663,16 +732,16 @@
                 }
             },
             "text": "words as CLIP sees them\n(clip_embedding, clip_embedding_length)",
-            "id": 1277,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "23": {
             "init": "comment Speech",
             "name": "comment",
-            "position_x": 24,
-            "position_y": 618,
+            "position_x": 830,
+            "position_y": 150,
             "width": 62,
             "height": 30,
             "properties": {
@@ -688,17 +757,17 @@
                 }
             },
             "comment": "Speech",
-            "id": 1314,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "24": {
             "init": "help_link whisper whisper(~)",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 652,
-            "width": 200,
+            "position_x": 830,
+            "position_y": 184,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
@@ -708,7 +777,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -717,16 +786,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1351,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "25": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 656,
+            "position_x": 1025,
+            "position_y": 188,
             "width": 151,
             "height": 40,
             "properties": {
@@ -757,17 +826,17 @@
                 }
             },
             "text": "speech into text\n(whisper, whisper~)",
-            "id": 1388,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "26": {
             "init": "help_link nemotron nemotron(~)",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 704,
-            "width": 200,
+            "position_x": 830,
+            "position_y": 236,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
@@ -777,7 +846,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -786,16 +855,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1425,
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "27": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 708,
+            "position_x": 1025,
+            "position_y": 240,
             "width": 311,
             "height": 40,
             "properties": {
@@ -826,17 +895,17 @@
                 }
             },
             "text": "streaming speech to text, final as it arrives\n(nemotron, nemotron~)",
-            "id": 1462,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "28": {
             "init": "help_link eleven_labs eleven_labs(~)",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 756,
-            "width": 200,
+            "position_x": 830,
+            "position_y": 288,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
@@ -846,7 +915,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -855,16 +924,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1499,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "27": {
+        "29": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 760,
+            "position_x": 1025,
+            "position_y": 292,
             "width": 200,
             "height": 40,
             "properties": {
@@ -895,22 +964,22 @@
                 }
             },
             "text": "text into speech\n(eleven_labs, eleven_labs~)",
-            "id": 1536,
+            "id": 1610,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "28": {
-            "init": "comment Body",
+        "30": {
+            "init": "comment Autoencoders",
             "name": "comment",
-            "position_x": 24,
-            "position_y": 826,
-            "width": 46,
+            "position_x": 830,
+            "position_y": 358,
+            "width": 108,
             "height": 30,
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "Body",
+                    "value": "Autoencoders",
                     "value_type": "str"
                 },
                 "1": {
@@ -919,28 +988,28 @@
                     "value_type": "str"
                 }
             },
-            "comment": "Body",
-            "id": 1573,
+            "comment": "Autoencoders",
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "29": {
-            "init": "help_link vposer vposer / vae / vposer6D",
+        "31": {
+            "init": "help_link vposer vposer / vposer6D",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 860,
-            "width": 200,
+            "position_x": 830,
+            "position_y": 392,
+            "width": 181,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "vposer / vae / vposer6D",
+                    "name": "vposer / vposer6D",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 165,
                     "value_type": "int"
                 },
                 "2": {
@@ -949,22 +1018,22 @@
                     "value_type": "str"
                 }
             },
-            "id": 1610,
+            "id": 1684,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "30": {
+        "32": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
-            "position_y": 864,
+            "position_x": 1025,
+            "position_y": 396,
             "width": 188,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "a body pose as 32 numbers\n(vae, vposer, vposer6D)",
+                    "value": "a body pose as 32 numbers\n(vposer, vposer6D)",
                     "value_type": "str"
                 },
                 "1": {
@@ -988,8 +1057,77 @@
                     "value_type": "str"
                 }
             },
-            "text": "a body pose as 32 numbers\n(vae, vposer, vposer6D)",
-            "id": 1647,
+            "text": "a body pose as 32 numbers\n(vposer, vposer6D)",
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "init": "help_link vae vae",
+            "name": "help_link",
+            "position_x": 830,
+            "position_y": 444,
+            "width": 181,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "vae",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 165,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "teal",
+                    "value_type": "str"
+                }
+            },
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1025,
+            "position_y": 448,
+            "width": 261,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a variational autoencoder of your own",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a variational autoencoder of your own",
+            "id": 1795,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

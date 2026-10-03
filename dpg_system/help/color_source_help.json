@@ -1,0 +1,245 @@
+{
+    "height": 921,
+    "width": 1435,
+    "position": [
+        100,
+        100
+    ],
+    "id": 570,
+    "name": "color_source_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/color_source_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment color_source - colour for one lighting channel",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "color_source - colour for one lighting channel",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "color_source - colour for one lighting channel"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 577,
+            "position_y": 45,
+            "width": 818,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Intensity and colour for one lighting channel, as five sliders, sent to an\nETC Eos desk over OSC.\n\nTHE NODE:\n\ncolor_source   intensity, red, green, blue and lime for one Eos channel\n\nWHAT IT DOES:\nFive sliders - intensity, red, green, blue, lime - each 0 to 100, all aimed at\none channel. Move one and it sends that parameter to the desk:\n\n    /eos/user/99/chan/<channel>/param/intens\n    /eos/user/99/chan/<channel>/param/red      ... and so on\n\nIt sends only the parameters that have actually changed, at most once per\nframe, which matters on a busy network: a patch nudging one colour should not\nbe re-sending everything at frame rate.\n\n'lime' is there because many LED fixtures have a lime or lime-green emitter as\nwell as red, green and blue, and the extra emitter is what gives them a decent\nwhite. A fixture without one simply ignores it.\n\nIT NEEDS THE CONSOLE NODE:\nIt sends through the OSC target named in 'target name' - 'eos' by default,\nwhich is eos_console's default name. With no such target in the patch, nothing\nis sent; changes wait and go out once it appears.\n\nONE CHANNEL:\n'target channel' is a single channel number, as the desk understands it - the\nnumber you would type on the desk, not a DMX address. For one colour across\nmany channels, use eos_send's family with a channel list instead.\n\nTHE ADDRESS:\n'address' is the part of the path before the channel, '/eos/user/99/chan' by\ndefault. Change the 99 to send as another desk user.\n\nSYNTAX:\ncolor_source <channel>\ncolor_source <target name> <channel>\n\nEXAMPLE:\ncolor_source 7\n\nINPUTS and PARAMETERS:\n\nintensity / red / green / blue / lime:\nThe five parameters, whole numbers 0 to 100, 0 at the start. Each sends when it\nchanges, whether moved by hand or set by a message.\n\ntarget name:\nWhich eos_console (or other OSC target) to send through. 'eos' by default.\n\naddress:\nThe path before the channel. '/eos/user/99/chan' by default.\n\ntarget channel:\nThe desk channel. The number argument, or 1.\n\nOUTPUTS:\n\nNone - it sends to the desk.\n\nRELATED:\neos_console, the connection this sends through, and eos_send, for any other\nparameter and for channel lists. Both used to share this page.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Intensity and colour for one lighting channel, as five sliders, sent to an\nETC Eos desk over OSC.\n\nTHE NODE:\n\ncolor_source   intensity, red, green, blue and lime for one Eos channel\n\nWHAT IT DOES:\nFive sliders - intensity, red, green, blue, lime - each 0 to 100, all aimed at\none channel. Move one and it sends that parameter to the desk:\n\n    /eos/user/99/chan/<channel>/param/intens\n    /eos/user/99/chan/<channel>/param/red      ... and so on\n\nIt sends only the parameters that have actually changed, at most once per\nframe, which matters on a busy network: a patch nudging one colour should not\nbe re-sending everything at frame rate.\n\n'lime' is there because many LED fixtures have a lime or lime-green emitter as\nwell as red, green and blue, and the extra emitter is what gives them a decent\nwhite. A fixture without one simply ignores it.\n\nIT NEEDS THE CONSOLE NODE:\nIt sends through the OSC target named in 'target name' - 'eos' by default,\nwhich is eos_console's default name. With no such target in the patch, nothing\nis sent; changes wait and go out once it appears.\n\nONE CHANNEL:\n'target channel' is a single channel number, as the desk understands it - the\nnumber you would type on the desk, not a DMX address. For one colour across\nmany channels, use eos_send's family with a channel list instead.\n\nTHE ADDRESS:\n'address' is the part of the path before the channel, '/eos/user/99/chan' by\ndefault. Change the 99 to send as another desk user.\n\nSYNTAX:\ncolor_source <channel>\ncolor_source <target name> <channel>\n\nEXAMPLE:\ncolor_source 7\n\nINPUTS and PARAMETERS:\n\nintensity / red / green / blue / lime:\nThe five parameters, whole numbers 0 to 100, 0 at the start. Each sends when it\nchanges, whether moved by hand or set by a message.\n\ntarget name:\nWhich eos_console (or other OSC target) to send through. 'eos' by default.\n\naddress:\nThe path before the channel. '/eos/user/99/chan' by default.\n\ntarget channel:\nThe desk channel. The number argument, or 1.\n\nOUTPUTS:\n\nNone - it sends to the desk.\n\nRELATED:\neos_console, the connection this sends through, and eos_send, for any other\nparameter and for channel lists. Both used to share this page."
+        },
+        "3": {
+            "name": "eos_console",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 160,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 62,
+            "width": 231,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the desk connection, named eos -\nset its ip to your desk",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the desk connection, named eos -\nset its ip to your desk"
+        },
+        "5": {
+            "name": "color_source",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 260,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "color_source 7"
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 260,
+            "width": 280,
+            "height": 64,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "five sliders at channel 7 - each sends\nonly when it moves\nlime is the fourth emitter on many LED\nfixtures - it is what makes a good white",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "five sliders at channel 7 - each sends\nonly when it moves\nlime is the fourth emitter on many LED\nfixtures - it is what makes a good white"
+        },
+        "7": {
+            "init": "comment for other parameters, or many channels: eos_send",
+            "name": "comment",
+            "id": 496,
+            "position_x": 244,
+            "position_y": 610,
+            "width": 303,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "for other parameters, or many channels: eos_send",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "for other parameters, or many channels: eos_send"
+        },
+        "8": {
+            "name": "close",
+            "id": 533,
+            "position_x": 24,
+            "position_y": 416,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {}
+}

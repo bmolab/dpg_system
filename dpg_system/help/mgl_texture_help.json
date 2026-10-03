@@ -1,0 +1,524 @@
+{
+    "height": 1500,
+    "width": 1388,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "mgl_texture_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_texture_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl_texture - an image on a surface",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl_texture - an image on a surface",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl_texture - an image on a surface"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 530,
+            "position_y": 45,
+            "width": 818,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "These put an image into the scene: onto the surface of a shape, or across \nthe whole picture.\n\nTHE NODES:\n\nmgl_texture  turns an array into a texture on the graphics card, and passes \n             that texture on to whatever shapes it is patched into\nmgl_image    draws an image filling the whole picture, as a backdrop\n\nAN IMAGE IS AN ARRAY:\nBoth take an image as an array of height by width by channels - 3 channels \nfor red green blue, 4 to add alpha - such as a frame from a camera node, a \npicture loaded from a file, or anything computed in numpy or torch. \n\nmgl_image also takes a single-channel (height by width) array, and accepts \nfloats from 0 to 1 as well as bytes from 0 to 255. mgl_texture takes \n3 or 4 channels only, and its values must already be bytes, 0 to 255: it \ndoes not scale floats, so convert first (np.rand and np.astype can both \nproduce 'uint8'). A torch tensor is copied to the cpu either way.\n\nWHY mgl_texture, WHEN EVERY SHAPE HAS A TEXTURE INLET:\nEvery mgl shape has a 'texture' inlet, and an array patched straight into it \nworks. But the shape then uploads that array to the graphics card again on \nevery frame it draws, and two shapes showing the same image upload it twice. \nmgl_texture uploads once, when a new array arrives, and hands out the \nfinished texture - which also goes straight into mgl_image's 'texture' \ninlet.\n\nmgl_texture does not draw anything and changes nothing in the chain: it \npasses 'draw' straight on, and each time it runs it sends its texture out of \nthe 'texture' outlet. Its place in the chain only decides when that happens - \nput it before the shapes that use it.\n\nFEED mgl_texture FROM INSIDE THE RENDER:\nmgl_texture builds the texture the moment the array arrives, and that only \nworks while the scene is rendering. Here the context's own chain bangs the \ngenerator, so a fresh image arrives every frame inside the render. An array \narriving at some other moment - a load_bang, a camera thread - may not reach \nthe graphics card correctly. Shapes and mgl_image do not have this problem: \nthey only store what arrives and convert it when they draw.\n\nmgl_image IS A BACKDROP:\nIt covers the whole picture whatever the camera is doing, and draws with the \ndepth test off, so it hides everything drawn before it and nothing drawn \nafter it. Put it first in the chain to put a picture behind the scene.\n\nSYNTAX:\nmgl_texture\nmgl_image\n\nEXAMPLE:\nmgl_texture\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. mgl_image draws when 'draw' arrives; mgl_texture passes it on.\n\nsource (mgl_texture):\nThe array to turn into a texture: height by width by 3 or 4, bytes. A list \nis converted to bytes. A new size or channel count makes a new texture.\n\ntexture (mgl_image):\nThe image to draw: a texture from mgl_texture, or an array as above.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\ntexture (mgl_texture):\nThe texture, for a shape's 'texture' inlet or mgl_image's. Sent each time \nthe node runs, once there is one.\n\nRELATED:\nmgl_box, mgl_sphere and the other shapes take the texture. mgl_model can \nlay a projection of the image around a loaded model ('uv_mode'). \nmgl_camera covers camera, light, material and colour, and used to share \nthis page.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "These put an image into the scene: onto the surface of a shape, or across \nthe whole picture.\n\nTHE NODES:\n\nmgl_texture  turns an array into a texture on the graphics card, and passes \n             that texture on to whatever shapes it is patched into\nmgl_image    draws an image filling the whole picture, as a backdrop\n\nAN IMAGE IS AN ARRAY:\nBoth take an image as an array of height by width by channels - 3 channels \nfor red green blue, 4 to add alpha - such as a frame from a camera node, a \npicture loaded from a file, or anything computed in numpy or torch. \n\nmgl_image also takes a single-channel (height by width) array, and accepts \nfloats from 0 to 1 as well as bytes from 0 to 255. mgl_texture takes \n3 or 4 channels only, and its values must already be bytes, 0 to 255: it \ndoes not scale floats, so convert first (np.rand and np.astype can both \nproduce 'uint8'). A torch tensor is copied to the cpu either way.\n\nWHY mgl_texture, WHEN EVERY SHAPE HAS A TEXTURE INLET:\nEvery mgl shape has a 'texture' inlet, and an array patched straight into it \nworks. But the shape then uploads that array to the graphics card again on \nevery frame it draws, and two shapes showing the same image upload it twice. \nmgl_texture uploads once, when a new array arrives, and hands out the \nfinished texture - which also goes straight into mgl_image's 'texture' \ninlet.\n\nmgl_texture does not draw anything and changes nothing in the chain: it \npasses 'draw' straight on, and each time it runs it sends its texture out of \nthe 'texture' outlet. Its place in the chain only decides when that happens - \nput it before the shapes that use it.\n\nFEED mgl_texture FROM INSIDE THE RENDER:\nmgl_texture builds the texture the moment the array arrives, and that only \nworks while the scene is rendering. Here the context's own chain bangs the \ngenerator, so a fresh image arrives every frame inside the render. An array \narriving at some other moment - a load_bang, a camera thread - may not reach \nthe graphics card correctly. Shapes and mgl_image do not have this problem: \nthey only store what arrives and convert it when they draw.\n\nmgl_image IS A BACKDROP:\nIt covers the whole picture whatever the camera is doing, and draws with the \ndepth test off, so it hides everything drawn before it and nothing drawn \nafter it. Put it first in the chain to put a picture behind the scene.\n\nSYNTAX:\nmgl_texture\nmgl_image\n\nEXAMPLE:\nmgl_texture\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. mgl_image draws when 'draw' arrives; mgl_texture passes it on.\n\nsource (mgl_texture):\nThe array to turn into a texture: height by width by 3 or 4, bytes. A list \nis converted to bytes. A new size or channel count makes a new texture.\n\ntexture (mgl_image):\nThe image to draw: a texture from mgl_texture, or an array as above.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\ntexture (mgl_texture):\nThe texture, for a shape's 'texture' inlet or mgl_image's. Sent each time \nthe node runs, once there is one.\n\nRELATED:\nmgl_box, mgl_sphere and the other shapes take the texture. mgl_model can \nlay a projection of the image around a loaded model ('uv_mode'). \nmgl_camera covers camera, light, material and colour, and used to share \nthis page."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "mgl_image",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 440,
+            "width": 249,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the backdrop: an array drawn across\nthe whole picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the backdrop: an array drawn across\nthe whole picture"
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 550,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "np.rand",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 620,
+            "width": 123,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 0.4,
+                    "value_type": "float"
+                }
+            },
+            "init": "np.rand 24 32 3"
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 620,
+            "width": 231,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "float noise, 0 to 0.4: mgl_image\nscales floats itself",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "float noise, 0 to 0.4: mgl_image\nscales floats itself"
+        },
+        "9": {
+            "name": "mgl_texture",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 800,
+            "width": 88,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 800,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "uploads each new array once and\nsends the texture to the box",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "uploads each new array once and\nsends the texture to the box"
+        },
+        "11": {
+            "name": "np.rand",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 910,
+            "width": 123,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dtype",
+                    "value": "uint8",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 255.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "np.rand 4 4 3"
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 910,
+            "width": 268,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "bytes, banged by the chain's own draw:\na new image every frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "bytes, banged by the chain's own draw:\na new image every frame"
+        },
+        "13": {
+            "name": "mgl_rotate",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 1100,
+            "width": 88,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 30.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 40.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "mgl_rotate 30 40 0"
+        },
+        "14": {
+            "name": "mgl_box",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 1240,
+            "width": 176,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1396,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "texture"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "source"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "7": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "texture",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "texture"
+        },
+        "8": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        }
+    }
+}

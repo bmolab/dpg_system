@@ -1,11 +1,11 @@
 {
-    "height": 1032,
-    "width": 1782,
+    "height": 861,
+    "width": 1341,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 570,
     "name": "snapshot~_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/snapshot~_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment snapshot~ - carrying audio back to the patch",
+            "init": "comment snapshot~ - a signal's value, once a frame",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 549,
+            "width": 525,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "snapshot~ - carrying audio back to the patch",
+                    "value": "snapshot~ - a signal's value, once a frame",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,12 +51,12 @@
                     "value_type": "str"
                 }
             },
-            "comment": "snapshot~ - carrying audio back to the patch"
+            "comment": "snapshot~ - a signal's value, once a frame"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 924,
+            "position_x": 483,
             "position_y": 45,
             "width": 818,
             "height": 756,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These carry audio back into the ordinary node world, at three different rates.\n\nThe audio graph runs every sample; the patch runs once a frame. Anything that \nhas to cross between them loses something, and which of these you want depends \non what you can afford to lose.\n\nTHE NODES:\n\nsnapshot~  one value per frame, as an ordinary float\ncapture~   every sample, as a numpy array\narray~     the same node\nstream~    the other way: an array from the patch, played as a signal\naudio_in~  the same node\nscope~     every sample, drawn\nplace~     not a bridge - a spatializer, included here because it is the last \n           stage before the output\n\nsnapshot~ IS FOR CONTROL SIGNALS:\nPatch any ~ signal in and the current value appears on the node face and goes \nout at frame rate, ready for number boxes, math nodes, OSC, anything. \nAn adsr~ or an lfo~ becomes an ordinary float stream. For a slow-moving control \nsignal that is exactly right.\n\nFor an audio signal it is not. Sixty samples a second of something oscillating \nat 440 Hz is noise - the waveform is gone, aliased beyond recognition. \nThis is the commonest mistake with these nodes: a plot fed through snapshot~ \nshowing something that looks like a signal and is not.\n\ncapture~ AND scope~ KEEP EVERYTHING:\nBoth use a ring buffer holding every sample. capture~ hands you the array, so \nplot, spectrum, numpy and torch nodes can work on the actual waveform. \nscope~ draws it directly, with a trigger, which is what you want when the \nquestion is \"what does this look like\" rather than \"what is this value\".\n\ncapture~ IS ALSO THE WAY INTO TORCH:\nIts 'format' option makes the chunks numpy arrays, or torch tensors on the CPU \n('torch cpu' - no copy, the tensor shares the chunk's memory) or on the Mac's \nGPU ('torch mps'). That is the bridge from any live signal to t.rfft, t.cwt or \na model, so nothing else in the patch has to carry tensors.\n\nstream~ GOES THE OTHER WAY:\nAn array arriving on 'audio in' - a capture~ elsewhere, record~'s take, any \nnumpy or torch chain - comes out as a signal, so data can drive vocoder~, \nexcite string~, or reach a vst~ or a speech node. It is the one way arrays \nenter the ~ world, as capture~ is the one way out. Set 'rate' to the rate the \nchunks were made at. 'latency' is how much to hold \nbefore starting: too little and a bursty source runs dry, counted on \n'underruns'; a backlog past the 'max backlog' option is skipped, counted on \n'dropped' - set it to 0 for speech or anything else that arrives faster than \nit plays.\n\nFor a microphone or interface, adc~ is the better route: its device writes \nstraight into the audio engine instead of waiting on GUI frames, so a busy \npatch cannot drop or delay it. See the record~ help patch.\n\nplace~ PUTS IT SOMEWHERE:\nOne outlet per speaker, patched onward to audio_out~'s inputs. Several place~ \ninto one output sum at its inlets, which is how each source gets its own \nposition in the room. Stereo is a fact rather than a switch: patch 'right in' \nand the pair is held apart by 'width'.\n\nSYNTAX:\nsnapshot~\ncapture~\nstream~ <rate> <latency ms>\nscope~\n\nEXAMPLE:\nscope~\n\nINPUTS and PARAMETERS:\n\nin:\nThe signal.\n\nbang (snapshot~, capture~):\nAsk for a value or an array now.\n\nsync / level / time (scope~):\nThe trigger, where it triggers, and how much of the buffer to show.\n\nleft in / right in / pan / width / front-rear / top-bottom (place~):\nThe source and where to put it.\n\nOUTPUTS: \n\nvalue / peak / rms (snapshot~):\nThe current value, and its peak and average over the frame - the last two \nbeing the honest way to follow an audio signal's LEVEL at frame rate, \nwhere following its value is meaningless.\n\narray (capture~, scope~):\nThe samples - numpy, or a torch tensor if capture~'s 'format' says so.\n\ndropped (capture~):\nHow many blocks were missed, so you know whether the patch is keeping up.\n\nrate (capture~):\nThe engine's sample rate, sent once, for whatever the array is patched into.\n\nleft out / right out, underruns / dropped (stream~):\nThe signal, and how often it ran dry or had to skip ahead.",
+                    "value": "snapshot~ carries a signal's value back into the ordinary node world, once a frame.\n\nThe audio graph runs every sample; the patch runs once a frame. snapshot~\ncrosses between them by taking one reading per frame, which is right for a\ncontrol signal and wrong for audio.\n\nTHE NODES:\n\nsnapshot~  a signal's value, peak and level, as ordinary floats\n\nsnapshot~ IS FOR CONTROL SIGNALS:\nPatch any ~ signal in and the current value appears on the node face and goes\nout at frame rate, ready for number boxes, math nodes, OSC, anything.\nAn adsr~ or an lfo~ becomes an ordinary float stream. For a slow-moving control\nsignal that is exactly right.\n\nFor an audio signal it is not. Sixty samples a second of something oscillating\nat 440 Hz is noise - the waveform is gone, aliased beyond recognition.\nThis is the commonest mistake with this node: a plot fed through snapshot~\nshowing something that looks like a signal and is not. Use capture~ for the\nsamples, or scope~ to look at them.\n\nPEAK AND RMS ARE THE HONEST LEVEL:\n'peak' (the largest size the signal reached) and 'rms' (its average power)\ncover every sample since the previous reading, not one block, so a transient\nshorter than a frame still counts. They are the right way to follow an audio\nsignal's LEVEL at frame rate, where following its value is meaningless.\n\nON CHANGE OR CONTINUOUS:\nBy default ('on change') the outlets send only when the value has moved by\nmore than 'deadband', so a resting signal does not push sixty identical floats\na second into the patch. 'continuous' sends every frame. A bang sends a\nreading now, whatever the mode.\n\nSYNTAX:\nsnapshot~\n\nEXAMPLE:\nsnapshot~\n\nINPUTS and PARAMETERS:\n\nenable:\nOff stops it reading.\n\nin:\nThe signal.\n\nbang:\nSend a reading now.\n\nvalue (on the face):\nThe newest value, shown to 'precision' decimal places.\n\nmode / deadband / precision (options):\n'on change' (default) or 'continuous'; how far the value must move before\n'on change' sends again (0 by default); and the number of decimals shown\n(3 by default).\n\nOUTPUTS:\n\nvalue:\nThe newest sample of the signal.\n\npeak:\nThe largest absolute value since the previous reading.\n\nrms:\nThe root-mean-square level since the previous reading.\n\nThe three go out right to left, so whatever 'value' drives already has the\nmatching peak and rms.\n\nRELATED:\ncapture~ (and array~) hands over every sample as an array.\nscope~ draws the waveform. vu~ shows a level as bars.\nstream~ goes the other way: arrays from the patch into the ~ graph.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These carry audio back into the ordinary node world, at three different rates.\n\nThe audio graph runs every sample; the patch runs once a frame. Anything that \nhas to cross between them loses something, and which of these you want depends \non what you can afford to lose.\n\nTHE NODES:\n\nsnapshot~  one value per frame, as an ordinary float\ncapture~   every sample, as a numpy array\narray~     the same node\nstream~    the other way: an array from the patch, played as a signal\naudio_in~  the same node\nscope~     every sample, drawn\nplace~     not a bridge - a spatializer, included here because it is the last \n           stage before the output\n\nsnapshot~ IS FOR CONTROL SIGNALS:\nPatch any ~ signal in and the current value appears on the node face and goes \nout at frame rate, ready for number boxes, math nodes, OSC, anything. \nAn adsr~ or an lfo~ becomes an ordinary float stream. For a slow-moving control \nsignal that is exactly right.\n\nFor an audio signal it is not. Sixty samples a second of something oscillating \nat 440 Hz is noise - the waveform is gone, aliased beyond recognition. \nThis is the commonest mistake with these nodes: a plot fed through snapshot~ \nshowing something that looks like a signal and is not.\n\ncapture~ AND scope~ KEEP EVERYTHING:\nBoth use a ring buffer holding every sample. capture~ hands you the array, so \nplot, spectrum, numpy and torch nodes can work on the actual waveform. \nscope~ draws it directly, with a trigger, which is what you want when the \nquestion is \"what does this look like\" rather than \"what is this value\".\n\ncapture~ IS ALSO THE WAY INTO TORCH:\nIts 'format' option makes the chunks numpy arrays, or torch tensors on the CPU \n('torch cpu' - no copy, the tensor shares the chunk's memory) or on the Mac's \nGPU ('torch mps'). That is the bridge from any live signal to t.rfft, t.cwt or \na model, so nothing else in the patch has to carry tensors.\n\nstream~ GOES THE OTHER WAY:\nAn array arriving on 'audio in' - a capture~ elsewhere, record~'s take, any \nnumpy or torch chain - comes out as a signal, so data can drive vocoder~, \nexcite string~, or reach a vst~ or a speech node. It is the one way arrays \nenter the ~ world, as capture~ is the one way out. Set 'rate' to the rate the \nchunks were made at. 'latency' is how much to hold \nbefore starting: too little and a bursty source runs dry, counted on \n'underruns'; a backlog past the 'max backlog' option is skipped, counted on \n'dropped' - set it to 0 for speech or anything else that arrives faster than \nit plays.\n\nFor a microphone or interface, adc~ is the better route: its device writes \nstraight into the audio engine instead of waiting on GUI frames, so a busy \npatch cannot drop or delay it. See the record~ help patch.\n\nplace~ PUTS IT SOMEWHERE:\nOne outlet per speaker, patched onward to audio_out~'s inputs. Several place~ \ninto one output sum at its inlets, which is how each source gets its own \nposition in the room. Stereo is a fact rather than a switch: patch 'right in' \nand the pair is held apart by 'width'.\n\nSYNTAX:\nsnapshot~\ncapture~\nstream~ <rate> <latency ms>\nscope~\n\nEXAMPLE:\nscope~\n\nINPUTS and PARAMETERS:\n\nin:\nThe signal.\n\nbang (snapshot~, capture~):\nAsk for a value or an array now.\n\nsync / level / time (scope~):\nThe trigger, where it triggers, and how much of the buffer to show.\n\nleft in / right in / pan / width / front-rear / top-bottom (place~):\nThe source and where to put it.\n\nOUTPUTS: \n\nvalue / peak / rms (snapshot~):\nThe current value, and its peak and average over the frame - the last two \nbeing the honest way to follow an audio signal's LEVEL at frame rate, \nwhere following its value is meaningless.\n\narray (capture~, scope~):\nThe samples - numpy, or a torch tensor if capture~'s 'format' says so.\n\ndropped (capture~):\nHow many blocks were missed, so you know whether the patch is keeping up.\n\nrate (capture~):\nThe engine's sample rate, sent once, for whatever the array is patched into.\n\nleft out / right out, underruns / dropped (stream~):\nThe signal, and how often it ran dry or had to skip ahead."
+            "text": "snapshot~ carries a signal's value back into the ordinary node world, once a frame.\n\nThe audio graph runs every sample; the patch runs once a frame. snapshot~\ncrosses between them by taking one reading per frame, which is right for a\ncontrol signal and wrong for audio.\n\nTHE NODES:\n\nsnapshot~  a signal's value, peak and level, as ordinary floats\n\nsnapshot~ IS FOR CONTROL SIGNALS:\nPatch any ~ signal in and the current value appears on the node face and goes\nout at frame rate, ready for number boxes, math nodes, OSC, anything.\nAn adsr~ or an lfo~ becomes an ordinary float stream. For a slow-moving control\nsignal that is exactly right.\n\nFor an audio signal it is not. Sixty samples a second of something oscillating\nat 440 Hz is noise - the waveform is gone, aliased beyond recognition.\nThis is the commonest mistake with this node: a plot fed through snapshot~\nshowing something that looks like a signal and is not. Use capture~ for the\nsamples, or scope~ to look at them.\n\nPEAK AND RMS ARE THE HONEST LEVEL:\n'peak' (the largest size the signal reached) and 'rms' (its average power)\ncover every sample since the previous reading, not one block, so a transient\nshorter than a frame still counts. They are the right way to follow an audio\nsignal's LEVEL at frame rate, where following its value is meaningless.\n\nON CHANGE OR CONTINUOUS:\nBy default ('on change') the outlets send only when the value has moved by\nmore than 'deadband', so a resting signal does not push sixty identical floats\na second into the patch. 'continuous' sends every frame. A bang sends a\nreading now, whatever the mode.\n\nSYNTAX:\nsnapshot~\n\nEXAMPLE:\nsnapshot~\n\nINPUTS and PARAMETERS:\n\nenable:\nOff stops it reading.\n\nin:\nThe signal.\n\nbang:\nSend a reading now.\n\nvalue (on the face):\nThe newest value, shown to 'precision' decimal places.\n\nmode / deadband / precision (options):\n'on change' (default) or 'continuous'; how far the value must move before\n'on change' sends again (0 by default); and the number of decimals shown\n(3 by default).\n\nOUTPUTS:\n\nvalue:\nThe newest sample of the signal.\n\npeak:\nThe largest absolute value since the previous reading.\n\nrms:\nThe root-mean-square level since the previous reading.\n\nThe three go out right to left, so whatever 'value' drives already has the\nmatching peak and rms.\n\nRELATED:\ncapture~ (and array~) hands over every sample as an array.\nscope~ draws the waveform. vu~ shows a level as bars.\nstream~ goes the other way: arrays from the patch into the ~ graph."
         },
         "3": {
             "name": "lfo~",
@@ -106,10 +106,35 @@
             "init": "lfo~ 0.5"
         },
         "4": {
-            "name": "snapshot~",
+            "init": "comment a slow control signal",
+            "name": "comment",
             "id": 385,
+            "position_x": 236,
+            "position_y": 62,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a slow control signal",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a slow control signal"
+        },
+        "5": {
+            "name": "snapshot~",
+            "id": 422,
             "position_x": 30,
-            "position_y": 240,
+            "position_y": 260,
             "width": 88,
             "height": 112,
             "visibility": "show_all",
@@ -117,11 +142,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "5": {
+        "6": {
             "name": "float",
-            "id": 422,
+            "id": 459,
             "position_x": 30,
-            "position_y": 435,
+            "position_y": 450,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -145,13 +170,13 @@
                 }
             }
         },
-        "6": {
-            "init": "comment right for a slow control signal",
+        "7": {
+            "init": "comment one value a frame - right for this",
             "name": "comment",
-            "id": 459,
-            "position_x": 634,
-            "position_y": 485,
-            "width": 199,
+            "id": 496,
+            "position_x": 236,
+            "position_y": 450,
+            "width": 217,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -159,7 +184,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "right for a slow control signal",
+                    "value": "one value a frame - right for this",
                     "value_type": "str"
                 },
                 "1": {
@@ -168,163 +193,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "right for a slow control signal"
-        },
-        "7": {
-            "name": "vco~",
-            "id": 496,
-            "position_x": 300,
-            "position_y": 62,
-            "width": 199,
-            "height": 182,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "vco~ 220"
+            "comment": "one value a frame - right for this"
         },
         "8": {
-            "name": "scope~",
-            "id": 533,
-            "position_x": 300,
-            "position_y": 280,
-            "width": 308,
-            "height": 248,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "init": "comment audio needs every sample, not one a frame",
-            "name": "comment",
-            "id": 570,
-            "position_x": 634,
-            "position_y": 525,
-            "width": 260,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "audio needs every sample, not one a frame",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "audio needs every sample, not one a frame"
-        },
-        "10": {
-            "name": "capture~",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 525,
-            "width": 88,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "11": {
-            "name": "plot",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 720,
-            "width": 208,
-            "height": 178,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "none",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "str"
-                },
-                "4": {
-                    "name": "update style",
-                    "value": "input is multi-channel sample",
-                    "value_type": "str"
-                },
-                "5": {
-                    "name": "sample count",
-                    "value": 512,
-                    "value_type": "int"
-                },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "max x",
-                    "value": 512.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": -1.0,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
-                }
-            }
-        },
-        "12": {
-            "init": "comment the real waveform, as an array",
-            "name": "comment",
-            "id": 681,
-            "position_x": 634,
-            "position_y": 905,
-            "width": 193,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the real waveform, as an array",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "the real waveform, as an array"
-        },
-        "13": {
             "name": "close",
-            "id": 718,
+            "id": 533,
             "position_x": 24,
-            "position_y": 928,
+            "position_y": 522,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -345,50 +220,20 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "signal",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "value",
-            "dest_node": 422,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
-        },
-        "2": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "left out",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "left out",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "4": {
-            "source_node": 607,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "array",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
         }
     }
 }
