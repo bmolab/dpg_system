@@ -1884,8 +1884,13 @@ class App:
         if self.control_or_command_down():
             self.quit()
 
+    # Cmd-C / V / X belong to a text field while one is being typed in: the
+    # field does its own copy, paste and cut, and the patch must not also copy,
+    # paste - or cut, deleting - the selected nodes.
     def C_handler(self):
         if self.control_or_command_down():
+            if self.typing_in_widget():
+                return
             if self.get_current_editor() is not None:
                 self.clipboard = self.get_current_editor().copy_selection()
         else:
@@ -2005,6 +2010,8 @@ class App:
 
     def X_handler(self):
         if self.control_or_command_down():
+            if self.typing_in_widget():
+                return
             if self.get_current_editor() is not None:
                 if not self.get_current_editor().presenting:
                     self.snapshot_for_undo()
@@ -2268,6 +2275,8 @@ class App:
 
     def V_handler(self):
         if self.control_or_command_down():
+            if self.typing_in_widget():
+                return
             self.paste_selected()
         else:
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
