@@ -4516,7 +4516,40 @@ class PlaceholderNameNode(Node):
     def custom_create(self, from_file: bool) -> None:
         dpg.configure_item(self.node_list_box.widget.uuid, show=False)
 
+    def word_score(self, test: str, node_name: str) -> float:
+        # Score test as a match starting on a word boundary in node_name
+        # (name start, or after '_', '.', '~' etc.). Edit distance alone ranks
+        # 'print' above 'mgl_orbit_camera' for 'orbit'. Always below 100 so an
+        # exact name stays the only perfect score.
+        best = 0.0
+        name_len = len(node_name)
+        test_len = len(test)
+        for pos in range(name_len - test_len + 1):
+            if pos > 0 and node_name[pos - 1].isalnum():
+                continue
+            if not node_name.startswith(test, pos):
+                continue
+            end = pos + test_len
+            if end == name_len or not node_name[end].isalnum() or not node_name[end - 1].isalnum():
+                # whole word(s): 90-99, shorter names first
+                score = 90 + 9 * test_len / name_len
+            else:
+                # start of a word: 70-90 by how much of the word is typed
+                word_end = end
+                while word_end < name_len and node_name[word_end].isalnum():
+                    word_end += 1
+                score = 70 + 20 * test_len / (word_end - pos)
+            best = max(best, score)
+        return best
+
     def calc_fuzz(self, test: str, node_name: str) -> float:
+        test = test.lower()
+        node_name = node_name.lower()
+        if test == node_name:
+            return 100
+        return max(self.edit_score(test, node_name), self.word_score(test, node_name))
+
+    def edit_score(self, test: str, node_name: str) -> float:
         ratio = fuzz.partial_ratio(node_name.lower(), test.lower())
         full_ratio = fuzz.ratio(node_name.lower(), test.lower())
 
