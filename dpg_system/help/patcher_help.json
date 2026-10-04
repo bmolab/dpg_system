@@ -3,24 +3,26 @@
     "path": "/Users/drokeby/dpg_system/dpg_system/help/patcher_help.json",
     "patches": {
         "0": {
-            "height": 490,
-            "width": 270,
+            "height": 821,
+            "width": 1766,
             "position": [
-                160,
-                160
+                290,
+                107
             ],
-            "id": 718,
+            "id": 6281,
+            "parent_node_uuid": 6429,
             "name": "scale_and_offset",
-            "parent_node_uuid": 422,
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/scale_and_offset.json",
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 755,
+                    "id": 6309,
+                    "sid": 1,
                     "position_x": 0,
                     "position_y": 0,
                     "width": 9,
                     "height": 30,
-                    "visibility": "show_all",
+                    "visibility": "hidden",
                     "draggable": true,
                     "protected": true,
                     "presentation_state": "hidden",
@@ -33,86 +35,202 @@
                     }
                 },
                 "1": {
-                    "name": "in",
                     "init": "in signal",
-                    "id": 792,
-                    "position_x": 40,
-                    "position_y": 40,
-                    "width": 150,
-                    "height": 80,
+                    "name": "in",
+                    "id": 6327,
+                    "sid": 2,
+                    "position_x": 38,
+                    "position_y": 87,
+                    "width": 53,
+                    "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "source",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "input name",
+                            "value": "signal",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "2": {
-                    "name": "*",
                     "init": "* 0.5",
-                    "id": 829,
-                    "position_x": 40,
-                    "position_y": 150,
-                    "width": 140,
-                    "height": 60,
+                    "name": "*",
+                    "id": 6337,
+                    "sid": 3,
+                    "position_x": 39,
+                    "position_y": 182,
+                    "width": 88,
+                    "height": 56,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.5,
+                            "value_type": "float"
+                        }
+                    }
                 },
                 "3": {
-                    "name": "+",
                     "init": "+ 0.5",
-                    "id": 866,
-                    "position_x": 40,
-                    "position_y": 240,
-                    "width": 140,
-                    "height": 60,
+                    "name": "+",
+                    "id": 6347,
+                    "sid": 4,
+                    "position_x": 38,
+                    "position_y": 287,
+                    "width": 88,
+                    "height": 56,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.5,
+                            "value_type": "float"
+                        }
+                    }
                 },
                 "4": {
-                    "name": "out",
                     "init": "out scaled",
-                    "id": 903,
-                    "position_x": 40,
-                    "position_y": 330,
-                    "width": 150,
-                    "height": 80,
+                    "name": "out",
+                    "id": 6357,
+                    "sid": 5,
+                    "position_x": 38,
+                    "position_y": 377,
+                    "width": 45,
+                    "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "dest",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "output name",
+                            "value": "scaled",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "5": {
+                    "init": "comment an in node creates an input on the patcher node",
+                    "name": "comment",
+                    "id": 6718,
+                    "sid": 7,
+                    "position_x": 121,
+                    "position_y": 86,
+                    "width": 469,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "an 'in' node creates an input on the patcher node in the containing patcher",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "an 'in' node creates an input on the patcher node in the containing patcher"
+                },
+                "6": {
+                    "init": "comment an 'out' node creates an output on the patcher node in the owning patcher",
+                    "name": "comment",
+                    "id": 6737,
+                    "sid": 9,
+                    "position_x": 124,
+                    "position_y": 386,
+                    "width": 482,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "an 'out' node creates an output on the patcher node in the containing patcher",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "an 'out' node creates an output on the patcher node in the containing patcher"
+                },
+                "7": {
+                    "init": "comment Inside a patcher - inputs and outputs",
+                    "name": "comment",
+                    "id": 6756,
+                    "sid": 11,
+                    "position_x": 33,
+                    "position_y": 23,
+                    "width": 463,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "Inside a patcher - inputs and outputs",
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "string"
+                        }
+                    },
+                    "comment": "Inside a patcher - inputs and outputs"
                 }
             },
             "links": {
                 "0": {
-                    "source_node": 792,
-                    "source_node_name": "",
+                    "source_node": 6327,
+                    "source_node_name": "in",
                     "source_output_index": 0,
                     "source_output_name": "signal",
-                    "dest_node": 829,
-                    "dest_node_name": "",
+                    "dest_node": 6337,
+                    "dest_node_name": "*",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "1": {
-                    "source_node": 829,
-                    "source_node_name": "",
+                    "source_node": 6337,
+                    "source_node_name": "*",
                     "source_output_index": 0,
-                    "source_output_name": "",
-                    "dest_node": 866,
-                    "dest_node_name": "",
+                    "source_output_name": "result",
+                    "dest_node": 6347,
+                    "dest_node_name": "+",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "2": {
-                    "source_node": 866,
-                    "source_node_name": "",
+                    "source_node": 6347,
+                    "source_node_name": "+",
                     "source_output_index": 0,
-                    "source_output_name": "",
-                    "dest_node": 903,
-                    "dest_node_name": "",
+                    "source_output_name": "result",
+                    "dest_node": 6357,
+                    "dest_node_name": "out",
                     "dest_input_index": 0,
                     "dest_input_name": "scaled"
                 }
@@ -122,21 +240,22 @@
             "height": 821,
             "width": 1766,
             "position": [
-                100,
-                100
+                290,
+                107
             ],
-            "id": 681,
+            "id": 6233,
             "name": "patcher_help",
             "path": "/Users/drokeby/dpg_system/dpg_system/help/patcher_help.json",
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 237,
+                    "id": 6261,
+                    "sid": 1,
                     "position_x": 0,
                     "position_y": 0,
                     "width": 9,
                     "height": 30,
-                    "visibility": "show_all",
+                    "visibility": "hidden",
                     "draggable": true,
                     "protected": true,
                     "presentation_state": "hidden",
@@ -151,7 +270,8 @@
                 "1": {
                     "init": "comment p / patcher - a patch inside a patch",
                     "name": "comment",
-                    "id": 274,
+                    "id": 6368,
+                    "sid": 2,
                     "position_x": 24,
                     "position_y": -4,
                     "width": 451,
@@ -163,35 +283,36 @@
                         "0": {
                             "name": "text",
                             "value": "p / patcher - a patch inside a patch",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "48",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "p / patcher - a patch inside a patch"
                 },
                 "2": {
                     "name": "text_block",
-                    "id": 311,
-                    "position_x": 918,
-                    "position_y": 45,
+                    "id": 6379,
+                    "sid": 3,
+                    "position_x": 517,
+                    "position_y": 16,
                     "width": 808,
-                    "height": 716,
+                    "height": 780,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "A subpatcher is a patch inside a patch, showing as one node.\n\nTHE NODES:\n\np <name>        make a subpatch. 'patcher' is the same node, spelled out\npatcher <name>  the long spelling\nin <name>       an inlet on the parent node, seen from inside\nout <name>      an outlet on the parent node, seen from inside\n\nWHAT THIS IS FOR:\nTwo quite different things, and it is worth knowing which one you are doing.\n\nThe first is TIDINESS. A dozen nodes that together do one job become one node\nwith a name on it, and the patch you are actually reading gets shorter. Nothing\nchanges about how it runs.\n\nThe second is REUSE. Once a piece of work has a name and clean edges, you can\nhave several of them, each with its own settings, and think about them as\nthings rather than as a tangle of cords.\n\nHOW TO MAKE ONE:\nType 'p something'. You get a node with a button on it, and clicking the button\nopens the subpatch in its own tab.\n\nInside, an 'in' node makes an INLET on the parent, and an 'out' node makes an\nOUTLET. That is the whole mechanism: the ports on the outside are created by the\nnodes you put on the inside, and they appear as soon as you make them.\n\nGive them names - 'in signal', 'out scaled' - and those names label the ports on\nthe parent node, which is what makes the parent readable from outside. An\nunnamed one still works and is just called 'in 0'.\n\nFINDING YOUR WAY BACK:\nEach 'in' has a 'source' button and each 'out' has a 'dest' button. Pressing one\njumps to the parent patch. It is easy to lose track of which tab you are in\nonce there are a few, and those buttons are the way back up.\n\nTHE ORDER OF THE PORTS IS THE ORDER YOU MADE THEM:\nPorts are handed out as the in and out nodes ask for them, so the first 'in' you\ncreate is the first inlet. Deleting one frees its slot for the next one made -\nwhich can shuffle the ports, and any cords into the freed slot are dropped.\n\nSo if you are going to have several inlets, make them in the order you want to\nread them, and expect to reconnect if you delete one later. Twenty inlets and\ntwenty outlets is the limit; past that it says so and refuses.\n\nIT IS ALL ONE FILE:\nThe subpatch is not saved separately. It lives in the parent's file, and opening\nthe parent brings it back with its contents and connections intact. Copying the\nfile copies everything inside it.\n\nSubpatches can hold subpatches, as deep as you like.\n\nRENAMING:\n'patcher name' on the parent renames it, and the button changes to match.\n'input name' and 'output name' on the in and out nodes rename the ports, live -\nthe label on the parent updates as you type, and existing cords stay connected.\n\nSYNTAX:\np <name>\npatcher <name>\nin <name>\nout <name>\n\nEXAMPLE:\np scale_and_offset\n\nINPUTS and PARAMETERS:\n\npatcher name:\nWhat the subpatch is called. Shown on the button.\n\ninput name / output name:\nWhat this port is called on the parent node.\n\nsource / dest:\nButtons that jump back up to the parent patch.\n\nshow options:\nWhether the node's options are visible.\n\nOUTPUTS: \n\nThe inlets and outlets of a p node are whatever the in and out nodes inside it\nhave asked for - it has none of its own.\n\nRELATED:\nThe demo here contains a real subpatch: click the button on the p node to open\nit, and use the 'source' button inside to come back.",
-                            "value_type": "str"
+                            "value": "A subpatcher is a patch inside a patch, showing as one node.\n\nTHE NODES:\n\np <name>        make a subpatch. 'patcher' is the same node, spelled out\npatcher <name>  the long spelling\n\nin <name>       an inlet on the parent node, seen from inside\nout <name>      an outlet on the parent node, seen from inside\n\nWHAT THIS IS FOR:\nTwo quite different things, and it is worth knowing which one you are doing.\n\nThe first is TIDINESS. A dozen nodes that together do one job become one node\nwith a name on it, and the patch you are actually reading gets shorter. Nothing\nchanges about how it runs.\n\nThe second is REUSE. Once a piece of work has a name and clean edges, you can\nhave several of them, each with its own settings, and think about them as\nthings rather than as a tangle of cords.\n\nHOW TO MAKE ONE:\nType 'p <patcher_name>'. You get a node with a button on it, and clicking the button\nopens the subpatch in its own tab.\n\nInside, an 'in' node makes an INLET on the parent, and an 'out' node makes an\nOUTLET. That is the whole mechanism: the ports on the outside are created by the\nnodes you put on the inside, and they appear as soon as you make them.\n\nGive them names - 'in signal', 'out scaled' - and those names label the ports on\nthe parent node, which is what makes the parent readable from outside. An\nunnamed one still works and is just called 'in 0'.\n\nFINDING YOUR WAY BACK:\nEach 'in' has a 'source' button and each 'out' has a 'dest' button. Pressing one\njumps to the parent patch. It is easy to lose track of which tab you are in\nonce there are a few, and those buttons are the way back up.\n\nTHE ORDER OF THE PORTS IS THE ORDER YOU MADE THEM:\nPorts are handed out as the in and out nodes ask for them, so the first 'in' you\ncreate is the first inlet. Deleting one frees its slot for the next one made -\nwhich can shuffle the ports, and any cords into the freed slot are dropped.\n\nSo if you are going to have several inlets, make them in the order you want to\nread them, and expect to reconnect if you delete one later. Twenty inlets and\ntwenty outlets is the limit; past that it says so and refuses.\n\nIT IS ALL ONE FILE:\nThe subpatch is not saved separately. It lives in the parent's file, and opening\nthe parent brings it back with its contents and connections intact. Copying the\nfile copies everything inside it.\n\nSubpatches can hold subpatches, as deep as you like.\n\nRENAMING:\nChanging the 'patcher name' option on the patcher node renames it, and the button changes to match.\n'input name' and 'output name' on the in and out nodes rename the ports, live -\nthe label on the parent updates as you type, and existing cords stay connected.\n\nSYNTAX:\np <name>\npatcher <name>\nin <name>\nout <name>\n\nEXAMPLE:\np scale_and_offset\n\nINPUTS and PARAMETERS:\n\npatcher name (button):\nWhat the subpatch is called. Shown on the button.\n\ninput name / output name:\nWhat this port is called on the parent node.\n\nsource / dest:\nButtons that jump back up to the parent patch.\n\nshow options:\nWhether the node's options are visible.\n\nOUTPUTS: \n\nThe inlets and outlets of a p node are whatever the in and out nodes inside it\nhave asked for - it has none of its own.\n\nRELATED:\nThe demo here contains a real subpatch: click the button on the p node to open\nit, and use the 'source' button inside to come back.",
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "lock",
-                            "value": true,
+                            "value": false,
                             "value_type": "bool"
                         },
                         "2": {
@@ -207,16 +328,17 @@
                         "4": {
                             "name": "text_size",
                             "value": "30",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
-                    "text": "A subpatcher is a patch inside a patch, showing as one node.\n\nTHE NODES:\n\np <name>        make a subpatch. 'patcher' is the same node, spelled out\npatcher <name>  the long spelling\nin <name>       an inlet on the parent node, seen from inside\nout <name>      an outlet on the parent node, seen from inside\n\nWHAT THIS IS FOR:\nTwo quite different things, and it is worth knowing which one you are doing.\n\nThe first is TIDINESS. A dozen nodes that together do one job become one node\nwith a name on it, and the patch you are actually reading gets shorter. Nothing\nchanges about how it runs.\n\nThe second is REUSE. Once a piece of work has a name and clean edges, you can\nhave several of them, each with its own settings, and think about them as\nthings rather than as a tangle of cords.\n\nHOW TO MAKE ONE:\nType 'p something'. You get a node with a button on it, and clicking the button\nopens the subpatch in its own tab.\n\nInside, an 'in' node makes an INLET on the parent, and an 'out' node makes an\nOUTLET. That is the whole mechanism: the ports on the outside are created by the\nnodes you put on the inside, and they appear as soon as you make them.\n\nGive them names - 'in signal', 'out scaled' - and those names label the ports on\nthe parent node, which is what makes the parent readable from outside. An\nunnamed one still works and is just called 'in 0'.\n\nFINDING YOUR WAY BACK:\nEach 'in' has a 'source' button and each 'out' has a 'dest' button. Pressing one\njumps to the parent patch. It is easy to lose track of which tab you are in\nonce there are a few, and those buttons are the way back up.\n\nTHE ORDER OF THE PORTS IS THE ORDER YOU MADE THEM:\nPorts are handed out as the in and out nodes ask for them, so the first 'in' you\ncreate is the first inlet. Deleting one frees its slot for the next one made -\nwhich can shuffle the ports, and any cords into the freed slot are dropped.\n\nSo if you are going to have several inlets, make them in the order you want to\nread them, and expect to reconnect if you delete one later. Twenty inlets and\ntwenty outlets is the limit; past that it says so and refuses.\n\nIT IS ALL ONE FILE:\nThe subpatch is not saved separately. It lives in the parent's file, and opening\nthe parent brings it back with its contents and connections intact. Copying the\nfile copies everything inside it.\n\nSubpatches can hold subpatches, as deep as you like.\n\nRENAMING:\n'patcher name' on the parent renames it, and the button changes to match.\n'input name' and 'output name' on the in and out nodes rename the ports, live -\nthe label on the parent updates as you type, and existing cords stay connected.\n\nSYNTAX:\np <name>\npatcher <name>\nin <name>\nout <name>\n\nEXAMPLE:\np scale_and_offset\n\nINPUTS and PARAMETERS:\n\npatcher name:\nWhat the subpatch is called. Shown on the button.\n\ninput name / output name:\nWhat this port is called on the parent node.\n\nsource / dest:\nButtons that jump back up to the parent patch.\n\nshow options:\nWhether the node's options are visible.\n\nOUTPUTS: \n\nThe inlets and outlets of a p node are whatever the in and out nodes inside it\nhave asked for - it has none of its own.\n\nRELATED:\nThe demo here contains a real subpatch: click the button on the p node to open\nit, and use the 'source' button inside to come back."
+                    "text": "A subpatcher is a patch inside a patch, showing as one node.\n\nTHE NODES:\n\np <name>        make a subpatch. 'patcher' is the same node, spelled out\npatcher <name>  the long spelling\n\nin <name>       an inlet on the parent node, seen from inside\nout <name>      an outlet on the parent node, seen from inside\n\nWHAT THIS IS FOR:\nTwo quite different things, and it is worth knowing which one you are doing.\n\nThe first is TIDINESS. A dozen nodes that together do one job become one node\nwith a name on it, and the patch you are actually reading gets shorter. Nothing\nchanges about how it runs.\n\nThe second is REUSE. Once a piece of work has a name and clean edges, you can\nhave several of them, each with its own settings, and think about them as\nthings rather than as a tangle of cords.\n\nHOW TO MAKE ONE:\nType 'p <patcher_name>'. You get a node with a button on it, and clicking the button\nopens the subpatch in its own tab.\n\nInside, an 'in' node makes an INLET on the parent, and an 'out' node makes an\nOUTLET. That is the whole mechanism: the ports on the outside are created by the\nnodes you put on the inside, and they appear as soon as you make them.\n\nGive them names - 'in signal', 'out scaled' - and those names label the ports on\nthe parent node, which is what makes the parent readable from outside. An\nunnamed one still works and is just called 'in 0'.\n\nFINDING YOUR WAY BACK:\nEach 'in' has a 'source' button and each 'out' has a 'dest' button. Pressing one\njumps to the parent patch. It is easy to lose track of which tab you are in\nonce there are a few, and those buttons are the way back up.\n\nTHE ORDER OF THE PORTS IS THE ORDER YOU MADE THEM:\nPorts are handed out as the in and out nodes ask for them, so the first 'in' you\ncreate is the first inlet. Deleting one frees its slot for the next one made -\nwhich can shuffle the ports, and any cords into the freed slot are dropped.\n\nSo if you are going to have several inlets, make them in the order you want to\nread them, and expect to reconnect if you delete one later. Twenty inlets and\ntwenty outlets is the limit; past that it says so and refuses.\n\nIT IS ALL ONE FILE:\nThe subpatch is not saved separately. It lives in the parent's file, and opening\nthe parent brings it back with its contents and connections intact. Copying the\nfile copies everything inside it.\n\nSubpatches can hold subpatches, as deep as you like.\n\nRENAMING:\nChanging the 'patcher name' option on the patcher node renames it, and the button changes to match.\n'input name' and 'output name' on the in and out nodes rename the ports, live -\nthe label on the parent updates as you type, and existing cords stay connected.\n\nSYNTAX:\np <name>\npatcher <name>\nin <name>\nout <name>\n\nEXAMPLE:\np scale_and_offset\n\nINPUTS and PARAMETERS:\n\npatcher name (button):\nWhat the subpatch is called. Shown on the button.\n\ninput name / output name:\nWhat this port is called on the parent node.\n\nsource / dest:\nButtons that jump back up to the parent patch.\n\nshow options:\nWhether the node's options are visible.\n\nOUTPUTS: \n\nThe inlets and outlets of a p node are whatever the in and out nodes inside it\nhave asked for - it has none of its own.\n\nRELATED:\nThe demo here contains a real subpatch: click the button on the p node to open\nit, and use the 'source' button inside to come back."
                 },
                 "3": {
                     "name": "signal",
-                    "id": 348,
-                    "position_x": 30,
-                    "position_y": 62,
+                    "id": 6396,
+                    "sid": 4,
+                    "position_x": 31,
+                    "position_y": 101,
                     "width": 129,
                     "height": 70,
                     "visibility": "show_all",
@@ -236,7 +358,7 @@
                         "2": {
                             "name": "shape",
                             "value": "sin",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "3": {
                             "name": "range",
@@ -258,9 +380,10 @@
                 "4": {
                     "init": "comment a plain sine, running -1 to 1",
                     "name": "comment",
-                    "id": 385,
-                    "position_x": 614,
-                    "position_y": 155,
+                    "id": 6418,
+                    "sid": 5,
+                    "position_x": 30,
+                    "position_y": 60,
                     "width": 187,
                     "height": 30,
                     "visibility": "show_all",
@@ -270,36 +393,92 @@
                         "0": {
                             "name": "text",
                             "value": "a plain sine, running -1 to 1",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "a plain sine, running -1 to 1"
                 },
                 "5": {
+                    "init": "p scale_and_offset",
                     "name": "p",
-                    "id": 422,
-                    "position_x": 30,
-                    "position_y": 200,
-                    "width": 115,
+                    "id": 6429,
+                    "sid": 6,
+                    "position_x": 43,
+                    "position_y": 282,
+                    "width": 118,
                     "height": 56,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "p scale_and_offset",
-                    "patcher id": 718
+                    "properties": {
+                        "0": {
+                            "name": "scale_and_offset",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "patcher name",
+                            "value": "scale_and_offset",
+                            "value_type": "string"
+                        }
+                    },
+                    "show inputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "show outputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "patcher id": 6281
                 },
                 "6": {
                     "name": "text_block",
-                    "id": 459,
-                    "annotation": true,
-                    "position_x": 614,
-                    "position_y": 302,
+                    "id": 6537,
+                    "sid": 7,
+                    "position_x": 182,
+                    "position_y": 279,
                     "width": 274,
                     "height": 52,
                     "visibility": "show_all",
@@ -309,7 +488,7 @@
                         "0": {
                             "name": "block",
                             "value": "CLICK THE BUTTON to open the subpatch\nthe two ports on this node were made by\nthe in and out nodes inside it",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "lock",
@@ -329,14 +508,15 @@
                         "4": {
                             "name": "text_size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "text": "CLICK THE BUTTON to open the subpatch\nthe two ports on this node were made by\nthe in and out nodes inside it"
                 },
                 "7": {
                     "name": "plot",
-                    "id": 496,
+                    "id": 6554,
+                    "sid": 8,
                     "position_x": 30,
                     "position_y": 400,
                     "width": 208,
@@ -348,7 +528,7 @@
                         "0": {
                             "name": "color",
                             "value": "none",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "width",
@@ -363,12 +543,12 @@
                         "3": {
                             "name": "style",
                             "value": "line",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "4": {
                             "name": "update style",
                             "value": "input is stream of samples",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "5": {
                             "name": "sample count",
@@ -399,10 +579,10 @@
                 },
                 "8": {
                     "name": "text_block",
-                    "id": 533,
-                    "annotation": true,
-                    "position_x": 614,
-                    "position_y": 590,
+                    "id": 6600,
+                    "sid": 9,
+                    "position_x": 259,
+                    "position_y": 473,
                     "width": 249,
                     "height": 40,
                     "visibility": "show_all",
@@ -411,8 +591,8 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "half the size, shifted up by half -\nnow running 0 to 1",
-                            "value_type": "str"
+                            "value": "the signal processed by the patcher.\nhalf the size, shifted up by half -\nnow running 0 to 1",
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "lock",
@@ -432,16 +612,17 @@
                         "4": {
                             "name": "text_size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
-                    "text": "half the size, shifted up by half -\nnow running 0 to 1"
+                    "text": "the signal processed by the patcher.\nhalf the size, shifted up by half -\nnow running 0 to 1"
                 },
                 "9": {
                     "name": "plot",
-                    "id": 570,
-                    "position_x": 380,
-                    "position_y": 62,
+                    "id": 6617,
+                    "sid": 10,
+                    "position_x": 261,
+                    "position_y": 63,
                     "width": 208,
                     "height": 178,
                     "visibility": "show_all",
@@ -451,7 +632,7 @@
                         "0": {
                             "name": "color",
                             "value": "none",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "width",
@@ -466,12 +647,12 @@
                         "3": {
                             "name": "style",
                             "value": "line",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "4": {
                             "name": "update style",
                             "value": "input is stream of samples",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "5": {
                             "name": "sample count",
@@ -501,48 +682,9 @@
                     }
                 },
                 "10": {
-                    "name": "text_block",
-                    "id": 607,
-                    "annotation": true,
-                    "position_x": 614,
-                    "position_y": 252,
-                    "width": 243,
-                    "height": 40,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "block",
-                            "value": "the same signal before it goes in,\nfor comparison",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "lock",
-                            "value": true,
-                            "value_type": "bool"
-                        },
-                        "2": {
-                            "name": "width",
-                            "value": 235,
-                            "value_type": "int"
-                        },
-                        "3": {
-                            "name": "height",
-                            "value": 24,
-                            "value_type": "int"
-                        },
-                        "4": {
-                            "name": "text_size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "text": "the same signal before it goes in,\nfor comparison"
-                },
-                "11": {
                     "name": "close",
-                    "id": 644,
+                    "id": 6680,
+                    "sid": 12,
                     "position_x": 24,
                     "position_y": 608,
                     "width": 88,
@@ -561,32 +703,32 @@
             },
             "links": {
                 "0": {
-                    "source_node": 348,
-                    "source_node_name": "",
+                    "source_node": 6396,
+                    "source_node_name": "signal",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 422,
-                    "dest_node_name": "",
+                    "dest_node": 6429,
+                    "dest_node_name": "p",
                     "dest_input_index": 0,
                     "dest_input_name": "signal"
                 },
                 "1": {
-                    "source_node": 422,
-                    "source_node_name": "",
+                    "source_node": 6396,
+                    "source_node_name": "signal",
                     "source_output_index": 0,
-                    "source_output_name": "scaled",
-                    "dest_node": 496,
-                    "dest_node_name": "",
+                    "source_output_name": "",
+                    "dest_node": 6617,
+                    "dest_node_name": "plot",
                     "dest_input_index": 0,
                     "dest_input_name": "y"
                 },
                 "2": {
-                    "source_node": 348,
-                    "source_node_name": "",
+                    "source_node": 6429,
+                    "source_node_name": "p",
                     "source_output_index": 0,
-                    "source_output_name": "",
-                    "dest_node": 570,
-                    "dest_node_name": "",
+                    "source_output_name": "scaled",
+                    "dest_node": 6554,
+                    "dest_node_name": "plot",
                     "dest_input_index": 0,
                     "dest_input_name": "y"
                 }

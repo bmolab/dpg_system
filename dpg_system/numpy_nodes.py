@@ -1174,7 +1174,14 @@ class NumpyDistanceFromTargetNode(NumpyNodeWithAxisNode):
                 self.output.send(np.linalg.norm(diff, axis=self.axis))
 
 
-class NumpyProximityToTargetNode(NumpyNodeWithAxisNode):
+class NumpyProximityToTargetNode(Node):
+    # Proximity of a tracker to a set of targets: 1 at a target, falling to 0 at
+    # 'radius', shaped by 'exponent' (>1 tightens the zone, <1 broadens it).
+    # Targets are captured from the tracker itself: pick a slot with 'target index',
+    # press 'capture'. Unset slots (index jumped past the end) report 0.
+    # Output feeds polyphonic_sampler~ 'fade': [[sound_id, fade], ...], target i
+    # driving sound 'first sound' + i. Sparse like effort_fader: a sound is sent
+    # while nonzero, gets one 0.0 the frame it falls silent, then is omitted.
     @staticmethod
     def factory(name, data, args=None):
         node = NumpyProximityToTargetNode(name, data, args)
@@ -1182,35 +1189,102 @@ class NumpyProximityToTargetNode(NumpyNodeWithAxisNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
+        self.targets = None     # (N, D) array, NaN rows = unset slots
+        self.sounding = set()   # sound ids last sent a nonzero fade
         self.input = self.add_input('input', triggers_execution=True)
-        self.set_target = self.add_input('set target', widget_type='button', callback=self.set_the_target)
-        self.threshold = self.add_property('threshold', widget_type='drag_float', min=0.001, default_value=.5)
-        self.target = None
-        self.add_dim_option()
-        self.output = self.add_output('norm')
+        self.index_input = self.add_input('target index', widget_type='input_int', default_value=0, min=0)
+        self.capture_input = self.add_input('capture', widget_type='button', callback=self.capture)
+        self.capture_input.name_archive.append('set target')
+        self.targets_input = self.add_input('targets', callback=self.receive_targets)
+        self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear)
+        self.radius = self.add_input('radius', widget_type='drag_float', min=0.001, default_value=.5)
+        self.radius.name_archive.append('threshold')
+        self.exponent = self.add_input('exponent', widget_type='drag_float', min=0.01, default_value=1.0)
+        self.first_sound = self.add_input('first sound', widget_type='input_int', default_value=0, min=0,
+                                          callback=self.silence)
+        self.output = self.add_output('fade')
+        self.nearest_out = self.add_output('nearest')
+        self.targets_out = self.add_output('targets')
 
-    def set_the_target(self):
-        target = self.input()
-        if target is not None:
-            self.target = any_to_array(target)
-            self.execute()
+    def capture(self):
+        point = self.input()
+        if point is None:
+            return
+        point = any_to_array(point).astype(float).reshape(-1)
+        index = max(int(self.index_input()), 0)
+        if self.targets is None or self.targets.shape[1] != point.shape[0]:
+            self.targets = np.full((index + 1, point.shape[0]), np.nan)
+        elif index >= self.targets.shape[0]:
+            pad = np.full((index + 1 - self.targets.shape[0], point.shape[0]), np.nan)
+            self.targets = np.concatenate([self.targets, pad])
+        self.targets[index] = point
+        self.send_targets()
+        self.execute()
+
+    def receive_targets(self):
+        data = self.targets_input()
+        if data is None:
+            return
+        targets = any_to_array(data).astype(float)
+        if targets.ndim == 1:
+            targets = targets.reshape(1, -1)
+        self.targets = targets
+        self.send_targets()
+        self.execute()
+
+    def clear(self):
+        self.silence()
+        self.targets = None
+        self.targets_out.send([])
+
+    def silence(self):
+        if self.sounding:
+            self.output.send([[sid, 0.0] for sid in sorted(self.sounding)])
+            self.sounding = set()
+
+    def send_targets(self):
+        if self.targets is not None:
+            self.targets_out.send(self.targets.copy())
+
+    def save_custom(self, container):
+        if self.targets is not None:
+            container['targets'] = [[None if np.isnan(v) else float(v) for v in row] for row in self.targets]
+
+    def load_custom(self, container):
+        if 'targets' in container:
+            rows = container['targets']
+            if len(rows) > 0:
+                self.targets = np.array([[np.nan if v is None else v for v in row] for row in rows], dtype=float)
 
     def execute(self):
-        input_value = any_to_array(self.input())
-        if self.target is not None:
-            try:
-                diff = input_value - self.target
-            except ValueError as e:
-                if self.app.verbose:
-                    print(f'{self.label}: input shape {input_value.shape} incompatible '
-                          f'with target shape {self.target.shape}: {e}')
-                return
-            if self.adjust_dim_option(input_value):
-                distance = np.linalg.norm(diff, axis=self.axis)
-                proximity = (self.threshold() - distance) / self.threshold()
-                if proximity < 0:
-                    proximity = 0
-                self.output.send(proximity)
+        if self.targets is None:
+            return
+        tracker = self.input()
+        if tracker is None:
+            return
+        tracker = any_to_array(tracker).astype(float)
+        if tracker.shape[-1] != self.targets.shape[1]:
+            if self.app.verbose:
+                print(f'{self.label}: input shape {tracker.shape} incompatible '
+                      f'with targets of size {self.targets.shape[1]}')
+            return
+        # tracker (..., D) against targets (N, D) -> distances (..., N)
+        distance = np.linalg.norm(tracker[..., None, :] - self.targets, axis=-1)
+        radius = self.radius()
+        proximity = np.clip((radius - distance) / radius, 0.0, 1.0)
+        proximity = np.nan_to_num(proximity, nan=0.0) ** self.exponent()
+        nearest = np.where(proximity.max(axis=-1) > 0, proximity.argmax(axis=-1), -1)
+        self.nearest_out.send(int(nearest) if nearest.ndim == 0 else nearest)
+
+        # one sound per target: with several trackers the closest one sets the fade
+        levels = np.round(proximity.reshape(-1, proximity.shape[-1]).max(axis=0), 4)
+        base = int(self.first_sound())
+        fades = {base + i: float(level) for i, level in enumerate(levels) if level > 0.0}
+        for sid in self.sounding - fades.keys():
+            fades[sid] = 0.0
+        self.sounding = {sid for sid, level in fades.items() if level > 0.0}
+        if fades:
+            self.output.send([[sid, fades[sid]] for sid in sorted(fades)])
 
 
 class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
