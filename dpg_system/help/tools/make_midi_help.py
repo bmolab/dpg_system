@@ -364,20 +364,21 @@ a scene, a preset or a section without looking at the screen.
 
 'pad' sends the pad's NOTE NUMBER, exactly as the MPD218 sends it - which notes
 the pads play is set in the device's own preset - not a pad count from 1 to 16.
-Releasing the lit pad sends its number again.
+Each strike sends once; releasing the lit pad only re-lights it.
 
 The knobs come out of 'controller' as a pair: [controller number, value], with
 the value 0 to 127 as the device sends it.
 
 'select' does the same thing from the patch: send it a note number and the
-node sends note-offs for notes 0 to 15 to the device, lights that note's pad and
-sends the number out of 'pad', as though it had been struck.
+node darkens the pads - note-offs for notes 36 to 83, the pad notes of the
+factory presets' three banks, plus whichever note it lit last - then lights
+that note's pad and sends the number out of 'pad', as though it had been struck.
 
 WHEN THE DEVICE IS NOT THERE:
-If no MIDI device whose name begins 'MPD218' is present, the node falls back to
-the FIRST MIDI input and output it can find, whatever they are. On creation it
-sends note-offs for notes 0 to 15 to that output, so with something else
-plugged in, check 'in port' and 'out port' before trusting it.
+If no MIDI device whose name begins 'MPD218' is present, the node stays
+unconnected and says so in the console - it never talks to some other device
+in its place. Plug the MPD218 in and pick it in 'in port' and 'out port'. When
+it is connected, creating the node darkens all its pads.
 
 WHAT IT IGNORES:
 Arguments - the device name is built in. The 'channel' option is shown but not
@@ -405,7 +406,7 @@ Not used by this node.
 OUTPUTS:
 
 pad:
-The note number of the pad struck (or selected), again when it is released.
+The note number of the pad struck (or selected), once per strike.
 
 controller:
 [controller number, value] for each knob movement.
@@ -477,8 +478,9 @@ disagree. In raw mode it only drives the light.
 
 WHEN THE DEVICE IS NOT THERE:
 If no MIDI device named 'iRig BlueBoard Bluetooth' (or beginning so) is
-present, the node falls back to the FIRST MIDI input and output it can find,
-whatever they are - check 'in port' and 'out port'. The buttons are heard as
+present, the node stays unconnected and says so in the console - it never
+talks to some other device in its place; plug it in and pick it in 'in port'
+and 'out port'. The buttons are heard as
 controllers 20 to 23 on any channel, and the lights are sent as those
 controllers on channel 1.
 

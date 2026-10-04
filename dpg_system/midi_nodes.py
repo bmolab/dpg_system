@@ -143,6 +143,10 @@ class MidiInPort:
 
 
 class MidiIn:
+    # When the named port is absent, connect to the first port present instead.
+    # Device-specific nodes turn this off: they must not talk to an unrelated device.
+    fallback_to_first_port = True
+
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.in_port_name = None
@@ -164,7 +168,9 @@ class MidiIn:
         if self.in_port is None:
             if len(self.input_list) == 0:
                 self.input_list = mido.get_input_names()
-            if len(self.input_list) > 0:
+            if self.in_port_name is not None and not self.fallback_to_first_port:
+                print(label + ': MIDI in port', self.in_port_name, 'not found -- not connected')
+            elif len(self.input_list) > 0:
                 self.in_port_name = self.input_list[0]
                 self.in_port = MidiInPort(self.in_port_name)
 
@@ -537,6 +543,8 @@ class MidiOutPort:
 
 
 class MidiOut:
+    fallback_to_first_port = True  # see MidiIn
+
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
         self.out_port_name = None
@@ -557,7 +565,9 @@ class MidiOut:
         if self.out_port is None:
             if len(self.output_list) == 0:
                 self.output_list = mido.get_output_names()
-            if len(self.output_list) > 0:
+            if self.out_port_name is not None and not self.fallback_to_first_port:
+                print(label + ': MIDI out port', self.out_port_name, 'not found -- not connected')
+            elif len(self.output_list) > 0:
                 self.out_port_name = self.output_list[0]
                 self.out_port = MidiOutPort(self.out_port_name)
 
@@ -1055,6 +1065,8 @@ class MidiDeviceNode(MidiIn, MidiOut, Node):
 
 
 class BlueBoardNode(MidiDeviceNode):
+    fallback_to_first_port = False
+
     @staticmethod
     def factory(name, data, args=None):
         node = BlueBoardNode(name, data, args)
@@ -1139,6 +1151,10 @@ class BlueBoardNode(MidiDeviceNode):
 
 
 class MPD218Node(MidiDeviceNode):
+    fallback_to_first_port = False
+    # Pad notes of the factory presets: banks A-C are 36-51, 52-67, 68-83.
+    pad_notes = range(36, 84)
+
     @staticmethod
     def factory(name, data, args=None):
         node = MPD218Node(name, data, args)
@@ -1171,16 +1187,21 @@ class MPD218Node(MidiDeviceNode):
                 self.active_pad = note_byte
                 self.enable(note_byte)
             else:
+                # The release darkens the pad on the device: re-light it, but
+                # do not report the pad again -- the press already did.
                 if note_byte == self.active_pad:
-                    self.enable(note_byte)
+                    self.light(note_byte)
         elif sys_byte & 0xF0 == 0xB0:
             controller_code_byte = midi_bytes[1]
             controller_value = midi_bytes[2]
             self.controller_out.send([controller_code_byte, controller_value])
 
     def disable_all(self):
-        for pad in range(16):
+        for pad in self.pad_notes:
             _send_out(self.out_port, [0x80, pad, 0])
+        if self.last_pad != -1 and self.last_pad not in self.pad_notes:
+            _send_out(self.out_port, [0x80, self.last_pad, 0])
+        self.last_pad = -1
 
     def disable_pressed(self):
         if self.last_pad != -1:
@@ -1188,9 +1209,12 @@ class MPD218Node(MidiDeviceNode):
             self.last_pad = -1
             _send_out(self.out_port, [0x80, pad, 0])
 
-    def enable(self, pad):
+    def light(self, pad):
         self.last_pad = pad
         _send_out(self.out_port, [0x90, pad, 127])
+
+    def enable(self, pad):
+        self.light(pad)
         self.pad_out.send(pad)
 
     def execute(self):
