@@ -1214,53 +1214,52 @@ class AdaptiveQuaternionFilterNode(Node):
                 input_value = any_to_array(input_value)
             t = type(input_value)
 
-        if type(self.accum) != t:
+        # One state per quaternion: an array of several (a pose, say) is
+        # smoothed and normalised quaternion by quaternion. The state starts
+        # from the first sample - not from zeros, which is no rotation at
+        # all - and starts again when the shape or the kind of array changes.
+        if (type(self.accum) != t or tuple(self.accum.shape) != tuple(input_value.shape)):
+            self.accum = input_value.clone() if t is not np.ndarray else input_value.copy()
+            self.offset_accum = 0.0
+            self.degree = 0.9
+        elif t is not np.ndarray and input_value.device != self.accum.device:
             self.accum = any_to_match(self.accum, input_value)
 
         if t is np.ndarray:
-            if self.accum.size != input_value.size:
-                self.accum = np.zeros_like(input_value)
-        elif self.app.torch_available and type(input_value) == torch.Tensor:
-            if input_value.device != self.accum.device:
-                self.accum = any_to_match(self.accum, input_value)
-            if self.accum.size() != input_value.size():
-                self.accum = torch.zeros_like(input_value)
-
-        offset = abs((input_value - self.accum) / self.range())
-        noise_floor = self.noise_floor_input()
-        if (self.app.torch_available and t == torch.Tensor) or t == np.ndarray:
-            offset = offset.mean(axis=-1)
+            offset = np.abs((input_value - self.accum) / self.range()).mean(axis=-1, keepdims=True)
+        else:
+            offset = ((input_value - self.accum) / self.range()).abs().mean(dim=-1, keepdim=True)
 
         offset_smooth = self.offset_smoothing()
         self.offset_accum = self.offset_accum * offset_smooth + offset * (1.0 - offset_smooth)
-        offset_above_floor = self.offset_accum - noise_floor
-        if t is np.ndarray:
-            offset_above_floor = np.maximum(offset_above_floor, 0.0)
-        else:
-            zeros = torch.zeros(1)
-            offset_above_floor = offset_above_floor.maximum(zeros).unsqueeze(-1)
 
-        degree = 1.0 - pow(abs(self.offset_accum), self.power)
+        # The noise floor: change smaller than this counts as stillness, so
+        # it gets the full smoothing. (It was computed, then never used.)
+        above_floor = self.offset_accum - self.noise_floor_input()
+        base = self.base_degree()
         if t is np.ndarray:
-            degree = np.clip(degree, 0.0, self.base_degree())
+            above_floor = np.maximum(above_floor, 0.0)
+            degree = np.clip(1.0 - above_floor ** self.power, 0.0, base)
         else:
-            base_degree = torch.tensor(self.base_degree())
-            zeros = torch.zeros_like(base_degree)
-            degree = degree.clamp(zeros, base_degree).unsqueeze(-1)
+            above_floor = above_floor.clamp(min=0.0)
+            degree = (1.0 - above_floor ** self.power).clamp(min=0.0, max=base)
 
         adapt_smooth = self.adaption_smoothing()
         self.degree = self.degree * adapt_smooth + degree * (1.0 - adapt_smooth)
 
         self.accum = self.accum * self.degree + input_value * (1.0 - self.degree)
-        if self.app.torch_available and isinstance(self.accum, torch.Tensor):
-            norm = torch.norm(self.accum)
-            if norm > 1e-9:
-                self.accum = self.accum / norm
-        elif isinstance(self.accum, np.ndarray):
-            norm = np.linalg.norm(self.accum)
-            if norm > 1e-9:
-                self.accum = self.accum / norm
-        self.current_degree_out.send(self.degree)
+        if t is np.ndarray:
+            norm = np.linalg.norm(self.accum, axis=-1, keepdims=True)
+            self.accum = np.where(norm > 1e-9, self.accum / np.maximum(norm, 1e-9), self.accum)
+        else:
+            norm = self.accum.norm(dim=-1, keepdim=True)
+            self.accum = torch.where(norm > 1e-9, self.accum / norm.clamp(min=1e-9), self.accum)
+
+        # one quaternion in: one number out, as before
+        degree_out = self.degree
+        if input_value.ndim == 1:
+            degree_out = float(degree_out.reshape(-1)[0])
+        self.current_degree_out.send(degree_out)
         self.output.send(self.accum)
 
 
@@ -1540,8 +1539,11 @@ class FilterBankNode(Node):
         self.nyquist = self.sample_frequency * 0.5
         # self.filter_type = self.filter_type_property()
         self.filter_design = self.filter_design_property()
+        # 'band count' was never read, so the bank stayed at 8 bands
+        self.number_of_bands = max(1, int(self.number_of_bands_property()))
 
-        if self.high_bound > self.nyquist:
+        # at exactly the Nyquist frequency the filter design fails too
+        if self.high_bound >= self.nyquist:
             self.high_bound = self.nyquist - 1
         if self.low_bound > self.high_bound:
             self.low_bound = self.high_bound * .5
@@ -1588,11 +1590,9 @@ class SpectrumNode(Node):
         self.ready = False
         self.bands = np.logspace(np.log10(self.low_bound), np.log10(self.high_bound), self.number_of_bands + 1)
         self.centers = []
-        self.gain = []
         for i in range(self.number_of_bands):
             self.centers.append((self.bands[i] + self.bands[i + 1]) / 2)
-            self.gain.append(9.6 / self.centers[i])
-        self.gain = np.array(self.gain)
+        self.compute_gains()
 
         self.input = self.add_input('signal', triggers_execution=True)
         self.number_of_bands_property = self.add_property('band count', widget_type='input_int', default_value=self.number_of_bands, callback=self.params_changed)
@@ -1615,6 +1615,17 @@ class SpectrumNode(Node):
         self.previous_signal = np.zeros((self.number_of_bands))
         self.ready = True
 
+    def compute_gains(self):
+        # A sine at a band centre c gives filter outputs whose half-sum (slur)
+        # has amplitude cos(pi c / fs) and whose one-sample difference has
+        # amplitude 2 sin(pi c / fs), in quadrature. Scaling each back to the
+        # sine's amplitude makes slur^2 + diff^2 read the sine's squared
+        # amplitude, steady, at any sample freq. (The old fixed 9.6 / c was
+        # the low-frequency approximation of the diff gain at 60 Hz only.)
+        phase = np.pi * np.array(self.centers) / self.sample_frequency
+        self.slur_gain = 1.0 / np.cos(phase)
+        self.gain = 1.0 / (2.0 * np.sin(phase))
+
     def params_changed(self):
         self.ready = False
         self.low_bound = self.low_cut_property()
@@ -1626,18 +1637,17 @@ class SpectrumNode(Node):
         self.filter_design = self.filter_design_property()
         self.number_of_bands = self.number_of_bands_property()
 
-        if self.high_bound > self.nyquist:
+        # at exactly the Nyquist frequency the filter design fails too
+        if self.high_bound >= self.nyquist:
             self.high_bound = self.nyquist - 1
         if self.low_bound > self.high_bound:
             self.low_bound = self.high_bound * .5
 
         self.bands = np.logspace(np.log10(self.low_bound), np.log10(self.high_bound), self.number_of_bands + 1)
         self.centers = []
-        self.gain = []
         for i in range(self.number_of_bands):
             self.centers.append((self.bands[i] + self.bands[i + 1]) / 2)
-            self.gain.append(9.6 / self.centers[i])
-        self.gain = np.array(self.gain)
+        self.compute_gains()
         # print(self.bands)
         # print(self.centers)
         self.filters = []
@@ -1654,7 +1664,7 @@ class SpectrumNode(Node):
         if self.ready:
             for i, filter in enumerate(self.filters):
                 self.signal_out[i] = filter.filter(signal)
-            slur = (self.signal_out + self.previous_signal) / 2
+            slur = (self.signal_out + self.previous_signal) / 2 * self.slur_gain
             diff = (self.signal_out - self.previous_signal) * self.gain
             output_signal = slur * slur + diff * diff
             self.previous_signal = self.signal_out.copy()
@@ -1700,7 +1710,8 @@ class BandPassFilterNode(Node):
         self.nyquist = self.sample_frequency * 0.5
         self.filter_type = self.filter_type_property()
         self.filter_design = self.filter_design_property()
-        if self.high_cut > self.nyquist:
+        # at exactly the Nyquist frequency the filter design fails too
+        if self.high_cut >= self.nyquist:
             self.high_cut = self.nyquist - 1
         if self.low_cut > self.high_cut:
             self.low_cut = self.high_cut * .5
@@ -1719,7 +1730,8 @@ class BandPassFilterNode(Node):
 
 
 class IIR2Filter():
-    def __init__(self, order, cutoff, filter_type, design='butter', rp=1, rs=1, fs=0):
+    # rs is cheby2's stopband attenuation in dB: at 1 dB it barely filtered
+    def __init__(self, order, cutoff, filter_type, design='butter', rp=1, rs=40, fs=0):
         self.designs = ['butter', 'cheby1', 'cheby2']
         self.filter_types_1 = ['lowpass', 'highpass', 'Lowpass', 'Highpass', 'low', 'high']
         self.filter_types_2 = ['bandstop', 'bandpass', 'Bandstop', 'Bandpass']
@@ -1770,7 +1782,7 @@ class IIR2Filter():
             self.output = self.acc_output[-1]  # was i
         return self.output
 
-    def create_coefficients(self, order, cutoff, filter_type, design='butter', rp=1, rs=1, fs=0):
+    def create_coefficients(self, order, cutoff, filter_type, design='butter', rp=1, rs=40, fs=0):
         # Error handling: other errors can arise too, but those are dealt with in the signal package.
 
         self.error_flag = 1  # if there was no error then it will be set to 0
@@ -1896,6 +1908,8 @@ class OneEuroFilterNode(Node):
         self.min_cutoff_prop = self.add_property('min_cutoff', widget_type='drag_float', default_value=self.min_cutoff, callback=self.update_params)
         self.beta_prop = self.add_property('beta', widget_type='drag_float', default_value=self.beta, callback=self.update_params)
         self.d_cutoff_prop = self.add_property('d_cutoff', widget_type='drag_float', default_value=self.d_cutoff, callback=self.update_params)
+        # dt is the time between samples, in seconds. Above 0 it sets the
+        # filter's rate; 0 measures the rate from the clock instead.
         self.dt = self.add_input('dt', widget_type='drag_float', default_value=1/60, callback=self.update_params)
         self.output = self.add_output('out')
         
@@ -1903,7 +1917,7 @@ class OneEuroFilterNode(Node):
             min_cutoff=self.min_cutoff,
             beta=self.beta,
             d_cutoff=self.d_cutoff,
-            framerate=30.0
+            framerate=60.0
         )
 
     def update_params(self):
@@ -1927,7 +1941,19 @@ class OneEuroFilterNode(Node):
     def execute(self):
         data = self.input()
         t = type(data)
-        timestamp = time.time()
+        # The filter re-derives its rate from any timestamp it is given, so a
+        # timestamp is passed only when dt is 0 (rate from the clock). With
+        # dt set, the rate is 1 / dt - read here each time, so a dt that
+        # arrives at its inlet counts as much as one dragged in the widget.
+        dt_val = any_to_float(self.dt())
+        if dt_val > 0:
+            self.filter._freq = 1.0 / dt_val
+            timestamp = None
+        else:
+            timestamp = time.time()
+        if t in (list, tuple):
+            data = np.asarray(data, dtype=np.float64)
+            t = np.ndarray
         
         # bool is NOT caught by an exact type check even though it
         # subclasses int -- type(True) is bool. Without it a boolean
@@ -1947,7 +1973,7 @@ class OneEuroFilterNode(Node):
             device = data.device
             data_np = data.detach().cpu().numpy()
             out_np = self.filter(data_np, timestamp)
-            out = torch.from_numpy(out_np).to(device)
+            out = torch.from_numpy(np.asarray(out_np)).to(device=device, dtype=data.dtype)
             self.output.send(out)
 
 class PhysicsFilterNode(Node):

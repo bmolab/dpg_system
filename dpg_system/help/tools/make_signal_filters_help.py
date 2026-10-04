@@ -152,14 +152,14 @@ lowpass      keeps everything slower than high
 highpass     keeps everything faster than low
 
 band count (filter_bank only):
-How many bands. Default 8. Changing it on filter_bank currently has no effect -
-it always makes 8 bands. (spectrum does follow it.)
+How many bands. Default 8. Changing it rebuilds the bank at once.
 
 filter design:
 butter is smooth and well behaved and is the sensible default.
 cheby1 cuts off more sharply, at the cost of a ripple of about one decibel across
-the range it keeps. cheby2 is set up here with only one decibel of attenuation in
-the range it rejects, so it removes almost nothing - avoid it.
+the range it keeps. cheby2 is flat across the range it keeps and turns down the
+range it rejects by about 40 decibels (to about a hundredth of its size), with a
+little unevenness out there instead.
 
 order:
 How steeply the filter cuts off, 1 to 8. Default 5. Higher is sharper, and also
@@ -178,8 +178,8 @@ first. These are signals, swinging above and below zero - not amounts of energy.
 
 LIMITS WORTH KNOWING:
 No filter can work above half the sample frequency - the Nyquist limit. At 60
-values a second that is 30 Hz. If high is set above it, the node quietly uses one
-Hz below the limit instead. If low ends up above high, low is quietly moved to
+values a second that is 30 Hz. If high is set at or above it, the node quietly
+uses one Hz below the limit instead. If low ends up above high, low is quietly moved to
 half of high. The widgets keep showing what you typed.
 
 RELATED:
@@ -245,8 +245,8 @@ A filtered band is a wave swinging above and below zero, so its value alone keep
 passing through zero even while the band is busy. spectrum combines the value with
 how fast it is changing, scaled to suit the band's frequency, which gives a steady
 reading instead of a flicker. A steady wave of size A (swinging from minus A to
-plus A) in the middle of a band reads about A squared - a wave of size 1 reads
-about 1, and a wave of size 0.3 reads about 0.09.
+plus A) in the middle of a band reads A squared - a wave of size 1 reads 1, and a
+wave of size 0.3 reads 0.09 - at any sample frequency.
 
 SYNTAX:
 spectrum
@@ -264,7 +264,7 @@ frame - the picture is built over time, from a stream.
 
 sample freq:
 How many values arrive per second. Default 60. Get this right first: every band's
-position comes from it. See also the note on other rates below.
+position, and the scaling that steadies the reading, comes from it.
 
 low / high:
 The two ends of the whole spread of bands, in Hz (cycles per second). Default 1
@@ -277,8 +277,8 @@ How many bands to divide the range into. Default 8.
 
 filter design:
 butter is the sensible default. cheby1 gives sharper band edges with about one
-decibel of ripple. cheby2 is set up with only one decibel of attenuation outside
-each band, so its bands barely separate anything - avoid it.
+decibel of ripple. cheby2 keeps each band flat and turns down what lies outside
+it by about 40 decibels.
 
 order:
 How sharply each band's edges cut off, 1 to 8. Default 5.
@@ -296,12 +296,8 @@ the reading goes with the SQUARE of the size.
 
 LIMITS WORTH KNOWING:
 No filter can work above half the sample frequency - at 60 values a second,
-30 Hz. A high setting above that is quietly moved to one Hz below it, and a low
-setting above high is quietly moved to half of high.
-
-The scaling that steadies the reading is fixed for 60 samples a second. At other
-sample frequencies the bands are still in the right place, but the readings
-wobble and are no longer a clean size squared - too low above 60, too high below.
+30 Hz. A high setting at or above that is quietly moved to one Hz below it, and
+a low setting above high is quietly moved to half of high.
 
 A movement on the border between two bands is shared between them, and anything
 outside low to high is not reported at all.
@@ -434,14 +430,18 @@ offset response / smooth response:
 As on adaptive_filter; both default to 0.5.
 
 noise floor:
-Present, but it currently has no effect.
+Default 0. A gap smaller than this counts as stillness and gets the full
+smoothing; only the part of a gap above the floor makes the filter follow.
+Raise it to just above the jitter of a still sensor - the output stops
+trembling, while a real movement, well above the floor, still comes through.
 
 A quaternion and its negative are the same rotation, but this filter does not
 know that: if your source flips sign, the filter treats it as a sudden big
 movement and follows it at once, unsmoothed.
 
-It is meant for ONE quaternion. Given an array of several, it rescales the whole
-array to length 1 together, which leaves each quaternion shorter than 1.
+It takes one quaternion or an array of several - a whole pose. Each quaternion
+in an array is smoothed by its own amount and kept at length 1 on its own. The
+filter starts from the first value it receives.
 
 OUTPUTS:
 
@@ -518,8 +518,9 @@ INPUTS and PARAMETERS:
 
 input:
 The value to filter. Receiving data here triggers the node.
-A number, a NumPy array or a PyTorch tensor. Each element of an array adapts on
-its own, by its own speed. Lists are ignored - convert them to an array first.
+A number, a list, a NumPy array or a PyTorch tensor. Each element of an array
+adapts on its own, by its own speed. A tensor comes back as the same kind of
+tensor, on the same device.
 
 min_cutoff:
 The cutoff when the signal is still, in Hz (cycles per second). LOWER means
@@ -536,10 +537,12 @@ The cutoff, in Hz, of the smoothing applied to the filter's own speed estimate.
 The default of 1.0 is almost always right.
 
 dt:
-Meant to set the time between samples, but it has no effect: the node times the
-arrivals itself, from the clock, on every input. So the filter follows whatever
-rate your data really arrives at - and data played back faster than real time
-is filtered as if the movement itself were faster.
+The time between samples, in seconds. Default 1/60, for data arriving once a
+frame. The filter's cutoffs are in Hz, so it has to know how far apart the
+samples are: set dt to match the data - 1/100 for a 100 Hz sensor - and the
+filter behaves the same however fast the samples are actually delivered, which
+matters for data played back faster or slower than it was recorded.
+Set dt to 0 to have the node time the arrivals itself, from the clock.
 
 The first value received passes straight through, and the filter starts from it.
 
