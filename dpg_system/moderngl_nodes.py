@@ -1441,12 +1441,13 @@ class MGLColorNode(MGLNode):
         c = self.color_input()
         # Normalize if needed
         if len(c) > 4: c = c[:4]
-        elif len(c) == 3: c = [*c, 255 if c[0] > 1.0 else 1.0]
+        elif len(c) == 3: c = [*c, 255 if max(c) > 1.0 else 1.0]
 
-        # Check for 0-255 range
+        # 0-255 colours are scaled to 0-1; either way the colour is applied
+        # (it used to be set only inside this check, so 0-1 colours were lost)
         if max(c) > 1.0:
             c = [val / 255.0 for val in c]
-            self.ctx.current_color = tuple(c)
+        self.ctx.current_color = tuple(c)
 
 
 class MGLLightNode(MGLNode):
@@ -1565,6 +1566,7 @@ class MGLTextureNode(MGLNode):
         self.width = 0
         self.height = 0
         self.channels = 0
+        self.pending_data = None
 
     def initialize(self, args):
         super().initialize(args)
@@ -1574,40 +1576,57 @@ class MGLTextureNode(MGLNode):
         self.texture_output = self.add_output('texture')
 
     def execute(self):
-        # Handle Texture Update
+        # The array is only stored here: it may arrive outside the render (a
+        # load_bang, a streaming thread), where no GL context is current. It is
+        # uploaded when 'draw' passes through.
         if self.source_input.fresh_input:
             data = self.source_input()
             if data is not None:
+                self.pending_data = data
+
+        # Handle Chain Propagation (main thread only - a racing consume here
+        # would forward 'draw' onto a streaming thread; see MGLNode.execute)
+        msg = None
+        if self.mgl_input.fresh_input and threading.current_thread() is threading.main_thread():
+            msg = self.mgl_input()
+            is_draw = msg == 'draw' or (isinstance(msg, list) and len(msg) > 0 and msg[0] == 'draw')
+            if is_draw and self.pending_data is not None:
+                data = self.pending_data
+                self.pending_data = None
                 self.update_texture(data)
-        
+
         # Output Texture
         if self.texture:
             self.texture_output.send(self.texture)
 
-        # Handle Chain Propagation (main thread only - a racing consume here
-        # would forward 'draw' onto a streaming thread; see MGLNode.execute)
-        if self.mgl_input.fresh_input and threading.current_thread() is threading.main_thread():
-            msg = self.mgl_input()
+        if msg is not None:
             self.mgl_output.send(msg)
 
     def update_texture(self, data):
-        # Handle formats
+        # Handle formats - the same conversion as mgl_image and the shapes'
+        # texture inlets: floats 0..1 are scaled to bytes
+        if self.app.torch_available and isinstance(data, torch.Tensor):
+            data = data.detach().cpu().numpy()
         if isinstance(data, list):
             data = np.array(data, dtype=np.uint8)
-        elif self.app.torch_available and isinstance(data, torch.Tensor):
-            data = data.detach().cpu().numpy().astype(np.uint8)
-        
+
         if not isinstance(data, np.ndarray):
             return
+        if data.dtype == np.float32 or data.dtype == np.float64:
+            data = np.clip(data * 255, 0, 255).astype(np.uint8)
+        else:
+            data = data.astype(np.uint8)
 
-        # data shape: [H, W, C]
+        # data shape: [H, W, C], or [H, W] for one channel
+        if data.ndim == 2:
+            data = data[:, :, np.newaxis]
         if data.ndim != 3:
             print(f"MGLTextureNode: Expected 3D array [H, W, C], got {data.shape}")
             return
 
         h, w, c = data.shape
-        if c not in [3, 4]:
-            print(f"MGLTextureNode: Expected 3 or 4 channels, got {c}")
+        if c not in [1, 3, 4]:
+            print(f"MGLTextureNode: Expected 1, 3 or 4 channels, got {c}")
             return
 
         # Check if recreate needed
@@ -1707,6 +1726,10 @@ class MGLShapeNode(MGLNode):
     def handle_shape_params(self):
         pass
 
+    def render_mode(self):
+        """'solid', 'wireframe' or 'points'. Subclasses may override."""
+        return self.mode_input()
+
     def get_point_size(self):
         """Point-sprite size in pixels (pre perspective divide — the shader
         divides by gl_Position.w). Subclasses may derive it from world-space
@@ -1782,7 +1805,7 @@ class MGLShapeNode(MGLNode):
             self.ctx.update_material(self.prog)
 
             # Render Mode
-            mode = self.mode_input()
+            mode = self.render_mode()
             cull = self.cull_input()
 
             # Shader Point Culling
@@ -3184,6 +3207,34 @@ class MGLTextNode(MGLNode):
 
         inner_ctx = self.ctx.ctx
         scale = self.scale_input() / 100.0
+
+        # Rebuild the quads only when the text, font or scale has changed:
+        # building fresh GPU buffers every frame without releasing the old
+        # ones leaked memory for as long as the text was drawn.
+        if self.dirty or self.vao is None or scale != getattr(self, '_built_scale', None):
+            if not self.build_geometry(inner_ctx, scale):
+                return
+        self.render_text(inner_ctx)
+
+    def release_geometry(self):
+        # vao before the buffer it reads from; only with a GL context current
+        if self.vao is not None:
+            self.vao.release()
+            self.vao = None
+        if self.vbo is not None:
+            self.vbo.release()
+            self.vbo = None
+
+    def custom_cleanup(self):
+        # No GL context is current during node deletion; the context releases
+        # these at the start of its next render.
+        ctx = MGLContext._instance
+        if ctx is not None:
+            ctx.defer_release(self.vao, self.vbo, getattr(self, 'atlas_texture', None))
+        self.vao = None
+        self.vbo = None
+
+    def build_geometry(self, inner_ctx, scale):
         gw, gh = self.glyph_shape
 
         # Build quad vertices for each character
@@ -3222,15 +3273,21 @@ class MGLTextNode(MGLNode):
 
             x_cursor += ch['advance'] * scale
 
+        self.release_geometry()
         if len(vertices) == 0:
-            return
+            return False
 
         prog = self.get_text_shader()
 
         vert_data = np.array(vertices, dtype='f4')
         self.vbo = inner_ctx.buffer(vert_data.tobytes())
         self.vao = inner_ctx.vertex_array(prog, [(self.vbo, '3f 12x 2f', 'in_position', 'in_texcoord')])
+        self.dirty = False
+        self._built_scale = scale
+        return True
 
+    def render_text(self, inner_ctx):
+        prog = self.get_text_shader()
         # Set uniforms
         if 'M' in prog:
             model = self.ctx.get_model_matrix()
@@ -4174,7 +4231,15 @@ class MGLMeshNode(MGLShapeNode):
                                          default_value='nothing yet')
         self._mesh = None
         self._said = ''
+        self._points_only = False
         self.end_initialization()
+
+    def render_mode(self):
+        # Points with no faces have no triangles to draw: rendered as
+        # triangles they make a soup of whatever three points sit together.
+        if self._points_only:
+            return 'points'
+        return super().render_mode()
 
     def mesh_received(self):
         """Put the arrays down and mark it stale. No GL here."""
@@ -4273,6 +4338,7 @@ class MGLMeshNode(MGLShapeNode):
             self._say('nothing yet')
             return [], None
         verts, faces, normals = mesh
+        self._points_only = faces is None
         verts = verts.copy()
         if self.center_input():
             verts -= verts.mean(axis=0)
@@ -4330,14 +4396,32 @@ class MGLModelNode(MGLShapeNode):
         self.generate_uv_button = self.add_property('generate_uv', widget_type='button', callback=self.reload_model)
         
         self.loaded_geometry = None
+        self.load_failed = False
         self.end_initialization()
 
     def reload_model(self):
         self.dirty = True
+        self.load_failed = False
+        # Widget callbacks run with no GL context current, so the old buffers
+        # are released by the context at the start of its next render.
+        ctx = MGLContext._instance
+        if ctx is not None:
+            ctx.defer_release(self.vao, self.vbo, self.ibo)
         self.vao = None # Force recreation
         self.vbo = None
+        self.ibo = None
 
     def create_geometry(self):
+        # draw() retries whenever there is no geometry; a load that failed is
+        # not tried again (or reported again) until the path or uv changes
+        if self.load_failed:
+            return [], None
+        vertex_data, indices = self.load_geometry()
+        if len(vertex_data) == 0:
+            self.load_failed = True
+        return vertex_data, indices
+
+    def load_geometry(self):
         import trimesh
         path = self.file_input()
         if not path:

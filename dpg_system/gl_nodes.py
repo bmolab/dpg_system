@@ -1755,6 +1755,21 @@ class CharacterSlot:
             raise RuntimeError('unknown glyph type')
 
 
+def restore_legacy_text_colour(node, container):
+    # The colour option used to be labelled 'alpha' like the alpha input, so
+    # older patches save two 'alpha' entries and both were restored into the
+    # alpha input. Route the list-valued one to the colour, the number to alpha.
+    properties = container.get('properties', {})
+    for entry in properties.values():
+        if entry.get('name', '').strip('#') != 'alpha' or 'value' not in entry:
+            continue
+        value = entry['value']
+        # set the widget and fire its callback, as restore_properties does
+        widget = node.text_color.widget if isinstance(value, (list, tuple)) else node.text_alpha_input.widget
+        widget.set(value)
+        widget.value_changed(force=True)
+
+
 class GLTextNode(GLNode):
     @staticmethod
     def factory(node_name, data, args=None):
@@ -1788,7 +1803,7 @@ class GLTextNode(GLNode):
         self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
         self.text_font = self.add_string_input('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
-        self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
+        self.text_color = self.add_option('colour', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
         self.text_size = self.add_option('size', widget_type='drag_int', default_value=self.font_size, callback=self.size_changed)
         self.alpha_power = self.add_option('alpha power', widget_type='drag_float', default_value=1.0)
         self.separator = self.add_option('separator', widget_type='text_input', default_value=' ')
@@ -1802,6 +1817,9 @@ class GLTextNode(GLNode):
     def custom_create(self, from_file):
         dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
         dpg.configure_item(self.text_color.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
+
+    def load_custom(self, container):
+        restore_legacy_text_colour(self, container)
 
     def text_changed(self):
         self.new_text = True
@@ -2069,7 +2087,7 @@ class GLKoreanTextNode(GLNode):
         self.text_alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
         self.scale_input = self.add_input('scale', widget_type='drag_float', default_value=1.0, callback=self.text_changed)
         self.text_font = self.add_string_input('font', widget_type='text_input', default_value=self.font_path, callback=self.font_changed)
-        self.text_color = self.add_option('alpha', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
+        self.text_color = self.add_option('colour', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0], callback=self.color_changed)
         self.text_size = self.add_option('size', widget_type='drag_int', default_value=self.font_size, callback=self.size_changed)
         self.alpha_power = self.add_option('alpha power', widget_type='drag_float', default_value=1.0)
         self.separator = self.add_option('separator', widget_type='text_input', default_value=' ')
@@ -2083,6 +2101,9 @@ class GLKoreanTextNode(GLNode):
     def custom_create(self, from_file):
         dpg.configure_item(self.text_color.widget.uuid, no_alpha=True)
         dpg.configure_item(self.text_color.widget.uuid, alpha_preview=dpg.mvColorEdit_AlphaPreviewNone)
+
+    def load_custom(self, container):
+        restore_legacy_text_colour(self, container)
 
     def text_changed(self):
         self.new_text = True
@@ -2335,7 +2356,9 @@ class GLXYZDiskNode(GLQuadricNode):
         # self.scale = self.arg_as_float(default_value=1.0)
 
         # self.gl_input = self.add_input('gl chain in', triggers_execution=True)
-        self.scale = self.add_input('gl chain in', widget_type='drag_float', default_value=1.0)
+        self.scale = self.add_input('scale', widget_type='drag_float', default_value=1.0)
+        # was mislabelled 'gl chain in'; the archive lets old patches restore its value
+        self.scale.name_archive.append('gl chain in')
         self.quat = self.add_input('quaternion in', callback=self.set_quaternion)
         # self.gl_output = self.add_output('gl chain out')
 
@@ -2360,8 +2383,9 @@ class GLXYZDiskNode(GLQuadricNode):
             self.size_z = data[3] * scale
 
     def quadric_draw(self):
-        # hold_ambient_material = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_AMBIENT)
-        # hold_diffuse_material = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_DIFFUSE)
+        # the disk colours (materials) and style must not leak downstream
+        glPushAttrib(GL_LIGHTING_BIT | GL_POLYGON_BIT)
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, self.polygon_mode)
         glPushMatrix()
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [1.0, 0.0, 0.0, 0.5])
         gluDisk(self.quadric, self.inner_radius, self.size_x, self.slices, self.rings)
@@ -2372,8 +2396,7 @@ class GLXYZDiskNode(GLQuadricNode):
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [0.0, 1.0, 0.0, 0.5])
         gluDisk(self.quadric, self.inner_radius, self.size_z, self.slices, self.rings)
         glPopMatrix()
-        # glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, hold_ambient_material)
-        # glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, hold_diffuse_material)
+        glPopAttrib()
 
 
 class GLButtonGridNode(GLNode):
@@ -2453,13 +2476,20 @@ class GLButtonGridNode(GLNode):
             self.create_call_list(self.selection)
             self.new_selection = False
 
-        glTranslatef(0, 0, -2)
-        glDisable(GL_LIGHTING)
-        glColor4f(1.0, 1.0, 1.0, self.text_alpha_input())
-        if self.display_list != -1:
-            glCallList(self.display_list)
-        glColor4f(1.0, 1.0, 1.0, 1.0)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+        # the grid's offset, lighting-off, blend, line width and polygon mode
+        # are restored before the chain continues downstream
+        glPushMatrix()
+        glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_POLYGON_BIT | GL_COLOR_BUFFER_BIT)
+        try:
+            glTranslatef(0, 0, -2)
+            glDisable(GL_LIGHTING)
+            glColor4f(1.0, 1.0, 1.0, self.text_alpha_input())
+            if self.display_list != -1:
+                glCallList(self.display_list)
+            glColor4f(1.0, 1.0, 1.0, 1.0)
+        finally:
+            glPopAttrib()
+            glPopMatrix()
 
 
 class GLLineNode(GLNode):
@@ -2558,6 +2588,8 @@ class GLNumpyLines(GLNode):
 
     def restore_state(self):
         glPopMatrix()
+
+    def restore_lighting_and_depth(self):
         if self.was_lit:
             glEnable(GL_LIGHTING)
         if self.was_depth:
@@ -2570,6 +2602,10 @@ class GLNumpyLines(GLNode):
 
             accent_scale = self.accent_scale()
             if self.motion_accent():
+                # a change of array shape restarts the motion measure
+                if self.previous_array is not None and self.previous_array.shape != self.line_array.shape:
+                    self.previous_array = None
+                    self.motion_array = None
                 if self.previous_array is not None:
                     self.motion_array = np.linalg.norm(self.line_array - self.previous_array, axis=2) * accent_scale
                 self.previous_array = self.line_array.copy()
@@ -2580,6 +2616,14 @@ class GLNumpyLines(GLNode):
             super().execute()
 
     def draw(self):
+        # lighting and depth go back on as soon as the lines are drawn, before
+        # the chain continues downstream (restore_state runs after the send)
+        try:
+            self.draw_lines()
+        finally:
+            self.restore_lighting_and_depth()
+
+    def draw_lines(self):
         if self.line_array is None:
             return
         # draw() expects a 3D array shaped (points, lines, coords).
@@ -3095,6 +3139,11 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
         if self.pending_commands is not None:
             if len(self.pending_commands) > 0:
                 for command in self.pending_commands:
+                    # orient_scale aims and sizes a single shape; each disk
+                    # here has its own orientation, from 'axis-angle'
+                    if command[0] == 'orient_scale':
+                        print('gl_orientation_disks: orient_scale is for single shapes - send rows to axis-angle')
+                        continue
                     self.command_parser.perform(command[0], self, command[1:])
             self.pending_commands = []
 
@@ -3146,12 +3195,21 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
 
     def quadric_draw(self):
         # we have to sort in order of size... smallest first
-        self.axis_angles = any_to_array(self.axis_angle_input())
+        incoming = self.axis_angle_input()
+        if incoming is None:
+            return
+        self.axis_angles = any_to_array(incoming)
+        if self.axis_angles.ndim == 1:
+            self.axis_angles = self.axis_angles.reshape(1, -1)
+        if self.axis_angles.ndim != 2:
+            return
 
         gl.glPolygonMode(gl.GL_FRONT_AND_BACK, self.polygon_mode)
         up_vector = np.array([0.0, 0.0, 1.0])
 
-        for i in range(self.count):
+        # one disk per row received, up to count - fewer rows than count
+        # used to index past the end and raise
+        for i in range(min(self.count, self.axis_angles.shape[0])):
             gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT, self.materials[i].ambient)
             gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE, self.materials[i].diffuse)
             gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_SPECULAR, self.materials[i].specular)
@@ -3186,7 +3244,9 @@ class GLMultiOrientationDiskNode(TexturedGLNode):
                 glPushMatrix()
                 glMultMatrixf(alignment_matrix)
                 size = axis[3] * self.scale()
-                if size > width:
+                if self.width_is_fraction_input():
+                    gluDisk(self.quadrics[i], size * (1.0 - width), size, self.slices(), self.rings())
+                elif size > width:
                     gluDisk(self.quadrics[i], size - width, size, self.slices(), self.rings())
                 else:
                     gluDisk(self.quadrics[i], 0, size, self.slices(), self.rings())

@@ -409,11 +409,11 @@ Each of the first 20 lines has its own colour, white to begin with: set
 Index -1 recolours them all. Lines past the twentieth share the twentieth's 
 colour.
 
-LIGHTING AND DEPTH ARE OFF FROM HERE ON:
-gl_line_array switches lighting and the depth test off while it draws and 
-only switches them back after everything downstream of it has drawn. So 
-shapes chained after it are drawn unlit and without depth. Give it a branch 
-of its own - split the chain cord before it, as here.
+LIGHTING AND DEPTH:
+gl_line_array switches lighting and the depth test off while it draws its 
+lines, so they are never shaded or hidden, and switches them back on before 
+the chain continues: shapes chained after it are lit and depth-tested as 
+usual.
 
 gl_vertex_buffer:
 Vertex data drawn directly, with 'draw_mode' choosing how the vertices are 
@@ -439,8 +439,8 @@ The chain. This triggers the drawing.
 array (gl_line_array):
 Points by lines by coordinates (2, 3 or 4 of them). Anything not three 
 dimensional is not drawn: a single line still needs the middle dimension, 
-points by 1 by 3. Keep the shape the same while 'accent_motion' is on - 
-a change of shape with it on raises an error.
+points by 1 by 3. With 'accent_motion' on, an array of a new shape starts 
+the movement measure afresh.
 
 alpha_fade / line_width (gl_line_array):
 The fade along each line, and the width of the lines.
@@ -525,8 +525,8 @@ A row of four is an axis followed by a size, and the radius is that size
 times 'scale'. A disk with no rotation is not drawn.
 
 Each disk is a ring: 'ring_width' is taken off the inside of it, either as 
-a distance or, with 'width is fraction' ticked, as a fraction of the radius 
-(three-number rows only). A disk smaller than the ring width is drawn solid.
+a distance or, with 'width is fraction' ticked, as a fraction of the radius. 
+A disk smaller than the ring width is drawn solid.
 
 All the disks are drawn at the same place - the origin of the chain's 
 current coordinates - one over another. They do not place themselves at 
@@ -547,7 +547,8 @@ plane sized by its y part, and a green one in the x-z plane sized by its z
 part, each times the scale. For a turn about a single axis only one disk 
 shows, and its size is the sine of half the angle; no turn at all draws 
 nothing. Its colours are set on the material, so they show only with 
-lighting on, and the green stays in force for whatever is chained after it.
+lighting on; the material is put back afterwards, so the colours do not 
+carry on to whatever is chained after it.
 """ + OLDER + """
 SYNTAX:
 gl_orientation_disks <count> <scale> <slices> <rings>
@@ -564,8 +565,10 @@ gl chain in:
 The chain. This triggers the drawing.
 
 axis-angle (gl_orientation_disks):
-One row per disk, as above. It needs at least as many rows as there are 
-disks; extra rows are ignored, and too few raise an error.
+One row per disk, as above. One disk is drawn per row, up to the node's count; 
+extra rows are ignored. A single row of three or four numbers draws one disk. 
+The 'orient_scale' message, which aims a single shape, does not apply here and 
+is ignored with a note in the console.
 
 scale (gl_orientation_disks):
 Radius per radian (or per unit of size, for four-number rows).
@@ -583,14 +586,13 @@ One inlet per disk, red green blue alpha.
 quaternion in (gl_rotation_disk):
 The orientation, w x y z.
 
-the second 'gl chain in' (gl_rotation_disk):
-Despite its name, the number box under the chain inlet is the scale, 1 by 
-default. It is read when a quaternion arrives, so a change shows with the 
-next quaternion.
+scale (gl_rotation_disk):
+Multiplies the disk sizes, 1 by default. It is read when a quaternion 
+arrives, so a change shows with the next quaternion. (Older versions 
+labelled this inlet 'gl chain in'.)
 
 shading / style (options):
-Smooth, flat or no normals; and fill, outline or points. 'style' affects 
-gl_orientation_disks only.
+Smooth, flat or no normals; and fill, outline or points.
 
 OUTPUTS:
 
@@ -708,8 +710,8 @@ gl_korean_text. A larger size gives sharper letters and also draws them
 larger, since the drawn size is this times 'scale'.
 
 colour (option):
-The text colour. In the options it carries the label 'alpha', the same as 
-the transparency inlet.
+The text colour. (Older versions labelled it 'alpha', the same as the 
+transparency inlet; patches saved then still load their colour.)
 
 alpha power / separator (options):
 For lists, as above.
@@ -776,10 +778,10 @@ Like gl_text, it is drawn in the chain's current coordinates and two units
 further away. Straight after gl_context it is fixed on the window; after a 
 transform it moves with it.
 
-PUT IT LAST IN ITS CHAIN:
-Unlike most gl nodes, it does not put things back when it is done. Everything 
-after it in the chain is drawn two units further away, with lighting switched 
-off.
+IT PUTS THINGS BACK:
+Its two-unit offset, the lighting it switches off, and its outline and 
+blending settings all apply only to the grid: what is chained after it is 
+drawn as if the grid were not there.
 """ + OLDER + """
 SYNTAX:
 gl_button_grid
@@ -814,7 +816,7 @@ The distance from one square to the next. Default 0.1.
 OUTPUTS:
 
 gl chain out:
-The chain, continuing - with the changes described above.
+The chain, continuing.
 
 RELATED:
 gl_text, which used to share this page, draws text in the scene in the same 

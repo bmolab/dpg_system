@@ -314,9 +314,9 @@ ambient / diffuse / specular / shininess (mgl_material):
 How the surface answers. Shininess runs from 1 to 256, 32 by default.
 
 color (mgl_color):
-The colour, as red green blue alpha. It is taken in the 0 to 255 form the 
-colour picker produces; a colour whose values are all 1 or less is ignored 
-at present, so send 255 for full.
+The colour, as red green blue alpha, either from 0 to 1 or from 0 to 255 - 
+a colour with any value above 1 is read as 0 to 255. Three numbers take 
+alpha as full.
 
 OUTPUTS:
 
@@ -380,32 +380,29 @@ Both take an image as an array of height by width by channels - 3 channels
 for red green blue, 4 to add alpha - such as a frame from a camera node, a 
 picture loaded from a file, or anything computed in numpy or torch. 
 
-mgl_image also takes a single-channel (height by width) array, and accepts 
-floats from 0 to 1 as well as bytes from 0 to 255. mgl_texture takes 
-3 or 4 channels only, and its values must already be bytes, 0 to 255: it 
-does not scale floats, so convert first (np.rand and np.astype can both 
-produce 'uint8'). A torch tensor is copied to the cpu either way.
+Both also take a single-channel (height by width) array, and accept 
+floats from 0 to 1 as well as bytes from 0 to 255. A torch tensor is copied 
+to the cpu either way.
 
 WHY mgl_texture, WHEN EVERY SHAPE HAS A TEXTURE INLET:
 Every mgl shape has a 'texture' inlet, and an array patched straight into it 
 works. But the shape then uploads that array to the graphics card again on 
 every frame it draws, and two shapes showing the same image upload it twice. 
-mgl_texture uploads once, when a new array arrives, and hands out the 
+mgl_texture uploads once per new array, and hands out the 
 finished texture - which also goes straight into mgl_image's 'texture' 
 inlet.
 
 mgl_texture does not draw anything and changes nothing in the chain: it 
 passes 'draw' straight on, and each time it runs it sends its texture out of 
-the 'texture' outlet. Its place in the chain only decides when that happens - 
+the 'texture' outlet. Its place in the chain decides when that happens - 
 put it before the shapes that use it.
 
-FEED mgl_texture FROM INSIDE THE RENDER:
-mgl_texture builds the texture the moment the array arrives, and that only 
-works while the scene is rendering. Here the context's own chain bangs the 
-generator, so a fresh image arrives every frame inside the render. An array 
-arriving at some other moment - a load_bang, a camera thread - may not reach 
-the graphics card correctly. Shapes and mgl_image do not have this problem: 
-they only store what arrives and convert it when they draw.
+WHEN THE ARRAY REACHES THE GRAPHICS CARD:
+mgl_texture only stores an array when it arrives, and uploads it when 
+'draw' next passes through, so the array can come from anywhere - a 
+load_bang, a camera thread, or, as here, the context's own chain banging the 
+generator for a fresh image every frame. The texture first appears at the 
+first draw after the first array.
 
 mgl_image IS A BACKDROP:
 It covers the whole picture whatever the camera is doing, and draws with the 
@@ -425,8 +422,9 @@ mgl chain in:
 The chain. mgl_image draws when 'draw' arrives; mgl_texture passes it on.
 
 source (mgl_texture):
-The array to turn into a texture: height by width by 3 or 4, bytes. A list 
-is converted to bytes. A new size or channel count makes a new texture.
+The array to turn into a texture: height by width (by 1, 3 or 4), bytes 
+or floats from 0 to 1. A list is converted to bytes. A new size or channel 
+count makes a new texture.
 
 texture (mgl_image):
 The image to draw: a texture from mgl_texture, or an array as above.

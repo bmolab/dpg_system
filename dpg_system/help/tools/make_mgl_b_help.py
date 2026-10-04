@@ -129,8 +129,9 @@ corner indices) and optionally 'normals' - what shape_modes sends - or a
 list of [vertices, faces], or a bare n by 3 array of corners with no faces. 
 Normals are worked out from the faces when none come with it. Faces that 
 point past the last corner are thrown away, leaving just the corners. 
-Corners without faces want 'mode' set to points: in solid mode they are 
-joined three at a time, in the order they came. The 'holding' 
+Corners without faces are drawn as points whatever 'mode' says, 
+'point_size' pixels across. They all face the viewer along z, so with 
+'cull' ticked they vanish when seen from behind. The 'holding' 
 line says what it last received - 'nothing yet', so many points, or so many 
 corners and triangles - which tells a mesh that never arrived from one drawn 
 somewhere you are not looking.
@@ -140,7 +141,9 @@ Name the file in 'file_path' (anything trimesh reads: obj, stl, ply, glb...).
 A file holding several meshes is merged into one. 'uv_mode' can replace the 
 file's own texture coordinates with a projection - sphere, cylinder, 
 plane_xy, plane_xz ('box' currently falls back to sphere) - applied the 
-next time the file loads; click 'generate_uv' to reload it now.
+next time the file loads; click 'generate_uv' to reload it now. A file 
+that will not load is reported once in the console, and tried again when 
+'file_path' changes or 'generate_uv' is clicked.
 
 mgl_point_cloud FOR POINTS:
 'points' takes an n by 3 array (or a flat list of x y z triples), or a cloud 
