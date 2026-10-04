@@ -299,8 +299,8 @@ class WeightedPromptNode(Node):
                     if len(sub) > 0:
                         sub += ' '
                     sub += prompt[i]
-                elif type(prompt[i]) == float:
-                    relative_weight = prompt[i]
+                elif type(prompt[i]) in [float, int]:
+                    relative_weight = float(prompt[i])
             if sub != '':
                 self.subprompts[index] = sub
             if len(self.subprompts[index]) > 0:

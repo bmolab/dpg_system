@@ -72,7 +72,7 @@ class TextChangeNode(Node):
         input_text = self.text_input()
         if type(input_text) is list:
             input_text = list(flatten_list(input_text))
-            input_text = ''.join(input_text)
+            input_text = ' '.join(any_to_string(w) for w in input_text)
         if type(input_text) == str:
             word_list = input_text.split(' ')
         elif isinstance(input_text, (list, tuple)):
@@ -310,11 +310,30 @@ class GatherSentences(Node):
         else:
             self.received_sentence = ''
 
+    def add_token(self, data):
+        # 'enforce spaces': a space between fragments that meet without one -
+        # but not before closing punctuation or after an opening bracket.
+        if self.enforce_spaces() and len(self.received_tokens) > 0 and len(data) > 0:
+            previous = self.received_tokens[-1]
+            if (len(previous) > 0 and previous[-1] not in ' \n(' and data[0] not in ' \n.,;:!?)'):
+                self.received_tokens.append(' ')
+        self.received_tokens.append(data)
+
     def execute(self):
         self.skipper = self.skip_framed_by()
 
         if self.active_input == self.input:
-            data = any_to_string(self.input())
+            # Line breaks kept: 'end on return' and the double-return sentence
+            # end both look for them, and stripping them here meant neither
+            # ever fired. send_sentence still removes them from the output.
+            data = any_to_string(self.input(), strip_returns=False)
+            if self.end_on_return() and '\n' in data:
+                head, data = data.split('\n', 1)
+                if len(head) > 0:
+                    self.add_token(head)
+                if len(self.received_tokens) > 0:
+                    self.send_sentence()
+                data = data.lstrip('\n')
             if len(data) > 0:
                 if data == '<backspace>':
                     if len(self.received_tokens) > 0:
@@ -323,12 +342,12 @@ class GatherSentences(Node):
                 if self.auto_sentence_end():
                     if data[-1] == '\n' and len(data) > 1:
                         if data[-2] == '\n':
-                            self.received_tokens.append(data)
+                            self.add_token(data)
                             self.send_sentence()
                             return
                     if data[-1] == '-' and len(data) > 1:
                         if data[-2] == '-':
-                            self.received_tokens.append(data)
+                            self.add_token(data)
                             self.send_sentence()
                             return
                     elipsis = False
@@ -336,38 +355,30 @@ class GatherSentences(Node):
                         if data[-2] == '.' and data[-3] == '.':
                             elipsis = True
                     if not elipsis and data[-1] in ['.', '?', '!', ';', ':']:
-                        self.received_tokens.append(data)
+                        self.add_token(data)
                         self.send_sentence()
                         return
 
                     if data[-1] == ')' and len(self.received_tokens) > 0:
                         if self.received_tokens[0] == '' and len(self.received_tokens) > 1:
                             if self.received_tokens[1][-1] == '(':
-                                self.received_tokens.append(data)
+                                self.add_token(data)
                                 self.send_sentence()
                                 return
                             elif self.received_tokens[1][0] == '(':
-                                self.received_tokens.append(data)
+                                self.add_token(data)
                                 self.send_sentence()
                                 return
                         elif self.received_tokens[0][-1] == '(':
-                            self.received_tokens.append(data)
+                            self.add_token(data)
                             self.send_sentence()
                             return
                         elif self.received_tokens[0][0] == '(':
-                            self.received_tokens.append(data)
+                            self.add_token(data)
                             self.send_sentence()
                             return
-                elif self.end_on_return():
-                    if data[0] == '\n':
-                        self.send_sentence()
-
-            if self.enforce_spaces() and len(self.received_sentence) > 0 and len(data) > 0:
-                if self.received_tokens[-1][-1] != ' ' and data[0] != ' ':
-                    self.received_tokens.append(' ')
-                    self.received_sentence += ' '
             if len(data) > 0:
-                self.received_tokens.append(data)
+                self.add_token(data)
         else:
             self.send_sentence()
 
@@ -1044,7 +1055,8 @@ class CombineFIFONode(Node):
     def clear_fifo(self, value=0):
         self.combine_list = [''] * self.count
         output_string = ''
-        self.output.send(self.combine_list)
+        # an empty window sends [] - the same as execute() with nothing in it
+        self.output.send([])
         self.string_output.send(output_string)
 
     def advance_age(self):

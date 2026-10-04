@@ -285,10 +285,14 @@ decides. A fragment that is exactly '<backspace>' removes the last fragment
 collected.
 
 Fragments are joined exactly as they arrive - no space is added between them.
-Recognition output usually carries its own spaces; if yours does not, use
-string_builder, which adds them. ('enforce spaces' is meant to do this here, but
-in the current code it has no effect. 'end on return' likewise never fires,
-because line breaks are removed from fragments as they arrive.)
+Recognition output usually carries its own spaces; if yours does not, tick
+'enforce spaces', which puts a space between fragments that meet without one -
+but not before a full stop, comma or other closing punctuation, nor after an
+opening bracket.
+
+'end on return' ends the sentence at a line break: what came before it is sent,
+and what follows starts the next sentence. Line breaks never appear in what is
+sent.
 
 'skip framed by' takes a single character and removes everything between a
 pair of it - so with '*', 'it is *laughs* cold.' is sent as 'it is  cold.'.
@@ -441,10 +445,10 @@ is never forgotten. Both counts are in messages, not seconds.
 The output is the reported words joined by spaces, in the order they were first
 seen. A message with nothing new sends an empty string.
 
-SEND IT A STRING:
-Send whole text as a string - from a string node, or from recognition. A list
-of words (which is what a message node sends) is run together with no spaces
-before it is split, so it arrives as a single long word.
+STRINGS OR LISTS:
+Send text as a string - from a string node, or from recognition - or as a list
+of words, which is what a message node sends. A list is joined with spaces, so
+both are read word by word.
 
 SYNTAX:
 text_change

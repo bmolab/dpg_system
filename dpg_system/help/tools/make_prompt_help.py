@@ -61,8 +61,8 @@ brackets - the phrase goes into the string plainly. Its boxes are not rewritten.
 OTHER WAYS IN (weighted_prompt):
 A number on its own changes the slot's weight and keeps its phrase - the way to
 automate one part of the balance. A list sets both: its words become the phrase
-and a decimal number in it becomes the weight (write 2.0, not 2 - a whole
-number in a list is not taken as the weight).
+and the number in it becomes the weight - a message 'rain 2' sets the phrase
+'rain' at weight 2.
 
 ambient_prompt also takes a two-element list: the phrase, then its weight.
 
