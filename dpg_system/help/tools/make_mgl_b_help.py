@@ -140,7 +140,8 @@ mgl_model LOADS A FILE:
 Name the file in 'file_path' (anything trimesh reads: obj, stl, ply, glb...). 
 A file holding several meshes is merged into one. 'uv_mode' can replace the 
 file's own texture coordinates with a projection - sphere, cylinder, 
-plane_xy, plane_xz ('box' currently falls back to sphere) - applied the 
+plane_xy, plane_xz, or box, which puts the image once on each side of the 
+bounding box, each face taking the side it faces most - applied the 
 next time the file loads; click 'generate_uv' to reload it now. A file 
 that will not load is reported once in the console, and tried again when 
 'file_path' changes or 'generate_uv' is clicked.

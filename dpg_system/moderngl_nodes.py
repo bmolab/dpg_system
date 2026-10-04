@@ -4375,6 +4375,31 @@ class MGLMeshNode(MGLShapeNode):
                 self.holding.widget.set(text)
 
 
+def box_uvs(points, facing, box_min, box_size):
+    # Project each point onto the bounding-box side its facing direction points
+    # at most, scaled to that side (0-1 across it, as the plane modes do).
+    # Each side reads unmirrored seen from outside, with +y up on the four walls.
+    size = np.where(box_size == 0, 1.0, box_size)
+    p = (points - box_min) / size
+    axis = np.argmax(np.abs(facing), axis=1)
+    positive = facing[np.arange(len(facing)), axis] >= 0
+    u = np.empty(len(points))
+    v = np.empty(len(points))
+
+    x_side = axis == 0
+    u[x_side] = np.where(positive[x_side], 1.0 - p[x_side, 2], p[x_side, 2])
+    v[x_side] = p[x_side, 1]
+
+    y_side = axis == 1
+    u[y_side] = p[y_side, 0]
+    v[y_side] = np.where(positive[y_side], 1.0 - p[y_side, 2], p[y_side, 2])
+
+    z_side = axis == 2
+    u[z_side] = np.where(positive[z_side], p[z_side, 0], 1.0 - p[z_side, 0])
+    v[z_side] = p[z_side, 1]
+    return np.stack([u, v], axis=1)
+
+
 class MGLModelNode(MGLShapeNode):
     @staticmethod
     def factory(name, data, args=None):
@@ -4545,37 +4570,33 @@ class MGLModelNode(MGLShapeNode):
                     uvs = np.stack([u, v], axis=1)
                 
                 elif uv_mode == 'box':
-                    # Tri-planar / Cube Mapping simplified
-                    # Naively project based on dominant normal?
-                    # Too complex for this simple block?
-                    # Let's do simple bounding box normalize for now (XYZ -> UVW)
-                    # Use XY for Front/Back, XZ for Top/Bot, YZ for Left/Right?
-                    # This requires per-face processing which we don't easily have here (shared vertices).
-                    # Fallback to Sphere for now or just generic normalize.
-                    # Let's implement normalized Position 3D (maybe for 3D textures later? No, we need 2D).
-                    # Let's do a simple "Unwrapped Box" approximation -> Sphere?
-                    # Let's default to Sphere for Box for now to avoid complexity.
-                    print("MGLModelNode: Box mapping complex on shared vertices. Using Sphere.")
-                    norms = np.linalg.norm(verts, axis=1, keepdims=True)
-                    norms[norms == 0] = 1.0
-                    v_norm = verts / norms
-                    u = 0.5 + np.arctan2(v_norm[:, 2], v_norm[:, 0]) / (2 * np.pi)
-                    v = 0.5 - np.arcsin(v_norm[:, 1]) / np.pi
-                    uvs = np.stack([u, v], axis=1)
-            
+                    # Each face takes the box side its face normal points at most.
+                    # A vertex shared across a box edge would need two UVs, so the
+                    # faces are unwelded: every face gets its own three corners.
+                    if len(mesh.faces) > 0:
+                        face_points = verts[mesh.faces]
+                        facing = np.repeat(mesh.face_normals, 3, axis=0)
+                        uvs = box_uvs(face_points.reshape(-1, 3), facing, verts.min(axis=0), np.ptp(verts, axis=0))
+                    else:
+                        uvs = box_uvs(verts, mesh.vertex_normals, verts.min(axis=0), np.ptp(verts, axis=0))
+
             # Apply Scale
             if uvs is not None:
                 uvs = uvs.astype(np.float32) * uv_scale
 
             # Interleave Data [Pos, Normal, UV]
-            vertices = mesh.vertices.astype(np.float32)
-            normals = mesh.vertex_normals.astype(np.float32)
-            
+            if uv_mode == 'box' and len(mesh.faces) > 0:
+                # unwelded, as above: normals stay smooth, corners are not shared
+                vertices = mesh.vertices[mesh.faces].reshape(-1, 3).astype(np.float32)
+                normals = mesh.vertex_normals[mesh.faces].reshape(-1, 3).astype(np.float32)
+                indices = np.arange(len(vertices), dtype=np.int32)
+            else:
+                vertices = mesh.vertices.astype(np.float32)
+                normals = mesh.vertex_normals.astype(np.float32)
+                indices = mesh.faces.flatten().astype(np.int32)
+
             # Combine [N, 8] -> Flatten
             vertex_data = np.hstack([vertices, normals, uvs]).flatten()
-            
-            # Indices
-            indices = mesh.faces.flatten().astype(np.int32)
             
             print(f"MGLModelNode: Loaded {path} ({len(vertices)} verts, {len(mesh.faces)} faces)")
             return vertex_data, indices
