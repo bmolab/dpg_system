@@ -33,9 +33,8 @@ printed. 'stop' ends the recording and immediately saves it in the working
 directory as temp_mocap_take_<date>_<time>.npz; saving it under a real name 
 afterwards deletes that temporary file.
 
-Note that a take recorded WITHOUT positions is saved in a form take cannot load 
-back - load looks for the quaternions under a different name. Record positions 
-as well if you mean to reload the file with take.
+A take recorded without positions saves and reloads like any other; it simply 
+has nothing on the 'positions' outlet.
 
 PLAYING BACK WITH take:
 'on/off' plays, looping forever back to frame 0. 'speed' is how many frames to 
@@ -251,11 +250,8 @@ is loaded yet. The default path is the report location on the lab machine.
 ONLY ONE JOINT:
 Type an SMPL joint name into 'joint' - left_wrist, right_knee, spine3 and so on - 
 and only events that flagged that joint are picked. Leave it empty for any 
-event. A name that is not an SMPL joint, or one no event flagged, raises an 
-error rather than sending anything.
-
-With a joint set, 'prev_acc' and 'acc' come out of each other's outlets - the 
-two are swapped. Without one they are the right way round.
+event. A name that is not an SMPL joint, or one no event flagged, prints a 
+message to the console and sends nothing.
 
 SYNTAX:
 json_npz_frame_picker
@@ -292,7 +288,7 @@ jerk values / jerk index:
 The flagged values, and the joint numbers they belong to.
 
 prev_acc / acc:
-Whatever the report stored under those names (but see above).
+Whatever the report stored under those names.
 
 RELATED:
 take_dict loads the file and shows the frame.

@@ -292,9 +292,7 @@ Shadow pose, straight from the shadow node; 20 rows is an active pose, from
 active_joints. The pose must be a numpy array or a torch tensor - a list is 
 ignored.
 
-body_to_joints handles both sizes correctly. shadow_body_to_joints is only 
-right for 37 rows: given a 20-row active pose it reads the wrong rows, so use 
-body_to_joints for those.
+Both handle both sizes, and give the same 20 outputs for the same pose.
 
 LOCAL AND GLOBAL ARE THE IMPORTANT PAIR:
 A pose is normally stored as LOCAL rotations - each joint's rotation relative 
@@ -318,16 +316,13 @@ WHAT THE GLOBAL CONVERSION EXPECTS:
 Both conversion nodes take a 20-joint active pose - 20 rows of four numbers in 
 the active_joints order - and send 20 rows back.
 
-Their arithmetic treats each quaternion as x, y, z, w, with the real part LAST. 
-The shadow node sends the real part FIRST (w, x, y, z), so a pose taken straight 
-from the suit, as in the example, is combined in the wrong order and the result 
-is not a true world-space rotation. Reorder the four numbers first where it 
-matters.
+Each quaternion is read as w, x, y, z - the real part FIRST, as the shadow node 
+and active_joints send it. A joint's world-space rotation is its parent's 
+world-space rotation combined with its own local one, working out from the 
+pelvis.
 
-global_to_local_body is meant to undo local_to_global_body, but at present it 
-does not give back the pose you started with: its inverse step negates the 
-wrong three of the four numbers. Treat its output with suspicion until that is 
-fixed.
+global_to_local_body undoes local_to_global_body exactly: a pose sent through 
+one and then the other comes back as it started.
 
 SYNTAX:
 body_to_joints
@@ -412,7 +407,7 @@ So the cord goes out of gl_body and back into it.
 
 NOTHING HAPPENS UNTIL THE DICTIONARY ARRIVES:
 The sliders only act on limbs that are in the dictionary, so until one has come 
-in, moving them does nothing - and pressing 'reset' before then raises an error. 
+in, moving them does nothing, and neither does 'reset'. 
 gl_body sends its dictionary once as it is created, which in a loaded patch is 
 before the cord to limb_size exists. Send gl_body the message 'dump_limb_sizes' 
 to have it send again; the example does this with the message box.

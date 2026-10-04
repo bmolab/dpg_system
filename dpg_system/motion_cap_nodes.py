@@ -232,10 +232,11 @@ class MoCapTakeNode(MoCapNode):
     def save_take(self, save_path):
         if save_path != '':
             if self.quat_buffer is not None:
+                # Always 'quats': it is the key load_take_from_npz reads.
                 if self.position_buffer is not None:
                     np.savez(save_path, quats=self.quat_buffer, positions=self.position_buffer)
                 else:
-                    np.savez(save_path, quaternions=self.quat_buffer)
+                    np.savez(save_path, quats=self.quat_buffer)
                 if self.load_path() == self.temp_save_name and self.temp_save_name[:15] == 'temp_mocap_take':
                     os.remove(self.load_path())
                 self.load_path.set(save_path)
@@ -286,28 +287,29 @@ class MoCapTakeNode(MoCapNode):
         if self.quat_buffer is not None:
             self.quaternions_out.send(self.quat_buffer[frame])
 
+    def send_frame(self, frame):
+        # Each buffer is sent only if the take has it: a take saved without
+        # positions or labels has none, and indexing None crashed here.
+        frame = int(frame)
+        if self.label_buffer is not None:
+            self.labels_out.send(self.label_buffer[frame])
+        if self.position_buffer is not None:
+            self.positions_out.send(self.position_buffer[frame])
+        if self.quat_buffer is not None:
+            self.quaternions_out.send(self.quat_buffer[frame])
+
     def frame_widget_changed(self):
         data = self.frame_input()
-        if data < self.frames:
+        if 0 <= data < self.frames:
             self.current_frame = data
-            if self.label_buffer is not None:
-                self.labels_out.send(self.label_buffer[self.current_frame])
-            if self.position_buffer is not None:
-                self.positions_out.send(self.position_buffer[self.current_frame])
-            self.quaternions_out.send(self.quat_buffer[self.current_frame])
+            self.send_frame(self.current_frame)
 
     def execute(self):
         if self.frame_input.fresh_input:
             data = self.frame_input()
-            # handled, do_output = self.check_for_messages(data)
-            # if not handled:
-            t = type(data)
-            if t == int:
-                if data < self.frames:
-                    self.current_frame = int(data)
-                    self.labels_out.send(self.label_buffer[self.current_frame])
-                    self.positions_out.send(self.position_buffer[self.current_frame])
-                    self.quaternions_out.send(self.quat_buffer[self.current_frame])
+            if type(data) == int and 0 <= data < self.frames:
+                self.current_frame = data
+                self.send_frame(self.current_frame)
 
     def load_take_message(self, message='', args=None):
         if args is not None:
@@ -351,13 +353,16 @@ class MoCapTakeNode(MoCapNode):
         self.file_name.set(display_file_name(path))
         self.file_name.set_tooltip(path)
         self.load_path.set(path)
-        if 'quats' in take_file:
-            self.quat_buffer = take_file['quats']
-            for idx, quat in enumerate(self.quat_buffer):
-                if quat[10, 0] < 0:
-                    self.quat_buffer[idx, 10] *= -1
-        else:
-            self.quat_buffer = None
+        # 'quaternions' is what takes saved without positions used to be
+        # written under; read both so those files open.
+        quat_key = 'quats' if 'quats' in take_file else ('quaternions' if 'quaternions' in take_file else None)
+        if quat_key is None:
+            print('take: no quaternions in', path)
+            return
+        self.quat_buffer = take_file[quat_key]
+        for idx, quat in enumerate(self.quat_buffer):
+            if quat[10, 0] < 0:
+                self.quat_buffer[idx, 10] *= -1
 
         self.frames = self.quat_buffer.shape[0]
         if 'positions' in take_file:
@@ -648,7 +653,9 @@ class OpenTakeNode(MoCapNode):
         return False
 
     def save_clip(self):
-        arg = self.save_button()
+        arg = self.save_clip_button()
+        if type(arg) is list:
+            arg = ' '.join(arg)
         if type(arg) == str:
             save_path = arg
             if self.save_clip_only(save_path):
@@ -1123,10 +1130,12 @@ class MoCapBody(MoCapNode):
                                 joint_value = incoming[index]
                                 self.joint_outputs[i].set_value(joint_value)
                     elif incoming.shape[0] == 20:
-                        for i, active_index in enumerate(self.active_to_shadow_map):
-                            if active_index < incoming.shape[0]:
-                                joint_value = incoming[active_index]
-                                self.joint_outputs[i].set_value(joint_value)
+                        # A 20-row pose is already in active order, which is
+                        # also the order of these outputs (joint_map and
+                        # active_joint_map list the same joints in the same
+                        # order) - row i is output i, no shadow lookup.
+                        for i in range(20):
+                            self.joint_outputs[i].set_value(incoming[i])
                 else:
                     if incoming.shape[0] == 37:
                         for i, index in enumerate(self.shadow_to_active_map):
@@ -1616,9 +1625,15 @@ class JsonRandomEventWindowNode(Node):
             npz_path, event_frame, joints, jerk_index , jerk_values, prev_acc, acc = random.choice(self.events)
 
         else:
+            if joint_str not in SMPLNode.joint_names:
+                print(f'json_npz_frame_picker: unknown joint {joint_str!r}')
+                return
             joint_idx = SMPLNode.joint_names.index(joint_str)
-            filtered = [(p, fr, joints, jerk_index, jerk_values, acc, prev_acc) for (p, fr, joints, jerk_index, jerk_values, acc, prev_acc) in self.events if joint_idx in jerk_index]
-            npz_path, event_frame, joints, jerk_index, jerk_values, acc, prev_acc = random.choice(filtered)
+            filtered = [event for event in self.events if joint_idx in event[3]]
+            if not filtered:
+                print(f'json_npz_frame_picker: no events flag joint {joint_str!r}')
+                return
+            npz_path, event_frame, joints, jerk_index, jerk_values, prev_acc, acc = random.choice(filtered)
 
         self.path_output.send(npz_path)
         self.event_frame_out.send(event_frame)
@@ -1755,15 +1770,14 @@ def quaternion_divide(q1, q2):
     return quaternion_norm(div)
 
 def quaternion_reciprocal_wxyz(q):
-    """Return reciprocal (inverse) of quaternion q.inverse"""
+    """Inverse of a quaternion in w, x, y, z order: negate the vector part."""
     norm = q[0] ** 2 + q[1] ** 2 + q[2] ** 2 + q[3] ** 2
-    return np.array([-q[0] / norm, -q[1] / norm, -q[2] / norm, q[3] / norm])
+    return np.array([q[0] / norm, -q[1] / norm, -q[2] / norm, -q[3] / norm])
 
 def quaternion_reciprocal_xyzw(q):
-    # incoming is x, y, z, w
-    """Return reciprocal (inverse) of quaternion q.inverse"""
+    """Inverse of a quaternion in x, y, z, w order: negate the vector part."""
     norm = q[0] ** 2 + q[1] ** 2 + q[2] ** 2 + q[3] ** 2
-    return np.array([q[0] / norm, -q[1] / norm, -q[2] / norm, -q[3] / norm])    # x, y, z, w
+    return np.array([-q[0] / norm, -q[1] / norm, -q[2] / norm, q[3] / norm])
 
 def quaternion_conj(q):
     index = [3, 0, 1, 2]
@@ -1797,6 +1811,8 @@ class LocalToGlobalBodyNode(MoCapNode):
         self.absolute_pose_output.send(self.pose_data)
 
     def calc_globals(self, active_joints_data):
+        # Quaternions are w, x, y, z, as active_joints and shadow send them;
+        # a joint's global rotation is its parent's global times its local.
 
         # pelvis
         offset = self.active_joint_map['pelvis_anchor']
@@ -1805,97 +1821,97 @@ class LocalToGlobalBodyNode(MoCapNode):
 
         # spine1
         offset = self.active_joint_map['spine_pelvis']
-        spine_pelvis_abs_quat = quaternion_multiply(pelvis_anchor_abs_quat, active_joints_data[offset])
+        spine_pelvis_abs_quat = quaternion_multiply_wxyz(pelvis_anchor_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = spine_pelvis_abs_quat
 
         # spine2
         offset = self.active_joint_map['lower_vertebrae']
-        lower_vertebrae_abs_quat = quaternion_multiply(spine_pelvis_abs_quat, active_joints_data[offset])
+        lower_vertebrae_abs_quat = quaternion_multiply_wxyz(spine_pelvis_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = lower_vertebrae_abs_quat
 
         # spine3
         offset = self.active_joint_map['mid_vertebrae']
-        mid_vertebrae_abs_quat = quaternion_multiply(lower_vertebrae_abs_quat, active_joints_data[offset])
+        mid_vertebrae_abs_quat = quaternion_multiply_wxyz(lower_vertebrae_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = mid_vertebrae_abs_quat
 
         # neck
         offset = self.active_joint_map['upper_vertebrae']
-        upper_vertebrae_abs_quat = quaternion_multiply(mid_vertebrae_abs_quat, active_joints_data[offset])
+        upper_vertebrae_abs_quat = quaternion_multiply_wxyz(mid_vertebrae_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = upper_vertebrae_abs_quat
 
         # head
         offset = self.active_joint_map['base_of_skull']
-        base_of_skull_abs_quat = quaternion_multiply(upper_vertebrae_abs_quat, active_joints_data[offset])
+        base_of_skull_abs_quat = quaternion_multiply_wxyz(upper_vertebrae_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = base_of_skull_abs_quat
 
         # left_collar
         offset = self.active_joint_map['left_shoulder_blade']
-        left_shoulder_blade_abs_quat = quaternion_multiply(mid_vertebrae_abs_quat, active_joints_data[offset])
+        left_shoulder_blade_abs_quat = quaternion_multiply_wxyz(mid_vertebrae_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = left_shoulder_blade_abs_quat
 
         # left_shoulder
         offset = self.active_joint_map['left_shoulder']
-        left_shoulder_abs_quat = quaternion_multiply(left_shoulder_blade_abs_quat, active_joints_data[offset])
+        left_shoulder_abs_quat = quaternion_multiply_wxyz(left_shoulder_blade_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = left_shoulder_abs_quat
 
         # left_elbow
         offset = self.active_joint_map['left_elbow']
-        left_elbow_abs_quat = quaternion_multiply(left_shoulder_abs_quat, active_joints_data[offset])
+        left_elbow_abs_quat = quaternion_multiply_wxyz(left_shoulder_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = left_elbow_abs_quat
 
         # left_wrist
         offset = self.active_joint_map['left_wrist']
-        left_wrist_abs_quat = quaternion_multiply(left_elbow_abs_quat, active_joints_data[offset])
+        left_wrist_abs_quat = quaternion_multiply_wxyz(left_elbow_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = left_wrist_abs_quat
 
         # right_collar
         offset = self.active_joint_map['right_shoulder_blade']
-        right_shoulder_blade_abs_quat = quaternion_multiply(mid_vertebrae_abs_quat, active_joints_data[offset])
+        right_shoulder_blade_abs_quat = quaternion_multiply_wxyz(mid_vertebrae_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = right_shoulder_blade_abs_quat
 
         # right_shoulder
         offset = self.active_joint_map['right_shoulder']
-        right_shoulder_abs_quat = quaternion_multiply(right_shoulder_blade_abs_quat, active_joints_data[offset])
+        right_shoulder_abs_quat = quaternion_multiply_wxyz(right_shoulder_blade_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = right_shoulder_abs_quat
 
         # right_elbow
         offset = self.active_joint_map['right_elbow']
-        right_elbow_abs_quat = quaternion_multiply(right_shoulder_abs_quat, active_joints_data[offset])
+        right_elbow_abs_quat = quaternion_multiply_wxyz(right_shoulder_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = right_elbow_abs_quat
 
         # right_wrist
         offset = self.active_joint_map['right_wrist']
-        right_wrist_abs_quat = quaternion_multiply(right_elbow_abs_quat, active_joints_data[offset])
+        right_wrist_abs_quat = quaternion_multiply_wxyz(right_elbow_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = right_wrist_abs_quat
 
         # left_hip
         offset = self.active_joint_map['left_hip']
-        left_hip_abs_quat = quaternion_multiply(pelvis_anchor_abs_quat, active_joints_data[offset])
+        left_hip_abs_quat = quaternion_multiply_wxyz(pelvis_anchor_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = left_hip_abs_quat
 
         # left_knee
         offset = self.active_joint_map['left_knee']
-        left_knee_abs_quat = quaternion_multiply(left_hip_abs_quat, active_joints_data[offset])
+        left_knee_abs_quat = quaternion_multiply_wxyz(left_hip_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = left_knee_abs_quat
 
         # left_ankle
         offset = self.active_joint_map['left_ankle']
-        left_ankle_abs_quat = quaternion_multiply(left_knee_abs_quat, active_joints_data[offset])
+        left_ankle_abs_quat = quaternion_multiply_wxyz(left_knee_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = left_ankle_abs_quat
 
         # right_hip
         offset = self.active_joint_map['right_hip']
-        right_hip_abs_quat = quaternion_multiply(pelvis_anchor_abs_quat, active_joints_data[offset])
+        right_hip_abs_quat = quaternion_multiply_wxyz(pelvis_anchor_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = right_hip_abs_quat
 
         # right_knee
         offset = self.active_joint_map['right_knee']
-        right_knee_abs_quat = quaternion_multiply(right_hip_abs_quat, active_joints_data[offset])
+        right_knee_abs_quat = quaternion_multiply_wxyz(right_hip_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = right_knee_abs_quat
 
         # right_ankle
         offset = self.active_joint_map['right_ankle']
-        right_ankle_abs_quat = quaternion_multiply(right_knee_abs_quat, active_joints_data[offset])
+        right_ankle_abs_quat = quaternion_multiply_wxyz(right_knee_abs_quat, active_joints_data[offset])
         self.pose_data[offset] = right_ankle_abs_quat
 
 
@@ -1920,6 +1936,8 @@ class GlobalToLocalBodyNode(MoCapNode):
         self.relative_pose_output.send(self.pose_data)
 
     def calc_locals(self, active_joints_data):
+        # The inverse of calc_globals, in w, x, y, z:
+        # local = inverse(parent global) * child global.
 
         # pelvis
         offset = self.active_joint_map['pelvis_anchor']
@@ -1929,115 +1947,115 @@ class GlobalToLocalBodyNode(MoCapNode):
         # spine1
         offset = self.active_joint_map['spine_pelvis']
         previous_offset = self.active_joint_map['pelvis_anchor']
-        spine_pelvis_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        spine_pelvis_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = spine_pelvis_rel_quat
 
         # spine2
         offset = self.active_joint_map['lower_vertebrae']
         previous_offset = self.active_joint_map['spine_pelvis']
-        lower_vertebrae_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        lower_vertebrae_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = lower_vertebrae_rel_quat
 
         # spine3
         offset = self.active_joint_map['mid_vertebrae']
         previous_offset = self.active_joint_map['lower_vertebrae']
-        mid_vertebrae_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        mid_vertebrae_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = mid_vertebrae_rel_quat
 
         # neck
         offset = self.active_joint_map['upper_vertebrae']
         previous_offset = self.active_joint_map['mid_vertebrae']
-        upper_vertebrae_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        upper_vertebrae_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = upper_vertebrae_rel_quat
 
         # head
         offset = self.active_joint_map['base_of_skull']
         previous_offset = self.active_joint_map['upper_vertebrae']
-        base_of_skull_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        base_of_skull_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = base_of_skull_rel_quat
 
         # left_collar
         offset = self.active_joint_map['left_shoulder_blade']
         previous_offset = self.active_joint_map['mid_vertebrae']
-        left_shoulder_blade_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_shoulder_blade_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = left_shoulder_blade_rel_quat
 
         # left_shoulder
         offset = self.active_joint_map['left_shoulder']
         previous_offset = self.active_joint_map['left_shoulder_blade']
-        left_shoulder_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_shoulder_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = left_shoulder_rel_quat
 
         # left_elbow
         offset = self.active_joint_map['left_elbow']
         previous_offset = self.active_joint_map['left_shoulder']
-        left_elbow_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_elbow_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = left_elbow_rel_quat
 
         # left_wrist
         offset = self.active_joint_map['left_wrist']
         previous_offset = self.active_joint_map['left_elbow']
-        left_wrist_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_wrist_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = left_wrist_rel_quat
 
         # right_collar
         offset = self.active_joint_map['right_shoulder_blade']
         previous_offset = self.active_joint_map['mid_vertebrae']
-        right_shoulder_blade_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_shoulder_blade_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = right_shoulder_blade_rel_quat
 
         # right_shoulder
         offset = self.active_joint_map['right_shoulder']
         previous_offset = self.active_joint_map['right_shoulder_blade']
-        right_shoulder_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_shoulder_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = right_shoulder_rel_quat
 
         # right_elbow
         offset = self.active_joint_map['right_elbow']
         previous_offset = self.active_joint_map['right_shoulder']
-        right_elbow_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_elbow_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = right_elbow_rel_quat
 
         # right_wrist
         offset = self.active_joint_map['right_wrist']
         previous_offset = self.active_joint_map['right_elbow']
-        right_wrist_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_wrist_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = right_wrist_rel_quat
 
         # left_hip
         offset = self.active_joint_map['left_hip']
         previous_offset = self.active_joint_map['pelvis_anchor']
-        left_hip_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_hip_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = left_hip_rel_quat
 
         # left_knee
         offset = self.active_joint_map['left_knee']
         previous_offset = self.active_joint_map['left_hip']
-        left_knee_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_knee_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = left_knee_rel_quat
 
         # left_ankle
         offset = self.active_joint_map['left_ankle']
         previous_offset = self.active_joint_map['left_knee']
-        left_ankle_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        left_ankle_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = left_ankle_rel_quat
 
         # right_hip
         offset = self.active_joint_map['right_hip']
         previous_offset = self.active_joint_map['pelvis_anchor']
-        right_hip_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_hip_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = right_hip_rel_quat
 
         # right_knee
         offset = self.active_joint_map['right_knee']
         previous_offset = self.active_joint_map['right_hip']
-        right_knee_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_knee_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = right_knee_rel_quat
 
         # right_ankle
         offset = self.active_joint_map['right_ankle']
         previous_offset = self.active_joint_map['right_knee']
-        right_ankle_rel_quat = quaternion_reciprocal_xyzw(quaternion_multiply(quaternion_reciprocal_xyzw(active_joints_data[offset]), active_joints_data[previous_offset]))
+        right_ankle_rel_quat = quaternion_multiply_wxyz(quaternion_reciprocal_wxyz(active_joints_data[previous_offset]), active_joints_data[offset])
         self.pose_data[offset] = right_ankle_rel_quat
 
 
@@ -2867,6 +2885,9 @@ class LimbSizingNode(MoCapNode):
         super().__init__(label, data, args)
 
         self.size_dict = {}
+        # what 'reset' returns to: empty until gl_body's sizes arrive, so a
+        # reset before then does nothing instead of crashing
+        self.default_size_dict = {}
         self.input_dict = {}
         self.in_receive_size = False
         self.size_dict_input = self.add_input('limb_sizes_dict', callback=self.receive_dict)
@@ -2950,6 +2971,8 @@ class LimbSizingNode(MoCapNode):
 
     def receive_dict(self):
         d = self.size_dict_input()
+        if not isinstance(d, dict):
+            return
         self.size_dict = copy.deepcopy(d)
         self.default_size_dict = copy.deepcopy(d)
         for limb_name in self.size_dict:
@@ -2971,19 +2994,20 @@ class LimbSizingNode(MoCapNode):
 class TrackerRootInferenceNode(MoCapNode):
     """
     Corrects root (pelvis) position by modeling the actual tracker placement
-    on the left thigh and comparing the model's predicted tracker position
-    with the tracker's reported position.
+    on a thigh (right by default) and comparing the model's predicted tracker
+    position with the tracker's reported position.
 
-    The Shadow mocap system infers root position from a tracker on the left
-    thigh but doesn't know the exact mounting position. This causes vertical
-    drift when the left leg is raised. This node provides adjustable parameters
+    The Shadow mocap system infers root position from a tracker on a thigh
+    but doesn't know the exact mounting position. This causes vertical
+    drift when that leg is raised. This node provides adjustable parameters
     for tracker placement to compute a better root position estimate.
 
     Inputs:
         positions (37x3): Full Shadow positions array (Y-up, meters)
-        pose (20x4 or 37x4): Quaternion pose data (needed for left hip global rotation)
+        pose (20x4 or 37x4): Quaternion pose data (needed for the tracked hip's global rotation)
 
     Parameters:
+        thigh_side: Which thigh carries the tracker, 'left' or 'right' (default 'right')
         tracker_down_thigh: Distance from hip joint down the thigh bone axis (meters)
         tracker_radial_offset: Perpendicular distance from bone axis to tracker (meters)
         tracker_circumference_angle: Rotation around thigh circumference (degrees)
