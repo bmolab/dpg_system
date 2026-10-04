@@ -3171,6 +3171,10 @@ class OSCCueNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
     def __init__(self, label: str, data, args):
         Node.__init__(self, label, data, args)
         OSCSender.__init__(self, label, data, args)
+        # The address is fixed (/cue), so a lone argument is the target name --
+        # OSCSender would have taken it as the address.
+        if args is not None and len(args) == 1 and not is_number(args[0]):
+            self.name = any_to_string(args[0])
 
         self.input = self.add_int_input('cue # to send', triggers_execution=True)
         self.target_name_property = self.add_input('target name', widget_type='text_input', default_value=self.name, callback=self.name_changed)

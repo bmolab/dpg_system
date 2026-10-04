@@ -379,17 +379,16 @@ osc_send with the address it wants. It needs an osc_target or osc_device of
 that name in the patch, or nothing is sent.
 
 THE ARGUMENTS:
-With two arguments, the first is the target name: 'osc_cue console x'. With a
-single argument, the node does NOT read it as the target name - it uses the
-patch's only target if there is exactly one, and otherwise has none. The simple
-course is to create it bare and type the name into 'target name'.
+The one argument is the target name: 'osc_cue console'. Created bare, it uses
+the patch's only target if there is exactly one, and otherwise has none until
+a name is typed into 'target name'.
 
 It enters /cue under its target in the app's OSC registry, which osc_query_json
 prints, and its 'path' option shows that entry.
 
 SYNTAX:
 osc_cue
-osc_cue <target name> <anything>
+osc_cue <target name>
 
 EXAMPLE:
 osc_cue

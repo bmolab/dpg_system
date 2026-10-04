@@ -1,4 +1,5 @@
 import subprocess
+import ctypes
 import platform
 
 from dpg_system.node import Node
@@ -23,9 +24,55 @@ _Quartz = None
 if _PLATFORM == 'Darwin':
     try:
         import Quartz.CoreGraphics as _Quartz
-    except Exception as e:
-        print('display_info: Quartz import failed:', e)
+    except Exception:
+        # pyobjc's Quartz is optional: _CoreGraphics below reads the same
+        # three functions straight from the framework through ctypes.
         _Quartz = None
+
+
+class _CoreGraphics:
+    """CGGetActiveDisplayList / CGMainDisplayID / CGDisplayBounds by ctypes,
+    for when pyobjc's Quartz is not installed."""
+    lib = None
+
+    class CGRect(ctypes.Structure):
+        _fields_ = [('x', ctypes.c_double), ('y', ctypes.c_double),
+                    ('width', ctypes.c_double), ('height', ctypes.c_double)]
+
+    @classmethod
+    def load(cls):
+        if cls.lib is None:
+            lib = ctypes.CDLL('/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics')
+            lib.CGGetActiveDisplayList.argtypes = [ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32),
+                                                   ctypes.POINTER(ctypes.c_uint32)]
+            lib.CGGetActiveDisplayList.restype = ctypes.c_int32
+            lib.CGMainDisplayID.argtypes = []
+            lib.CGMainDisplayID.restype = ctypes.c_uint32
+            lib.CGDisplayBounds.argtypes = [ctypes.c_uint32]
+            lib.CGDisplayBounds.restype = cls.CGRect
+            cls.lib = lib
+        return cls.lib
+
+    @classmethod
+    def displays(cls):
+        lib = cls.load()
+        ids = (ctypes.c_uint32 * 16)()
+        count = ctypes.c_uint32(0)
+        err = lib.CGGetActiveDisplayList(16, ids, ctypes.byref(count))
+        if err != 0:
+            print('display_info: CGGetActiveDisplayList error', err)
+            return []
+        main_id = lib.CGMainDisplayID()
+        displays = []
+        for display_id in list(ids)[:count.value]:
+            bounds = lib.CGDisplayBounds(display_id)
+            d = DisplayData()
+            d.id = int(display_id)
+            d.offsets = [int(bounds.x), int(bounds.y)]
+            d.resolution = [int(bounds.width), int(bounds.height)]
+            d.primary = (display_id == main_id)
+            displays.append(d)
+        return displays
 
 
 def _parse_xrandr_monitor_line(line):
@@ -94,7 +141,11 @@ def _get_displays_linux():
 
 def _get_displays_darwin():
     if _Quartz is None:
-        return []
+        try:
+            return _CoreGraphics.displays()
+        except Exception as e:
+            print('display_info: CoreGraphics enumeration failed:', e)
+            return []
     try:
         err, ids, count = _Quartz.CGGetActiveDisplayList(16, None, None)
         if err != 0:

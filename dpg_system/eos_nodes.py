@@ -110,6 +110,11 @@ class ColorSourceNode(Node, OSCBase, OSCSender):
         if self.name != '':
             self.find_target_node(self.name)
 
+    def custom_cleanup(self):
+        # Node is first in the MRO, so OSCSender.cleanup is never reached on its
+        # own; without this a deleted node stays registered with its target.
+        OSCSender.cleanup(self)
+
     def intensity_changed(self):
         self.intensity = self.intensity_input()
         self.changed = True
@@ -348,6 +353,8 @@ class OSCSendEOSNode(Node, OSCBase, OSCSender, OSCRegistrableMixin):
 
     def cleanup(self):
         super().cleanup()
+        # super() is Node.cleanup, which does not chain on to OSCSender's.
+        OSCSender.cleanup(self)
         self._registerable_cleanup()
 
     def _get_registry_path_components(self) -> list:

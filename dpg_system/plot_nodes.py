@@ -342,6 +342,7 @@ class PlotNode(BasePlotNode):
         self.style_type = self.style_property()
         self.heat_map_colour_property.set('none')
         self.update_style = 'input is stream of samples'
+        self.update_style_property.set(self.update_style)  # keep the menu in step with the reset
         self.y_data.set_update_style(self.update_style)
         if self.sample_count_option() == 1:
             self.sample_count_option.set(200)
@@ -400,8 +401,12 @@ class PlotNode(BasePlotNode):
             # and ProfileNode both answered it; PlotNode did not, so plot's
             # outlet could never fire at all. Same three lines as its siblings.
             if isinstance(data, str) and data == 'dump':
-                self.output.send(self.y_data.get_buffer()[0])
-                self.y_data.release_buffer()
+                # block: a non-blocking get_buffer returns None while a frame
+                # task is drawing from the buffer
+                buffer = self.y_data.get_buffer(block=True)
+                if buffer is not None:
+                    self.output.send(buffer[0])
+                    self.y_data.release_buffer()
                 self.lock.release()
                 return
             data_array = self._process_input_to_array(data)
@@ -612,8 +617,12 @@ class HeatMapNode(BasePlotNode):
         if self.input.fresh_input:
             data = self.input()
             if isinstance(data, str) and data == 'dump':
-                self.output.send(self.y_data.get_buffer()[0])
-                self.y_data.release_buffer()
+                # block: a non-blocking get_buffer returns None while a frame
+                # task is drawing from the buffer
+                buffer = self.y_data.get_buffer(block=True)
+                if buffer is not None:
+                    self.output.send(buffer[0])
+                    self.y_data.release_buffer()
                 self.lock.release()
                 return
 
@@ -991,8 +1000,12 @@ class ProfileNode(BasePlotNode):
 
             # Handle special cases for ProfileNode first
             if isinstance(data, str) and data == 'dump':
-                self.output.send(self.y_data.get_buffer()[0])
-                self.y_data.release_buffer()
+                # block: a non-blocking get_buffer returns None while a frame
+                # task is drawing from the buffer
+                buffer = self.y_data.get_buffer(block=True)
+                if buffer is not None:
+                    self.output.send(buffer[0])
+                    self.y_data.release_buffer()
                 self.lock.release()
                 return
 

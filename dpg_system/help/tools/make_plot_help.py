@@ -52,9 +52,8 @@ window you are looking through rather than as a number.
 'style':
 line, scatter, stair, stem or bar. stem and scatter are much easier to read for
 anything sparse or event-like; line implies a continuity that may not be there.
-Changing the style quietly puts update style back to stream of samples, although
-the menu still shows your old choice - pick update style again after changing
-the style.
+Changing the style puts update style back to stream of samples (the menu
+follows) - pick update style again afterwards if you wanted another one.
 
 SEND IT 'dump' TO GET THE DATA BACK OUT:
 Send the word 'dump' to the inlet and the collected history comes out of the
