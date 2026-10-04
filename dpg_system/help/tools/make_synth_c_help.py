@@ -213,8 +213,11 @@ GPU ('torch mps'). That is the bridge from any live signal to t.rfft, t.cwt or
 a model, so nothing else in the patch has to carry tensors.
 
 ON BANG:
-Set 'send' to 'on bang' and nothing goes out until a bang arrives; each bang
-then sends the newest window. Use it with 'latest' mode.
+Set 'send' to 'on bang' and nothing goes out until a bang arrives. In 'latest'
+mode each bang sends the newest window. In 'continuous' mode each bang sends
+everything that has gathered since the last one, as whole chunks in order; a
+partial remainder waits for the next bang. The buffer holds about 0.74 s, so
+bang at least that often or 'dropped' reports what was lost.
 
 SYNTAX:
 capture~ [<size>] [latest | continuous]

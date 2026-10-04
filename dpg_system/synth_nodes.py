@@ -8023,6 +8023,7 @@ class CaptureNode(SynthNode):
         # dumping a buffer of silence recorded before the node existed.
         self._last_read = self.unit.written
         self._rate_sent = False
+        self._was_on_bang = False
 
         self.add_signal_input('in', self.unit.signal_in)
         self.bang_input = self.add_input('bang', widget_type='button',
@@ -8072,7 +8073,7 @@ class CaptureNode(SynthNode):
     # burst; anything beyond it is caught by the overrun report instead.
     MAX_CHUNKS_PER_FRAME = 16
 
-    def _emit(self):
+    def _emit(self, max_chunks=MAX_CHUNKS_PER_FRAME):
         size = max(16, min(self.unit.max_window, any_to_int(self.size_option())))
 
         if any_to_string(self.mode_option()) != 'continuous':
@@ -8081,7 +8082,7 @@ class CaptureNode(SynthNode):
                 self._deliver(data)
             return
 
-        for _ in range(CaptureNode.MAX_CHUNKS_PER_FRAME):
+        for _ in range(max_chunks):
             data, self._last_read, dropped = self.unit.read_chunk(
                 self._last_read, size)
             if dropped:
@@ -8091,17 +8092,26 @@ class CaptureNode(SynthNode):
             self._deliver(data)
 
     def send_now(self):
-        self._emit()
+        # A bang in continuous mode hands over everything whole that has
+        # accumulated since the last send; the ring holds at most max_window.
+        self._emit(max_chunks=self.unit.max_window // 16 + 1)
 
     def synth_frame_task(self):
         if not self._rate_sent:
             self._rate_sent = True
             self.rate_output.send(int(self.unit.sample_rate))
         if any_to_string(self.send_option()) == 'on bang':
-            # Keep the read cursor current so switching back to streaming does
-            # not immediately dump a large backlog.
-            self._last_read = self.unit.written
+            # In continuous mode the cursor stays at the last send so the
+            # next bang delivers what accumulated in between.
+            if any_to_string(self.mode_option()) != 'continuous':
+                self._last_read = self.unit.written
+            self._was_on_bang = True
             return
+        if self._was_on_bang:
+            # Switching back to streaming starts from now rather than
+            # dumping the backlog that was waiting for a bang.
+            self._was_on_bang = False
+            self._last_read = self.unit.written
         self._emit()
 
 
