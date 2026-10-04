@@ -16,7 +16,7 @@
  "ultracwt_nodes": true,
  "easy": false,
  "midi_nodes": true,
- "depth-anything_nodes": false,
+ "depthanything_nodes": false,
  "vae_nodes": true,
  "digico_nodes": true,
  "google_translate_nodes": true,
@@ -37,12 +37,13 @@
  "whisper_nodes": true,
  "nemotron_nodes": true,
  "context_tracker_nodes": true,
- "mgl_shaders_node": true,
  "noise_review_node": true,
  "gemma_4_node": true,
  "default_ip_base": "10.1.1.0",
  "nvx_nodes": true,
  "erae_nodes": true,
  "bonsai_2_node": true,
- "qwen_moe_node": true
+ "qwen_moe_node": true,
+ "monitor_nodes": true,
+ "neuronpedia_node": true
 }

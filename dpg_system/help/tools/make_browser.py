@@ -191,6 +191,7 @@ TAGLINES = {
     't.special': 'special functions: erf, gamma, bessel and others',
     't.window': 'window functions for spectra and smoothing',
     'timer': 'a running stopwatch',
+    'gemma': 'unfinished prototype, not loaded - see its page',
     'route': 'deliver messages by their first word',
     'string': 'convert to a string, or make one to send',
 }

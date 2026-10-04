@@ -56,7 +56,7 @@ optional_import = [
     'spacy_nodes',
     'clip_nodes',
     'torch_nodes',
-    'pybullet_modes',
+    'pybullet_nodes',
     'smpl_nodes',
     'prompt_nodes',
     'socket_nodes',
@@ -83,13 +83,13 @@ optional_import = [
     'whisper_nodes',
     'nemotron_nodes',
     'context_tracker_nodes',
-    'mgl_shaders_nodes',
     'noise_review_node',
     'gemma_4_node',
     'nvx_nodes',
     'erae_nodes',
     'bonsai_2_node',
     'qwen_moe_node',
+    'neuronpedia_node',
 ]
 
 imported = []
@@ -1751,10 +1751,20 @@ class App:
                 return [centre_acc[0] / centre_count, centre_acc[1] / centre_count]
 
     def not_focussed_on_widget(self):
-        # A widget deleted while it had the focus (its patch replaced by a
-        # load, say) is never deactivated, so the stale uuid is let go here.
-        if self.active_widget != -1 and not dpg.does_item_exist(self.active_widget):
-            self.active_widget = -1
+        # dpg only runs item handlers for items it draws, so a widget that
+        # stops being drawn while active - deleted (its patch replaced by a
+        # load), hidden (presentation mode, 'show options'), or on a tab that
+        # was switched away from - is never deactivated, and the stale uuid
+        # would block every key command. Let it go once dpg no longer
+        # reports it active.
+        if self.active_widget != -1:
+            try:
+                still_active = (dpg.does_item_exist(self.active_widget)
+                                and dpg.get_item_state(self.active_widget).get('active', False))
+            except Exception:
+                still_active = False
+            if not still_active:
+                self.active_widget = -1
         return self.active_widget == -1
 
     def typing_in_widget(self):

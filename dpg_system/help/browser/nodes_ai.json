@@ -263,12 +263,12 @@
             "annotation": true,
             "position_x": 219,
             "position_y": 240,
-            "width": 206,
+            "width": 323,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "steering a model from inside",
+                    "value": "unfinished prototype, not loaded - see its page",
                     "value_type": "str"
                 },
                 "1": {
@@ -278,7 +278,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 198,
+                    "value": 315,
                     "value_type": "int"
                 },
                 "3": {
@@ -292,7 +292,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "steering a model from inside",
+            "text": "unfinished prototype, not loaded - see its page",
             "id": 870,
             "visibility": "show_all",
             "draggable": true,

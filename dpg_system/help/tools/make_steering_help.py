@@ -12,13 +12,18 @@ THE NODE:
 gemma   Gemma 2, with feature steering through a sparse autoencoder
 
 STATUS - READ THIS FIRST:
-In this build the node is a working skeleton, not a working model. The lines
-that load Gemma 2 and its autoencoder, run the model and apply the steering are
-all commented out in gemma_node.py, so pressing 'start' writes the placeholder
-word TEST! once per step instead of real text. The controls, the pacing and the
-steering bookkeeping all run, which is what this page describes. Its module is
-also not in dpg_system's import list at present, so the node only exists when
-that is added.
+This node is an unfinished prototype, and dpg_system deliberately does not load
+it: typing 'gemma' makes nothing. The lines that load Gemma 2 and its
+autoencoder, run the model and apply the steering are all commented out in
+gemma_node.py, so even loaded it would write the placeholder word TEST! once
+per step instead of real text. The controls, the pacing and the steering
+bookkeeping are what this page describes.
+
+Finishing it means loading a model it can run here. The 4-bit Gemma 2 9B it
+names needs a CUDA graphics card; on this Mac the realistic choice is Gemma 2
+2B with its Gemma Scope autoencoder, about 5 GB, downloaded from Hugging Face
+after accepting Google's Gemma licence. neuronpedia_search, which finds the
+features to steer, works now on its own.
 
 THIS IS NOT THE SAME NODE AS gemma_4:
 gemma_4 is a chat model you prompt. This is Gemma 2 with a sparse autoencoder
