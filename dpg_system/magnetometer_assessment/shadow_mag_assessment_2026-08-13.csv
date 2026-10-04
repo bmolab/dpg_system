@@ -1,0 +1,7 @@
+date,suit,sensor,joint_name,location,cx_uT,cy_uT,cz_uT,offset_mag_uT,offset_pct_radius,radius_uT,residual_uT,residual_pct_radius,baseline_pct_radius_0618,baseline_radius_0618,notes
+2026-08-13,2,left shoulder,LeftShoulder,waist height,0.01,-0.54,0.67,0.861,1.63,52.69,0.242,0.46,1.73,54.28,reproduces 06-18 component-wise (was -0.10/-0.39/0.85); clean
+2026-08-13,2,left elbow,LeftElbow,waist height,-0.07,0.10,-1.39,1.395,2.65,52.75,0.199,0.38,2.83,54.29,reproduces 06-18 component-wise (was -0.18/0.20/-1.51); Z-dominated as before; clean
+2026-08-13,2,left wrist,LeftWrist,waist height,-0.01,0.05,0.09,0.103,0.20,51.61,0.272,0.53,0.48,53.11,reproduces 06-18 (was 0.15/-0.15/0.14); pristine
+2026-08-13,2,left shoulder,LeftShoulder,at floor,-0.40,-0.09,1.42,1.478,2.89,51.18,1.031,2.01,1.73,54.28,center moved 0.97uT vs waist; radius -1.51; residual x4.3 -> floor gradient not sensor
+2026-08-13,2,left elbow,LeftElbow,at floor,0.13,0.61,-1.68,1.792,3.50,51.17,0.898,1.75,2.83,54.29,center moved 0.62uT vs waist; radius -1.58; residual x4.5 -> floor gradient not sensor
+2026-08-13,2,left wrist,LeftWrist,at floor,0.08,-0.30,0.63,0.702,1.40,50.01,0.904,1.81,0.48,53.11,center moved 0.65uT vs waist; radius -1.60; residual x3.3 -> floor gradient not sensor
