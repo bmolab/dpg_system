@@ -424,6 +424,7 @@ class App:
         self.return_pressed = False
         self.frame_time_variable = self.add_variable(variable_name='frame_time')
         self.frame_number = 0
+        self.render_count = 0  # never reset, unlike frame_number
         self.frame_variable = self.add_variable(variable_name='frame')
         self.frame_clock_conduit = self.add_conduit('frame_clock')
         self.font_scale_variable = self.add_variable(variable_name='font_scale', setter=self.update_font_scale, default_value=0.5)
@@ -1120,7 +1121,7 @@ class App:
         if editor is None:
             return None
         uuids = []
-        for node in list(editor._nodes):
+        for node in editor.nodes_top_first():
             uuid = getattr(node, 'uuid', -1)
             if uuid is not None and uuid != -1 and dpg.does_item_exist(uuid):
                 uuids.append(uuid)
@@ -1227,7 +1228,7 @@ class App:
         if editor is None:
             return None
         x, y = dpg.get_mouse_pos(local=False)
-        for node in list(editor._nodes):
+        for node in editor.nodes_top_first():
             uuid = getattr(node, 'uuid', -1)
             if uuid is None or uuid == -1 or not dpg.does_item_exist(uuid):
                 continue
@@ -2315,6 +2316,7 @@ class App:
 
     def mouse_down_handler(self):
         from dpg_system.node import ResizeHandle, _get_resize_handle_dragging_theme
+        self._note_node_raise()
         hovered = self.hovered_item
         if isinstance(hovered, ResizeHandle):
             rh = hovered
@@ -2367,6 +2369,32 @@ class App:
                         print(f'drag capture setup failed: {e}')
                         self._pending_drag_snapshot = None
             self.dragging_created_nodes = False
+
+    def _note_node_raise(self):
+        """imnodes raised the clicked node if the click selected it rather
+        than going to one of its widgets; follow it in the child order."""
+        try:
+            node = self.node_under_mouse()
+            if node is None:
+                return
+            editor = self.get_current_editor()
+            if node.uuid not in dpg.get_selected_nodes(editor.uuid):
+                return
+            if self._subtree_active(node.uuid):
+                return
+            editor.raise_node(node.uuid)
+        except Exception as e:
+            print(f'node raise check failed: {e}')
+
+    @classmethod
+    def _subtree_active(cls, uuid):
+        for children in dpg.get_item_children(uuid).values():
+            for child in children:
+                if dpg.get_item_state(child).get('active', False):
+                    return True
+                if cls._subtree_active(child):
+                    return True
+        return False
 
     def _node_position_fingerprint(self, editor):
         return tuple((n.uuid, *dpg.get_item_pos(n.uuid)) for n in editor._nodes)
@@ -3302,7 +3330,14 @@ class App:
                     self.frame_time_variable.set(elapsed)
                     if do_osc_async:
                         osc_nodes.OSCThreadingSource.osc_manager.relay_pending_messages()
+                    self.render_count += 1
                     dpg.render_dearpygui_frame()
+                    for node_editor in self.node_editors:
+                        try:
+                            node_editor.flush_raises(self.render_count)
+                        except Exception as exc_:
+                            print('Exception reordering nodes:')
+                            traceback.print_exception(exc_)
                     if not self.global_trace:
                         self.trace = False
                     then = time.perf_counter()

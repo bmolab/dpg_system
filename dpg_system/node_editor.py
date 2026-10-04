@@ -3,6 +3,7 @@ import math
 import time
 import numpy as np
 import random
+import threading
 import traceback
 from dpg_system.node import Node, OriginNode, PatcherNode, _tidy
 import json
@@ -60,6 +61,10 @@ class NodeEditor:
         self.is_first_frame = True
         self._editor_padding = [0, 0]
         self._next_stable_id = 1
+        # Nodes to move to the front of the editor's child list (see
+        # raise_node), as (uuid, app.render_count when queued). Filled from any thread.
+        self._pending_raises = []
+        self._pending_raises_lock = threading.Lock()
         # View zoom. Node positions and widget sizes in dpg are the zoomed
         # ones; patches, the clipboard and undo snapshots hold 100% values.
         self.zoom = 1.0
@@ -476,7 +481,57 @@ class NodeEditor:
             # Externally set (file load, snapshot recreate). Keep our counter ahead.
             if node.stable_id >= self._next_stable_id:
                 self._next_stable_id = node.stable_id + 1
+        self.raise_node(node.uuid)
         self.modified = True
+
+    # imnodes draws nodes in its own stacking order (a new node goes on top,
+    # a click on a node's title or body raises it), but ImGui gives a click
+    # to the first widget submitted under the mouse, and dpg submits nodes in
+    # child order. Keeping the child order topmost-first makes the widgets
+    # that are drawn on top the ones that get the click.
+
+    def raise_node(self, node_uuid):
+        """Move a node to the front of the child list once imnodes has drawn
+        it. imnodes stacks a node by the order it first sees it, so a new
+        node is only moved after a frame has drawn it on top."""
+        with self._pending_raises_lock:
+            self._pending_raises.append((node_uuid, self.app.render_count))
+
+    def flush_raises(self, render_count):
+        """Called on the main thread after a frame is rendered."""
+        if not self._pending_raises:
+            return
+        try:
+            if not dpg.get_item_state(self.uuid).get('visible', False):
+                return  # not drawn (hidden tab): imnodes has not seen the nodes
+        except Exception:
+            return
+        with self._pending_raises_lock:
+            ready = [u for u, f in self._pending_raises if f < render_count]
+            self._pending_raises = [(u, f) for u, f in self._pending_raises if f >= render_count]
+        if not ready:
+            return
+        children = dpg.get_item_children(self.uuid, 1) or []
+        present = set(children)
+        front = []
+        front_set = set()
+        for uuid in reversed(ready):  # latest raised is topmost
+            if uuid in present and uuid not in front_set:
+                front.append(uuid)
+                front_set.add(uuid)
+        if not front:
+            return
+        dpg.reorder_items(self.uuid, 1, front + [c for c in children if c not in front_set])
+
+    def nodes_top_first(self):
+        """The editor's nodes, topmost (as drawn) first."""
+        by_uuid = {node.uuid: node for node in self._nodes}
+        try:
+            children = dpg.get_item_children(self.uuid, 1) or []
+        except Exception:
+            return list(reversed(self._nodes))
+        ordered = [by_uuid.pop(c) for c in children if c in by_uuid]
+        return ordered + list(by_uuid.values())
 
     def first_frame(self):
         for node in self._nodes:
