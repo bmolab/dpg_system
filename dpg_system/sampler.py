@@ -2,7 +2,9 @@ import numpy as np
 import threading
 import queue
 import sounddevice as sd
+from dpg_system import audio_watchdog
 import os
+import sys
 try:
     import soundfile
 except ImportError:
@@ -1083,6 +1085,12 @@ class SamplerEngine:
                 callback=self.audio_callback,
                 blocksize=512
             )
+            # The callback is Python, so it needs the GIL, and a thread that
+            # takes the GIL from it keeps it for a whole switch interval. At
+            # the default 5 ms, keystrokes in a placeholder (16 ms of fuzzy
+            # matching) stretched callbacks to 11.6 ms; at 1 ms, to 7 ms.
+            sys.setswitchinterval(0.001)
+            audio_watchdog.start()
             self.stream.start()
         except (sd.PortAudioError, OSError) as e:
             print(f"SamplerEngine: failed to open audio output ({e})")
@@ -1221,6 +1229,7 @@ class SamplerEngine:
             v.release()
 
     def audio_callback(self, outdata, frames, time, status):
+        audio_watchdog.tick(frames, self.sample_rate, status)
         outdata.fill(0)
         mix = np.zeros((frames, self.channels), dtype=np.float32)
 
