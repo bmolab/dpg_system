@@ -297,7 +297,7 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
             
             frame_rotations = frame_pose[0].reshape(-1, 3)[:N_JOINTS]
             # Calculate rotation band per frame 
-            band_result = rotation_pipeline.process_frame(frame_rotations)
+            band_result = rotation_band_pipeline.process_frame(frame_rotations)
             if band_result is not None:
                 # Add to rotation_band matrix 
                 rotation_band[t] = band_result.detach().cpu().numpy()
