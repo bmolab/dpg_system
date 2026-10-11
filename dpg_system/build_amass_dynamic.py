@@ -54,6 +54,7 @@ import traceback
 import dataclasses
 
 import numpy as np
+from rotation_band_pipeline import RotationBandPipeline
 
 # ── Constants ────────────────────────────────────────────────────────────
 N_JOINTS = 22  # SMPLProcessor.target_joint_count
@@ -200,6 +201,16 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
             break
     dt = 1.0 / fps
 
+    # Add in rotation band pipeline 
+    rotation_band_pipeline = RotationBandPipeline(sample_frequency = fps)
+    # intiate a zero matrix storing rotation bands 
+    rotation_band = np.zeros(
+        (T, N_JOINTS, rotation_band_pipeline.num_output_bands, 3),
+        dtype=np.float32,
+    )
+    first_frame_rotations = poses[0].reshape(-1, 3)[:N_JOINTS]
+    rotation_band_pipeline.capture(first_frame_rotations)
+
     # Betas: optional (constructor truncates to 10 internally)
     betas = None
     if 'betas' in d:
@@ -283,6 +294,14 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
             if ca is not None:
                 ca = np.asarray(ca)
                 com_acc[t] = ca[0] if ca.ndim == 2 else ca
+            
+            frame_rotations = frame_pose[0].reshape(-1, 3)[:N_JOINTS]
+            # Calculate rotation band per frame 
+            band_result = rotation_pipeline.process_frame(frame_rotations)
+            if band_result is not None:
+                # Add to rotation_band matrix 
+                rotation_band[t] = band_result.detach().cpu().numpy()
+
         except Exception:
             # First few frames may produce partial results; leave zeros.
             n_failed_frames += 1
@@ -308,6 +327,7 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
     out_data['max_torque'] = processor.max_torque_array.astype(np.float32)
     out_data['total_mass_kg'] = np.float32(total_mass)
     out_data['processing_options'] = np.array(options_to_json(options))
+    out_data['rotation_band'] = rotation_band 
     # Write atomically (tmp then rename) so an interrupted run never leaves a
     # half-written npz that the resume logic would treat as "done".
     tmp = out_file + '.tmp.npz'
