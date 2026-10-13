@@ -357,7 +357,9 @@ class RotationBandPipeline:
         banded = banded.transpose(1, 2)                   # [J, B, 6]
         matrices = rotation_6d_to_matrix(banded)          # [J, B, 3, 3]
 
-        if self.previous_matrices is None:
+        # a change in joint count restarts the differencing, the same way the
+        # filter bank reallocates its delay lines for the new width
+        if self.previous_matrices is None or self.previous_matrices.shape != matrices.shape:
             self.previous_matrices = matrices.clone()
             return None
 

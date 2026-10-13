@@ -82,6 +82,7 @@ class MGLBodyOrientationNode(MGLBodyNode):
         #                        or    (20, disk_count, 3, 3) for 3×3 rotation matrices
         self.disk_axis_angle_input = self.add_input('disk_orientations', triggers_execution=True)
         self.disk_orientations = None  # set during execute
+        self._disk_joint_limit = t_ActiveJointCount
         self._orientations_are_matrices = False  # auto-detected from shape
 
         # GPU resources for disks
@@ -240,6 +241,13 @@ class MGLBodyOrientationNode(MGLBodyNode):
                 arr = any_to_array(data)
                 if arr is not None and arr.ndim >= 2:
                     arr = arr.astype(np.float32)
+                    # smpl-ordered rows are remapped to body t_* order; smpl's
+                    # foot joints land past the active 20, so draw those too
+                    if self.input_order_input() == 'smpl':
+                        arr = self._smpl_to_body_order(arr)
+                        self._disk_joint_limit = arr.shape[0]
+                    else:
+                        self._disk_joint_limit = t_ActiveJointCount
                     # Auto-detect: [20, 7, 3, 3] = rotation matrices, [20, 7, 3] = axis-angle
                     if arr.ndim == 4 and arr.shape[2] == 3 and arr.shape[3] == 3:
                         self._orientations_are_matrices = True
@@ -277,8 +285,8 @@ class MGLBodyOrientationNode(MGLBodyNode):
 
         up_vector = np.array([0.0, 0.0, 1.0])
 
-        # Pre-allocate for max instances: 20 joints × disk_count disks
-        max_instances = t_ActiveJointCount * self.disk_count
+        # Pre-allocate for max instances: joints × disk_count disks
+        max_instances = self._disk_joint_limit * self.disk_count
         inst_data = np.empty((max_instances, 20), dtype=np.float32)
         num_visible = 0
 
@@ -289,7 +297,7 @@ class MGLBodyOrientationNode(MGLBodyNode):
         if orient_data.ndim < 2:
             return
 
-        for joint_idx in range(t_ActiveJointCount):
+        for joint_idx in range(self._disk_joint_limit):
             if joint_idx == t_PelvisAnchor:
                 continue
 
