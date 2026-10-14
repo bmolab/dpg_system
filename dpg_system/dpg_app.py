@@ -87,6 +87,7 @@ optional_import = [
     'gemma_4_node',
     'nvx_nodes',
     'erae_nodes',
+    'atem_nodes',
     'bonsai_2_node',
     'qwen_moe_node',
     'neuronpedia_node',

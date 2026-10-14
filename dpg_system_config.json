@@ -42,6 +42,7 @@
  "default_ip_base": "10.1.1.0",
  "nvx_nodes": true,
  "erae_nodes": true,
+ "atem_nodes": true,
  "bonsai_2_node": true,
  "qwen_moe_node": true,
  "monitor_nodes": true,
