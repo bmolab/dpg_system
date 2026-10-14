@@ -157,6 +157,7 @@ class ButtonNode(Node):
         self.color = self.add_option('color', widget_type='color_picker', default_value=[0.0, 0.0, 0.0, 0.0], callback=self.color_changed)
         self._add_hide_title_bar_option(default_value=False)
         self._color_theme = None
+        self.message_handlers['color'] = self.color_message
 
     def size_changed(self):
         dpg.set_item_width(self.input.widget.uuid, self.width())
@@ -197,13 +198,32 @@ class ButtonNode(Node):
             return
         self._color_theme = button_color_theme(c)
 
+    def color_message(self, message='', args=None):
+        # 'color r g b [a]', 0-1 (as a color node sends) or 0-255, like
+        # button_set; a bare 'color' returns the button to its default look.
+        args = list(any_to_list(args)) if args is not None else []
+        if len(args) == 1 and isinstance(args[0], (list, tuple, np.ndarray)):
+            args = list(np.ravel(args[0]))
+        if not args:
+            rgba = [0.0, 0.0, 0.0, 0.0]
+        else:
+            rgba = ButtonSetNode.parse_color(args)
+            if rgba is None:
+                return
+        self.color.set(rgba)
+        self.color_changed()
+
     def color_changed(self):
+        old = self._color_theme
         self._rebuild_color_theme()
         if time.time() >= self.target_time and dpg.does_item_exist(self.input.widget.uuid):
             dpg.bind_item_theme(
                 self.input.widget.uuid,
                 self._color_theme if self._color_theme is not None else Node.inactive_theme,
             )
+        # the old theme goes, or a stream of colour messages piles them up
+        if old is not None and dpg.does_item_exist(old):
+            dpg.delete_item(old)
 
     def clicked_function(self, input=None):
         self.target_time = time.time() + self.flash_duration()
@@ -254,13 +274,12 @@ class ButtonSetNode(Node):
     something other than the bare label -- 'preset {name}', 'go {index}' --
     while the buttons still read as their names.
 
-    Buttons are coloured by cord rather than by a picker apiece: a colour --
-    3 or 4 numbers, as a color node sends -- arriving at a button's inlet
-    colours that button instead of pressing it. By message it is
+    Buttons are coloured by message rather than by a picker apiece:
     'color <button> r g b a', <button> a label or a 1-based number, and
     'color <button>' alone returns it to the default look. Values are 0-1,
     or 0-255 if any is over 1; alpha may be left off. Colours are saved with
-    the patch.
+    the patch. Anything else arriving at a button's inlet, a bare list of
+    numbers included, presses it.
     """
     default_labels = None
     default_template = '{name}'
@@ -459,24 +478,7 @@ class ButtonSetNode(Node):
         self._flashing[i] = time.time() + self.flash_duration()
         self.add_frame_task()
 
-    @staticmethod
-    def as_color(data):
-        """3 or 4 numbers arriving at an inlet are a colour, not a press."""
-        if isinstance(data, (list, tuple, np.ndarray)) and not isinstance(data, str):
-            values = list(np.ravel(data)) if isinstance(data, np.ndarray) else list(data)
-            if len(values) in (3, 4) and all(
-                    isinstance(v, (int, float, np.number)) and not isinstance(v, bool) for v in values):
-                return ButtonSetNode.parse_color(values)
-        return None
-
     def button_input(self, i):
-        # a cord handing this button data (rather than a click) may carry a colour
-        button = self.buttons[i]
-        if self.active_input is button:
-            rgba = self.as_color(button._data)
-            if rgba is not None:
-                self.set_color(i, rgba)
-                return
         self.button_pressed(i)
 
     def button_pressed(self, i):
