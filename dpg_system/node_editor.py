@@ -865,6 +865,55 @@ class NodeEditor:
         self.pan_nodes(target_x - x, target_y - y)
 
     def _home_by_rects(self):
+    def set_home_here(self):
+        """Make the present view home: the origin moves to the top left of
+        the patcher, so home brings back what is at that corner now, at 100%.
+        Saved positions are measured from the origin, so the patch also saves
+        with this corner as its [0, 0] and opens here.
+
+        Undo snapshots hold positions measured from the old origin; they are
+        shifted to the new one, or undoing past this would jump the patch."""
+        if self.origin is None:
+            return
+        try:
+            left, top = self.screen_rect()[:2]
+            x, y = self.exact_pos(self.origin)
+        except Exception as e:
+            print(f'set_home_here error: {type(e).__name__}: {e}')
+            return
+        pan = self.pan()
+        if pan is not None:
+            # Where home_nodes() would put the origin, at the present zoom.
+            padding = self.node_padding()
+            target_x = left + self._editor_padding[0] - padding[0] - pan[0]
+            target_y = top + self._editor_padding[1] - padding[1] - pan[1]
+        else:
+            try:
+                origin_screen = dpg.get_item_rect_min(self.origin.uuid)
+            except Exception as e:
+                print(f'set_home_here error: {type(e).__name__}: {e}')
+                return
+            target_x = x + left + self._editor_padding[0] - origin_screen[0]
+            target_y = y + top + self._editor_padding[1] - origin_screen[1]
+        dx, dy = target_x - x, target_y - y
+        if abs(dx) < 0.5 and abs(dy) < 0.5:
+            return
+        if self.app is not None:
+            self._moved_on_frame = self.app.frame_number
+            # Snapshot positions are at 100%, relative to the origin.
+            sx, sy = dx / self.zoom, dy / self.zoom
+            for stack in (self.app.undo_stack, self.app.redo_stack):
+                for editor, snap in stack:
+                    if editor is not self:
+                        continue
+                    for nc in snap.get('nodes', {}).values():
+                        if nc.get('name') != '' and 'position_x' in nc:
+                            nc['position_x'] = _tidy(nc['position_x'] - sx)
+                            nc['position_y'] = _tidy(nc['position_y'] - sy)
+        self.__dict__.setdefault('_zoom_exact', {})[self.origin.uuid] = (target_x, target_y)
+        dpg.set_item_pos(self.origin.uuid, [int(round(target_x)), int(round(target_y))])
+        self.modified = True
+
         """Home as measured on screen, for before the view's pan is known."""
         try:
             editor_screen = self.screen_rect()

@@ -1493,6 +1493,7 @@ class App:
                 self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", check=True, callback=self.toggle_presentation)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Home: 100%, origin top left (H)", callback=self.home_current_editor)
+                dpg.add_menu_item(label="Set Home to Current View (Option-H)", callback=self.set_home_current_editor)
                 dpg.add_menu_item(label="Fit Patch to Window (Shift-H)", callback=self.fit_current_editor)
                 dpg.add_menu_item(label="Fit Window to Patch (Cmd-Shift-H)", callback=self.fit_window_to_patch)
                 dpg.add_separator()
@@ -2069,9 +2070,12 @@ class App:
     def H_handler(self):
         # H: back to the view the patch opened with. Shift-H: the whole patch
         # in the window. Cmd-Shift-H: the window around the whole patch.
+        # Option-H: the present view becomes home (Cmd-H is macOS's Hide).
         if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                if self.shift_down() and self.control_or_command_down():
+                if self.alt_down() and not self.shift_down() and not self.control_or_command_down():
+                    self.get_current_editor().set_home_here()
+                elif self.shift_down() and self.control_or_command_down():
                     self.fit_window_to_patch()
                 elif self.shift_down():
                     self.get_current_editor().fit_nodes()
@@ -2193,6 +2197,10 @@ class App:
     def home_current_editor(self):
         if self.get_current_editor() is not None:
             self.get_current_editor().home_nodes()
+
+    def set_home_current_editor(self):
+        if self.get_current_editor() is not None and not self.get_current_editor().presenting:
+            self.get_current_editor().set_home_here()
 
     def fit_current_editor(self):
         if self.get_current_editor() is not None:

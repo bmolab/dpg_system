@@ -4467,7 +4467,17 @@ class OriginNode(Node):
         # invisible_theme bound in custom_create so undo snapshots round-trip
         # correctly (snapshot stores 'hidden' → load() rebinds invisible_theme).
         self.visibility = 'hidden'
+        # Never draggable: home and saved positions are measured from the
+        # origin, and a box-select that catches it (it sits invisibly at the
+        # patch's top left) would otherwise carry it along with the nodes,
+        # moving home with them for good.
+        self.draggable = False
+        self.edit_draggable = False
         self.ref_property = self.add_property('', widget_type='button', width=1)
+
+    def set_draggable(self, can_drag: bool) -> None:
+        self.draggable = False
+        dpg.configure_item(self.uuid, draggable=False)
 
     def custom_create(self, from_file: bool) -> None:
         with dpg.theme() as item_theme:
@@ -4489,6 +4499,7 @@ class OriginNode(Node):
 
         dpg.bind_item_theme(self.ref_property.uuid, self.app.invisible_theme)
         dpg.bind_item_theme(self.uuid, self.app.invisible_theme)
+        dpg.configure_item(self.uuid, draggable=False)
 
 
 class PlaceholderNameNode(Node):
