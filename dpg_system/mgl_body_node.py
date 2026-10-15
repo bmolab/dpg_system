@@ -8,8 +8,9 @@ from dpg_system.conversion_utils import *
 from dpg_system.moderngl_base import MGLContext
 import moderngl
 import math
+import scipy.spatial.transform
 from dpg_system.matrix_utils import *
-from dpg_system.body_base import BodyData, t_PelvisAnchor, t_ActiveJointCount
+from dpg_system.body_base import BodyData, t_PelvisAnchor, t_ActiveJointCount, quaternion_multiply_scalar_first
 from dpg_system.body_defs import *
 from dpg_system.moderngl_nodes import MGLNode
 from dpg_system.limb_scale import (LimbScaleSet, AXIAL_SEGMENTS, PAIRED_SEGMENTS, SEGMENT_NAMES,
@@ -111,6 +112,13 @@ class MGLBodyNode(MGLNode):
         self.limb_scale_input = self.add_input('limb_scale', callback=self._on_limb_scale)
         self.skeleton_mode_input = self.add_input('skeleton_mode', widget_type='combo', default_value='shadow', callback=self._on_skeleton_mode_changed)
         self.skeleton_mode_input.widget.combo_items = ['shadow', 'smpl']
+        # joint order of the incoming pose / joint_data: 'active' is the body's own
+        # t_* order, 'smpl' is SMPL joint order (remapped on arrival)
+        self.input_order_input = self.add_input('input_order', widget_type='combo', default_value='active')
+        self.input_order_input.widget.combo_items = ['active', 'smpl']
+        # smpl poses are z-up; this rotates the root so the body stands in y-up space
+        self.y_is_up_input = self.add_input('y is up', widget_type='checkbox', default_value=False)
+        self.y_up = np.array([0.7071067811865475, -0.7071067811865475, 0.0, 0.0])
         self.use_s_curve_spine_input = self.add_input('s_curve_spine', widget_type='checkbox', default_value=True, callback=self._on_skeleton_mode_changed)
         self.color_input = self.add_input('color', widget_type='color_picker', default_value=[1.0, 1.0, 1.0, 1.0])
         self.instanced_display_mode_input = self.add_input('instanced_mode', widget_type='combo', default_value='solid')
@@ -272,12 +280,17 @@ class MGLBodyNode(MGLNode):
         # Attributes: in_pos, in_norm, in_radius, in_bone_idx
         # Radius and BoneIdx are per-instance (divisor=1)
         
-        self.instanced_vao = ctx.vertex_array(self.ctx.mgl_instanced_joint_shader, [
+        # The joint shader is unlit, so the driver may strip in_norm as unused;
+        # binding a stripped attribute raises KeyError. Bind only active ones.
+        prog = self.ctx.mgl_instanced_joint_shader
+        content = [
             (self.instanced_sphere_vbo, '3f', 'in_pos'),
             (self.instanced_sphere_norms, '3f', 'in_norm'),
             (self.instanced_radius_buffer, '1f/i', 'in_radius'),
             (self.instanced_bone_idx_buffer, '1i/i', 'in_bone_idx'),
-        ], index_buffer=self.instanced_sphere_ibo)
+        ]
+        content = [c for c in content if c[2] in prog]
+        self.instanced_vao = ctx.vertex_array(prog, content, index_buffer=self.instanced_sphere_ibo)
         
     @staticmethod
     def _normalize_color(c):
@@ -833,6 +846,38 @@ class MGLBodyNode(MGLNode):
         29: t_RightHeel,                # right_heel
     }
 
+    def _smpl_to_body_order(self, data, as_pose=False):
+        """Remap SMPL-ordered per-joint data (leading joint axis) to body t_* order.
+
+        Poses may be axis-angle or quaternions (scalar first) and come back as
+        quaternions; joints SMPL does not drive are left at identity. Other
+        data keeps its trailing shape, with zeros for undriven joints.
+        """
+        data = any_to_array(data)
+        if as_pose:
+            if data.ndim == 1:
+                # a flat SMPL pose is axis-angle unless only quaternions fit
+                width = 4 if (data.size % 4 == 0 and data.size % 3 != 0) else 3
+                data = data.reshape(-1, width)
+            if data.ndim > 2:
+                return np.stack([self._smpl_to_body_order(d, as_pose=True) for d in data])
+            if data.shape[-1] == 3:
+                data = scipy.spatial.transform.Rotation.from_rotvec(data).as_quat(scalar_first=True)
+            elif data.shape[-1] != 4:
+                logger.warning(f'mgl_body: smpl pose must be n x 3 or n x 4, got {data.shape}')
+                return None
+        elif data.ndim == 0:
+            return data
+        out = np.zeros((t_RightHeel + 1,) + data.shape[1:], dtype=np.float32)
+        if as_pose:
+            out[:, 0] = 1.0
+        for smpl_i, body_i in MGLBodyNode.SMPL_JOINT_TO_BODY_JOINT.items():
+            if smpl_i < data.shape[0]:
+                out[body_i] = data[smpl_i]
+        if as_pose and self.y_is_up_input():
+            out[t_PelvisAnchor] = quaternion_multiply_scalar_first(self.y_up, out[t_PelvisAnchor])
+        return out
+
     def _on_skeleton_mode_changed(self):
         """Re-apply limb data when skeleton mode is toggled."""
         self._with_base(self._rebuild_base_for_mode)
@@ -1167,11 +1212,16 @@ class MGLBodyNode(MGLNode):
     def execute(self):
         if self.pose_input.fresh_input:
             data = self.pose_input()
+            if data is not None and self.input_order_input() == 'smpl':
+                data = self._smpl_to_body_order(data, as_pose=True)
             if data is not None:
                 self.body.update_quats(data)
 
         if self.joint_data_input.fresh_input:
-            self.latest_joint_data = self.joint_data_input()
+            joint_data = self.joint_data_input()
+            if joint_data is not None and self.input_order_input() == 'smpl':
+                joint_data = self._smpl_to_body_order(joint_data)
+            self.latest_joint_data = joint_data
 
         if self.limb_lengths_input.fresh_input:
             limb_data = self.limb_lengths_input()
