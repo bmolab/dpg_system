@@ -3964,6 +3964,23 @@ class SMPLProcessor:
         return 0.0
 
 
+    def _subtree_matrix(self, n):
+        """(n, n) matrix, A[a, j] = 1 where joint j is a or a descendant of a,
+        over the first n joints -- a sum over every subtree at once is A @ x."""
+        cache = self.__dict__.setdefault('_subtree_matrix_cache', {})
+        parents = self._get_hierarchy()
+        key = (n, tuple(parents[:n]))
+        A = cache.get(key)
+        if A is None:
+            A = np.eye(n)
+            for j in range(n):
+                a = parents[j]
+                while 0 <= a < n:
+                    A[a, j] = 1.0
+                    a = parents[a]
+            cache[key] = A
+        return A
+
     def _get_hierarchy(self):
         """Defines parent-child relationships for SMPL 24 joints + Virtual."""
         if hasattr(self, 'parents'):
@@ -4775,14 +4792,12 @@ class SMPLProcessor:
         # Iterate reverse (Leaves -> Root)
         # Exclude indices >= 24 if they exist? target_joint_count is 22 usually, but mapped to 24 skeleton.
         
+        # A sum over each joint's subtree is one product with the subtree matrix.
         subtree_masses = node_masses.copy()
         subtree_weighted_com = node_weighted_com.copy()
-        
-        for idx in range(23, 0, -1): # Skip 0 (Root has no parent in array logic for accumulation)
-            parent = parents[idx]
-            if parent >= 0:
-                subtree_masses[:, parent] += subtree_masses[:, idx]
-                subtree_weighted_com[:, parent, :] += subtree_weighted_com[:, idx, :]
+        A24 = self._subtree_matrix(24)
+        subtree_masses[:, :24] = node_masses[:, :24] @ A24.T
+        subtree_weighted_com[:, :24] = np.einsum('aj,fjc->fac', A24, node_weighted_com[:, :24])
         
         # 3. Compute Torque
         # T = r_com_rel x F_gravity
@@ -4946,21 +4961,20 @@ class SMPLProcessor:
              g_mag = np.linalg.norm(g_vec_eff, axis=-1, keepdims=True) + 1e-9 # (F, 1)
              f_vert_mag = contact_masses * g_mag # (F, J)
              
-             # Loop over joints (Vectorized over F)
-             for j in range(world_pos.shape[1]):
-                 if np.any(contact_masses[:, j] > 0):
-                      # All contact GRF is vertical (upward).
-                      # This ensures the total vertical force propagating up the
-                      # leg is independent of the ankle/foot pressure split.
-                      # Ankle torque arises from the foot's GRF lever arm in the
-                      # backward pass; no special alignment needed.
-                      dir_up = -g_vec_eff / g_mag
-                      f_grf_vecs[:, j, :] = f_vert_mag[:, j, np.newaxis] * dir_up
+             # All contact GRF is vertical (upward), on every joint with
+             # contact mass in any frame.  This ensures the total vertical
+             # force propagating up the leg is independent of the ankle/foot
+             # pressure split.  Ankle torque arises from the foot's GRF lever
+             # arm in the backward pass; no special alignment needed.
+             J_c = min(world_pos.shape[1], contact_masses.shape[1])
+             in_contact = np.any(contact_masses[:, :J_c] > 0, axis=0)    # (J_c,)
+             if np.any(in_contact):
+                 dir_up = -g_vec_eff / g_mag                              # (F, 3)
+                 f_grf_vecs[:, :J_c, :] = np.where(
+                     in_contact[np.newaxis, :, np.newaxis],
+                     f_vert_mag[:, :J_c, np.newaxis] * dir_up[:, np.newaxis, :], 0.0)
 
              # 2. Backward Pass (Accumulate GRF Moments)
-             f_cum_grf = f_grf_vecs.copy()
-             m_cum_grf = np.zeros_like(f_grf_vecs)
-             
              parents = np.array(self._get_hierarchy())
              J = world_pos.shape[1]
              
@@ -4969,23 +4983,18 @@ class SMPLProcessor:
              parent_indices = np.clip(parents[:J], 0, J-1)  # clip -1 to 0 (root, unused)
              r_bones = world_pos[:, :J, :] - world_pos[:, parent_indices, :]  # (F, J, 3)
              
-             for j in range(J-1, 0, -1):
-                 parent = parents[j]
-                 if parent >= 0:
-                      # Propagate Force
-                      f_child = f_cum_grf[:, j, :]
-                      f_cum_grf[:, parent, :] += f_child
-                      
-                      # Propagate Moment: M_parent += M_child + r_bone x f_child
-                      # Inline cross product (avoids numpy dispatch overhead)
-                      rb = r_bones[:, j, :]  # (F, 3)
-                      t_lever_0 = rb[:, 1] * f_child[:, 2] - rb[:, 2] * f_child[:, 1]
-                      t_lever_1 = rb[:, 2] * f_child[:, 0] - rb[:, 0] * f_child[:, 2]
-                      t_lever_2 = rb[:, 0] * f_child[:, 1] - rb[:, 1] * f_child[:, 0]
-                      
-                      m_cum_grf[:, parent, 0] += m_cum_grf[:, j, 0] + t_lever_0
-                      m_cum_grf[:, parent, 1] += m_cum_grf[:, j, 1] + t_lever_1
-                      m_cum_grf[:, parent, 2] += m_cum_grf[:, j, 2] + t_lever_2
+             # Leaves -> root, in closed form:
+             #   f_cum[a] = sum of f over a's subtree
+             #   m_cum[a] = sum over the strict subtree of r_bone[j] x f_cum[j]
+             # (unrolling  M_parent += M_child + r_bone x f_child).
+             A = self._subtree_matrix(J)
+             f_cum_grf = np.einsum('aj,fjc->fac', A, f_grf_vecs)
+             rb, fc = r_bones, f_cum_grf
+             lever = np.stack([rb[..., 1] * fc[..., 2] - rb[..., 2] * fc[..., 1],
+                               rb[..., 2] * fc[..., 0] - rb[..., 0] * fc[..., 2],
+                               rb[..., 0] * fc[..., 1] - rb[..., 1] * fc[..., 0]], axis=-1)
+             lever[:, 0] = 0.0                    # the root has no parent bone
+             m_cum_grf = np.einsum('aj,fjc->fac', A - np.eye(J), lever)
                       
              # Combine with Gravity (Opposing)
              # Gravity Moment (t_grav) and GRF Moment (m_cum) should naturally oppose.
@@ -6755,11 +6764,17 @@ class SMPLProcessor:
         if _frame_cache is None:
             _frame_cache = {}
         
-        if 'global_rot_invs' in _frame_cache:
-            global_rot_invs = _frame_cache['global_rot_invs']
+        # Inverse global rotations as matrices, (F, n, 3, 3): the transpose of
+        # each joint's global matrix, which costs far less than Rotation.inv().
+        if 'global_inv_mats' in _frame_cache:
+            global_inv_mats = _frame_cache['global_inv_mats']
+        elif hasattr(global_rots, 'shape') and global_rots.ndim == 4:
+            global_inv_mats = np.swapaxes(global_rots, -1, -2)
+            _frame_cache['global_inv_mats'] = global_inv_mats
         else:
-            global_rot_invs = [r.inv() for r in global_rots]
-            _frame_cache['global_rot_invs'] = global_rot_invs
+            global_inv_mats = np.stack(
+                [r.as_matrix().reshape(F, 3, 3) for r in global_rots], axis=1).swapaxes(-1, -2)
+            _frame_cache['global_inv_mats'] = global_inv_mats
 
         # --- PASS 1: Compute Raw Dynamic Torques and Inertias ---
         if 'inertias' in _frame_cache:
@@ -6798,21 +6813,20 @@ class SMPLProcessor:
             if self._vel_envelope.shape[0] != self.target_joint_count:
                 self._vel_envelope = np.zeros(self.target_joint_count)
             
-            vel_alpha = np.ones(self.target_joint_count)
-            for j in range(self.target_joint_count):
-                vel_mag = np.linalg.norm(ang_vel_for_gate[:F, j, :], axis=-1)
-                for fi in range(F):
-                    # Cap extreme single-frame spikes before EMA to prevent
-                    # rare glitches (e.g., 22 rad/s during standing) from
-                    # inflating the envelope for many subsequent frames.
-                    v_capped = min(vel_mag[fi], VEL_CAP)
-                    # EMA-smoothed velocity: averages out noise spikes instead
-                    # of peaking on them. Tracks sustained motion accurately.
-                    self._vel_envelope[j] += VEL_SMOOTH_ALPHA * (v_capped - self._vel_envelope[j])
-                
-                # Smooth ramp: tanh gives gradual transition, no sharp edge
-                vel_frac = np.tanh(self._vel_envelope[j] / VEL_REF)
-                vel_alpha[j] = ALPHA_MIN + (1.0 - ALPHA_MIN) * vel_frac
+            n_j = self.target_joint_count
+            vel_mag = np.linalg.norm(ang_vel_for_gate[:F, :n_j, :], axis=-1)   # (F, n_j)
+            for fi in range(F):
+                # Cap extreme single-frame spikes before EMA to prevent
+                # rare glitches (e.g., 22 rad/s during standing) from
+                # inflating the envelope for many subsequent frames.
+                v_capped = np.minimum(vel_mag[fi], VEL_CAP)
+                # EMA-smoothed velocity: averages out noise spikes instead
+                # of peaking on them. Tracks sustained motion accurately.
+                self._vel_envelope[:n_j] += VEL_SMOOTH_ALPHA * (v_capped - self._vel_envelope[:n_j])
+
+            # Smooth ramp: tanh gives gradual transition, no sharp edge
+            vel_frac = np.tanh(self._vel_envelope[:n_j] / VEL_REF)
+            vel_alpha = ALPHA_MIN + (1.0 - ALPHA_MIN) * vel_frac
         
         # --- Apply Rate Limiting to Raw Dynamic Torques ---
         if dyn_override_world is not None:
@@ -6822,10 +6836,9 @@ class SMPLProcessor:
             parents_list = self._get_hierarchy()
             for j in range(n_override):
                 parent_idx = parents_list[j] if j < len(parents_list) else -1
-                if parent_idx >= 0 and parent_idx < len(global_rot_invs):
-                    t_dyn_limited[:, j, :] = global_rot_invs[parent_idx].apply(
-                        dyn_override_world[:, j, :].reshape(-1, 3)
-                    ).reshape(F, 3)
+                if parent_idx >= 0 and parent_idx < global_inv_mats.shape[1]:
+                    t_dyn_limited[:, j, :] = np.einsum(
+                        'fik,fk->fi', global_inv_mats[:, parent_idx], dyn_override_world[:, j, :])
                 else:
                     t_dyn_limited[:, j, :] = dyn_override_world[:, j, :]
         elif skip_rate_limiting:
@@ -6870,7 +6883,7 @@ class SMPLProcessor:
                 for j in range(self.target_joint_count):
                     p = parents_arr[j]
                     if p >= 0:
-                        parent_inv_mats[:, j] = global_rot_invs[p].as_matrix().reshape(F, 3, 3)
+                        parent_inv_mats[:, j] = global_inv_mats[:, p]
                     else:
                         parent_inv_mats[:, j] = np.eye(3)
             _frame_cache['parent_inv_mats'] = parent_inv_mats
@@ -8397,3 +8410,20 @@ class SMPLProcessor:
             limits[name] = [x_lim, y_lim, z_lim]
             
         return limits
+
+
+from dpg_system.remote_worker import RemoteObject
+
+
+class RemoteSMPLProcessor(RemoteObject):
+    """An SMPLProcessor in a worker process (see remote_worker).  What
+    smpl_torque reads after each frame comes back with process_frame."""
+    snapshot_after = {
+        'process_frame': (
+            ('current_com', 'current_zmp', '_cg_gate', 'contact_mass',
+             '_inferred_floor_height', 'last_world_pos', 'axis_permutation'),
+            ('get_noise_score', 'get_noise_report')),
+    }
+
+    def __init__(self, **processor_kwargs):
+        super().__init__('dpg_system.smpl_processor:SMPLProcessor', **processor_kwargs)

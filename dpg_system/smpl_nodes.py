@@ -11,7 +11,8 @@ from dpg_system.node import Node, SaveDialog, LoadDialog
 from dpg_system.interface_nodes import Vector2DNode
 import pickle
 from dpg_system.conversion_utils import *
-from dpg_system.smpl_processor import SMPLProcessor, SMPLProcessingOptions
+from dpg_system.smpl_processor import SMPLProcessor, SMPLProcessingOptions, RemoteSMPLProcessor
+from dpg_system.remote_worker import WorkerDied
 import pickle
 import chumpy as ch
 from chumpy.ch import MatVecMult
@@ -2175,11 +2176,17 @@ class SMPLTorqueNode(SMPLNode):
         
         # --- Spine Geometry ---
         self.use_s_curve_spine_prop = self.add_option('use_s_curve_spine', widget_type='checkbox', default_value=True)
+
+        # The processor in a process of its own (remote_worker), so it neither
+        # waits for nor delays the render loop.  Toggling rebuilds it.
+        self.worker_prop = self.add_option('worker_process', widget_type='checkbox', default_value=True,
+                                           callback=self._on_worker_changed)
         
         # Calibrated default for Subject_81: [0.0, -0.14, 0.05]
 
 
         self.processor = None
+        self._rebuild_processor = False
         # Default config
         self.framerate = 60.0
         self.gender = 'neutral'
@@ -2189,6 +2196,42 @@ class SMPLTorqueNode(SMPLNode):
     def _to_array(self, d):
         d = any_to_array(d)
         return d
+
+    def _make_processor(self):
+        """A new SMPLProcessor -- in a worker process if worker_process is on
+        and one can be started -- replacing (and closing) any current one."""
+        old, self.processor = self.processor, None
+        kwargs = dict(framerate=self.framerate, betas=self.betas, gender=self.gender,
+                      total_mass_kg=self.total_mass,
+                      model_path=os.path.dirname(os.path.abspath(__file__)))  # Use absolute path to dpg_system
+        if isinstance(old, RemoteSMPLProcessor):
+            if self.worker_prop() and old.alive:
+                try:
+                    old.recreate(**kwargs)
+                    return old
+                except Exception as e:
+                    print(f'SMPLTorqueNode: worker rebuild failed ({e}); starting a new one')
+            old.close()
+        if self.worker_prop():
+            remote = None
+            try:
+                remote = RemoteSMPLProcessor(**kwargs)
+                remote.wait_ready()
+                return remote
+            except Exception as e:
+                print(f'SMPLTorqueNode: worker process failed ({e}); running in-process')
+                if remote is not None:
+                    remote.close()
+        return SMPLProcessor(**kwargs)
+
+    def _on_worker_changed(self):
+        # Rebuilt on the next frame, on the thread that runs the node.
+        if self.processor is not None:
+            self._rebuild_processor = True
+
+    def custom_cleanup(self):
+        if isinstance(self.processor, RemoteSMPLProcessor):
+            self.processor.close()
 
     def _on_axis_perm_changed(self):
         if self.processor:
@@ -2252,13 +2295,7 @@ class SMPLTorqueNode(SMPLNode):
                 
                 # Re-init processor if needed
                 if changed or self.processor is None:
-                    self.processor = SMPLProcessor(
-                        framerate=self.framerate,
-                        betas=self.betas,
-                        gender=self.gender,
-                        total_mass_kg=self.total_mass,
-                        model_path=os.path.dirname(os.path.abspath(__file__)) # Use absolute path to dpg_system
-                    )
+                    self.processor = self._make_processor()
                     self._on_axis_perm_changed()
                     self._restore_max_torque_overrides()
                     
@@ -2269,14 +2306,9 @@ class SMPLTorqueNode(SMPLNode):
                          self.output_limb_lengths.send(lengths)
         
         # Ensure processor exists
-        if self.processor is None:
-             self.processor = SMPLProcessor(
-                framerate=self.framerate,
-                betas=self.betas,
-                gender=self.gender,
-                total_mass_kg=self.total_mass,
-                model_path=os.path.dirname(os.path.abspath(__file__))
-            )
+        if self.processor is None or self._rebuild_processor:
+             self._rebuild_processor = False
+             self.processor = self._make_processor()
              self._on_axis_perm_changed()
              self._restore_max_torque_overrides()
              
@@ -2593,6 +2625,10 @@ class SMPLTorqueNode(SMPLNode):
                             active.append([xyz[0], xyz[1], xyz[2], f_j])
                     self.contact_points_output.send(np.array(active) if active else np.zeros((0, 4)))
             
+            except WorkerDied as e:
+                # A new processor on the next frame (its filters start afresh).
+                print(f"SMPLTorqueNode: {e}; restarting it")
+                self._rebuild_processor = True
             except Exception as e:
                 # Catch processing errors (e.g. shape mismatch on first frame)
                 print(f"SMPLTorqueNode Error: {e}")
