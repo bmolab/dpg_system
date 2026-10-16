@@ -88,6 +88,14 @@ for _label, _want in (('%', [1.0, 0.0, 1.0]), ('//', [3.0, np.inf, 2.0])):
     check(f'{_label} <- array, array operand', list(feed(m, a)), _want)
 
 # ---------------------------------------------------------------------------
+print("\nOpSingleNode: a list goes through element by element")
+# any_to_float kept only a list's first number, so 'abs' of [-3, 4] sent 3.0
+# and norm of [3, 4] sent 1.0.
+for _label, _in, _want in (('abs', [-3, 4], [3.0, 4.0]), ('norm', [3, 4], [0.6, 0.8]),
+                           ('floor', [-2.5, 2.5], [-3.0, 2.0]), ('sqrt', (16, -4), [4.0, -2.0])):
+    check(f'{_label} <- {_in!r}', feed(make(_label), _in), _want)
+
+# ---------------------------------------------------------------------------
 print("\nparse_args: '>=' is a word, not a name=value setting")
 # '>='.split('=') is ['>', ''], and reading the empty value's first character
 # raised, so a comment titled '>= (greater than or equal)' was never created.

@@ -1,0 +1,508 @@
+{
+    "height": 736,
+    "width": 1455,
+    "position": [
+        351,
+        81
+    ],
+    "id": 1416,
+    "name": "norm_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1444,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment norm (scale to length 1)",
+            "name": "comment",
+            "id": 1462,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 303,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "norm (scale to length 1)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "norm (scale to length 1)"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 1473,
+            "sid": 3,
+            "position_x": 729,
+            "position_y": 45,
+            "width": 686,
+            "height": 631,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "norm normalizes a list, array or tensor: it divides every element by the length of\nthe whole, so the result has a length of exactly 1 and points the same way.\n\nThe list [3, 4] has length 5 (the square root of 3 x 3 + 4 x 4), so norm gives\n[0.6, 0.8]. [30, 40] gives the same [0.6, 0.8] - only the direction survives, the\nsize is gone. Click the message in the example to see it.\n\nUse it to keep a direction and throw away a magnitude: which way a hand is moving\nregardless of how fast, a direction to point a light, a colour's balance regardless\nof its brightness.\n\nAn array of any shape is divided by its length taken over ALL of its elements. In the\nNumPy example at the bottom left, a random 4 x 4 array (left) is normalized (right):\nthe pattern is the same, only scaled down so that the squares of all 16 cells add\nup to 1.\n\nSYNTAX:\nnorm\n\nEXAMPLES:\nnorm       a direction from a velocity\nnorm       balance a set of weights to a fixed overall size\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\nOUTPUTS:\n\nresult:\nThe input divided by its length, the same shape as the input.\n\nSINGLE NUMBERS AND ZEROS:\nA single number has no direction, so norm of any single number gives 1.0.\nA list or array of all zeros has no length to divide by and gives nan (not a\nnumber) in every element.\n\nSEE ALSO:\nabs       the size of a single number\nsqrt      square root, for working out a length yourself",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 678,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 615,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "norm normalizes a list, array or tensor: it divides every element by the length of\nthe whole, so the result has a length of exactly 1 and points the same way.\n\nThe list [3, 4] has length 5 (the square root of 3 x 3 + 4 x 4), so norm gives\n[0.6, 0.8]. [30, 40] gives the same [0.6, 0.8] - only the direction survives, the\nsize is gone. Click the message in the example to see it.\n\nUse it to keep a direction and throw away a magnitude: which way a hand is moving\nregardless of how fast, a direction to point a light, a colour's balance regardless\nof its brightness.\n\nAn array of any shape is divided by its length taken over ALL of its elements. In the\nNumPy example at the bottom left, a random 4 x 4 array (left) is normalized (right):\nthe pattern is the same, only scaled down so that the squares of all 16 cells add\nup to 1.\n\nSYNTAX:\nnorm\n\nEXAMPLES:\nnorm       a direction from a velocity\nnorm       balance a set of weights to a fixed overall size\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\nOUTPUTS:\n\nresult:\nThe input divided by its length, the same shape as the input.\n\nSINGLE NUMBERS AND ZEROS:\nA single number has no direction, so norm of any single number gives 1.0.\nA list or array of all zeros has no length to divide by and gives nan (not a\nnumber) in every element.\n\nSEE ALSO:\nabs       the size of a single number\nsqrt      square root, for working out a length yourself"
+        },
+        "3": {
+            "name": "message",
+            "id": 1607,
+            "sid": 10,
+            "position_x": 29,
+            "position_y": 111,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3 4",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "4": {
+            "init": "norm",
+            "name": "norm",
+            "id": 1643,
+            "sid": 11,
+            "position_x": 190,
+            "position_y": 107,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "5": {
+            "name": "message",
+            "id": 1653,
+            "sid": 12,
+            "position_x": 291,
+            "position_y": 114,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "[0.6, 0.8]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "adapt_width",
+                    "value": "grow_to_fit",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            }
+        },
+        "6": {
+            "init": "comment click to send the list [3, 4]",
+            "name": "comment",
+            "id": 1686,
+            "sid": 13,
+            "position_x": 42,
+            "position_y": 70,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send the list [3, 4]",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "click to send the list [3, 4]"
+        },
+        "7": {
+            "name": "close",
+            "id": 1697,
+            "sid": 14,
+            "position_x": 24,
+            "position_y": 410,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "8": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 1783,
+            "sid": 20,
+            "position_x": 25,
+            "position_y": 272,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "9": {
+            "name": "heat_map",
+            "id": 2002,
+            "sid": 28,
+            "position_x": 170,
+            "position_y": 250,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 2116,
+            "sid": 31,
+            "position_x": 485,
+            "position_y": 250,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "load_bang",
+            "id": 2162,
+            "sid": 33,
+            "position_x": 25,
+            "position_y": 219,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "12": {
+            "init": "comment an array divided by its own length: the squares of the cells add up to 1",
+            "name": "comment",
+            "id": 2198,
+            "sid": 37,
+            "position_x": 61,
+            "position_y": 176,
+            "width": 451,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "an array divided by its own length: the squares of the cells add up to 1",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "an array divided by its own length: the squares of the cells add up to 1"
+        },
+        "13": {
+            "name": "norm",
+            "id": 2217,
+            "sid": 39,
+            "position_x": 375,
+            "position_y": 296,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1607,
+            "source_node_name": "message",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 1643,
+            "dest_node_name": "norm",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 1643,
+            "source_node_name": "norm",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1653,
+            "dest_node_name": "message",
+            "dest_input_index": 0,
+            "dest_input_name": "###text in"
+        },
+        "2": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2002,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2217,
+            "dest_node_name": "norm",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 2217,
+            "source_node_name": "norm",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 2116,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 2162,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1783,
+            "dest_node_name": "np.rand",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

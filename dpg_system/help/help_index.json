@@ -335,11 +335,18 @@
   "_math_nodes": [
     "--- math_nodes.py ---"
   ],
+  "abs": [
+    "abs"
+  ],
   "accumulate": [
     "accumulate"
   ],
   "add": [
     "+"
+  ],
+  "ceil": [
+    "ceil",
+    "np.ceil"
   ],
   "change": [
     "change",
@@ -363,6 +370,13 @@
   "equal": [
     "=="
   ],
+  "exp": [
+    "exp"
+  ],
+  "floor": [
+    "floor",
+    "np.floor"
+  ],
   "floor_divide": [
     "//"
   ],
@@ -372,28 +386,20 @@
   "greater_equal": [
     ">="
   ],
+  "inverse": [
+    "inverse"
+  ],
   "less": [
     "<"
   ],
   "less_equal": [
     "<="
   ],
-  "math_single": [
-    "abs",
-    "ceil",
-    "exp",
-    "floor",
-    "inverse",
-    "log10",
-    "log2",
-    "norm",
-    "np.ceil",
-    "np.floor",
-    "np.round",
-    "np.trunc",
-    "round",
-    "sqrt",
-    "trunc"
+  "log10": [
+    "log10"
+  ],
+  "log2": [
+    "log2"
   ],
   "max": [
     "max"
@@ -407,6 +413,9 @@
   ],
   "multiply": [
     "*"
+  ],
+  "norm": [
+    "norm"
   ],
   "not_equal": [
     "!="
@@ -424,6 +433,13 @@
   "reverse_subtract": [
     "!-"
   ],
+  "round": [
+    "round",
+    "np.round"
+  ],
+  "sqrt": [
+    "sqrt"
+  ],
   "subtract": [
     "-"
   ],
@@ -434,6 +450,10 @@
     "cos",
     "sin",
     "tan"
+  ],
+  "trunc": [
+    "trunc",
+    "np.trunc"
   ],
   "_matrix_nodes": [
     "--- matrix_nodes.py ---"

@@ -1,11 +1,11 @@
 {
-    "height": 1386,
-    "width": 1463,
+    "height": 1674,
+    "width": 1487,
     "position": [
         100,
         100
     ],
-    "id": 3460,
+    "id": 4311,
     "name": "nodes_math",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_math.json",
     "nodes": {
@@ -165,7 +165,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 184,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -175,7 +175,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -192,7 +192,7 @@
         "7": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 188,
             "width": 206,
             "height": 28,
@@ -234,7 +234,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 236,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -244,7 +244,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -261,7 +261,7 @@
         "9": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 240,
             "width": 52,
             "height": 40,
@@ -303,7 +303,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 288,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -313,7 +313,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -330,7 +330,7 @@
         "11": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 292,
             "width": 83,
             "height": 40,
@@ -372,7 +372,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 340,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -382,7 +382,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -399,7 +399,7 @@
         "13": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 344,
             "width": 83,
             "height": 40,
@@ -441,7 +441,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 392,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -451,7 +451,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -468,7 +468,7 @@
         "15": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 396,
             "width": 70,
             "height": 40,
@@ -510,7 +510,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 444,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -520,7 +520,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -537,7 +537,7 @@
         "17": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 448,
             "width": 163,
             "height": 40,
@@ -579,7 +579,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 496,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -589,7 +589,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -606,7 +606,7 @@
         "19": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 500,
             "width": 89,
             "height": 40,
@@ -648,7 +648,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 548,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -658,7 +658,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -675,7 +675,7 @@
         "21": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 552,
             "width": 132,
             "height": 40,
@@ -717,7 +717,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 600,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -727,7 +727,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -744,7 +744,7 @@
         "23": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 604,
             "width": 138,
             "height": 28,
@@ -786,7 +786,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 652,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -796,7 +796,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -813,7 +813,7 @@
         "25": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 656,
             "width": 132,
             "height": 28,
@@ -855,7 +855,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 704,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -865,7 +865,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -882,7 +882,7 @@
         "27": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 708,
             "width": 188,
             "height": 40,
@@ -924,7 +924,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 756,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -934,7 +934,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -951,7 +951,7 @@
         "29": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 760,
             "width": 144,
             "height": 40,
@@ -993,7 +993,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 808,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1003,7 +1003,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1020,7 +1020,7 @@
         "31": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 812,
             "width": 114,
             "height": 28,
@@ -1062,7 +1062,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 860,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1072,7 +1072,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1089,7 +1089,7 @@
         "33": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 864,
             "width": 126,
             "height": 28,
@@ -1156,7 +1156,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 964,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1166,7 +1166,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1183,7 +1183,7 @@
         "36": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 968,
             "width": 243,
             "height": 28,
@@ -1225,7 +1225,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 1016,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1235,7 +1235,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1252,7 +1252,7 @@
         "38": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 1020,
             "width": 107,
             "height": 40,
@@ -1294,7 +1294,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 1068,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1304,7 +1304,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1321,7 +1321,7 @@
         "40": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 1072,
             "width": 163,
             "height": 40,
@@ -1363,7 +1363,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 1120,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1373,7 +1373,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1390,7 +1390,7 @@
         "42": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 1124,
             "width": 89,
             "height": 40,
@@ -1432,7 +1432,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 1172,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1442,7 +1442,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1459,7 +1459,7 @@
         "44": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 1176,
             "width": 144,
             "height": 40,
@@ -1501,7 +1501,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 1224,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1511,7 +1511,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1528,7 +1528,7 @@
         "46": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 1228,
             "width": 83,
             "height": 40,
@@ -1570,7 +1570,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 1276,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1580,7 +1580,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1597,7 +1597,7 @@
         "48": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
+            "position_x": 287,
             "position_y": 1280,
             "width": 107,
             "height": 40,
@@ -1635,16 +1635,16 @@
             "presentation_state": "show_all"
         },
         "49": {
-            "init": "comment Functions",
+            "init": "comment Single-input math",
             "name": "comment",
-            "position_x": 578,
+            "position_x": 590,
             "position_y": 150,
-            "width": 85,
+            "width": 146,
             "height": 30,
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "Functions",
+                    "value": "Single-input math",
                     "value_type": "str"
                 },
                 "1": {
@@ -1653,28 +1653,28 @@
                     "value_type": "str"
                 }
             },
-            "comment": "Functions",
+            "comment": "Single-input math",
             "id": 2350,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "50": {
-            "init": "help_link math_single single-input math",
+            "init": "help_link math_single all of the single-input math nodes",
             "name": "help_link",
-            "position_x": 578,
+            "position_x": 590,
             "position_y": 184,
-            "width": 237,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "single-input math",
+                    "name": "all of the single-input math nodes",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1691,14 +1691,14 @@
         "51": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
+            "position_x": 853,
             "position_y": 188,
-            "width": 588,
-            "height": 52,
+            "width": 181,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "one function, no operand\n(abs, ceil, exp, floor, inverse, log10, log2, norm, np.ceil, np.floor, np.round, np.trunc,\n round, sqrt, trunc)",
+                    "value": "one function, no operand",
                     "value_type": "str"
                 },
                 "1": {
@@ -1708,12 +1708,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 580,
+                    "value": 173,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 36,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -1722,28 +1722,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "one function, no operand\n(abs, ceil, exp, floor, inverse, log10, log2, norm, np.ceil, np.floor, np.round, np.trunc,\n round, sqrt, trunc)",
+            "text": "one function, no operand",
             "id": 2424,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "52": {
-            "init": "help_link trig trigonometry",
+            "init": "help_link abs abs",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 244,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 236,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "trigonometry",
+                    "name": "abs",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
@@ -1760,8 +1760,792 @@
         "53": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 248,
+            "position_x": 853,
+            "position_y": 240,
+            "width": 120,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "absolute value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 112,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "absolute value",
+            "id": 2498,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "54": {
+            "init": "help_link sqrt sqrt",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 288,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "sqrt",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2535,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "55": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 292,
+            "width": 101,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "square root",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 93,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "square root",
+            "id": 2572,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "56": {
+            "init": "help_link exp exp",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 340,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "exp",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2609,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "57": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 344,
+            "width": 120,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "e to the power",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 112,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "e to the power",
+            "id": 2646,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "58": {
+            "init": "help_link log2 log2",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 392,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "log2",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2683,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "59": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 396,
+            "width": 132,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "logarithm base 2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 124,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "logarithm base 2",
+            "id": 2720,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "60": {
+            "init": "help_link log10 log10",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 444,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "log10",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2757,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "61": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 448,
+            "width": 138,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "logarithm base 10",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "logarithm base 10",
+            "id": 2794,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "62": {
+            "init": "help_link inverse inverse",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 496,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "inverse",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2831,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "63": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 500,
+            "width": 120,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one divided by",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 112,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one divided by",
+            "id": 2868,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "64": {
+            "init": "help_link norm norm",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 548,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "norm",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2905,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "65": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 552,
+            "width": 138,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "scale to length 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "scale to length 1",
+            "id": 2942,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "66": {
+            "init": "help_link round round / np.round",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 600,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "round / np.round",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 2979,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "67": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 604,
+            "width": 200,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "to the nearest whole number\n(np.round, round)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "to the nearest whole number\n(np.round, round)",
+            "id": 3016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "68": {
+            "init": "help_link floor floor / np.floor",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 652,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "floor / np.floor",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 3053,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "69": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 656,
+            "width": 138,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "round down\n(floor, np.floor)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "round down\n(floor, np.floor)",
+            "id": 3090,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "70": {
+            "init": "help_link ceil ceil / np.ceil",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 704,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "ceil / np.ceil",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 3127,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "71": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 708,
+            "width": 126,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "round up\n(ceil, np.ceil)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 118,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "round up\n(ceil, np.ceil)",
+            "id": 3164,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "72": {
+            "init": "help_link trunc trunc / np.trunc",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 756,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "trunc / np.trunc",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "violet",
+                    "value_type": "str"
+                }
+            },
+            "id": 3201,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "73": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 760,
+            "width": 144,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "round towards zero\n(np.trunc, trunc)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 136,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "round towards zero\n(np.trunc, trunc)",
+            "id": 3238,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "74": {
+            "init": "comment Functions",
+            "name": "comment",
+            "position_x": 590,
+            "position_y": 826,
+            "width": 85,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Functions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Functions",
+            "id": 3275,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "75": {
+            "init": "help_link trig trigonometry",
+            "name": "help_link",
+            "position_x": 590,
+            "position_y": 860,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "trigonometry",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "teal",
+                    "value_type": "str"
+                }
+            },
+            "id": 3312,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "76": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 853,
+            "position_y": 864,
             "width": 268,
             "height": 40,
             "properties": {
@@ -1792,17 +2576,17 @@
                 }
             },
             "text": "angles in, ratios out (and back again)\n(acos, asin, atan, cos, sin, tan)",
-            "id": 2498,
+            "id": 3349,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "54": {
+        "77": {
             "init": "help_link clamp clamp",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 296,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 912,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1812,25 +2596,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "violet",
+                    "value": "teal",
                     "value_type": "str"
                 }
             },
-            "id": 2535,
+            "id": 3386,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "55": {
+        "78": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 300,
+            "position_x": 853,
+            "position_y": 916,
             "width": 292,
             "height": 28,
             "properties": {
@@ -1861,17 +2645,17 @@
                 }
             },
             "text": "clamp the input values to a range and send",
-            "id": 2572,
+            "id": 3423,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "56": {
+        "79": {
             "init": "help_link accumulate accumulate",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 348,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 964,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1881,25 +2665,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "violet",
+                    "value": "teal",
                     "value_type": "str"
                 }
             },
-            "id": 2609,
+            "id": 3460,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "57": {
+        "80": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 352,
+            "position_x": 853,
+            "position_y": 968,
             "width": 126,
             "height": 28,
             "properties": {
@@ -1930,17 +2714,17 @@
                 }
             },
             "text": "a running total",
-            "id": 2646,
+            "id": 3497,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "58": {
+        "81": {
             "init": "help_link change change / increasing / decreasing",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 400,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 1016,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -1950,25 +2734,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "violet",
+                    "value": "teal",
                     "value_type": "str"
                 }
             },
-            "id": 2683,
+            "id": 3534,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "59": {
+        "82": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 404,
+            "position_x": 853,
+            "position_y": 1020,
             "width": 268,
             "height": 40,
             "properties": {
@@ -1999,17 +2783,17 @@
                 }
             },
             "text": "pass a value on only when it has moved\n(change, decreasing, increasing, pass)",
-            "id": 2720,
+            "id": 3571,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "60": {
+        "83": {
             "init": "help_link crossfade crossfade / lerp",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 452,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 1068,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -2019,25 +2803,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "violet",
+                    "value": "teal",
                     "value_type": "str"
                 }
             },
-            "id": 2757,
+            "id": 3608,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "61": {
+        "84": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 456,
+            "position_x": 853,
+            "position_y": 1072,
             "width": 181,
             "height": 40,
             "properties": {
@@ -2068,17 +2852,17 @@
                 }
             },
             "text": "blend between two inputs\n(crossfade, lerp)",
-            "id": 2794,
+            "id": 3645,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "62": {
+        "85": {
             "init": "help_link continuous_rotation continuous_rotation",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 504,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 1120,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -2088,25 +2872,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "violet",
+                    "value": "teal",
                     "value_type": "str"
                 }
             },
-            "id": 2831,
+            "id": 3682,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "63": {
+        "86": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 508,
+            "position_x": 853,
+            "position_y": 1124,
             "width": 188,
             "height": 28,
             "properties": {
@@ -2137,17 +2921,17 @@
                 }
             },
             "text": "undo the wrap in an angle",
-            "id": 2868,
+            "id": 3719,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "64": {
+        "87": {
             "init": "help_link color_convert colour conversion",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 556,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 1172,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -2157,25 +2941,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "violet",
+                    "value": "teal",
                     "value_type": "str"
                 }
             },
-            "id": 2905,
+            "id": 3756,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "65": {
+        "88": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 560,
+            "position_x": 853,
+            "position_y": 1176,
             "width": 569,
             "height": 52,
             "properties": {
@@ -2206,16 +2990,16 @@
                 }
             },
             "text": "the same colour, described differently\n(cmy_to_hsl, cmy_to_hsv, cmy_to_rgb, color_convert, hsl_to_cmy, hsl_to_hsv, hsl_to_rgb,\n hsv_to_cmy, hsv_to_hsl, hsv_to_rgb, rgb_to_cmy, rgb_to_hsl, rgb_to_hsv)",
-            "id": 2942,
+            "id": 3793,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "66": {
+        "89": {
             "init": "comment Rotations",
             "name": "comment",
-            "position_x": 578,
-            "position_y": 634,
+            "position_x": 590,
+            "position_y": 1250,
             "width": 85,
             "height": 30,
             "properties": {
@@ -2231,17 +3015,17 @@
                 }
             },
             "comment": "Rotations",
-            "id": 2979,
+            "id": 3830,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "67": {
+        "90": {
             "init": "help_link quaternion_to_euler rotation conversions",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 668,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 1284,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -2251,25 +3035,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "teal",
+                    "value": "pink",
                     "value_type": "str"
                 }
             },
-            "id": 3016,
+            "id": 3867,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "68": {
+        "91": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 672,
+            "position_x": 853,
+            "position_y": 1288,
             "width": 594,
             "height": 64,
             "properties": {
@@ -2300,17 +3084,17 @@
                 }
             },
             "text": "four ways to say one thing\n(axis_angle_to_quaternion, euler_to_quaternion, matrix_to_axis_angle, matrix_to_quaternion,\n matrix_to_rotvec, quaternion_to_axis_angle, quaternion_to_euler, quaternion_to_matrix,\n quaternion_to_rotvec, rotvec_to_quaternion)",
-            "id": 3053,
+            "id": 3904,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "69": {
+        "92": {
             "init": "help_link quaternion_to_6d 6D rotations",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 740,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 1356,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -2320,25 +3104,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "teal",
+                    "value": "pink",
                     "value_type": "str"
                 }
             },
-            "id": 3090,
+            "id": 3941,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "70": {
+        "93": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 744,
+            "position_x": 853,
+            "position_y": 1360,
             "width": 514,
             "height": 40,
             "properties": {
@@ -2369,17 +3153,17 @@
                 }
             },
             "text": "the form that does not jump\n(6d_to_axis_angle, 6d_to_matrix, 6d_to_rotvec, matrix_to_6d, quaternion_to_6d)",
-            "id": 3127,
+            "id": 3978,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "71": {
+        "94": {
             "init": "help_link quaternion_diff comparing rotations",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 792,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 1408,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -2389,25 +3173,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "teal",
+                    "value": "pink",
                     "value_type": "str"
                 }
             },
-            "id": 3164,
+            "id": 4015,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "72": {
+        "95": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 796,
+            "position_x": 853,
+            "position_y": 1412,
             "width": 532,
             "height": 40,
             "properties": {
@@ -2438,17 +3222,17 @@
                 }
             },
             "text": "how much, and relative to what\n(quaternion_diff, quaternion_distance, quaternion_relative, rotation_matrix_diff)",
-            "id": 3201,
+            "id": 4052,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "73": {
+        "96": {
             "init": "help_link quaternion_norm quaternion_norm",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 844,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 1460,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -2458,25 +3242,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "teal",
+                    "value": "pink",
                     "value_type": "str"
                 }
             },
-            "id": 3238,
+            "id": 4089,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "74": {
+        "97": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 848,
+            "position_x": 853,
+            "position_y": 1464,
             "width": 212,
             "height": 28,
             "properties": {
@@ -2507,17 +3291,17 @@
                 }
             },
             "text": "keeping rotations unit length",
-            "id": 3275,
+            "id": 4126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "75": {
+        "98": {
             "init": "help_link tracker_align tracker_align",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 896,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 1512,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -2527,25 +3311,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "teal",
+                    "value": "pink",
                     "value_type": "str"
                 }
             },
-            "id": 3312,
+            "id": 4163,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "76": {
+        "99": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 900,
+            "position_x": 853,
+            "position_y": 1516,
             "width": 261,
             "height": 28,
             "properties": {
@@ -2576,17 +3360,17 @@
                 }
             },
             "text": "putting a tracker in the suit's world",
-            "id": 3349,
+            "id": 4200,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "77": {
+        "100": {
             "init": "help_link swing_twist swing_twist",
             "name": "help_link",
-            "position_x": 578,
-            "position_y": 948,
-            "width": 237,
+            "position_x": 590,
+            "position_y": 1564,
+            "width": 249,
             "height": 44,
             "properties": {
                 "0": {
@@ -2596,25 +3380,25 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 221,
+                    "value": 233,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "colour",
-                    "value": "teal",
+                    "value": "pink",
                     "value_type": "str"
                 }
             },
-            "id": 3386,
+            "id": 4237,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "78": {
+        "101": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 829,
-            "position_y": 952,
+            "position_x": 853,
+            "position_y": 1568,
             "width": 305,
             "height": 28,
             "properties": {
@@ -2645,7 +3429,7 @@
                 }
             },
             "text": "pointing direction and turn about the device",
-            "id": 3423,
+            "id": 4274,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

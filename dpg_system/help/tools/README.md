@@ -270,6 +270,14 @@ its default true/false output cannot be plotted, so the sine and NumPy demos
 set output_type to int / float. `==` / `!=` demos compare whole numbers
 (`// 0.25` steps, int64 random arrays) - floats would never match.
 
+`derive_math_single_help.py` does it for the single-input functions (`abs`,
+`sqrt`, `exp`, `log2`, `log10`, `inverse`, `norm`, `round`, `floor`, `ceil`,
+`trunc`; the `np.` rounding names share their pages), again from the
+arithmetic template with the operand box and the second random array taken
+out. Logs and inverse put a `+` offset before the function so the sine never
+reaches zero; `norm` has no sine demo (a single number always gives 1.0) and
+uses a message list `3 4` instead. math_single_help.json stays the overview.
+
 ## bugs these tools found
 
 Writing the patches surfaced twelve real bugs, all now fixed and covered by

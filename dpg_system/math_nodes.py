@@ -520,6 +520,11 @@ class OpSingleNode(Node):
             pass
         elif self.app.torch_available and t == torch.Tensor:
             pass
+        elif t in (list, tuple):
+            # a list goes through element by element, as an array does
+            # (any_to_float would keep only its first number)
+            self.output.send(self.op(np.array(any_to_float_list(input_value), dtype=float)).tolist())
+            return
         else:
             input_value = any_to_float(input_value)
 
