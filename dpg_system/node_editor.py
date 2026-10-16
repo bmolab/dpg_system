@@ -8,6 +8,7 @@ import traceback
 from dpg_system.node import Node, OriginNode, PatcherNode, _tidy
 import json
 import dpg_system.mac_gestures as mac_gestures
+from dpg_system import portable_paths
 
 
 class NodeEditor:
@@ -1577,8 +1578,7 @@ class NodeEditor:
             patch_container['parent_node_uuid'] = self.patcher_node.uuid
         if self.patch_name != '':
             patch_container['name'] = self.patch_name
-        if self.file_path != '':
-            patch_container['path'] = self.file_path
+        # The file's own location is not written: it is wherever it is loaded from.
 
         for index, node in enumerate(self._nodes):
             if node in exclude_list:
@@ -1656,7 +1656,7 @@ class NodeEditor:
         try:
             file_container = self.containerize()
             with open(path, 'w') as f:
-                json.dump(file_container, f, indent=4)
+                json.dump(portable_paths.contract(file_container), f, indent=4)
         except Exception as e:
             # Keep self.modified = True so the user knows the patch is unsaved.
             print(f'save: failed to write {path}: {type(e).__name__}: {e}')
@@ -1688,8 +1688,8 @@ class NodeEditor:
             self.patch_name = file_container['name']
         self.app.currently_loading_patch_name = self.patch_name
 
-        if 'path' in file_container:
-            self.file_path = file_container['path']
+        # A stored 'path' (older files) is ignored: the patch belongs to the
+        # file it was loaded from, so a copy saves to the copy, not the original.
         if 'id' in file_container:
             self.loaded_uuid = file_container['id']
         if 'parent_node_uuid' in file_container:
@@ -1800,14 +1800,14 @@ class NodeEditor:
         try:
             if len(path) > 0:
                 with open(path, 'r') as f:
-                    file_container = json.load(f)
+                    file_container = portable_paths.expand(json.load(f))
                     self.file_path = path
                     self.patch_name = self._patch_name_from_path(path)
                     self.app.add_to_recent(self.patch_name, path)
                     self.uncontainerize(file_container)
-                    # uncontainerize() resets file_path / patch_name from the file
-                    # container — restore the on-disk path/name so the editor reflects
-                    # where it was actually loaded from.
+                    # uncontainerize() resets patch_name from the file container;
+                    # restore the on-disk name so the editor reflects where it was
+                    # actually loaded from.
                     self.file_path = path
                     self.patch_name = self._patch_name_from_path(path)
                     self.app.set_current_tab_title(self.patch_name)

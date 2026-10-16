@@ -8,6 +8,7 @@ import time
 import numpy as np
 from importlib import import_module
 import dpg_system.dpg_app
+from dpg_system import portable_paths
 from dpg_system.node import Node, NodeInput, NodeOutput, Variable, PlaceholderNameNode
 from dpg_system.node_editor import *
 from dpg_system.node import *
@@ -327,6 +328,7 @@ class App:
         self.easy_mode = False
         with open('dpg_system_config.json', 'r') as f:
             self.config = json.load(f)
+            portable_paths.configure(self.config.get('path_roots', {}))
             if 'easy' in config:
                 self.easy_mode = config['easy']
         self.torch_available = False
@@ -1338,10 +1340,9 @@ class App:
                         current_editor.set_path(save_path)
                         file_container = {}
                         file_container['name'] = self.patches_name
-                        file_container['path'] = self.patches_path
                         file_container['patches'] = self.containerize_patch(current_editor)
 
-                        json.dump(file_container, f, indent=4)
+                        json.dump(portable_paths.contract(file_container), f, indent=4)
                         self.add_to_recent(self.patches_name, self.patches_path)
             if current_editor.patcher_node is not None:
                 current_editor.patcher_node.name_option.set(self.patches_name)
@@ -1368,14 +1369,13 @@ class App:
 
                 file_container = {}
                 file_container['name'] = self.patches_name
-                file_container['path'] = self.patches_path
 
                 patches_container = {}
                 for index, node_editor in enumerate(self.node_editors):
                     patches_container = self.containerize_patch(node_editor, patches_container)
 
                 file_container['patches'] = patches_container
-                json.dump(file_container, f, indent=4)
+                json.dump(portable_paths.contract(file_container), f, indent=4)
                 self.add_to_recent(self.patches_name, self.patches_path)
 
     def recent_1_callback(self):
@@ -2757,7 +2757,7 @@ class App:
                 #     if len(parts) == 2:
                 #         if parts[1] == 'json':
                 #             patch_name = parts[0]
-                file_container = json.load(f)
+                file_container = portable_paths.expand(json.load(f))
 
                 patch_count = 0
                 if 'patches' in file_container:
@@ -2795,6 +2795,8 @@ class App:
                             self.current_node_editor = editor_index
                             editor.load_(nodes_container)
                             if editor.loaded_parent_node_uuid == -1:
+                                # the top-level patch saves back to this file
+                                editor.file_path = path
                                 if main_editor is None:
                                     main_editor = self.current_node_editor
 
@@ -3167,12 +3169,12 @@ class App:
                 default_patcher_dict = {}
                 default_patcher_dict['path'] = default_patcher_path
                 with open(self.project_name + '_default_patcher.json', 'w') as f:
-                    json.dump(default_patcher_dict, f, indent=4)
+                    json.dump(portable_paths.contract(default_patcher_dict), f, indent=4)
 
     def open_default_patch(self):
         if os.path.exists(self.project_name + '_default_patcher.json'):
             with open(self.project_name + '_default_patcher.json', 'r') as f:
-                default_patcher_dict = json.load(f)
+                default_patcher_dict = portable_paths.expand(json.load(f))
                 if 'path' in default_patcher_dict:
                     default_patcher_path = default_patcher_dict['path']
                     if default_patcher_path != '' and default_patcher_path is not None:

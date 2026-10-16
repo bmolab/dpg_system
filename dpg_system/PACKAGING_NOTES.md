@@ -71,11 +71,14 @@ Docker is not an option: Metal, CoreAudio, MIDI and the GUI do not survive it on
 
 ## Code changes needed regardless of option
 
-1. **Portable paths in patches (biggest blocker).** Every patch in `patches/` stores its
-   own absolute path (`/Users/drokeby/dpg_system/patches/...`), and file-referencing
-   nodes (movie, sampler, shader, SMPL model paths, etc.) will store absolute asset
-   paths the same way. Deployment needs a convention: paths stored relative to the
-   patch file, or a token such as `$PATCH_DIR` / `$DPG_HOME` resolved on load.
+1. **Portable paths in patches - DONE 2026-10-04 (`portable_paths.py`).** A patch no
+   longer records its own location (a stored `path` in older files is ignored; the
+   file it was loaded from wins, so Cmd-S on a copy saves the copy). On save, any
+   string beginning with a known root is written with a token - `$DPG_HOME` (repo
+   root), each `path_roots` entry in `dpg_system_config.json`, then `$HOME` - and
+   expanded again on load; sampler set files and the default-patcher file too.
+   Existing patches convert when next saved. Still open: a one-time migration pass
+   over `patches/` and `examples/` (round-trip verified on all 990 files, not run).
 2. **cwd-independence of config files.** `dpg_app.py` opens `dpg_system_config.json`
    with a relative path at import time (line ~28, again ~107 and ~317), and the
    `<project>_recent_patchers.json` file likewise. Either the launcher must chdir to the
@@ -96,7 +99,7 @@ from "the piece changed" and makes rebuilding an installation machine reproducib
 
 ## Suggested order of work
 
-1. Portable path convention for patches and file-referencing nodes.
+1. Portable path convention for patches and file-referencing nodes. (done)
 2. cwd-independence of the config / recent-patchers files.
 3. Kiosk flag (fullscreen, hidden editor, editing locked).
 4. conda-pack recipe + `.app` launcher + launchd plist.

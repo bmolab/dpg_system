@@ -1,4 +1,5 @@
 from dpg_system.node import Node
+from dpg_system import portable_paths
 from dpg_system.conversion_utils import *
 from dpg_system.torch_base_nodes import *
 
@@ -1277,7 +1278,7 @@ class PolyphonicSamplerNode(Node):
         # exact sid assignment, gaps included.
         try:
             with open(path, 'r') as f:
-                container = json.load(f)
+                container = portable_paths.expand(json.load(f))
         except (OSError, ValueError) as e:
             print(f'load_set: cannot read {path}: {e}')
             return
@@ -1371,7 +1372,7 @@ class PolyphonicSamplerNode(Node):
 
         try:
             with open(path, 'w') as f:
-                json.dump({'sampler_set': 1, 'sounds': sounds_data}, f, indent=2)
+                json.dump(portable_paths.contract({'sampler_set': 1, 'sounds': sounds_data}), f, indent=2)
         except (OSError, TypeError) as e:
             print(f'save_set: cannot write {path}: {e}')
             return
