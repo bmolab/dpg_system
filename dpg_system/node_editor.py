@@ -864,7 +864,6 @@ class NodeEditor:
             return
         self.pan_nodes(target_x - x, target_y - y)
 
-    def _home_by_rects(self):
     def set_home_here(self):
         """Make the present view home: the origin moves to the top left of
         the patcher, so home brings back what is at that corner now, at 100%.
@@ -914,6 +913,7 @@ class NodeEditor:
         dpg.set_item_pos(self.origin.uuid, [int(round(target_x)), int(round(target_y))])
         self.modified = True
 
+    def _home_by_rects(self):
         """Home as measured on screen, for before the view's pan is known."""
         try:
             editor_screen = self.screen_rect()
