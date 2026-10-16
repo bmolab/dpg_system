@@ -350,14 +350,6 @@
   "combination": [
     "combination"
   ],
-  "comparison": [
-    "!=",
-    "<",
-    "<=",
-    "==",
-    ">",
-    ">="
-  ],
   "continuous_rotation": [
     "continuous_rotation"
   ],
@@ -368,8 +360,23 @@
   "divide": [
     "/"
   ],
+  "equal": [
+    "=="
+  ],
   "floor_divide": [
     "//"
+  ],
+  "greater": [
+    ">"
+  ],
+  "greater_equal": [
+    ">="
+  ],
+  "less": [
+    "<"
+  ],
+  "less_equal": [
+    "<="
   ],
   "math_single": [
     "abs",
@@ -400,6 +407,9 @@
   ],
   "multiply": [
     "*"
+  ],
+  "not_equal": [
+    "!="
   ],
   "perm": [
     "perm"

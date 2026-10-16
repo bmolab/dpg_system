@@ -261,6 +261,15 @@ It is deliberately not a `make_*` script, so rebuild.py neither runs it nor
 re-flows its pages. It finds template nodes by id; if a node in the overview is
 deleted and remade, update the ids at the top of the script.
 
+`derive_comparison_help.py` does the same for `>`, `>=`, `<`, `<=`, `==`, `!=`
+(pages `greater` ... `not_equal`), from the SAME arithmetic template, importing
+its helpers. comparison_help.json stays the generated overview. Two traps it
+handles: a comparison node's operand inlet is named `''` when given an
+argument but `operand` without one, so cords into it are named per node; and
+its default true/false output cannot be plotted, so the sine and NumPy demos
+set output_type to int / float. `==` / `!=` demos compare whole numbers
+(`// 0.25` steps, int64 random arrays) - floats would never match.
+
 ## bugs these tools found
 
 Writing the patches surfaced twelve real bugs, all now fixed and covered by

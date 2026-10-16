@@ -76,7 +76,8 @@ TREE = {
     'nodes_math': ('Math', 'Numbers, lists and arrays in; results out.', [
         ('Arithmetic', ['arithmetic', 'add', 'subtract', 'multiply', 'divide', 'floor_divide', 'modulo',
                         'power', 'min', 'max', 'reverse_subtract', 'reverse_divide', 'perm', 'combination']),
-        ('Functions', ['math_single', 'trig', 'comparison', 'clamp', 'accumulate', 'change',
+        ('Comparison', ['comparison', 'greater', 'greater_equal', 'less', 'less_equal', 'equal', 'not_equal']),
+        ('Functions', ['math_single', 'trig', 'clamp', 'accumulate', 'change',
                        'crossfade', 'continuous_rotation', 'color_convert']),
         ('Rotations', ['quaternion_to_euler', 'quaternion_to_6d', 'quaternion_diff', 'quaternion_norm',
                        'tracker_align', 'swing_twist']),
@@ -207,7 +208,7 @@ LABELS = {
     'body_to_joints': 'body / joints', 'bow~': 'friction models', 'button': 'button / button_set',
     'change': 'change / increasing / decreasing', 'clean~': 'conditioning',
     'color_convert': 'colour conversion', 'combine': 'combine / join / split',
-    'comparison': 'comparison == < >', 'dict': 'dictionaries', 'eos_console': 'Eos lighting console',
+    'comparison': 'all of the comparison nodes', 'dict': 'dictionaries', 'eos_console': 'Eos lighting console',
     'fold~': 'distortion', 'gather_sentence': 'building text', 'gl_line_array': 'gl_line_array / vertex_buffer',
     'gl_sphere': 'gl shapes', 'gl_translate': 'gl transforms', 'k.sobel': 'k. filters',
     'math_single': 'single-input math', 'mgl_body': 'mgl body drawing',

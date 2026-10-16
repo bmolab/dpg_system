@@ -4076,7 +4076,9 @@ class Node:
                 handled = False
                 if '=' in arg and arg != '=':
                     arg_parts = arg.split('=')
-                    if len(arg_parts) == 2:
+                    # both sides must be there: '>=', '<=' and '!=' are words in
+                    # a comment, not name=value settings with an empty side
+                    if len(arg_parts) == 2 and arg_parts[0].strip() and arg_parts[1].strip():
                         if arg_parts[0][-1] == ' ':
                             arg_parts[0] = arg_parts[0][:-1]
                         if arg_parts[1][0] == ' ':

@@ -1,0 +1,1036 @@
+{
+    "height": 946,
+    "width": 1448,
+    "position": [
+        351,
+        81
+    ],
+    "id": 1416,
+    "name": "greater_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1444,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment > (greater than)",
+            "name": "comment",
+            "id": 1462,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 205,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "> (greater than)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "> (greater than)"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 1473,
+            "sid": 3,
+            "position_x": 729,
+            "position_y": 45,
+            "width": 679,
+            "height": 841,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "> tests whether each value arriving at its left inlet is GREATER than the operand,\nand sends out the answer.\n\n7 into \"> 5\" is true; 5 into \"> 5\" is false - equal is not greater.\nIn the demo a sine wave is tested against 0.5, and the plot shows 1 while the wave\nis above it. Raise the operand and the pulses get narrower; lower it and they widen.\n\nUse it as a threshold: is the hand above the head, is the sound loud enough, has\nthe count passed 100. Feed the answer to a gate or a toggle.\n\nArrays and tensors are compared element by element, giving an array of results the\nsame shape - a MASK, 1 wherever the test passes. In the NumPy example at the bottom\nleft, two random arrays are compared cell by cell.\n\nSYNTAX:\n> <operand: int or float>\n\nEXAMPLES:\n> 0.5     is a 0 to 1 control past halfway?\n> 100     has the count passed 100?\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to test. Receiving data here triggers the comparison.\n\noperand:\nThe value to compare against. \nSetting it does not send anything - it waits for the next value at \"in\".\nGive it as an argument (\"> 0.5\") and this inlet becomes a number you can drag.\nLeave the argument out and it is a plain inlet that must be fed from elsewhere -\nas in the NumPy example, where the operand is a whole array.\n\nOUTPUTS:\n\nresult:\nTrue if the input is greater than the operand.\n\noutput_type:\nWhat the answer looks like: \"bool\" gives true or false (the default), \"int\" 1 or 0,\n\"float\" 1.0 or 0.0. A plot, a heat map or an arithmetic node needs a number, which\nis why the sine and NumPy demos are set to int and float.\n\nOn a smooth signal > and >= look the same - they differ only at exactly the\noperand, which a sine wave almost never hits. The difference matters with whole\nnumbers: the number box starts at 10, the operand itself, where > 10 is false\nbut >= 10 is true.\n\nA result is sent for EVERY input, not only when the answer changes. To react only\nat the moment the test flips, follow it with change.\n\nSEE ALSO:\n>=      greater than or equal to\n<       less than\nchange  react only when the answer changes",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 671,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 825,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "> tests whether each value arriving at its left inlet is GREATER than the operand,\nand sends out the answer.\n\n7 into \"> 5\" is true; 5 into \"> 5\" is false - equal is not greater.\nIn the demo a sine wave is tested against 0.5, and the plot shows 1 while the wave\nis above it. Raise the operand and the pulses get narrower; lower it and they widen.\n\nUse it as a threshold: is the hand above the head, is the sound loud enough, has\nthe count passed 100. Feed the answer to a gate or a toggle.\n\nArrays and tensors are compared element by element, giving an array of results the\nsame shape - a MASK, 1 wherever the test passes. In the NumPy example at the bottom\nleft, two random arrays are compared cell by cell.\n\nSYNTAX:\n> <operand: int or float>\n\nEXAMPLES:\n> 0.5     is a 0 to 1 control past halfway?\n> 100     has the count passed 100?\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to test. Receiving data here triggers the comparison.\n\noperand:\nThe value to compare against. \nSetting it does not send anything - it waits for the next value at \"in\".\nGive it as an argument (\"> 0.5\") and this inlet becomes a number you can drag.\nLeave the argument out and it is a plain inlet that must be fed from elsewhere -\nas in the NumPy example, where the operand is a whole array.\n\nOUTPUTS:\n\nresult:\nTrue if the input is greater than the operand.\n\noutput_type:\nWhat the answer looks like: \"bool\" gives true or false (the default), \"int\" 1 or 0,\n\"float\" 1.0 or 0.0. A plot, a heat map or an arithmetic node needs a number, which\nis why the sine and NumPy demos are set to int and float.\n\nOn a smooth signal > and >= look the same - they differ only at exactly the\noperand, which a sine wave almost never hits. The difference matters with whole\nnumbers: the number box starts at 10, the operand itself, where > 10 is false\nbut >= 10 is true.\n\nA result is sent for EVERY input, not only when the answer changes. To react only\nat the moment the test flips, follow it with change.\n\nSEE ALSO:\n>=      greater than or equal to\n<       less than\nchange  react only when the answer changes"
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 1490,
+            "sid": 4,
+            "position_x": 28,
+            "position_y": 103,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "4": {
+            "init": "t 1",
+            "name": "t",
+            "id": 1497,
+            "sid": 5,
+            "position_x": 135,
+            "position_y": 104,
+            "width": 22,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "trigger 0",
+                    "value": "1",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "name": "signal",
+            "id": 1507,
+            "sid": 6,
+            "position_x": 176,
+            "position_y": 101,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "init": "> 0.5",
+            "name": ">",
+            "id": 1529,
+            "sid": 7,
+            "position_x": 333,
+            "position_y": 152,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_type",
+                    "value": "int",
+                    "value_type": "string"
+                }
+            }
+        },
+        "7": {
+            "name": "plot",
+            "id": 1539,
+            "sid": 8,
+            "position_x": 452,
+            "position_y": 110,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -0.2,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "name": "text_block",
+            "id": 1590,
+            "sid": 9,
+            "position_x": 246,
+            "position_y": 49,
+            "width": 292,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "1 while the sine wave is above 0.5\ndrag the operand to change the pulse width",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "text": "1 while the sine wave is above 0.5\ndrag the operand to change the pulse width"
+        },
+        "9": {
+            "name": "int",
+            "id": 1607,
+            "sid": 10,
+            "position_x": 29,
+            "position_y": 301,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "init": "> 10",
+            "name": ">",
+            "id": 1643,
+            "sid": 11,
+            "position_x": 183,
+            "position_y": 297,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_type",
+                    "value": "bool",
+                    "value_type": "string"
+                }
+            }
+        },
+        "11": {
+            "name": "toggle",
+            "id": 1653,
+            "sid": 12,
+            "position_x": 291,
+            "position_y": 304,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "12": {
+            "init": "comment drag this number",
+            "name": "comment",
+            "id": 1686,
+            "sid": 13,
+            "position_x": 42,
+            "position_y": 260,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag this number",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "drag this number"
+        },
+        "13": {
+            "name": "close",
+            "id": 1697,
+            "sid": 14,
+            "position_x": 24,
+            "position_y": 674,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "14": {
+            "name": "float",
+            "id": 1714,
+            "sid": 15,
+            "position_x": 182,
+            "position_y": 221,
+            "width": 90,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "15": {
+            "init": "comment operand",
+            "name": "comment",
+            "id": 1756,
+            "sid": 17,
+            "position_x": 186,
+            "position_y": 181,
+            "width": 52,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "operand",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "operand"
+        },
+        "16": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 1783,
+            "sid": 20,
+            "position_x": 25,
+            "position_y": 409,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 1805,
+            "sid": 21,
+            "position_x": 24,
+            "position_y": 515,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "18": {
+            "name": "heat_map",
+            "id": 2002,
+            "sid": 28,
+            "position_x": 165,
+            "position_y": 406,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "name": "heat_map",
+            "id": 2078,
+            "sid": 30,
+            "position_x": 167,
+            "position_y": 553,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "20": {
+            "name": "heat_map",
+            "id": 2116,
+            "sid": 31,
+            "position_x": 485,
+            "position_y": 463,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "21": {
+            "name": "load_bang",
+            "id": 2162,
+            "sid": 33,
+            "position_x": 26,
+            "position_y": 622,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "22": {
+            "init": "comment comparing two arrays cell by cell gives a mask: 1 where the test is true",
+            "name": "comment",
+            "id": 2198,
+            "sid": 37,
+            "position_x": 61,
+            "position_y": 366,
+            "width": 451,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "comparing two arrays cell by cell gives a mask: 1 where the test is true",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "comparing two arrays cell by cell gives a mask: 1 where the test is true"
+        },
+        "23": {
+            "name": ">",
+            "id": 2217,
+            "sid": 39,
+            "position_x": 372,
+            "position_y": 486,
+            "width": 52,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output_type",
+                    "value": "float",
+                    "value_type": "string"
+                }
+            }
+        },
+        "24": {
+            "init": "t bang bang",
+            "name": "t",
+            "id": 2300,
+            "sid": 40,
+            "position_x": 124,
+            "position_y": 622,
+            "width": 33,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "trigger 0",
+                    "value": "bang",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "trigger 1",
+                    "value": "bang",
+                    "value_type": "string"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1490,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1497,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 1497,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 1507,
+            "dest_node_name": "signal",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 1507,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1529,
+            "dest_node_name": ">",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 1529,
+            "source_node_name": ">",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1539,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 1607,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 1643,
+            "dest_node_name": ">",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 1643,
+            "source_node_name": ">",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1653,
+            "dest_node_name": "toggle",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 1714,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 1529,
+            "dest_node_name": ">",
+            "dest_input_index": 1,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2002,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2217,
+            "dest_node_name": ">",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "9": {
+            "source_node": 1805,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2078,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "10": {
+            "source_node": 1805,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2217,
+            "dest_node_name": ">",
+            "dest_input_index": 1,
+            "dest_input_name": "operand"
+        },
+        "11": {
+            "source_node": 2217,
+            "source_node_name": ">",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 2116,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "12": {
+            "source_node": 2162,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 2300,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "13": {
+            "source_node": 2300,
+            "source_node_name": "t",
+            "source_output_index": 1,
+            "source_output_name": "bang",
+            "dest_node": 1805,
+            "dest_node_name": "np.rand",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "14": {
+            "source_node": 2300,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 1783,
+            "dest_node_name": "np.rand",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

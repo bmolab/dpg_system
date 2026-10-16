@@ -88,6 +88,14 @@ for _label, _want in (('%', [1.0, 0.0, 1.0]), ('//', [3.0, np.inf, 2.0])):
     check(f'{_label} <- array, array operand', list(feed(m, a)), _want)
 
 # ---------------------------------------------------------------------------
+print("\nparse_args: '>=' is a word, not a name=value setting")
+# '>='.split('=') is ['>', ''], and reading the empty value's first character
+# raised, so a comment titled '>= (greater than or equal)' was never created.
+for _text in ('>= (greater than or equal)', '<= 4', '!= 0'):
+    _c = make('comment ' + _text)
+    check(f'comment {_text!r} creates', _c is not None and _c.comment_text == _text, True)
+
+# ---------------------------------------------------------------------------
 print("\nSignalNode: the first thing it emits must be a float")
 # The 'on' inlet triggers execution, so an int 0 here reached arithmetic nodes
 # before any real sample did, and narrowed their operands.
