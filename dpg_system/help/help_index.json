@@ -10,6 +10,9 @@
   "_basic_nodes": [
     "--- basic_nodes.py ---"
   ],
+  "active_widget": [
+    "active_widget"
+  ],
   "color_convert": [
     "cmy_to_hsl",
     "cmy_to_hsv",
@@ -38,9 +41,6 @@
   "dict_search": [
     "dict_search"
   ],
-  "list_box": [
-    "list_box"
-  ],
   "directory_iterator": [
     "directory_iterator"
   ],
@@ -48,18 +48,18 @@
     "info",
     "type"
   ],
+  "list_box": [
+    "list_box"
+  ],
   "pack": [
     "pack",
     "pak"
   ],
-  "present": [
-    "present"
-  ],
-  "active_widget": [
-    "active_widget"
-  ],
   "patch_window_position": [
     "patch_window_position"
+  ],
+  "present": [
+    "present"
   ],
   "repeat": [
     "repeat",
@@ -80,12 +80,12 @@
     "slice_list",
     "sublist"
   ],
-  "stream_list": [
-    "stream_list"
-  ],
   "start_trace": [
     "end_trace",
     "start_trace"
+  ],
+  "stream_list": [
+    "stream_list"
   ],
   "timer": [
     "elapsed",
@@ -107,14 +107,30 @@
   "context_tracker": [
     "context_tracker"
   ],
+  "_depthanything_nodes": [
+    "--- depthanything_nodes.py ---"
+  ],
+  "depth_anything": [
+    "depth_anything"
+  ],
   "_digico_nodes": [
     "--- digico_nodes.py ---"
   ],
   "digico.fader": [
     "digico.fader"
   ],
+  "_elevenlabs_nodes": [
+    "--- elevenlabs_nodes.py ---"
+  ],
+  "eleven_labs": [
+    "eleven_labs",
+    "eleven_labs~"
+  ],
   "_eos_nodes": [
     "--- eos_nodes.py ---"
+  ],
+  "color_source": [
+    "color_source"
   ],
   "eos_console": [
     "eos_console",
@@ -124,9 +140,6 @@
     "eos_slider",
     "eos_knob",
     "eos_toggle"
-  ],
-  "color_source": [
-    "color_source"
   ],
   "_erae_nodes": [
     "--- erae_nodes.py ---"
@@ -158,11 +171,11 @@
   "gemma": [
     "gemma"
   ],
-  "neuronpedia_search": [
-    "neuronpedia_search"
-  ],
   "_gl_nodes": [
     "--- gl_nodes.py (the older GL system; mgl_ is the successor) ---"
+  ],
+  "gl_button_grid": [
+    "gl_button_grid"
   ],
   "gl_context": [
     "gl_context",
@@ -193,9 +206,6 @@
   "gl_text": [
     "gl_text",
     "gl_korean_text"
-  ],
-  "gl_button_grid": [
-    "gl_button_grid"
   ],
   "gl_translate": [
     "gl_translate",
@@ -328,28 +338,17 @@
   "accumulate": [
     "accumulate"
   ],
-  "arithmetic": [
-    "!-",
-    "!/",
-    "%",
-    "*",
-    "+",
-    "-",
-    "/",
-    "//",
-    "^",
-    "combination",
-    "max",
-    "min",
-    "mod",
-    "perm",
-    "pow"
+  "add": [
+    "+"
   ],
   "change": [
     "change",
     "decreasing",
     "increasing",
     "pass"
+  ],
+  "combination": [
+    "combination"
   ],
   "comparison": [
     "!=",
@@ -365,6 +364,12 @@
   "crossfade": [
     "crossfade",
     "lerp"
+  ],
+  "divide": [
+    "/"
+  ],
+  "floor_divide": [
+    "//"
   ],
   "math_single": [
     "abs",
@@ -383,6 +388,35 @@
     "sqrt",
     "trunc"
   ],
+  "max": [
+    "max"
+  ],
+  "min": [
+    "min"
+  ],
+  "modulo": [
+    "%",
+    "mod"
+  ],
+  "multiply": [
+    "*"
+  ],
+  "perm": [
+    "perm"
+  ],
+  "power": [
+    "^",
+    "pow"
+  ],
+  "reverse_divide": [
+    "!/"
+  ],
+  "reverse_subtract": [
+    "!-"
+  ],
+  "subtract": [
+    "-"
+  ],
   "trig": [
     "acos",
     "asin",
@@ -398,11 +432,11 @@
     "buffer",
     "rolling_buffer"
   ],
-  "cwt": [
-    "cwt"
-  ],
   "confusion": [
     "confusion"
+  ],
+  "cwt": [
+    "cwt"
   ],
   "_mgl_shader_node": [
     "--- mgl_shader_node.py ---"
@@ -419,6 +453,9 @@
   ],
   "_midi_nodes": [
     "--- midi_nodes.py ---"
+  ],
+  "blue_board": [
+    "blue_board"
   ],
   "midi_control_in": [
     "midi_control_in",
@@ -446,9 +483,6 @@
   "mpd218": [
     "mpd218"
   ],
-  "blue_board": [
-    "blue_board"
-  ],
   "mpe_in": [
     "mpe_in"
   ],
@@ -470,10 +504,6 @@
     "mgl_material",
     "mgl_color"
   ],
-  "mgl_texture": [
-    "mgl_texture",
-    "mgl_image"
-  ],
   "mgl_context": [
     "mgl_context",
     "mgl_display",
@@ -486,9 +516,6 @@
     "mgl_surface",
     "mgl_line_array"
   ],
-  "mgl_text": [
-    "mgl_text"
-  ],
   "mgl_sphere": [
     "mgl_box",
     "mgl_sphere",
@@ -498,6 +525,13 @@
     "mgl_partial_disk",
     "mgl_plane",
     "mgl_line"
+  ],
+  "mgl_text": [
+    "mgl_text"
+  ],
+  "mgl_texture": [
+    "mgl_texture",
+    "mgl_image"
   ],
   "mgl_transform": [
     "mgl_transform",
@@ -523,9 +557,6 @@
     "local_to_global_body",
     "global_to_local_body"
   ],
-  "limb_size": [
-    "limb_size"
-  ],
   "cadence_filter": [
     "cadence_filter",
     "check_burst"
@@ -534,6 +565,12 @@
     "gl_body",
     "gl_simple_body",
     "gl_alt_body"
+  ],
+  "json_npz_frame_picker": [
+    "json_npz_frame_picker"
+  ],
+  "limb_size": [
+    "limb_size"
   ],
   "mag_offset": [
     "mag_offset",
@@ -548,12 +585,12 @@
     "pose_adjust",
     "calibrate_pose"
   ],
+  "quaternion_diff_and_axis": [
+    "quaternion_diff_and_axis"
+  ],
   "sensor_to_root": [
     "sensor_to_root",
     "tracker_root_inference"
-  ],
-  "quaternion_diff_and_axis": [
-    "quaternion_diff_and_axis"
   ],
   "shadow": [
     "shadow",
@@ -563,9 +600,6 @@
   "take": [
     "take",
     "take_dict"
-  ],
-  "json_npz_frame_picker": [
-    "json_npz_frame_picker"
   ],
   "_movesense_nodes": [
     "--- movesense_nodes.py ---"
@@ -586,15 +620,18 @@
   "ndi_receiver": [
     "ndi_receiver"
   ],
-  "depth_anything": [
-    "depth_anything"
-  ],
   "_nemotron_nodes": [
     "--- nemotron_nodes.py ---"
   ],
   "nemotron": [
     "nemotron",
     "nemotron~"
+  ],
+  "_neuronpedia_node": [
+    "--- neuronpedia_node.py ---"
+  ],
+  "neuronpedia_search": [
+    "neuronpedia_search"
   ],
   "_node": [
     "--- node.py ---"
@@ -728,6 +765,9 @@
   "_osc_nodes": [
     "--- osc_nodes.py ---"
   ],
+  "osc_cue": [
+    "osc_cue"
+  ],
   "osc_float": [
     "osc_float",
     "osc_int",
@@ -743,9 +783,6 @@
   ],
   "osc_query_json": [
     "osc_query_json"
-  ],
-  "osc_cue": [
-    "osc_cue"
   ],
   "osc_receive": [
     "osc_receive",
@@ -781,12 +818,12 @@
   "_plot_nodes": [
     "--- plot_nodes.py ---"
   ],
-  "plot": [
-    "plot"
-  ],
   "heat_map": [
     "heat_map",
     "heat_scroll"
+  ],
+  "plot": [
+    "plot"
   ],
   "_point_cloud_nodes": [
     "--- point_cloud_nodes.py ---"
@@ -805,12 +842,12 @@
   "_prompt_nodes": [
     "--- prompt_nodes.py ---"
   ],
+  "prompt_composer": [
+    "prompt_composer"
+  ],
   "weighted_prompt": [
     "weighted_prompt",
     "ambient_prompt"
-  ],
-  "prompt_composer": [
-    "prompt_composer"
   ],
   "_pybullet_nodes": [
     "--- pybullet_nodes.py ---"
@@ -829,9 +866,6 @@
   ],
   "quaternion_norm": [
     "quaternion_norm"
-  ],
-  "tracker_align": [
-    "tracker_align"
   ],
   "quaternion_to_6d": [
     "quaternion_to_6d",
@@ -854,6 +888,9 @@
   ],
   "swing_twist": [
     "swing_twist"
+  ],
+  "tracker_align": [
+    "tracker_align"
   ],
   "_sampler_nodes": [
     "--- sampler_nodes.py ---"
@@ -883,15 +920,9 @@
     "adaptive_filter",
     "adaptive_quaternion_filter"
   ],
-  "one_euro_filter": [
-    "one_euro_filter"
-  ],
   "band_pass": [
     "band_pass",
     "filter_bank"
-  ],
-  "spectrum": [
-    "spectrum"
   ],
   "diff": [
     "diff"
@@ -910,6 +941,9 @@
   ],
   "noise_gate": [
     "noise_gate"
+  ],
+  "one_euro_filter": [
+    "one_euro_filter"
   ],
   "physics_filter": [
     "kinetic_filter",
@@ -939,6 +973,9 @@
   ],
   "signal": [
     "signal"
+  ],
+  "spectrum": [
+    "spectrum"
   ],
   "stream": [
     "stream",
@@ -990,11 +1027,11 @@
   "_socket_nodes": [
     "--- socket_nodes.py ---"
   ],
-  "process_group": [
-    "process_group"
-  ],
   "ip_address": [
     "ip_address"
+  ],
+  "process_group": [
+    "process_group"
   ],
   "tcp_numpy_send": [
     "tcp_numpy_send",
@@ -1039,23 +1076,19 @@
   "_synth_nodes": [
     "--- synth_nodes.py ---"
   ],
+  "adc~": [
+    "adc~",
+    "mic~"
+  ],
   "additive~": [
     "additive~",
     "shape_modes",
     "spectrum~"
   ],
-  "vst~": [
-    "plugin~",
-    "vst~"
-  ],
   "adsr~": [
     "adsr~",
     "line~",
     "ramp~"
-  ],
-  "clock~": [
-    "clock~",
-    "metro~"
   ],
   "audio_out~": [
     "audio_out~"
@@ -1074,11 +1107,19 @@
     "strain~",
     "stroke~"
   ],
+  "capture~": [
+    "array~",
+    "capture~"
+  ],
   "clean~": [
     "clean~",
     "condition~",
     "one_euro~",
     "smooth~"
+  ],
+  "clock~": [
+    "clock~",
+    "metro~"
   ],
   "delay~": [
     "delay~",
@@ -1107,12 +1148,14 @@
     "strike~",
     "string~"
   ],
+  "place~": [
+    "place~"
+  ],
   "record~": [
     "record~"
   ],
-  "adc~": [
-    "adc~",
-    "mic~"
+  "scope~": [
+    "scope~"
   ],
   "shaper~": [
     "envelope~",
@@ -1124,16 +1167,6 @@
   "snapshot~": [
     "snapshot~"
   ],
-  "capture~": [
-    "array~",
-    "capture~"
-  ],
-  "place~": [
-    "place~"
-  ],
-  "scope~": [
-    "scope~"
-  ],
   "stream~": [
     "audio_in~",
     "stream~"
@@ -1144,10 +1177,6 @@
     "mix~",
     "pan~",
     "vca~"
-  ],
-  "vu~": [
-    "meter~",
-    "vu~"
   ],
   "vcf~": [
     "formant~",
@@ -1163,6 +1192,14 @@
     "sampler_osc~",
     "sig~",
     "vco~"
+  ],
+  "vst~": [
+    "plugin~",
+    "vst~"
+  ],
+  "vu~": [
+    "meter~",
+    "vu~"
   ],
   "wind~": [
     "blow~",
@@ -1198,14 +1235,14 @@
     "string_builder",
     "fifo_string"
   ],
-  "text_change": [
-    "text_change"
-  ],
   "string_replace": [
     "string_replace",
     "word_replace",
     "unescape_text",
     "printable"
+  ],
+  "text_change": [
+    "text_change"
   ],
   "text_file": [
     "text_editor",
@@ -1519,12 +1556,12 @@
   "_vae_nodes": [
     "--- vae_nodes.py ---"
   ],
+  "vae": [
+    "vae"
+  ],
   "vposer": [
     "vposer",
     "vposer6D"
-  ],
-  "vae": [
-    "vae"
   ],
   "_visca_nodes": [
     "--- visca_nodes.py ---"
@@ -1561,9 +1598,5 @@
   "whisper": [
     "whisper",
     "whisper~"
-  ],
-  "eleven_labs": [
-    "eleven_labs",
-    "eleven_labs~"
   ]
 }

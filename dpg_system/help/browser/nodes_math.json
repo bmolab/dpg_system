@@ -1,11 +1,11 @@
 {
-    "height": 778,
-    "width": 1808,
+    "height": 1110,
+    "width": 1426,
     "position": [
         100,
         100
     ],
-    "id": 1980,
+    "id": 2979,
     "name": "nodes_math",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_math.json",
     "nodes": {
@@ -161,7 +161,7 @@
             "presentation_state": "show_all"
         },
         "6": {
-            "init": "help_link arithmetic arithmetic + - * /",
+            "init": "help_link arithmetic all of the arithmetic nodes",
             "name": "help_link",
             "position_x": 24,
             "position_y": 184,
@@ -169,7 +169,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "arithmetic + - * /",
+                    "name": "all of the arithmetic nodes",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -194,12 +194,12 @@
             "annotation": true,
             "position_x": 275,
             "position_y": 188,
-            "width": 459,
-            "height": 40,
+            "width": 206,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "one calculation, one operand\n(!-, !/, %, *, +, -, /, //, ^, combination, max, min, mod, perm, pow)",
+                    "value": "one calculation, one operand",
                     "value_type": "str"
                 },
                 "1": {
@@ -209,12 +209,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 451,
+                    "value": 198,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -223,14 +223,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "one calculation, one operand\n(!-, !/, %, *, +, -, /, //, ^, combination, max, min, mod, perm, pow)",
+            "text": "one calculation, one operand",
             "id": 796,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "8": {
-            "init": "help_link math_single single-input math",
+            "init": "help_link add ",
             "name": "help_link",
             "position_x": 24,
             "position_y": 236,
@@ -238,7 +238,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "single-input math",
+                    "name": "",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -263,6 +263,928 @@
             "annotation": true,
             "position_x": 275,
             "position_y": 240,
+            "width": 52,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "add\n(+)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 44,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "add\n(+)",
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "init": "help_link subtract ",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 288,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 292,
+            "width": 83,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "subtract\n(-)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 75,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "subtract\n(-)",
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "init": "help_link multiply ",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 340,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 344,
+            "width": 83,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "multiply\n(*)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 75,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "multiply\n(*)",
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "init": "help_link divide ",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 392,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 396,
+            "width": 70,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "divide\n(/)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 62,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "divide\n(/)",
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "init": "help_link floor_divide //",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 444,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "//",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 448,
+            "width": 163,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "divide, rounding down\n(//)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "divide, rounding down\n(//)",
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "init": "help_link modulo mod",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 496,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mod",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 500,
+            "width": 89,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "remainder\n(%, mod)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 81,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "remainder\n(%, mod)",
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "init": "help_link power pow",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 548,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "pow",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 552,
+            "width": 132,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "raise to a power\n(^, pow)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 124,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "raise to a power\n(^, pow)",
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "init": "help_link min min",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 600,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 604,
+            "width": 138,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the smaller value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the smaller value",
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "init": "help_link max max",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 652,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "max",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 656,
+            "width": 132,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the larger value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 124,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the larger value",
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "init": "help_link reverse_subtract !-",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 704,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "!-",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 708,
+            "width": 188,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "subtract from the operand\n(!-)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "subtract from the operand\n(!-)",
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "init": "help_link reverse_divide !/",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 756,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "!/",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 760,
+            "width": 144,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "divide the operand\n(!/)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 136,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "divide the operand\n(!/)",
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "init": "help_link perm perm",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 808,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "perm",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "31": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 812,
+            "width": 114,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "ordered picks",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 106,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "ordered picks",
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "32": {
+            "init": "help_link combination combination",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 860,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "combination",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1721,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "33": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 864,
+            "width": 126,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "unordered picks",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 118,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "unordered picks",
+            "id": 1758,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "34": {
+            "init": "comment Functions",
+            "name": "comment",
+            "position_x": 541,
+            "position_y": 150,
+            "width": 85,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Functions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Functions",
+            "id": 1795,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "35": {
+            "init": "help_link math_single single-input math",
+            "name": "help_link",
+            "position_x": 541,
+            "position_y": 184,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "single-input math",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "orange",
+                    "value_type": "str"
+                }
+            },
+            "id": 1832,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "36": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 792,
+            "position_y": 188,
             "width": 588,
             "height": 52,
             "properties": {
@@ -293,16 +1215,16 @@
                 }
             },
             "text": "one function, no operand\n(abs, ceil, exp, floor, inverse, log10, log2, norm, np.ceil, np.floor, np.round, np.trunc,\n round, sqrt, trunc)",
-            "id": 870,
+            "id": 1869,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "10": {
+        "37": {
             "init": "help_link trig trigonometry",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 296,
+            "position_x": 541,
+            "position_y": 244,
             "width": 237,
             "height": 44,
             "properties": {
@@ -318,20 +1240,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 907,
+            "id": 1906,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "11": {
+        "38": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 300,
+            "position_x": 792,
+            "position_y": 248,
             "width": 268,
             "height": 40,
             "properties": {
@@ -362,16 +1284,16 @@
                 }
             },
             "text": "angles in, ratios out (and back again)\n(acos, asin, atan, cos, sin, tan)",
-            "id": 944,
+            "id": 1943,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "39": {
             "init": "help_link comparison comparison == < >",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 348,
+            "position_x": 541,
+            "position_y": 296,
             "width": 237,
             "height": 44,
             "properties": {
@@ -387,20 +1309,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 981,
+            "id": 1980,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "40": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 352,
+            "position_x": 792,
+            "position_y": 300,
             "width": 243,
             "height": 40,
             "properties": {
@@ -431,16 +1353,16 @@
                 }
             },
             "text": "test a value, report true or false\n(!=, <, <=, ==, >, >=)",
-            "id": 1018,
+            "id": 2017,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "41": {
             "init": "help_link clamp clamp",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 400,
+            "position_x": 541,
+            "position_y": 348,
             "width": 237,
             "height": 44,
             "properties": {
@@ -456,20 +1378,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 1055,
+            "id": 2054,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "42": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 404,
+            "position_x": 792,
+            "position_y": 352,
             "width": 292,
             "height": 28,
             "properties": {
@@ -500,16 +1422,16 @@
                 }
             },
             "text": "clamp the input values to a range and send",
-            "id": 1092,
+            "id": 2091,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "43": {
             "init": "help_link accumulate accumulate",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 452,
+            "position_x": 541,
+            "position_y": 400,
             "width": 237,
             "height": 44,
             "properties": {
@@ -525,20 +1447,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 1129,
+            "id": 2128,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "44": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 456,
+            "position_x": 792,
+            "position_y": 404,
             "width": 126,
             "height": 28,
             "properties": {
@@ -569,16 +1491,16 @@
                 }
             },
             "text": "a running total",
-            "id": 1166,
+            "id": 2165,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "45": {
             "init": "help_link change change / increasing / decreasing",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 504,
+            "position_x": 541,
+            "position_y": 452,
             "width": 237,
             "height": 44,
             "properties": {
@@ -594,20 +1516,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 1203,
+            "id": 2202,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "46": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 508,
+            "position_x": 792,
+            "position_y": 456,
             "width": 268,
             "height": 40,
             "properties": {
@@ -638,16 +1560,16 @@
                 }
             },
             "text": "pass a value on only when it has moved\n(change, decreasing, increasing, pass)",
-            "id": 1240,
+            "id": 2239,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "47": {
             "init": "help_link crossfade crossfade / lerp",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 556,
+            "position_x": 541,
+            "position_y": 504,
             "width": 237,
             "height": 44,
             "properties": {
@@ -663,20 +1585,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 1277,
+            "id": 2276,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "48": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 560,
+            "position_x": 792,
+            "position_y": 508,
             "width": 181,
             "height": 40,
             "properties": {
@@ -707,16 +1629,16 @@
                 }
             },
             "text": "blend between two inputs\n(crossfade, lerp)",
-            "id": 1314,
+            "id": 2313,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "49": {
             "init": "help_link continuous_rotation continuous_rotation",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 608,
+            "position_x": 541,
+            "position_y": 556,
             "width": 237,
             "height": 44,
             "properties": {
@@ -732,20 +1654,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 1351,
+            "id": 2350,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "50": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 612,
+            "position_x": 792,
+            "position_y": 560,
             "width": 188,
             "height": 28,
             "properties": {
@@ -776,16 +1698,16 @@
                 }
             },
             "text": "undo the wrap in an angle",
-            "id": 1388,
+            "id": 2387,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "51": {
             "init": "help_link color_convert colour conversion",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 660,
+            "position_x": 541,
+            "position_y": 608,
             "width": 237,
             "height": 44,
             "properties": {
@@ -801,20 +1723,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "green",
+                    "value": "orange",
                     "value_type": "str"
                 }
             },
-            "id": 1425,
+            "id": 2424,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "52": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 664,
+            "position_x": 792,
+            "position_y": 612,
             "width": 569,
             "height": 52,
             "properties": {
@@ -845,16 +1767,16 @@
                 }
             },
             "text": "the same colour, described differently\n(cmy_to_hsl, cmy_to_hsv, cmy_to_rgb, color_convert, hsl_to_cmy, hsl_to_hsv, hsl_to_rgb,\n hsv_to_cmy, hsv_to_hsl, hsv_to_rgb, rgb_to_cmy, rgb_to_hsl, rgb_to_hsv)",
-            "id": 1462,
+            "id": 2461,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "53": {
             "init": "comment Rotations",
             "name": "comment",
-            "position_x": 923,
-            "position_y": 150,
+            "position_x": 541,
+            "position_y": 686,
             "width": 85,
             "height": 30,
             "properties": {
@@ -870,16 +1792,16 @@
                 }
             },
             "comment": "Rotations",
-            "id": 1499,
+            "id": 2498,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "27": {
+        "54": {
             "init": "help_link quaternion_to_euler rotation conversions",
             "name": "help_link",
-            "position_x": 923,
-            "position_y": 184,
+            "position_x": 541,
+            "position_y": 720,
             "width": 237,
             "height": 44,
             "properties": {
@@ -895,20 +1817,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "orange",
+                    "value": "violet",
                     "value_type": "str"
                 }
             },
-            "id": 1536,
+            "id": 2535,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "28": {
+        "55": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1174,
-            "position_y": 188,
+            "position_x": 792,
+            "position_y": 724,
             "width": 594,
             "height": 64,
             "properties": {
@@ -939,16 +1861,16 @@
                 }
             },
             "text": "four ways to say one thing\n(axis_angle_to_quaternion, euler_to_quaternion, matrix_to_axis_angle, matrix_to_quaternion,\n matrix_to_rotvec, quaternion_to_axis_angle, quaternion_to_euler, quaternion_to_matrix,\n quaternion_to_rotvec, rotvec_to_quaternion)",
-            "id": 1573,
+            "id": 2572,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "29": {
+        "56": {
             "init": "help_link quaternion_to_6d 6D rotations",
             "name": "help_link",
-            "position_x": 923,
-            "position_y": 256,
+            "position_x": 541,
+            "position_y": 792,
             "width": 237,
             "height": 44,
             "properties": {
@@ -964,20 +1886,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "orange",
+                    "value": "violet",
                     "value_type": "str"
                 }
             },
-            "id": 1610,
+            "id": 2609,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "30": {
+        "57": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1174,
-            "position_y": 260,
+            "position_x": 792,
+            "position_y": 796,
             "width": 514,
             "height": 40,
             "properties": {
@@ -1008,16 +1930,16 @@
                 }
             },
             "text": "the form that does not jump\n(6d_to_axis_angle, 6d_to_matrix, 6d_to_rotvec, matrix_to_6d, quaternion_to_6d)",
-            "id": 1647,
+            "id": 2646,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "31": {
+        "58": {
             "init": "help_link quaternion_diff comparing rotations",
             "name": "help_link",
-            "position_x": 923,
-            "position_y": 308,
+            "position_x": 541,
+            "position_y": 844,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1033,20 +1955,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "orange",
+                    "value": "violet",
                     "value_type": "str"
                 }
             },
-            "id": 1684,
+            "id": 2683,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "32": {
+        "59": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1174,
-            "position_y": 312,
+            "position_x": 792,
+            "position_y": 848,
             "width": 532,
             "height": 40,
             "properties": {
@@ -1077,16 +1999,16 @@
                 }
             },
             "text": "how much, and relative to what\n(quaternion_diff, quaternion_distance, quaternion_relative, rotation_matrix_diff)",
-            "id": 1721,
+            "id": 2720,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "33": {
+        "60": {
             "init": "help_link quaternion_norm quaternion_norm",
             "name": "help_link",
-            "position_x": 923,
-            "position_y": 360,
+            "position_x": 541,
+            "position_y": 896,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1102,20 +2024,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "orange",
+                    "value": "violet",
                     "value_type": "str"
                 }
             },
-            "id": 1758,
+            "id": 2757,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "34": {
+        "61": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1174,
-            "position_y": 364,
+            "position_x": 792,
+            "position_y": 900,
             "width": 212,
             "height": 28,
             "properties": {
@@ -1146,16 +2068,16 @@
                 }
             },
             "text": "keeping rotations unit length",
-            "id": 1795,
+            "id": 2794,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "35": {
+        "62": {
             "init": "help_link tracker_align tracker_align",
             "name": "help_link",
-            "position_x": 923,
-            "position_y": 412,
+            "position_x": 541,
+            "position_y": 948,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1171,20 +2093,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "orange",
+                    "value": "violet",
                     "value_type": "str"
                 }
             },
-            "id": 1832,
+            "id": 2831,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "36": {
+        "63": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1174,
-            "position_y": 416,
+            "position_x": 792,
+            "position_y": 952,
             "width": 261,
             "height": 28,
             "properties": {
@@ -1215,16 +2137,16 @@
                 }
             },
             "text": "putting a tracker in the suit's world",
-            "id": 1869,
+            "id": 2868,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "37": {
+        "64": {
             "init": "help_link swing_twist swing_twist",
             "name": "help_link",
-            "position_x": 923,
-            "position_y": 464,
+            "position_x": 541,
+            "position_y": 1000,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1240,20 +2162,20 @@
                 },
                 "2": {
                     "name": "colour",
-                    "value": "orange",
+                    "value": "violet",
                     "value_type": "str"
                 }
             },
-            "id": 1906,
+            "id": 2905,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "38": {
+        "65": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 1174,
-            "position_y": 468,
+            "position_x": 792,
+            "position_y": 1004,
             "width": 305,
             "height": 28,
             "properties": {
@@ -1284,7 +2206,7 @@
                 }
             },
             "text": "pointing direction and turn about the device",
-            "id": 1943,
+            "id": 2942,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

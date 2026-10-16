@@ -78,6 +78,15 @@ if torch is not None:
 m = make('* 3')
 check('* 3 <- int 4      stays integer', type(feed(m, 4)).__name__, 'int')
 
+print("\nArithmeticNode: % and // take a whole array as operand")
+# Both tested 'b == 0' on the operand, which raises for an array of more than
+# one element - exactly what the help pages' np.rand -> op demo sends.
+a, b = np.array([7.0, 7.0, 9.0]), np.array([2.0, 0.0, 4.0])
+for _label, _want in (('%', [1.0, 0.0, 1.0]), ('//', [3.0, np.inf, 2.0])):
+    m = make(_label)
+    m.operand_input.receive_data(b)
+    check(f'{_label} <- array, array operand', list(feed(m, a)), _want)
+
 # ---------------------------------------------------------------------------
 print("\nSignalNode: the first thing it emits must be a float")
 # The 'on' inlet triggers execution, so an int 0 here reached arithmetic nodes

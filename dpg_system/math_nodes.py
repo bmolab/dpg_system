@@ -148,9 +148,11 @@ class ArithmeticNode(Node):
 
     def mod(self, a, b):
         if type(a) == np.ndarray:
-            if b == 0:
-                return np.zeros_like(a)
-            return np.mod(a, b)
+            # b may be a whole array, not just the one-element array a scalar
+            # operand is conformed to, so test for zero element by element.
+            with np.errstate(divide='ignore', invalid='ignore'):
+                out = np.mod(a, b)
+            return np.where(np.asarray(b) == 0, np.zeros_like(out), out)
         if b == 0:
             return 0
         return a % b
@@ -198,6 +200,10 @@ class ArithmeticNode(Node):
         return a / b
 
     def int_divide(self, a, b):
+        if type(a) == np.ndarray:
+            # as in divide: b may be a whole array, and a zero in it gives inf
+            with np.errstate(divide='ignore', invalid='ignore'):
+                return np.floor_divide(a, b)
         if b == 0:
             return a // 1e-8
         return a // b

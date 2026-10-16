@@ -56,6 +56,14 @@ def check_one(p, iface, strict_props=True):
     for k, nc in p['nodes'].items():
         label = nc.get('init', nc.get('name', '')).split(' ')[0] or nc.get('name', '')
         byid[nc['id']] = label
+        if label == 'text_block' and 'text' in nc:
+            # the app loads the top-level 'text', so a 'block' property edited
+            # on its own is silently ignored and the old text comes back
+            block = next((pc.get('value') for pc in nc.get('properties', {}).values()
+                          if pc.get('name') == 'block'), None)
+            if block is not None and block != nc['text']:
+                problems.append(f"text_block (entry {k}): 'text' and 'block' differ - "
+                                f"the app shows 'text': {nc['text'][:40]!r}")
         if label in ('', 'comment', 'close', 'text_block'):
             continue
         if label not in iface:

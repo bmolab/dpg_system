@@ -74,8 +74,10 @@ TREE = {
         ('Curves and plots', ['envelope', 'shape_sequencer', 'profile', 'plot', 'heat_map']),
     ]),
     'nodes_math': ('Math', 'Numbers, lists and arrays in; results out.', [
-        ('Arithmetic', ['arithmetic', 'math_single', 'trig', 'comparison', 'clamp', 'accumulate', 'change',
-                        'crossfade', 'continuous_rotation', 'color_convert']),
+        ('Arithmetic', ['arithmetic', 'add', 'subtract', 'multiply', 'divide', 'floor_divide', 'modulo',
+                        'power', 'min', 'max', 'reverse_subtract', 'reverse_divide', 'perm', 'combination']),
+        ('Functions', ['math_single', 'trig', 'comparison', 'clamp', 'accumulate', 'change',
+                       'crossfade', 'continuous_rotation', 'color_convert']),
         ('Rotations', ['quaternion_to_euler', 'quaternion_to_6d', 'quaternion_diff', 'quaternion_norm',
                        'tracker_align', 'swing_twist']),
     ]),
@@ -201,7 +203,7 @@ TAGLINES = {
 # says everything it opens and the eye does not go looking for the others.
 LABELS = {
     'additive~': 'additive~ / shape_modes',
-    'arithmetic': 'arithmetic + - * /', 'ascii': 'characters as numbers',
+    'arithmetic': 'all of the arithmetic nodes', 'ascii': 'characters as numbers',
     'body_to_joints': 'body / joints', 'bow~': 'friction models', 'button': 'button / button_set',
     'change': 'change / increasing / decreasing', 'clean~': 'conditioning',
     'color_convert': 'colour conversion', 'combine': 'combine / join / split',
@@ -280,6 +282,9 @@ def titles():
                     t = n['properties']['0']['value'] or ''
                     if ' - ' in t:
                         out[stem] = t.split(' - ', 1)[1]
+                    elif t.endswith(')') and ' (' in t:
+                        # '+ (add)': operator names, where ' - ' would read as minus
+                        out[stem] = t[t.index(' (') + 2:-1]
     out.update(TAGLINES)
     return out
 
@@ -402,7 +407,7 @@ def build_page(name, names_by_stem, taglines):
             return e[0][len('page:'):], e[1], [e[2]]
         lines = [taglines.get(e, '')] if taglines.get(e) else []
         names = sorted(names_by_stem.get(e, []))
-        if names != [e]:
+        if names and names != [e]:    # an overview page documents no name itself
             lines += bracketed(names, NAMES_WRAP)
         label = label_for(e, names)
         if len(label) > LONG_LABEL:

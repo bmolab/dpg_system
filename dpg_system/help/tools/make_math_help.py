@@ -4,83 +4,10 @@ from build_help import build
 from help_common import SIG, PLOT, INT, FLT, starter
 
 
-# ------------------------------------------------------------------ arithmetic
-body = """The arithmetic nodes each perform one calculation on the value arriving at the left inlet, 
-using a second value - the operand - held in the right inlet.
-
-They all work the same way. The left inlet takes the data and triggers the calculation; 
-the right inlet holds the other number, which you can type, drag, or send from elsewhere. 
-The operand keeps its value between calculations, so you set it once and it stays put.
-
-All of them accept single numbers, lists, NumPy arrays and PyTorch tensors. 
-When the input and the operand are different kinds of thing, the operand is converted 
-to match the input, so feeding an array into a node with a single number as its operand 
-applies that number to every element.
-
-You give the starting operand as an argument when you create the node. 
-Whether you write it with a decimal point matters: "* 2" gives you an integer operand 
-and a stepped slider, "* 2.0" gives you a floating point one.
-
-THE NODES:
-
-+     add                    -     subtract
-*     multiply               /     divide
-//    divide, discarding any remainder
-%     modulo - the remainder after division
-^     raise to a power       pow   the same as ^
-min   the smaller of the two values
-max   the larger of the two values
-mod   the same as %
-!-    reverse subtract - operand minus input, rather than input minus operand
-!/    reverse divide - operand divided by input
-perm  permutations: the number of ordered ways to pick operand items from input items
-combination   the number of unordered ways to make that same pick
-
-SYNTAX:
-<operator> <operand: int or float>
-
-EXAMPLE:
-* 0.5
-
-INPUTS and PARAMETERS:
-
-in:
-The data to be operated on. Receiving data here triggers the calculation.
-
-operand:
-The second value in the calculation. 
-Setting it does not itself produce output - the node waits for the next value at "in".
-
-OUTPUTS: 
-
-result:
-The result of the calculation, in the same shape as the input.
-
-A NOTE ON DIVISION:
-Dividing by zero does not raise an error and does not stop your patch. 
-For single numbers the result is 0; for arrays the division is done with 
-NumPy's error reporting switched off. Likewise "%" and "mod" return 0 
-when the operand is zero. The idea is that a live patch should keep running."""
-
-demo = starter() + [
-    {'key': 'sig', 'init': 'signal', 'pos': (30, 132), 'w': 129, 'h': 78,
-     'props': SIG('sin', 2.0)},
-    {'key': 'mul', 'init': '* 0.5', 'pos': (30, 232), 'w': 120, 'h': 70,
-     'props': {'operand': 0.5}},
-    {'key': 'p1', 'init': 'plot', 'pos': (210, 205), 'w': 208, 'h': 176,
-     'props': PLOT()},
-    {'key': 'c1', 'comment': True, 'text': 'a sine wave, halved\ndrag the operand and watch it change', 'pos': (30, 310)},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 405), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'add', 'init': '+ 100', 'pos': (30, 462), 'w': 120, 'h': 70,
-     'props': {'operand': 100}},
-    {'key': 'i2', 'init': 'int', 'pos': (30, 552), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c3', 'comment': True, 'text': 'drag this number', 'pos': (172, 410)},
-]
-links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
-         ('sig', '', 'mul', 'in'), ('mul', 'result', 'p1', 'y'),
-         ('i1', 'int out', 'add', 'in'), ('add', 'result', 'i2', '')]
-print(build('arithmetic', 'arithmetic - one calculation, one operand', body,
-            demo, links, demo_width=440, text_width=800, text_height=660))
+# arithmetic is no longer generated here: arithmetic_help.json is laid out by
+# hand, and derive_arithmetic_help.py copies its layout into one page per
+# operation (add, subtract, ..., combination). Regenerating it here would
+# overwrite the hand layout on every rebuild.
 
 # ----------------------------------------------------------------- math_single
 body = """These nodes each apply one mathematical function to whatever arrives at their inlet.

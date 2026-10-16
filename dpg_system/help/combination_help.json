@@ -1,0 +1,398 @@
+{
+    "height": 736,
+    "width": 1440,
+    "position": [
+        351,
+        81
+    ],
+    "id": 1416,
+    "name": "combination_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1444,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment combination (unordered picks)",
+            "name": "comment",
+            "id": 1462,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 365,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "combination (unordered picks)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "combination (unordered picks)"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 1473,
+            "sid": 3,
+            "position_x": 729,
+            "position_y": 45,
+            "width": 671,
+            "height": 631,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "combination counts the ways of CHOOSING some items from a larger set when order\ndoes not matter: how many different groups of operand items you could take from\ninput items.\n\n7 arriving at \"combination 2\" sends out 21. perm counts 42 ordered pairs from 7,\nbut choosing A and B is the same group as choosing B and A, so each pair is counted\nonce. A five-card hand from a 52-card deck: 52 into \"combination 5\" gives 2598960.\n\nChoosing none, or all of them, can only be done one way, so both give 1.\n\ncombination works on single whole numbers only. Fractions are cut down to whole\nnumbers; an array or tensor does not raise an error, but the result is a\nmeaningless 0 or 1.\n\nSYNTAX:\ncombination <operand: int>\n\nEXAMPLES:\ncombination 2   how many pairs\ncombination 5   how many five-card hands\n\nINPUTS and PARAMETERS:\n\nin:\nHow many items there are to choose from. \nReceiving data here triggers the calculation.\n\noperand:\nHow many of them to choose. \nSetting it does not send anything - it waits for the next value at \"in\".\n\nOUTPUTS:\n\nresult:\nThe number of different groups.\n\nIf you choose more than there are, or either number is negative, the result is 0.\nThe count grows quickly, though more slowly than perm.\n\nSEE ALSO:\nperm   the same count when order matters",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 663,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 615,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "combination counts the ways of CHOOSING some items from a larger set when order\ndoes not matter: how many different groups of operand items you could take from\ninput items.\n\n7 arriving at \"combination 2\" sends out 21. perm counts 42 ordered pairs from 7,\nbut choosing A and B is the same group as choosing B and A, so each pair is counted\nonce. A five-card hand from a 52-card deck: 52 into \"combination 5\" gives 2598960.\n\nChoosing none, or all of them, can only be done one way, so both give 1.\n\ncombination works on single whole numbers only. Fractions are cut down to whole\nnumbers; an array or tensor does not raise an error, but the result is a\nmeaningless 0 or 1.\n\nSYNTAX:\ncombination <operand: int>\n\nEXAMPLES:\ncombination 2   how many pairs\ncombination 5   how many five-card hands\n\nINPUTS and PARAMETERS:\n\nin:\nHow many items there are to choose from. \nReceiving data here triggers the calculation.\n\noperand:\nHow many of them to choose. \nSetting it does not send anything - it waits for the next value at \"in\".\n\nOUTPUTS:\n\nresult:\nThe number of different groups.\n\nIf you choose more than there are, or either number is negative, the result is 0.\nThe count grows quickly, though more slowly than perm.\n\nSEE ALSO:\nperm   the same count when order matters"
+        },
+        "3": {
+            "name": "int",
+            "id": 1607,
+            "sid": 10,
+            "position_x": 29,
+            "position_y": 160,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 7,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "combination 2",
+            "name": "combination",
+            "id": 1643,
+            "sid": 11,
+            "position_x": 183,
+            "position_y": 156,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "operand",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "name": "int",
+            "id": 1653,
+            "sid": 12,
+            "position_x": 330,
+            "position_y": 163,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 21,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "init": "comment how many items",
+            "name": "comment",
+            "id": 1686,
+            "sid": 13,
+            "position_x": 29,
+            "position_y": 122,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how many items",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "how many items"
+        },
+        "7": {
+            "name": "close",
+            "id": 1697,
+            "sid": 14,
+            "position_x": 24,
+            "position_y": 280,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "8": {
+            "name": "int",
+            "id": 2301,
+            "sid": 41,
+            "position_x": 183,
+            "position_y": 95,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "9": {
+            "init": "comment how many to choose",
+            "name": "comment",
+            "id": 2302,
+            "sid": 42,
+            "position_x": 183,
+            "position_y": 58,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "how many to choose",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "how many to choose"
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1607,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 1643,
+            "dest_node_name": "combination",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 1643,
+            "source_node_name": "combination",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1653,
+            "dest_node_name": "int",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 2301,
+            "source_node_name": "int",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 1643,
+            "dest_node_name": "combination",
+            "dest_input_index": 1,
+            "dest_input_name": "###operand"
+        }
+    }
+}
