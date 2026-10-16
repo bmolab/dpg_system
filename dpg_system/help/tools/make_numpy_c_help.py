@@ -120,6 +120,26 @@ The target is captured rather than typed. Put the thing where you want the
 target to be, click "set target", and the node remembers that position. 
 From then on it reports against it.
 
+np.proximity_to_target holds as many targets as you like. Set "target index" 
+to a slot, put the tracker where that target should be, click "capture". 
+Choose another index and capture again. Skipping ahead leaves the slots in 
+between unset, and they report 0. The "targets" inlet replaces the whole set 
+with a list of positions; "clear" empties it. The targets are saved with the 
+patch.
+
+Each target has a responsive zone of size "radius": proximity is 1 at the 
+target and falls to 0 at the radius. "exponent" shapes the fall - above 1 the 
+response concentrates near the centre, below 1 it stays high across the zone 
+and drops off at the edge.
+
+The "fade" outlet plugs straight into the fade inlet of polyphonic_sampler~: 
+it sends [[sound_id, fade], ...], target i driving sound "first sound" + i. 
+Like effort_fader it is sparse - a sound is sent while its target is in range, 
+gets a single 0 when the tracker leaves the zone (so the sample stops), and 
+is otherwise left alone. With several trackers the closest one sets each 
+target's fade. "nearest" gives the index of the closest target whose zone 
+you are in, or -1.
+
 proximity_trigger is the one that turns this into an event. It has two 
 thresholds, near and far, and fires when the input comes closer than the near 
 one - then will not fire again until it has retreated past the far one. 
