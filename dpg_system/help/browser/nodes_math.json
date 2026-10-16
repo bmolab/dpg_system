@@ -230,7 +230,7 @@
             "presentation_state": "show_all"
         },
         "8": {
-            "init": "help_link add ",
+            "init": "help_link add +",
             "name": "help_link",
             "position_x": 24,
             "position_y": 236,
@@ -238,7 +238,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "",
+                    "name": "+",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -299,7 +299,7 @@
             "presentation_state": "show_all"
         },
         "10": {
-            "init": "help_link subtract ",
+            "init": "help_link subtract -",
             "name": "help_link",
             "position_x": 24,
             "position_y": 288,
@@ -307,7 +307,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "",
+                    "name": "-",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -368,7 +368,7 @@
             "presentation_state": "show_all"
         },
         "12": {
-            "init": "help_link multiply ",
+            "init": "help_link multiply *",
             "name": "help_link",
             "position_x": 24,
             "position_y": 340,
@@ -376,7 +376,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "",
+                    "name": "*",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -437,7 +437,7 @@
             "presentation_state": "show_all"
         },
         "14": {
-            "init": "help_link divide ",
+            "init": "help_link divide /",
             "name": "help_link",
             "position_x": 24,
             "position_y": 392,
@@ -445,7 +445,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "",
+                    "name": "/",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -575,7 +575,7 @@
             "presentation_state": "show_all"
         },
         "18": {
-            "init": "help_link modulo mod",
+            "init": "help_link modulo % / mod",
             "name": "help_link",
             "position_x": 24,
             "position_y": 496,
@@ -583,7 +583,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "mod",
+                    "name": "% / mod",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -644,7 +644,7 @@
             "presentation_state": "show_all"
         },
         "20": {
-            "init": "help_link power pow",
+            "init": "help_link power ^ / pow",
             "name": "help_link",
             "position_x": 24,
             "position_y": 548,
@@ -652,7 +652,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "pow",
+                    "name": "^ / pow",
                     "value": null,
                     "value_type": "NoneType"
                 },

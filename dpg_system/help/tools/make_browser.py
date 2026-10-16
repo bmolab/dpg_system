@@ -303,9 +303,10 @@ def wrap(words, width):
 
 
 def visible_names(stem, names):
-    """The names a reader would look for: single-character aliases (s, r, b)
-    dropped, and x / x~ folded into x(~). The stem goes first."""
-    names = [n for n in names if len(n) > 1 or n == stem]
+    """The names a reader would look for: single-letter aliases (s, r, b)
+    dropped, and x / x~ folded into x(~). The stem goes first. Operator
+    names (+, -, %) are kept - they are a node's only name, not an alias."""
+    names = [n for n in names if len(n) > 1 or not n.isalpha() or n == stem]
     names = sorted(names, key=lambda n: (n.rstrip('~') != stem.rstrip('~'), n))
     out = []
     for n in names:
@@ -319,7 +320,7 @@ def label_for(stem, names):
     if stem in LABELS:
         return LABELS[stem]
     shown = visible_names(stem, names)
-    if len(shown) > 3:
+    if len(shown) > 3 or not shown:
         return stem
     return ' / '.join(shown)
 
