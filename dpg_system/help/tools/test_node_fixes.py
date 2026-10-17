@@ -108,6 +108,24 @@ _m = make('+')
 _m.operand_input.receive_data([10, 20])
 check('+ [10, 20] <- 1   list operand, number input', feed(_m, 1), [11, 21])
 
+print("\nComparisonNode: a list is compared element by element")
+# Python list comparison raised for > and <, and == / != gave a single answer
+# for the whole list.
+for _init, _in, _want in (('> 2', [1, 2, 3], [False, False, True]),
+                          ('<= 2', (1, 2, 3), [True, True, False]),
+                          ('== 2', [2, 3, 2], [True, False, True]),
+                          ('!= 2', [[2, 3], [1, 2]], [[False, True], [True, False]])):
+    check(f'{_init} <- {_in!r}', feed(make(_init), _in), _want)
+_m = make('>= 2')
+_m.output_type_option.set('int')
+_m.output_type_changed()
+check('>= 2 <- [1, 2, 3]  output_type int', feed(_m, [1, 2, 3]), [0, 1, 1])
+check('>= 2 <- 3   scalar still works', feed(_m, 3), 1)
+_m = make('==')
+_m.operand_input.receive_data([1, 2, 3])
+check('== [1, 2, 3] <- [1, 0, 3]  list operand', feed(_m, [1, 0, 3]), [True, False, True])
+check('== [1, 2, 3] <- 2   number input', feed(_m, 2), [False, True, False])
+
 # ---------------------------------------------------------------------------
 print("\nOpSingleNode: a list goes through element by element")
 # any_to_float kept only a list's first number, so 'abs' of [-3, 4] sent 3.0

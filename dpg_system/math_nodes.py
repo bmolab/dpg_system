@@ -318,7 +318,14 @@ class ComparisonNode(Node):
         input_value = any_to_numerical(self.input())
 
         t = type(input_value)
-        if t == np.ndarray:
+        if t in (list, tuple) or (isinstance(self.operand, (list, tuple)) and
+                                  isinstance(input_value, (bool, int, float, np.number))):
+            # Lists are compared element by element, as arrays are. Python's
+            # own list comparison raised for > and < and gave one answer for
+            # the whole list for == and !=.
+            output_value = self.op(list_to_array(input_value), list_to_array(self.operand))
+            output_value = np.asarray(output_value).astype(self.numpy_output_op).tolist()
+        elif t == np.ndarray:
             output_value = self.op(input_value, self.operand).astype(self.numpy_output_op)
         elif t == torch.Tensor:
             output_value = self.op(input_value, self.operand).to(self.torch_output_op)
