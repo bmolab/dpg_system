@@ -61,6 +61,23 @@ def register_math_nodes():
 
 
 
+def list_to_array(value):
+    """A list as a NumPy array for element-by-element arithmetic; anything else unchanged.
+
+    A list of whole numbers stays integer, so [1, 2] + 1 gives [2, 3], not [2.0, 3.0].
+    """
+    if not isinstance(value, (list, tuple)):
+        return value
+    try:
+        arr = np.array(value)
+        if arr.dtype.kind in 'iu':
+            return arr.astype(np.int64)
+        return arr.astype(float)
+    except (TypeError, ValueError):
+        # ragged, or words mixed in: one number per element
+        return np.array(any_to_float_list(value), dtype=float)
+
+
 class ArithmeticNode(Node):
     @staticmethod
     def factory(name, data, args=None):
@@ -117,6 +134,16 @@ class ArithmeticNode(Node):
         if self.operand_input.fresh_input:
             self.operand = any_to_numerical(self.operand_input())
         input_value = any_to_numerical(self.input())
+        if self.op not in (self.permutation, self.combination) and (
+                isinstance(input_value, (list, tuple)) or
+                (isinstance(self.operand, (list, tuple)) and
+                 isinstance(input_value, (bool, int, float, np.number)))):
+            # Lists work element by element, as arrays do. Python's own list
+            # operators would concatenate ([1, 2, 3] + 2 -> [1, 2, 3, 2]) or
+            # raise (* of a list by a float), so go through NumPy and send a
+            # list back. The operand is left as it is for the next input.
+            self.output.send(self.op(list_to_array(input_value), list_to_array(self.operand)).tolist())
+            return
         if type(input_value) != type(self.operand):
             # Conform the operand to the input so arrays and tensors line up --
             # but never NARROW it. An integer arriving at 'in' would otherwise
@@ -222,6 +249,9 @@ class ArithmeticNode(Node):
 
     def power(self, a, b):
         if type(a) == np.ndarray:
+            if np.issubdtype(a.dtype, np.integer) and np.any(np.asarray(b) < 0):
+                # NumPy refuses integers to negative integer powers
+                a = a.astype(float)
             return np.power(a, b)
         elif self.app.torch_available and type(a) == torch.Tensor:
             return torch.pow(a, b)
@@ -523,7 +553,7 @@ class OpSingleNode(Node):
         elif t in (list, tuple):
             # a list goes through element by element, as an array does
             # (any_to_float would keep only its first number)
-            self.output.send(self.op(np.array(any_to_float_list(input_value), dtype=float)).tolist())
+            self.output.send(self.op(list_to_array(input_value).astype(float)).tolist())
             return
         else:
             input_value = any_to_float(input_value)
@@ -677,7 +707,7 @@ class OpSingleTrigNode(Node):
             elif t in (list, tuple):
                 # a list goes through element by element, as an array does
                 # (math.sin of a list raised)
-                self.output.send(self.op(np.array(any_to_float_list(input_value), dtype=float)).tolist())
+                self.output.send(self.op(list_to_array(input_value).astype(float)).tolist())
                 return
             output_value = self.op(input_value)
             self.output.send(output_value)

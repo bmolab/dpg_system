@@ -87,6 +87,27 @@ for _label, _want in (('%', [1.0, 0.0, 1.0]), ('//', [3.0, np.inf, 2.0])):
     m.operand_input.receive_data(b)
     check(f'{_label} <- array, array operand', list(feed(m, a)), _want)
 
+print("\nArithmeticNode: a list goes through element by element")
+# Python's list operators concatenated ([1, 2, 3] + 2 -> [1, 2, 3, 2]) or
+# raised (a list * 0.5), so a list arriving at any arithmetic node went wrong.
+for _init, _in, _want in (('+ 2', [1, 2, 3], [3, 4, 5]), ('* 0.5', [2, 4], [1.0, 2.0]),
+                          ('- 1', (5, 6), [4, 5]), ('/ 4', [1, 2], [0.25, 0.5]),
+                          ('!- 10', [1, 2], [9, 8]), ('max 2', [1, 3], [2, 3]),
+                          ('% 3', [4, 5], [1, 2]), ('^ 2', [3, 4], [9.0, 16.0]),
+                          ('* 2', [[1, 2], [3, 4]], [[2, 4], [6, 8]]),
+                          ('+ 1', ['2', '3.5'], [3.0, 4.5])):
+    check(f'{_init} <- {_in!r}', feed(make(_init), _in), _want)
+_m = make('+ 2')
+check('+ 2 <- [1, 2] stays integer', [type(x).__name__ for x in feed(_m, [1, 2])], ['int', 'int'])
+check('+ 2 <- [1, 2] operand untouched', _m.operand, 2)
+check('+ 2 <- then 5   scalar still works', feed(_m, 5), 7)
+_m = make('^ 2')
+_m.operand_input.receive_data(-1)
+check('^ -1 <- [2, 4] (integers to a negative power)', feed(_m, [2, 4]), [0.5, 0.25])
+_m = make('+')
+_m.operand_input.receive_data([10, 20])
+check('+ [10, 20] <- 1   list operand, number input', feed(_m, 1), [11, 21])
+
 # ---------------------------------------------------------------------------
 print("\nOpSingleNode: a list goes through element by element")
 # any_to_float kept only a list's first number, so 'abs' of [-3, 4] sent 3.0
