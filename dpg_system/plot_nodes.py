@@ -593,7 +593,12 @@ class HeatMapNode(BasePlotNode):
 
     def change_format(self):
         self.format = self.format_option()
-        if self.format != '':
+        if self.format.strip().lower() == 'none':
+            # numbers off for good: '' alone is what the auto-hide below
+            # writes, and it puts the held format back once cells are big
+            self.format = ''
+            self.hold_format = ''
+        elif self.format != '':
             self.hold_format = self.format
         dpg.configure_item(self.plot_data_tag[0], format=self.format)
 
@@ -630,10 +635,19 @@ class HeatMapNode(BasePlotNode):
                 return
 
             data_array = self._process_input_to_array(data)
+            if data_array is not None and data_array.size == 0:
+                # nothing to draw - and a zero dimension would divide by zero
+                # below while both locks are held, hanging the next input
+                self.lock.release()
+                return
             if data_array is not None:
                 mode = self.update_mode_option()
 
                 if mode == 'heat_map':
+                    # A 1-D array is one row: its values run left to right.
+                    # (As (N,) it was drawn as N one-cell rows, top to bottom.)
+                    if data_array.ndim == 1:
+                        data_array = data_array.reshape(1, -1)
                     # Logic from the original HeatMapNode
                     rows = 1
                     sample_count = data_array.shape[0]
@@ -670,7 +684,14 @@ class HeatMapNode(BasePlotNode):
             changed_format = False
             hide_format = False
 
-            if self.width / self.sample_count < 40 or (len(buffer.shape) > 1 and self.height / self.rows < 16):
+            # in heat_map mode the array's rows are sample_count and its
+            # columns are self.rows, so a cell is width/rows wide and
+            # height/sample_count tall
+            if self.update_mode_option() == 'heat_map':
+                cell_w, cell_h = self.width / max(self.rows, 1), self.height / max(self.sample_count, 1)
+            else:
+                cell_w, cell_h = self.width / max(self.sample_count, 1), self.height / max(self.rows, 1)
+            if cell_w < 40 or (len(buffer.shape) > 1 and cell_h < 16):
                 hide_format = True
                 if self.format != '':
                     self.hold_format = self.format

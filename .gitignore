@@ -22,6 +22,7 @@ smpl-h_models/
 
 # Motion capture data files (loose in root or dpg_system)
 *.npz
+!dpg_system/help/data/*.npz
 *.npy
 *.npa
 

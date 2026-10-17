@@ -1,0 +1,581 @@
+{
+    "height": 998,
+    "width": 1652,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "np.repeat_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.repeat_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.repeat - repeat each element in place",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 500,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.repeat - repeat each element in place",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.repeat - repeat each element in place"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 844,
+            "position_y": 45,
+            "width": 768,
+            "height": 876,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Repeats each element of an array a number of times, in place.\n\nEach value is copied next to itself - 0, 1, 2 repeated twice is\n0, 0, 1, 1, 2, 2 - not the whole array tiled end to end (that would be\n0, 1, 2, 0, 1, 2; join copies with np.concatenate for that). Use it to\nstretch an array by a whole-number factor, to blow a small grid up into\nblocks (pixel doubling), or to hold each value for several steps.\n\nSYNTAX:\nnp.repeat <repeats: int> <axis: int>\nDefaults: repeats 2, axis 0.\n\nEXAMPLE:\nnp.repeat 3\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one). Each array that arrives is\nrepeated and sent; only this inlet makes the node send.\n\nrepeats (int box, also an inlet):\nHow many copies of each element. 1 passes the array through; 0 gives an\nempty array; a negative number is an error and nothing is sent.\nChanging it does NOT send by itself - in the demo a metro re-sends the\nrow ten times a second.\n\naxis (int box, also an inlet):\nWhich axis to repeat along. On a 2-D array, 0 repeats each row and 1\neach column. Set it to the number of dimensions the array has (1 for a\nrow) and the node first ADDS a new axis there, so each value is copied\ninto a new dimension: a row of 4 becomes 4 rows of copies (4 by\nrepeats). A negative axis is treated as 0; anything past that is\ntreated as the last axis.\n\nOUTPUTS:\n\narray out:\nThe repeated array: the chosen axis is repeats times longer.\n\nREADING THE DEMO:\nA row of 4 values, 0 to 1, repeated 3 times along axis 0 gives 12\ncells: each colour three times in a row. Raise repeats and the blocks\nwiden (the numbers hide once cells get too narrow to hold them). Set\naxis to 1 and the same 4 values become a 4 by 3 grid - each row one\nvalue, copied across. np.shape shows the shape either way.\n\nRELATED:\nnp.concatenate joins whole arrays end to end - feed it the same array\ntwice to tile it. np.stack piles arrays up along a new axis. np.reshape\nrefolds an array without copying anything. t.repeat (on the t.roll page)\nis NOT the PyTorch version of this: it tiles the whole tensor.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 860,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Repeats each element of an array a number of times, in place.\n\nEach value is copied next to itself - 0, 1, 2 repeated twice is\n0, 0, 1, 1, 2, 2 - not the whole array tiled end to end (that would be\n0, 1, 2, 0, 1, 2; join copies with np.concatenate for that). Use it to\nstretch an array by a whole-number factor, to blow a small grid up into\nblocks (pixel doubling), or to hold each value for several steps.\n\nSYNTAX:\nnp.repeat <repeats: int> <axis: int>\nDefaults: repeats 2, axis 0.\n\nEXAMPLE:\nnp.repeat 3\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one). Each array that arrives is\nrepeated and sent; only this inlet makes the node send.\n\nrepeats (int box, also an inlet):\nHow many copies of each element. 1 passes the array through; 0 gives an\nempty array; a negative number is an error and nothing is sent.\nChanging it does NOT send by itself - in the demo a metro re-sends the\nrow ten times a second.\n\naxis (int box, also an inlet):\nWhich axis to repeat along. On a 2-D array, 0 repeats each row and 1\neach column. Set it to the number of dimensions the array has (1 for a\nrow) and the node first ADDS a new axis there, so each value is copied\ninto a new dimension: a row of 4 becomes 4 rows of copies (4 by\nrepeats). A negative axis is treated as 0; anything past that is\ntreated as the last axis.\n\nOUTPUTS:\n\narray out:\nThe repeated array: the chosen axis is repeats times longer.\n\nREADING THE DEMO:\nA row of 4 values, 0 to 1, repeated 3 times along axis 0 gives 12\ncells: each colour three times in a row. Raise repeats and the blocks\nwiden (the numbers hide once cells get too narrow to hold them). Set\naxis to 1 and the same 4 values become a 4 by 3 grid - each row one\nvalue, copied across. np.shape shows the shape either way.\n\nRELATED:\nnp.concatenate joins whole arrays end to end - feed it the same array\ntwice to tile it. np.stack piles arrays up along a new axis. np.reshape\nrefolds an array without copying anything. t.repeat (on the t.roll page)\nis NOT the PyTorch version of this: it tiles the whole tensor."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "name": "np.linspace",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.linspace 0 1 4"
+        },
+        "5": {
+            "init": "comment four values: 0, 0.33, 0.67, 1",
+            "name": "comment",
+            "id": 422,
+            "position_x": 584,
+            "position_y": 155,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "four values: 0, 0.33, 0.67, 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "four values: 0, 0.33, 0.67, 1"
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 528,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "np.repeat",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 450,
+            "width": 136,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "repeats",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "axis",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            },
+            "init": "np.repeat 3"
+        },
+        "8": {
+            "init": "comment step repeats; axis 1 adds a new axis",
+            "name": "comment",
+            "id": 533,
+            "position_x": 584,
+            "position_y": 455,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "step repeats; axis 1 adds a new axis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "step repeats; axis 1 adds a new axis"
+        },
+        "9": {
+            "name": "heat_map",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 570,
+            "width": 528,
+            "height": 130,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 80,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment each value copied in place",
+            "name": "comment",
+            "id": 607,
+            "position_x": 584,
+            "position_y": 575,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "each value copied in place",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "each value copied in place"
+        },
+        "11": {
+            "name": "np.shape",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 58,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "list",
+            "id": 681,
+            "position_x": 160,
+            "position_y": 720,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment shape of the result",
+            "name": "comment",
+            "id": 718,
+            "position_x": 584,
+            "position_y": 725,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shape of the result",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shape of the result"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 820,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.concatenate"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 181,
+            "position_y": 820,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.stack"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 286,
+            "position_y": 820,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.reshape"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 407,
+            "position_y": 820,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.roll"
+        },
+        "18": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 903,
+            "position_x": 584,
+            "position_y": 820,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 894,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "array out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "array out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

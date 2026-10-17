@@ -1689,8 +1689,13 @@ class NumpySubtensorNode(Node):
 
     def dim_changed(self):
         # 1. Update the Plan
-        raw_text = any_to_string(self.indices_input())
-        self.slice_obj = self.parse_slice_string(raw_text)
+        indices = self.indices_input()
+        if isinstance(indices, np.ndarray) and indices.dtype.kind in 'iu':
+            # an index array (np.argsort's output, say) picks those
+            # positions along the first axis - no round trip through text
+            self.slice_obj = (indices.astype(int),)
+        else:
+            self.slice_obj = self.parse_slice_string(any_to_string(indices))
 
         # 2. Auto-resize widget to fit text
         if self.created:
@@ -2048,6 +2053,8 @@ class NumpySequenceNode(Node):
         self.num_frames = 0
         self.data_input = self.add_input('data to record', triggers_execution=True)
         self.frame_input = self.add_input('current frame', widget_type='drag_int', default_value=-1, callback=self.output_frame)
+        # last inlet, so links saved by index before it existed still land right
+        self.clear_input = self.add_input('clear', widget_type='button', callback=self.clear_sequence)
         self.save_button = self.add_property('save', widget_type='button', callback=self.save_sequence)
 
         self.load_button = self.add_property('load', widget_type='button', callback=self.load_sequence)
@@ -2065,6 +2072,12 @@ class NumpySequenceNode(Node):
             frame_num = self.frame_input()
             if -1 < frame_num < self.num_frames:
                 self.data_output.send(self.sequence[frame_num])
+
+    def clear_sequence(self, input=None):
+        # empty the recording so the next frames start a fresh take at frame 0
+        self.sequence = []
+        self.num_frames = 0
+        self.frame_input.set(-1)
 
     def save_sequence(self):
         SaveDialog(self, callback=self.save_file_callback, extensions=['.npy'])

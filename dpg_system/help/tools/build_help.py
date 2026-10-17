@@ -197,57 +197,68 @@ def build(name, title, body, demo, links, demo_width=520,
 
     # A subpatcher is two patches in one file, linked both ways: the parent
     # node's 'patcher id' is the subpatch's id, and the subpatch's
-    # 'parent_node_uuid' is the parent node's id.
-    host_id = ids[subpatch['host']]
-    sub_id = new_id()
-    for nc in nodes.values():
-        if nc.get('id') == host_id:
-            nc['patcher id'] = sub_id
-            break
+    # 'parent_node_uuid' is the parent node's id. A page may carry several
+    # (a list), each hosted by its own p node.
+    subpatches = subpatch if isinstance(subpatch, list) else [subpatch]
+    subs = []
+    for subpatch in subpatches:
+        host_id = ids[subpatch['host']]
+        sub_id = new_id()
+        for nc in nodes.values():
+            if nc.get('id') == host_id:
+                nc['patcher id'] = sub_id
+                break
 
-    sub_nodes, sub_ids = {}, {}
-    sub_nodes['0'] = {
-        'name': '', 'id': new_id(), 'position_x': 0, 'position_y': 0,
-        'width': 9, 'height': 30, 'visibility': 'show_all', 'draggable': True,
-        'protected': True, 'presentation_state': 'hidden',
-        'properties': {'0': {'name': '', 'value': None, 'value_type': 'NoneType'}},
-    }
-    for i, d in enumerate(subpatch['demo'], start=1):
-        nid_ = new_id()
-        sub_ids[d['key']] = nid_
-        x, y = d['pos']
-        sub_nodes[str(i)] = {
-            'name': d['init'].split(' ')[0], 'init': d['init'], 'id': nid_,
-            'position_x': x, 'position_y': y,
-            'width': d.get('w', 140), 'height': d.get('h', 60),
-            'visibility': 'show_all', 'draggable': True,
-            'presentation_state': 'show_all',
-            'properties': _props(d.get('props', {})),
+        sub_nodes, sub_ids = {}, {}
+        sub_nodes['0'] = {
+            'name': '', 'id': new_id(), 'position_x': 0, 'position_y': 0,
+            'width': 9, 'height': 30, 'visibility': 'show_all', 'draggable': True,
+            'protected': True, 'presentation_state': 'hidden',
+            'properties': {'0': {'name': '', 'value': None, 'value_type': 'NoneType'}},
         }
-    sub_lk = {}
-    for j, link in enumerate(subpatch.get('links', [])):
-        sk, so, dk, di = link[:4]
-        sub_lk[str(j)] = {
-            'source_node': sub_ids[sk], 'source_node_name': '',
-            'source_output_index': link[4] if len(link) > 4 else 0,
-            'source_output_name': so,
-            'dest_node': sub_ids[dk], 'dest_node_name': '',
-            'dest_input_index': link[5] if len(link) > 5 else 0,
-            'dest_input_name': di,
+        for i, d in enumerate(subpatch['demo'], start=1):
+            nid_ = new_id()
+            sub_ids[d['key']] = nid_
+            x, y = d['pos']
+            sub_nodes[str(i)] = {
+                'name': d['init'].split(' ')[0], 'init': d['init'], 'id': nid_,
+                'position_x': x, 'position_y': y,
+                'width': d.get('w', 140), 'height': d.get('h', 60),
+                'visibility': 'show_all', 'draggable': True,
+                'presentation_state': 'show_all',
+                'properties': _props(d.get('props', {})),
+            }
+            if d['init'].startswith('comment '):
+                # a comment loads its text from 'comment', not from init
+                txt = d['init'][len('comment '):]
+                sub_nodes[str(i)]['comment'] = txt
+                sub_nodes[str(i)]['properties'] = _props({'text': txt})
+        sub_lk = {}
+        for j, link in enumerate(subpatch.get('links', [])):
+            sk, so, dk, di = link[:4]
+            sub_lk[str(j)] = {
+                'source_node': sub_ids[sk], 'source_node_name': '',
+                'source_output_index': link[4] if len(link) > 4 else 0,
+                'source_output_name': so,
+                'dest_node': sub_ids[dk], 'dest_node_name': '',
+                'dest_input_index': link[5] if len(link) > 5 else 0,
+                'dest_input_name': di,
+            }
+        sub = {
+            'height': max([d['pos'][1] + d.get('h', 60) for d in subpatch['demo']]) + 80,
+            'width': max([d['pos'][0] + d.get('w', 140) for d in subpatch['demo']]) + 80,
+            'position': [160, 160],
+            'id': sub_id,
+            'name': subpatch['name'],
+            'parent_node_uuid': host_id,
+            'nodes': sub_nodes,
+            'links': sub_lk,
         }
-    sub = {
-        'height': max([d['pos'][1] + d.get('h', 60) for d in subpatch['demo']]) + 80,
-        'width': max([d['pos'][0] + d.get('w', 140) for d in subpatch['demo']]) + 80,
-        'position': [160, 160],
-        'id': sub_id,
-        'name': subpatch['name'],
-        'parent_node_uuid': host_id,
-        'nodes': sub_nodes,
-        'links': sub_lk,
-    }
+        subs.append(sub)
+    allp = subs + [patch]
     doc = {'name': name + '_help', 'path': path,
-           'patches': {'0': sub, '1': patch}}
-    for pt in (sub, patch):
+           'patches': {str(k): pt for k, pt in enumerate(allp)}}
+    for pt in allp:
         strip_patch(pt)
         if not keep_toggles:
             strip_toggles(pt)

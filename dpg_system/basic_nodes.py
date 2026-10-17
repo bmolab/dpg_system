@@ -6,6 +6,7 @@ import time
 import string
 import sys
 import os
+import pathlib
 import torch
 import copy
 import queue
@@ -434,7 +435,8 @@ class HelpLinkNode(Node):
     """A button that walks the node browser: help_link <target> [label words].
 
     <target> is either a browser page (help/browser/<target>.json) or a help
-    file stem (help/<target>_help.json). Following a page link REPLACES the
+    file stem (help/<target>_help.json), or a node name that help_index.json
+    maps to a shared page. Following a page link REPLACES the
     page holding the button, and opening a help patch closes the one the
     browser opened before -- so browsing leaves at most one page and one help
     patch open, however far you go. A tab the user has edited (editor.modified)
@@ -546,6 +548,13 @@ class HelpLinkNode(Node):
         stem = self.target[:-len('_help')] if self.target.endswith('_help') else self.target
         name = stem + '_help'
         path = os.path.join(HelpLinkNode.help_dir(), name + '.json')
+        if not os.path.exists(path):
+            # A node name documented on a shared page: look it up the same way
+            # a node's own help does, so links name nodes, not page stems.
+            indexed = Node.load_help_index(pathlib.Path(HelpLinkNode.help_dir())).get(stem)
+            if indexed is not None:
+                name = indexed + '_help'
+                path = os.path.join(HelpLinkNode.help_dir(), name + '.json')
         if not os.path.exists(path):
             print('help_link: no help patch', path)
             return

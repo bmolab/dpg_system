@@ -131,10 +131,15 @@ class MGLImageNode(MGLNode):
     _image_frag_src = '''
         #version 330
         uniform sampler2D image;
+        uniform bool premultiply;
         in vec2 v_texcoord;
         out vec4 fragColor;
         void main() {
-            fragColor = texture(image, v_texcoord);
+            vec4 c = texture(image, v_texcoord);
+            // the context blends (ONE, ONE_MINUS_SRC_ALPHA): colour must
+            // already be scaled by alpha, or a see-through pixel adds its
+            // full colour on top of what shows through it
+            fragColor = premultiply ? vec4(c.rgb * c.a, c.a) : c;
         }
     '''
 
@@ -219,7 +224,11 @@ class MGLImageNode(MGLNode):
         tex = self.texture_input()
         if tex is None:
             return
-        if not isinstance(tex, moderngl.Texture):
+        # An array's alpha is straight (colour not scaled by it). A texture
+        # from another mgl node was rendered with this context's blending,
+        # so it is premultiplied already and must not be scaled twice.
+        premultiply = not isinstance(tex, moderngl.Texture)
+        if premultiply:
             tex = self._update_internal_texture(tex)
         if tex is None:
             return
@@ -233,6 +242,8 @@ class MGLImageNode(MGLNode):
         tex.use(location=0)
         if 'image' in self._prog:
             self._prog['image'].value = 0
+        if 'premultiply' in self._prog:
+            self._prog['premultiply'].value = premultiply
         self._vao.render(moderngl.TRIANGLE_STRIP)
         # Re-enable depth test for subsequent 3D nodes
         inner_ctx.enable(moderngl.DEPTH_TEST)

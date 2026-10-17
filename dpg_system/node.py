@@ -4189,6 +4189,9 @@ class PatcherOutputNode(Node):
             text_width = [80, 14]
         self.go_property = self.add_property('dest', widget_type='button', width=text_width[0] + 8, callback=self.jump_to_patcher)
         self.output_in = self.add_input(self.output_name, callback=self.send_to_patcher)
+        # pass a bang through as a bang: by default an inlet swaps a bang for
+        # its previous value, which here is None, so the bang never left
+        self.output_in.bang_repeats_previous = False
         self.patcher_node = self.app.get_current_editor().patcher_node
         self.target_output = None
         self.name_option = self.add_option('output name', widget_type='text_input', default_value=self.output_name, callback=self.name_changed)
@@ -4279,6 +4282,7 @@ class PatcherNode(Node):
         self.output_ins = [None] * self.max_output_count
         for i in range(self.max_input_count):
             in_temp = self.add_input('in ' + str(i), callback=self.receive_)
+            in_temp.bang_repeats_previous = False   # a bang goes in as a bang
             self.patcher_inputs[i] = in_temp
         for i in range(self.max_output_count):
             out_temp = self.add_output('out ' + str(i))

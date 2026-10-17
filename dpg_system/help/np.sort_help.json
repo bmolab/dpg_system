@@ -1,0 +1,568 @@
+{
+    "height": 941,
+    "width": 1634,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "np.sort_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.sort_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.sort - put values in order",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 365,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.sort - put values in order",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.sort - put values in order"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 826,
+            "position_y": 45,
+            "width": 768,
+            "height": 836,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Puts the values of an array in order, smallest first.\n\nUse it to rank values, to find the middle or the extremes by position, to\ntidy a list before display, or to turn scattered values into a smooth\nramp. A 2-D array is sorted one row (or one column) at a time - each\nline on its own, not the array as a whole.\n\nSYNTAX:\nnp.sort <axis: int>\nDefault axis -1, the last axis: each row is sorted.\n\nEXAMPLE:\nnp.sort 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is sorted\nand sent; only this inlet makes the node send.\n\naxis (int box, also an inlet):\nWhich way to sort. On a 2-D array, -1 or 1 sorts along each ROW (each\nrow runs dark to bright, left to right); 0 or -2 sorts down each COLUMN.\nNegative numbers count from the end, as in numpy. An axis the array does\nnot have sends nothing. There is no setting that sorts the whole array\nas one list - flatten it first (np.ravel), then sort.\nChanging axis does NOT send by itself; in the demo a metro re-sends the\nsame array ten times a second (through var), so a new axis shows at once.\n\ndescending (checkbox, under show options):\nLargest first. The sorted result is simply reversed along the axis.\n\nOUTPUTS:\n\nsorted:\nThe same values, in order, in the same shape as the input.\n\nREADING THE DEMO:\nnp.rand makes a 10 by 10 array of noise; click its button for fresh\nnumbers. var holds the latest array and the metro re-sends it, so both\nheat_maps show the same numbers. With axis -1 every row of the right\npicture runs purple to yellow; type 0 and every column does instead.\nTurn on descending (show options) and the ramps run the other way.\n\nRELATED:\nnp.argsort gives WHERE each sorted value came from instead of the values.\nnp.flip reverses an order. t.argsort is the PyTorch counterpart of\nnp.argsort, with its own descending switch.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Puts the values of an array in order, smallest first.\n\nUse it to rank values, to find the middle or the extremes by position, to\ntidy a list before display, or to turn scattered values into a smooth\nramp. A 2-D array is sorted one row (or one column) at a time - each\nline on its own, not the array as a whole.\n\nSYNTAX:\nnp.sort <axis: int>\nDefault axis -1, the last axis: each row is sorted.\n\nEXAMPLE:\nnp.sort 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is sorted\nand sent; only this inlet makes the node send.\n\naxis (int box, also an inlet):\nWhich way to sort. On a 2-D array, -1 or 1 sorts along each ROW (each\nrow runs dark to bright, left to right); 0 or -2 sorts down each COLUMN.\nNegative numbers count from the end, as in numpy. An axis the array does\nnot have sends nothing. There is no setting that sorts the whole array\nas one list - flatten it first (np.ravel), then sort.\nChanging axis does NOT send by itself; in the demo a metro re-sends the\nsame array ten times a second (through var), so a new axis shows at once.\n\ndescending (checkbox, under show options):\nLargest first. The sorted result is simply reversed along the axis.\n\nOUTPUTS:\n\nsorted:\nThe same values, in order, in the same shape as the input.\n\nREADING THE DEMO:\nnp.rand makes a 10 by 10 array of noise; click its button for fresh\nnumbers. var holds the latest array and the metro re-sends it, so both\nheat_maps show the same numbers. With axis -1 every row of the right\npicture runs purple to yellow; type 0 and every column does instead.\nTurn on descending (show options) and the ramps run the other way.\n\nRELATED:\nnp.argsort gives WHERE each sorted value came from instead of the values.\nnp.flip reverses an order. t.argsort is the PyTorch counterpart of\nnp.argsort, with its own descending switch."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "np.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dim 0",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dim 1",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 10 10"
+        },
+        "5": {
+            "init": "comment click for fresh noise",
+            "name": "comment",
+            "id": 422,
+            "position_x": 554,
+            "position_y": 135,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click for fresh noise",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click for fresh noise"
+        },
+        "6": {
+            "name": "metro",
+            "id": 459,
+            "position_x": 280,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "7": {
+            "name": "var",
+            "id": 496,
+            "position_x": 280,
+            "position_y": 220,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "name",
+                    "value": "np_sort_help_noise",
+                    "value_type": "str"
+                }
+            },
+            "init": "var np_sort_help_noise"
+        },
+        "8": {
+            "init": "comment holds the array; the metro re-sends it",
+            "name": "comment",
+            "id": 533,
+            "position_x": 554,
+            "position_y": 225,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "holds the array; the metro re-sends it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "holds the array; the metro re-sends it"
+        },
+        "9": {
+            "name": "heat_map",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 228,
+            "height": 270,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "np.sort",
+            "id": 607,
+            "position_x": 300,
+            "position_y": 320,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": -1,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "descending",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "init": "comment axis -1: each row. 0: each column",
+            "name": "comment",
+            "id": 644,
+            "position_x": 554,
+            "position_y": 325,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axis -1: each row. 0: each column",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "axis -1: each row. 0: each column"
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 681,
+            "position_x": 300,
+            "position_y": 410,
+            "width": 228,
+            "height": 270,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment left: noise. right: sorted",
+            "name": "comment",
+            "id": 718,
+            "position_x": 554,
+            "position_y": 700,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "left: noise. right: sorted",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "left: noise. right: sorted"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 750,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.argsort"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 151,
+            "position_y": 750,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.flip"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 248,
+            "position_y": 750,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.argsort"
+        },
+        "17": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 866,
+            "position_x": 554,
+            "position_y": 750,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 824,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "sorted",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

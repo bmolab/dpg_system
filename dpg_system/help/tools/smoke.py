@@ -102,7 +102,12 @@ def main():
             label = getattr(n, 'label', '')
             if label in SKIP:
                 continue
-            for out in getattr(n, 'outputs', []):
+            shown = getattr(n, 'show_output', None)
+            for oi, out in enumerate(getattr(n, 'outputs', [])):
+                # A subpatcher has 20 outlets but shows only those its out
+                # nodes made; the hidden ones are not part of the demo.
+                if shown is not None and oi < len(shown) and not shown[oi]:
+                    continue
                 # A ~ node's signal outlets carry samples through the compiled
                 # DSP graph, not messages -- there is nothing to tap, and
                 # headlessly the audio callback is not running at all, so every

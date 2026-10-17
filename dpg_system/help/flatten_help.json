@@ -1,0 +1,611 @@
+{
+    "height": 1128,
+    "width": 1728,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "flatten_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/flatten_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment flatten / np.ravel - every value in one row",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 537,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flatten / np.ravel - every value in one row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flatten / np.ravel - every value in one row"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 920,
+            "position_y": 45,
+            "width": 768,
+            "height": 816,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Collapses an array of any shape into one long row of all its values.\n\nflatten and np.ravel are two names for the same node. Use it when a node\nwants a plain list of numbers - a plot, a list display, a send to another\nprogram - or to undo a reshape. The values are not changed, only laid\nend to end.\n\nTHE ORDER:\norder C (the default) reads row by row, as the array prints: all of row\n0, then all of row 1, and so on. A ramp that np.reshape folded into rows\ncomes back out exactly as it went in.\norder F reads column by column instead: down column 0, then column 1.\norder A and K read the numbers in the order they sit in memory. For\nalmost every array in a patch that is the same as C; they differ only\nfor an array that came straight out of np.transpose, where they read it\nas F would.\n\nSYNTAX:\nflatten <order>\nnp.ravel <order>\norder is C, F, A or K; default C.\n\nEXAMPLE:\nflatten F\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it\nis what makes the node send.\n\norder (menu):\nAs above. Changing it does not send by itself - the next array uses it.\nIn the demo the metro re-sends the ramp, so the strip changes at once.\n\nOUTPUTS:\n\nflattened array:\nA 1-D array of every value, shape [rows x columns x ...].\n\nREADING THE DEMO:\nThe ramp is folded into 3 rows of 4 (the middle heat_map), then\nflattened. With order C the bottom strip is the original ramp again,\n0 rising to 1. Switch order to F and it reads down the columns instead:\n0, 0.36, 0.73, then 0.09, 0.45, 0.82 ... - three short climbs, one per\ncolumn. The shape is [12] either way.\n\nRELATED:\nnp.reshape is the reverse, and np.reshape -1 does the same as flatten C.\nnp.squeeze removes just one length-1 axis rather than all structure.\nnp.transpose swaps rows and columns first, if you want to flatten the\nother way without changing order. t.reshape covers the PyTorch versions\n(t.flatten, t.ravel).",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Collapses an array of any shape into one long row of all its values.\n\nflatten and np.ravel are two names for the same node. Use it when a node\nwants a plain list of numbers - a plot, a list display, a send to another\nprogram - or to undo a reshape. The values are not changed, only laid\nend to end.\n\nTHE ORDER:\norder C (the default) reads row by row, as the array prints: all of row\n0, then all of row 1, and so on. A ramp that np.reshape folded into rows\ncomes back out exactly as it went in.\norder F reads column by column instead: down column 0, then column 1.\norder A and K read the numbers in the order they sit in memory. For\nalmost every array in a patch that is the same as C; they differ only\nfor an array that came straight out of np.transpose, where they read it\nas F would.\n\nSYNTAX:\nflatten <order>\nnp.ravel <order>\norder is C, F, A or K; default C.\n\nEXAMPLE:\nflatten F\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it\nis what makes the node send.\n\norder (menu):\nAs above. Changing it does not send by itself - the next array uses it.\nIn the demo the metro re-sends the ramp, so the strip changes at once.\n\nOUTPUTS:\n\nflattened array:\nA 1-D array of every value, shape [rows x columns x ...].\n\nREADING THE DEMO:\nThe ramp is folded into 3 rows of 4 (the middle heat_map), then\nflattened. With order C the bottom strip is the original ramp again,\n0 rising to 1. Switch order to F and it reads down the columns instead:\n0, 0.36, 0.73, then 0.09, 0.45, 0.82 ... - three short climbs, one per\ncolumn. The shape is [12] either way.\n\nRELATED:\nnp.reshape is the reverse, and np.reshape -1 does the same as flatten C.\nnp.squeeze removes just one length-1 axis rather than all structure.\nnp.transpose swaps rows and columns first, if you want to flatten the\nother way without changing order. t.reshape covers the PyTorch versions\n(t.flatten, t.ravel)."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "name": "np.linspace",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.linspace 0 1 12"
+        },
+        "5": {
+            "init": "comment twelve values 0 .. 1, sent 10 times a second",
+            "name": "comment",
+            "id": 422,
+            "position_x": 611,
+            "position_y": 155,
+            "width": 279,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twelve values 0 .. 1, sent 10 times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twelve values 0 .. 1, sent 10 times a second"
+        },
+        "6": {
+            "name": "np.reshape",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 3 4"
+        },
+        "7": {
+            "name": "heat_map",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 410,
+            "width": 248,
+            "height": 200,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 150,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment in: 3 rows of 4, reading across",
+            "name": "comment",
+            "id": 533,
+            "position_x": 611,
+            "position_y": 415,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in: 3 rows of 4, reading across",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in: 3 rows of 4, reading across"
+        },
+        "9": {
+            "name": "flatten",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 123,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "order",
+                    "value": "C",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment switch order between C and F",
+            "name": "comment",
+            "id": 607,
+            "position_x": 611,
+            "position_y": 635,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "switch order between C and F",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "switch order between C and F"
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 500,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 492,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 40,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment out: one row of twelve",
+            "name": "comment",
+            "id": 681,
+            "position_x": 611,
+            "position_y": 745,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "out: one row of twelve",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "out: one row of twelve"
+        },
+        "13": {
+            "name": "np.shape",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 850,
+            "width": 58,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 160,
+            "position_y": 850,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 950,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.reshape"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 151,
+            "position_y": 950,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.squeeze"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 272,
+            "position_y": 950,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.transpose"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 408,
+            "position_y": 950,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.shape"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 513,
+            "position_y": 950,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.reshape"
+        },
+        "20": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 977,
+            "position_x": 611,
+            "position_y": 950,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 1024,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "flattened array",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "flattened array",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

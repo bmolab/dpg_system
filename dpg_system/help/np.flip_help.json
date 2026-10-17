@@ -1,0 +1,664 @@
+{
+    "name": "np.flip_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.flip_help.json",
+    "patches": {
+        "0": {
+            "height": 490,
+            "width": 630,
+            "position": [
+                160,
+                160
+            ],
+            "id": 903,
+            "name": "make_F",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 940,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 977,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment re-sends the F ten times a second",
+                    "id": 1014,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends the F ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends the F ten times a second"
+                },
+                "3": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1051,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 290,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "1 1 1 1 1 1  1 1 0 0 0 0  1 1 0 0 0 0  1 1 1 1 0 0  1 1 0 0 0 0  1 1 0 0 0 0  1 1 0 0 0 0",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 260,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment the letter F as 42 numbers, 1 = letter, 0 = background",
+                    "id": 1088,
+                    "position_x": 40,
+                    "position_y": 185,
+                    "width": 480,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the letter F as 42 numbers, 1 = letter, 0 = background",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the letter F as 42 numbers, 1 = letter, 0 = background"
+                },
+                "5": {
+                    "name": "np.reshape",
+                    "init": "np.reshape 7 6",
+                    "id": 1125,
+                    "position_x": 40,
+                    "position_y": 230,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment folded into 7 rows of 6",
+                    "id": 1162,
+                    "position_x": 290,
+                    "position_y": 245,
+                    "width": 260,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "folded into 7 rows of 6",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "folded into 7 rows of 6"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out F",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 330,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 977,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1051,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1051,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1125,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1199,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "F"
+                }
+            }
+        },
+        "1": {
+            "height": 881,
+            "width": 1685,
+            "position": [
+                100,
+                100
+            ],
+            "id": 866,
+            "name": "np.flip_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/np.flip_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment np.flip - reverse the order along an axis",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 512,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "np.flip - reverse the order along an axis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "np.flip - reverse the order along an axis"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 877,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 776,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Reverses an array along one axis: the first row becomes the last,\nor the first column the last.\n\nUse it to mirror an image or a grid (upside down, or left to right), to\nreverse a sequence, or to turn an ascending order into a descending one.\n\nWHICH AXIS:\naxis 0 reverses the order of the ROWS - the picture turns upside down.\naxis 1 reverses the order of the COLUMNS - each row is read backwards, a\nmirror image. For a 1-D array there is only axis 0, so the whole row is\nreversed. The node flips one axis at a time; to flip both, chain two\n(np.flip 0 into np.flip 1), which is the same as np.rot90 2.\n\nSYNTAX:\nnp.flip <axis: int>\nDefault axis 0.\n\nEXAMPLE:\nnp.flip 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one). Every array that arrives is flipped\nand sent - this is the only inlet that makes the node send.\n\naxis (int box, also an inlet):\nWhich axis to reverse. Changing it does NOT send by itself; the next array\nuses it. In the demo a metro inside make_F re-sends the F ten times a\nsecond, so the picture follows your edits.\nA negative axis is treated as 0 - NOT as counting from the end, as\nin numpy - and an axis past the last one is treated as the last.\n\nOUTPUTS:\n\nflipped array:\nSame shape and values as the input, in reversed order along the axis.\n\nREADING THE DEMO:\nThe F is a 7 by 6 array of 0s (purple) and 1s (yellow), drawn row 0 at\nthe top. With axis 0 the F stands on its head, its bar at the bottom;\ntype 1 into axis and it faces left instead.\n\nRELATED:\nnp.rot90 turns by quarter turns instead of mirroring. np.roll shifts\nalong an axis with wrap-around. np.transpose swaps rows and columns\n(a flip across the diagonal). np.sort has a descending option that is\na flip of its result. t.flip is the PyTorch version, on the t.roll page.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Reverses an array along one axis: the first row becomes the last,\nor the first column the last.\n\nUse it to mirror an image or a grid (upside down, or left to right), to\nreverse a sequence, or to turn an ascending order into a descending one.\n\nWHICH AXIS:\naxis 0 reverses the order of the ROWS - the picture turns upside down.\naxis 1 reverses the order of the COLUMNS - each row is read backwards, a\nmirror image. For a 1-D array there is only axis 0, so the whole row is\nreversed. The node flips one axis at a time; to flip both, chain two\n(np.flip 0 into np.flip 1), which is the same as np.rot90 2.\n\nSYNTAX:\nnp.flip <axis: int>\nDefault axis 0.\n\nEXAMPLE:\nnp.flip 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one). Every array that arrives is flipped\nand sent - this is the only inlet that makes the node send.\n\naxis (int box, also an inlet):\nWhich axis to reverse. Changing it does NOT send by itself; the next array\nuses it. In the demo a metro inside make_F re-sends the F ten times a\nsecond, so the picture follows your edits.\nA negative axis is treated as 0 - NOT as counting from the end, as\nin numpy - and an axis past the last one is treated as the last.\n\nOUTPUTS:\n\nflipped array:\nSame shape and values as the input, in reversed order along the axis.\n\nREADING THE DEMO:\nThe F is a 7 by 6 array of 0s (purple) and 1s (yellow), drawn row 0 at\nthe top. With axis 0 the F stands on its head, its bar at the bottom;\ntype 1 into axis and it faces left instead.\n\nRELATED:\nnp.rot90 turns by quarter turns instead of mirroring. np.roll shifts\nalong an axis with wrap-around. np.transpose swaps rows and columns\n(a flip across the diagonal). np.sort has a descending option that is\na flip of its result. t.flip is the PyTorch version, on the t.roll page."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 53,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_F",
+                    "patcher id": 903
+                },
+                "4": {
+                    "init": "comment the F, 7 x 6 - open make_F to see how it is made",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 544,
+                    "position_y": 160,
+                    "width": 303,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the F, 7 x 6 - open make_F to see how it is made",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the F, 7 x 6 - open make_F to see how it is made"
+                },
+                "5": {
+                    "name": "heat_map",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 300,
+                    "width": 188,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 7,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "np.flip",
+                    "id": 459,
+                    "position_x": 280,
+                    "position_y": 230,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": 0,
+                            "value_type": "int"
+                        }
+                    },
+                    "init": "np.flip 0"
+                },
+                "7": {
+                    "init": "comment type 0 or 1 into axis",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 544,
+                    "position_y": 235,
+                    "width": 138,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "type 0 or 1 into axis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "type 0 or 1 into axis"
+                },
+                "8": {
+                    "name": "heat_map",
+                    "id": 533,
+                    "position_x": 280,
+                    "position_y": 320,
+                    "width": 188,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 7,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment left: in. right: flipped",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 544,
+                    "position_y": 590,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "left: in. right: flipped",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "left: in. right: flipped"
+                },
+                "10": {
+                    "name": "help_link",
+                    "id": 607,
+                    "position_x": 30,
+                    "position_y": 640,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.rot90"
+                },
+                "11": {
+                    "name": "help_link",
+                    "id": 644,
+                    "position_x": 135,
+                    "position_y": 640,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.roll"
+                },
+                "12": {
+                    "name": "help_link",
+                    "id": 681,
+                    "position_x": 232,
+                    "position_y": 640,
+                    "width": 90,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.transpose"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 368,
+                    "position_y": 640,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.sort"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 465,
+                    "position_y": 640,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.roll"
+                },
+                "15": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 544,
+                    "position_y": 640,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "16": {
+                    "name": "close",
+                    "id": 829,
+                    "position_x": 24,
+                    "position_y": 714,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "F",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "F",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "2": {
+                    "source_node": 459,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "flipped array",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

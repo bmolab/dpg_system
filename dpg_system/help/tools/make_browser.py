@@ -138,7 +138,10 @@ TREE = {
         ('Understanding', ['vision_describe', 'depth_anything']),
     ]),
     'nodes_numpy': ('NumPy', 'np. nodes work on numpy arrays.', [
-        ('Making and shaping', ['np_generator', 'np_reshape', 'np_rearrange', 'np_select', 'np.astype', 'np.add_alpha', 'np.edit', 'np.load']),
+        ('Making arrays', ['np.zeros', 'np.ones', 'np.rand', 'np.linspace', 'np.grid', 'np.load', 'np.sequence']),
+        ('Reshaping and converting', ['np.reshape', 'np.shape', 'flatten', 'np.expand_dims', 'np.squeeze', 'np.transpose', 'np.astype', 'np.add_alpha']),
+        ('Rearranging and joining', ['np.flip', 'np.roll', 'np.rot90', 'np.repeat', 'np.sort', 'np.argsort', 'np.split', 'np.concatenate', 'np.stack']),
+        ('Selecting and editing', ['np.[]', 'np.crop', 'np.where', 'np.argwhere', 'np.edit']),
         ('Calculating', ['np_clip', 'np_stats', 'np_cumulative', 'np.rolling_buffer', 'np_linalg', 'np_target', 'np.line_intersection', 'rotate_position']),
     ]),
     'nodes_torch': ('PyTorch', 't. nodes work on torch tensors; k. and tv. nodes are under Video and images.', [
@@ -225,9 +228,8 @@ LABELS = {
     'mgl_sphere': 'mgl shapes', 'mgl_transform': 'mgl transforms',
     'midi_control_in': 'MIDI controllers / programs', 'midi_note_in': 'MIDI notes',
     'midi_pitchbend_in': 'MIDI bend / aftertouch', 'modal~': 'struck models',
-    'momentary': 'momentary sliders', 'np_cumulative': 'np cumulative', 'np_generator': 'np generators',
-    'np_linalg': 'np linear algebra', 'np_rearrange': 'np rearranging', 'np_reshape': 'np reshaping',
-    'np_select': 'np selecting', 'np_stats': 'np statistics', 'np_target': 'np targets',
+    'momentary': 'momentary sliders', 'np_cumulative': 'np cumulative',
+    'np_linalg': 'np linear algebra', 'np_stats': 'np statistics', 'np_target': 'np targets',
     'osc_float': 'OSC widgets', 'osc_source': 'OSC connections',
     'param_widgets': 'param_ widgets',
     'polyphonic_sampler': 'polyphonic / granular / scratch',

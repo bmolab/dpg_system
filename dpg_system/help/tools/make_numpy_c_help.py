@@ -585,66 +585,41 @@ links = [('btn', '', 'rnd', ''), ('rnd', '', 'l1', '', 0),
 print(build('np.astype', 'np.astype - change an array\'s number type', body, demo, links,
             demo_width=440, text_width=790, text_height=560))
 
-# --------------------------------------------------------------- np.add_alpha
-body = """np.add_alpha adds a fourth channel to a three-channel image, made from its brightness.
+# ------------------------------------------------------- shared helpers
+# Helpers for the one-node-per-page sections below (copied from
+# make_numpy_b_help.py rather than imported across generators).
 
-The new channel is the AVERAGE of each pixel's three channels. So it is not a
-plain "fully opaque" alpha: used as opacity, bright pixels come out solid and
-dark ones transparent, and black disappears altogether. That is what you want
-for laying light material - text, glows, a camera image of a lit figure on
-black - over something else, so that the black background drops out.
 
-If you want a fully opaque alpha instead, this is not the node; build the
-channel yourself.
+def HM(width, height, count, miny=0.0, maxy=1.0, fmt='%.2f', color='viridis'):
+    """Property block for a heat_map that draws a whole array as one picture."""
+    return {'color': color, 'width': width, 'height': height, 'sample count': count,
+            'min y': miny, 'max y': maxy, 'update_mode': 'heat_map',
+            'number format': fmt}
 
-WHAT IT ACCEPTS:
-An image as an array of height x width x channels. Anything that is not three
-dimensional is ignored. An image that already has four channels is taken to
-have its alpha and is passed through unchanged.
 
-THE TYPE IS KEPT:
-The image comes out in the type it came in: a uint8 image (0 to 255) stays
-uint8, with the average rounded down to a whole number; a float image stays
-float, with its range unchanged.
+LIST = {'text in': '', 'font size': '24'}
 
-SYNTAX:
-np.add_alpha
 
-EXAMPLE:
-np.add_alpha
+def see_also(y, stems, x=30):
+    """A SEE ALSO row: one help_link per related page, left to right."""
+    row = []
+    for s in stems:
+        w = int(len(s) * 7.7) + 30
+        row.append({'key': 'sa_' + s, 'init': 'help_link ' + s, 'pos': (x, y),
+                    'w': w, 'h': 30})
+        x += w + 14
+    row.append({'key': 'sa_c', 'comment': True, 'text': 'SEE ALSO - click to open',
+                'pos': (x, y)})
+    return row
 
-INPUTS and PARAMETERS:
 
-input:
-The image. Receiving it triggers the node.
+# np.add_alpha_help.json is laid out by hand (David rebuilt it with an
+# mgl_sphere behind each image) and is no longer generated here -- a
+# rebuild would overwrite it.
 
-OUTPUTS:
-
-image with alpha:
-The image with the brightness channel added as its last channel."""
-
-demo = [
-    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
-    {'key': 'rnd', 'init': 'np.rand 1 2 3', 'pos': (30, 120), 'w': 140, 'h': 150,
-     'props': {'min': 0.0, 'max': 1.0, 'dtype': 'float32'}},
-    {'key': 'c0', 'comment': True, 'text': 'click: a tiny image, one row of two\npixels, three channels each',
-     'pos': (30, 285)},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 330), 'w': 400, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'aa', 'init': 'np.add_alpha', 'pos': (30, 390), 'w': 180, 'h': 70},
-    {'key': 'l2', 'init': 'list', 'pos': (30, 480), 'w': 400, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c1', 'comment': True, 'text': 'each pixel gains a fourth number:\nthe average of its three',
-     'pos': (30, 530)},
-]
-links = [('btn', '', 'rnd', ''), ('rnd', '', 'l1', '', 0),
-         ('rnd', '', 'aa', 'input', 0),
-         ('aa', 'image with alpha', 'l2', '')]
-print(build('np.add_alpha', 'np.add_alpha - brightness as a fourth channel', body, demo,
-            links, demo_width=480, text_width=790, text_height=520))
 
 # -------------------------------------------------------------------- np.edit
-body = """np.edit overwrites chosen positions in an array with a value you type.
+body = """Overwrites chosen positions in an array with a value you type.
 
 Name the positions in "indices", put the new value in "values", and every
 array that passes through comes out with those positions replaced. It is for
@@ -652,8 +627,8 @@ patching a few numbers by hand: zeroing a channel you do not trust, pinning a
 calibration value, forcing one element of a weight vector while you tune.
 
 IT DOES NOT DISPLAY THE ARRAY:
-np.edit shows only the two fields. Put a list (or a table, for a grid) after
-it to see the result.
+np.edit shows only the two fields. Put a display after it - a heat_map, as
+here, for a grid - to see the result.
 
 WRITING INDICES:
 The same slice notation as numpy, one entry per dimension, separated by
@@ -677,7 +652,8 @@ WHAT THE VALUE CAN BE:
 A single number fills every chosen position. A list of numbers fills them in
 order: "1 2" into "3:5" puts 1 at position 3 and 2 at position 4. A list longer
 than the selection is cut short. For a grid, a list as long as a row is
-copied into every chosen row.
+copied into every chosen row; a list of any other length is ignored on a
+grid (nothing changes, without a message).
 
 The value takes the array's own type, so 2.7 written into an integer array
 becomes 2.
@@ -691,7 +667,7 @@ SYNTAX:
 np.edit <indices>
 
 EXAMPLE:
-np.edit 1:3
+np.edit 1:3, 2:6
 
 INPUTS and PARAMETERS:
 
@@ -711,32 +687,51 @@ OUTPUTS:
 
 output:
 A copy of the array with the edit applied. The incoming array itself is not
-changed."""
+changed.
+
+READING THE DEMO:
+np.rand makes a 5 x 8 grid of numbers between 0 and 0.5 - all dark - and
+the left heat_map shows it. np.edit writes 1 into rows 1 and 2, columns 2
+to 5, and the right heat_map shows the result: the same grid with a bright
+block in it. Every other cell is untouched.
+
+Type into the fields and the right picture changes at once: indices "0" for
+all of row 0, ":, 7" for the last column, "4, 0" for one cell; values
+"0.25" for a middle shade, or a whole row of eight such as
+"0 1 0 1 0 1 0 1" to stripe the chosen rows. Click np.rand for a fresh
+grid - the same edit is applied to it.
+
+RELATED:
+np.[] reads positions out instead of writing them. np.where replaces values
+by a condition rather than by position. np.clip limits values; np.zeros and
+np.ones make an array to edit into."""
 
 demo = [
-    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
-    {'key': 'rnd', 'init': 'np.rand 6', 'pos': (30, 120), 'w': 140, 'h': 110,
-     'props': {'min': 0.0, 'max': 1.0, 'dim 0': 6, 'dtype': 'float32'}},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 245), 'w': 400, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c0', 'comment': True, 'text': 'click: six numbers between 0 and 1', 'pos': (30, 295)},
-    {'key': 'ed', 'init': 'np.edit 1:3', 'pos': (30, 335), 'w': 180, 'h': 100,
-     'props': {'indices': '1:3', 'values': '9'}},
-    {'key': 'c1', 'comment': True, 'text': 'try 4: or 0 or a list such as 5 6',
-     'pos': (30, 445)},
-    {'key': 'l2', 'init': 'list', 'pos': (30, 485), 'w': 400, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c2', 'comment': True, 'text': 'positions 1 and 2 replaced by 9',
-     'pos': (30, 535)},
-]
-links = [('btn', '', 'rnd', ''), ('rnd', '', 'l1', '', 0),
-         ('rnd', '', 'ed', 'array in', 0),
-         ('ed', 'output', 'l2', '')]
+    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 62), 'w': 88, 'h': 42},
+    {'key': 'rnd', 'init': 'np.rand 5 8', 'pos': (30, 120), 'w': 140, 'h': 140,
+     'props': {'min': 0.0, 'max': 0.5, 'dtype': 'float32'}},
+    {'key': 'c0', 'comment': True, 'text': 'click for a fresh grid of\nnumbers between 0 and 0.5',
+     'pos': (30, 130)},
+    {'key': 'ed', 'init': 'np.edit 1:3, 2:6', 'pos': (380, 300), 'w': 180, 'h': 70,
+     'props': {'indices': '1:3, 2:6', 'values': '1'}},
+    {'key': 'c1', 'comment': True, 'text': 'try indices 0  or  :, 7  or  4, 0\nand values 0.25  or  0 1 0 1 0 1 0 1',
+     'pos': (30, 300)},
+    {'key': 'h1', 'init': 'heat_map', 'pos': (30, 400), 'w': 340, 'h': 150,
+     'props': HM(320, 120, 5, 0.0, 1.0, '%.1f')},
+    {'key': 'h2', 'init': 'heat_map', 'pos': (380, 400), 'w': 340, 'h': 150,
+     'props': HM(320, 120, 5, 0.0, 1.0, '%.1f')},
+    {'key': 'c2', 'comment': True, 'text': 'left: the array in. right: after the edit',
+     'pos': (30, 410)},
+] + see_also(590, ['np.[]', 'np.where', 'np.clip', 'np.zeros'])
+links = [('lb', 'out', 'rnd', ''),
+         ('rnd', '', 'h1', 'y'),
+         ('rnd', '', 'ed', 'array in'),
+         ('ed', 'output', 'h2', 'y')]
 print(build('np.edit', 'np.edit - overwrite chosen positions in an array', body, demo,
-            links, demo_width=480, text_width=790, text_height=820))
+            links, demo_width=760, text_width=790, text_height=1000))
 
 # -------------------------------------------------------------------- np.load
-body = """np.load reads a numpy .npz file and sends what is in it.
+body = """Reads a numpy .npz file and sends the arrays in it, as a dictionary.
 
 An .npz is several named arrays saved together in one file - the usual way
 numpy data is shipped, and the format of most motion-capture archives (AMASS,
@@ -749,14 +744,23 @@ LOADING:
 Click "load" and choose a file. It is read straight away and sent. "send"
 sends the same contents again without re-reading the file.
 
-The chosen path is saved with the patch (it is the "path" option), and when
-the patch is opened again the file is read and sent automatically. A path
-typed after the name (np.load /path/to/file.npz) fills in that option and is
-read as soon as the node is made; so is a path typed into the option. A path
-that is not absolute is looked for relative to the folder the app was started
-from.
+To load a file by name instead, send the node the message "path" followed
+by the file's path, as the message box in the demo does. That sets the path
+and reads the file at once - from a patch, with no dialog.
+
+The path is saved with the patch (it is the "path" option), and when the
+patch is opened again the file is read and sent automatically. A path typed
+after the name (np.load /path/to/file.npz) fills in that option and is read
+as soon as the node is made; so is a path typed into the option. A path that
+is not absolute is looked for relative to the folder the app was started
+from - normally the top folder of the installation, the one holding
+dpg_system_main.py, which is why the demo's path starts with
+dpg_system/help.
 
 Only .npz files. A plain .npy file (a single array) is not read by this node.
+
+If the file cannot be read, the error is printed to the console and nothing
+is sent.
 
 A WORD OF CAUTION:
 The file is read with numpy's pickle support switched on, so that arrays of
@@ -767,34 +771,61 @@ SYNTAX:
 np.load <path>
 
 EXAMPLE:
-np.load
+np.load dpg_system/help/data/np_load_example.npz
 
 INPUTS and PARAMETERS:
 
 load:
-A button. Choose a file, read it and send it.
+A button. Choose a file, read it and send it. Any inlet also accepts the
+message "path <file>".
 
 send:
 A button. Send the last file read, again.
 
 path (option):
-The file to read. Set by "load"; read automatically when the patch opens.
+The file to read. Set by "load" or by a "path" message; read automatically
+when the patch opens.
 
 OUTPUTS:
 
 dict out:
-A dictionary of the file's arrays, keyed by name."""
+A dictionary of the file's arrays, keyed by name.
+
+READING THE DEMO:
+The help comes with a small file, np_load_example.npz, holding two arrays:
+"rings", a 16 x 16 target of concentric rings, and "checker", an 8 x 12
+checkerboard of 2 x 2 squares, both with values from 0 to 1. Click the
+message box to load it: dict_keys lists the two names, and dict_extract
+takes each array out by name for a heat_map.
+
+RELATED:
+dict_keys and dict_extract unpack the dictionary. np.sequence records and
+plays back a series of arrays."""
 
 demo = [
-    {'key': 'ld', 'init': 'np.load', 'pos': (30, 62), 'w': 180, 'h': 100},
-    {'key': 'c0', 'comment': True, 'text': 'click "load" and choose an .npz file',
-     'pos': (30, 175)},
-    {'key': 'dk', 'init': 'dict_keys', 'pos': (30, 215), 'w': 140, 'h': 60},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 295), 'w': 400, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'm1', 'init': 'message', 'pos': (30, 62), 'w': 470, 'h': 42,
+     'props': {'text in': 'path dpg_system/help/data/np_load_example.npz', 'font size': '24',
+               'width': 540}},
+    {'key': 'c0', 'comment': True, 'text': 'click to load the example file',
+     'pos': (30, 72)},
+    {'key': 'ld', 'init': 'np.load', 'pos': (30, 130), 'w': 180, 'h': 100},
+    {'key': 'dk', 'init': 'dict_keys', 'pos': (30, 260), 'w': 140, 'h': 42},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 320), 'w': 300, 'h': 42, 'props': dict(LIST)},
     {'key': 'c1', 'comment': True, 'text': 'the names of the arrays inside it',
-     'pos': (30, 345)},
-]
-links = [('ld', 'dict out', 'dk', 'dict in'), ('dk', 'keys out', 'l1', '')]
+     'pos': (30, 330)},
+    {'key': 'dx', 'init': 'dict_extract rings checker', 'pos': (30, 390), 'w': 220, 'h': 70,
+     'props': {'key count': 2, 'key 0': 'rings', 'key 1': 'checker',
+               'include key in output': False}},
+    {'key': 'h1', 'init': 'heat_map', 'pos': (30, 490), 'w': 260, 'h': 270,
+     'props': HM(240, 240, 16, 0.0, 1.0, 'none', 'greys')},
+    {'key': 'h2', 'init': 'heat_map', 'pos': (310, 490), 'w': 380, 'h': 270,
+     'props': HM(360, 240, 8, 0.0, 1.0, 'none', 'greys')},
+    {'key': 'c2', 'comment': True, 'text': 'left: "rings" (16 x 16). right: "checker" (8 x 12)',
+     'pos': (30, 500)},
+] + see_also(800, ['dict_keys', 'dict_extract', 'np.sequence'])
+links = [('m1', '', 'ld', 'load'),
+         ('ld', 'dict out', 'dk', 'dict in'), ('dk', 'keys out', 'l1', ''),
+         ('ld', 'dict out', 'dx', 'dict in'),
+         ('dx', '', 'h1', 'y', 0), ('dx', '', 'h2', 'y', 1)]
 print(build('np.load', 'np.load - read an .npz file', body, demo, links,
-            demo_width=480, text_width=790, text_height=600))
+            demo_width=720, text_width=790, text_height=1050))

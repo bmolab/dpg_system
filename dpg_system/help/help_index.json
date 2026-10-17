@@ -787,23 +787,101 @@
   "_numpy_nodes": [
     "--- numpy_nodes.py ---"
   ],
+  "flatten": [
+    "flatten",
+    "np.ravel"
+  ],
+  "np.[]": [
+    "np.[]"
+  ],
   "np.add_alpha": [
     "np.add_alpha"
+  ],
+  "np.argsort": [
+    "np.argsort"
+  ],
+  "np.argwhere": [
+    "np.argwhere"
   ],
   "np.astype": [
     "np.astype"
   ],
+  "np.concatenate": [
+    "np.concatenate"
+  ],
+  "np.crop": [
+    "np.crop"
+  ],
   "np.edit": [
     "np.edit"
+  ],
+  "np.expand_dims": [
+    "np.expand_dims",
+    "np.unsqueeze"
+  ],
+  "np.flip": [
+    "np.flip"
+  ],
+  "np.grid": [
+    "np.grid"
   ],
   "np.line_intersection": [
     "np.line_intersection"
   ],
+  "np.linspace": [
+    "np.linspace"
+  ],
   "np.load": [
     "np.load"
   ],
+  "np.ones": [
+    "np.ones"
+  ],
+  "np.rand": [
+    "np.rand"
+  ],
+  "np.repeat": [
+    "np.repeat"
+  ],
+  "np.reshape": [
+    "np.reshape"
+  ],
+  "np.roll": [
+    "np.roll"
+  ],
   "np.rolling_buffer": [
     "np.rolling_buffer"
+  ],
+  "np.rot90": [
+    "np.rot90",
+    "np.rotate"
+  ],
+  "np.sequence": [
+    "np.sequence"
+  ],
+  "np.shape": [
+    "np.shape"
+  ],
+  "np.sort": [
+    "np.sort"
+  ],
+  "np.split": [
+    "np.split"
+  ],
+  "np.squeeze": [
+    "np.squeeze"
+  ],
+  "np.stack": [
+    "np.stack"
+  ],
+  "np.transpose": [
+    "np.transpose"
+  ],
+  "np.where": [
+    "np.where"
+  ],
+  "np.zeros": [
+    "np.zeros"
   ],
   "np_clip": [
     "np.clip",
@@ -814,14 +892,6 @@
     "np.cumsum",
     "np.cumprod",
     "np.diff"
-  ],
-  "np_generator": [
-    "np.zeros",
-    "np.ones",
-    "np.rand",
-    "np.linspace",
-    "np.grid",
-    "np.sequence"
   ],
   "np_linalg": [
     "np.linalg.det",
@@ -835,34 +905,6 @@
     "np.outer",
     "np.cross",
     "np.matmul"
-  ],
-  "np_rearrange": [
-    "np.flip",
-    "np.roll",
-    "np.rot90",
-    "np.rotate",
-    "np.repeat",
-    "np.sort",
-    "np.argsort",
-    "np.split",
-    "np.concatenate",
-    "np.stack"
-  ],
-  "np_reshape": [
-    "np.reshape",
-    "np.shape",
-    "flatten",
-    "np.ravel",
-    "np.expand_dims",
-    "np.unsqueeze",
-    "np.squeeze",
-    "np.transpose"
-  ],
-  "np_select": [
-    "np.[]",
-    "np.crop",
-    "np.where",
-    "np.argwhere"
   ],
   "np_stats": [
     "np.amax",

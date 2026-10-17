@@ -1,0 +1,586 @@
+{
+    "height": 981,
+    "width": 1541,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "np.argwhere_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.argwhere_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.argwhere - where the true cells are",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 475,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.argwhere - where the true cells are",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.argwhere - where the true cells are"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 733,
+            "position_y": 45,
+            "width": 768,
+            "height": 876,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Lists the positions of every true (non-zero) cell in an array.\n\nWhere np.where uses a mask to build a new array, np.argwhere tells you\nWHERE the mask is set: which joints are over the speed limit, which\nframes are glitched, which pixels are above threshold. Each found cell\ncomes out as its coordinates.\n\nSYNTAX:\nnp.argwhere\nIt takes no arguments.\n\nINPUTS:\n\ncondition:\nAny array. A cell counts as found when it is true, or non-zero for\nnumbers - so a comparison's result is the usual input, but a plain\nnumeric array works too. Sends on arrival.\n\n(np.argwhere is built by the same code as np.where but has only this one\ninlet: it does not take 'if true' or 'if false'.)\n\nOUTPUTS:\n\nindices:\nAn integer array with one ROW per found cell and one column per dimension\nof the input: for a 2-D mask each row is (row, column). The rows come in\nreading order - along the first row, then the next. Its shape is (number\nfound, number of dimensions); when nothing is found it is empty, shape\n(0, 2) for a 2-D mask.\n\nFeed one of those rows to np.[] (or split the columns with np.[] :,0 and\n:,1) to go from where to what.\n\nREADING THE DEMO:\nnp.rand makes an 8 x 8 array of noise; > 0.85 keeps roughly one cell in\nseven. The heat_map shows the mask in two tones - white for found, black\nfor not. np.argwhere lists the found cells as [row, column] pairs, and\nnp.shape counts them. Click np.rand for a fresh scatter, and check a pair\nagainst the picture: row 0 is the top, column 0 the left. Drag 0.85 on\nthe > node to change how many are found; it applies from the next click.\n\nRELATED:\nnp.where uses the same mask to choose values. The comparison nodes (>,\n<, ...) make the mask. t.argwhere is the PyTorch version (on the t.any\npage). np.[] takes values out once you know where they are.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 860,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Lists the positions of every true (non-zero) cell in an array.\n\nWhere np.where uses a mask to build a new array, np.argwhere tells you\nWHERE the mask is set: which joints are over the speed limit, which\nframes are glitched, which pixels are above threshold. Each found cell\ncomes out as its coordinates.\n\nSYNTAX:\nnp.argwhere\nIt takes no arguments.\n\nINPUTS:\n\ncondition:\nAny array. A cell counts as found when it is true, or non-zero for\nnumbers - so a comparison's result is the usual input, but a plain\nnumeric array works too. Sends on arrival.\n\n(np.argwhere is built by the same code as np.where but has only this one\ninlet: it does not take 'if true' or 'if false'.)\n\nOUTPUTS:\n\nindices:\nAn integer array with one ROW per found cell and one column per dimension\nof the input: for a 2-D mask each row is (row, column). The rows come in\nreading order - along the first row, then the next. Its shape is (number\nfound, number of dimensions); when nothing is found it is empty, shape\n(0, 2) for a 2-D mask.\n\nFeed one of those rows to np.[] (or split the columns with np.[] :,0 and\n:,1) to go from where to what.\n\nREADING THE DEMO:\nnp.rand makes an 8 x 8 array of noise; > 0.85 keeps roughly one cell in\nseven. The heat_map shows the mask in two tones - white for found, black\nfor not. np.argwhere lists the found cells as [row, column] pairs, and\nnp.shape counts them. Click np.rand for a fresh scatter, and check a pair\nagainst the picture: row 0 is the top, column 0 the left. Drag 0.85 on\nthe > node to change how many are found; it applies from the next click.\n\nRELATED:\nnp.where uses the same mask to choose values. The comparison nodes (>,\n<, ...) make the mask. t.argwhere is the PyTorch version (on the t.any\npage). np.[] takes values out once you know where they are."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "np.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dim 0",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dim 1",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 8 8"
+        },
+        "5": {
+            "init": "comment click np.rand for a fresh scatter",
+            "name": "comment",
+            "id": 422,
+            "position_x": 486,
+            "position_y": 140,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click np.rand for a fresh scatter",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click np.rand for a fresh scatter"
+        },
+        "6": {
+            "name": ">",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 310,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.85,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "output_type",
+                    "value": "bool",
+                    "value_type": "str"
+                }
+            },
+            "init": "> 0.85"
+        },
+        "7": {
+            "init": "comment true where the noise is above 0.85",
+            "name": "comment",
+            "id": 496,
+            "position_x": 486,
+            "position_y": 320,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "true where the noise is above 0.85",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "true where the noise is above 0.85"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 248,
+            "height": 290,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "greys",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the mask: white cells are found",
+            "name": "comment",
+            "id": 570,
+            "position_x": 486,
+            "position_y": 410,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the mask: white cells are found",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the mask: white cells are found"
+        },
+        "10": {
+            "name": "np.argwhere",
+            "id": 607,
+            "position_x": 330,
+            "position_y": 400,
+            "width": 76,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 330,
+            "position_y": 490,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment [row, column] of each white cell",
+            "name": "comment",
+            "id": 681,
+            "position_x": 486,
+            "position_y": 495,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "[row, column] of each white cell",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "[row, column] of each white cell"
+        },
+        "13": {
+            "name": "np.shape",
+            "id": 718,
+            "position_x": 330,
+            "position_y": 560,
+            "width": 58,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 330,
+            "position_y": 650,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment (how many found, 2)",
+            "name": "comment",
+            "id": 792,
+            "position_x": 486,
+            "position_y": 655,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "(how many found, 2)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "(how many found, 2)"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.where"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 135,
+            "position_y": 740,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link greater"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 232,
+            "position_y": 740,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.any"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 314,
+            "position_y": 740,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.[]"
+        },
+        "20": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 977,
+            "position_x": 486,
+            "position_y": 740,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 814,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "condition"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "indices",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "indices",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "np in"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

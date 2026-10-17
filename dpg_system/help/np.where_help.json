@@ -1,0 +1,844 @@
+{
+    "height": 1418,
+    "width": 1802,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1236,
+    "name": "np.where_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.where_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.where - choose between two arrays by a mask",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 574,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.where - choose between two arrays by a mask",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.where - choose between two arrays by a mask"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 994,
+            "position_y": 45,
+            "width": 768,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Builds a new array cell by cell: where the condition is true it takes the value from 'if true', elsewhere from 'if false'.\n\nThink of it as a stencil or a masked blend rather than a lookup. Feed it a\ncomparison as the condition and you have \"use this where the reading is\ngood and that where it is not\" across a whole array in one step - no\nloop, no branching. Replace bad readings with a fallback, paste one image\ninto another through a mask, zero everything below a threshold.\n\nSYNTAX:\nnp.where\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ncondition:\nThe mask. Usually the result of a comparison node (>, <, ==) on an array,\nbut any array works: a non-zero value counts as true. This is the only\ninlet that makes the node send.\n\nif true / if false:\nThe values to choose from. Each can be an array the same shape as the\ncondition, or a single number used everywhere - 'if false' 0 blanks every\ncell the condition rejects. These inlets are cold: they are stored, and\nused when the next condition arrives. Send them FIRST.\n\nThe node sends NOTHING until both 'if true' and 'if false' have received\nsomething. A np.where with one branch unwired stays silent and gives no\nsign why. If the shapes cannot be matched up (a 10 x 10 condition with a\n6 x 6 'if true'), nothing is sent either; with verbose on the console\nnames the shapes.\n\nOUTPUTS:\n\nselected:\nAn array the shape of the condition, each cell from one source or the\nother.\n\nREADING THE DEMO:\nnp.grid makes a 10 x 10 square of points from -1 to 1. Two pictures come\nout of it: 'if true' is the x of each point (dark on the left, bright on\nthe right), 'if false' is the y (dark at the top, bright at the bottom).\nnp.linalg.norm gives each point's distance from the centre, and < 0.75\nturns that into the condition: a white disc, true inside, black outside.\nThe result shows the left-to-right ramp inside the disc and the top-to-\nbottom ramp around it. Drag the number on the < node and the disc grows\nor shrinks.\n\nThe 't array array' fires right to left, so both pictures reach np.where\nbefore the condition does - the order matters, because only the condition\nmakes it send.\n\nRELATED:\nnp.argwhere answers a different question about the same mask: not what\nvalues to use, but WHERE the true cells are. The comparison nodes (>, <,\n...) make the condition. np.clip limits values without a mask. In PyTorch,\nt.masked_select (on the t.index_select page) takes out just the values\nwhere a mask is true. np.[] selects by position.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Builds a new array cell by cell: where the condition is true it takes the value from 'if true', elsewhere from 'if false'.\n\nThink of it as a stencil or a masked blend rather than a lookup. Feed it a\ncomparison as the condition and you have \"use this where the reading is\ngood and that where it is not\" across a whole array in one step - no\nloop, no branching. Replace bad readings with a fallback, paste one image\ninto another through a mask, zero everything below a threshold.\n\nSYNTAX:\nnp.where\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ncondition:\nThe mask. Usually the result of a comparison node (>, <, ==) on an array,\nbut any array works: a non-zero value counts as true. This is the only\ninlet that makes the node send.\n\nif true / if false:\nThe values to choose from. Each can be an array the same shape as the\ncondition, or a single number used everywhere - 'if false' 0 blanks every\ncell the condition rejects. These inlets are cold: they are stored, and\nused when the next condition arrives. Send them FIRST.\n\nThe node sends NOTHING until both 'if true' and 'if false' have received\nsomething. A np.where with one branch unwired stays silent and gives no\nsign why. If the shapes cannot be matched up (a 10 x 10 condition with a\n6 x 6 'if true'), nothing is sent either; with verbose on the console\nnames the shapes.\n\nOUTPUTS:\n\nselected:\nAn array the shape of the condition, each cell from one source or the\nother.\n\nREADING THE DEMO:\nnp.grid makes a 10 x 10 square of points from -1 to 1. Two pictures come\nout of it: 'if true' is the x of each point (dark on the left, bright on\nthe right), 'if false' is the y (dark at the top, bright at the bottom).\nnp.linalg.norm gives each point's distance from the centre, and < 0.75\nturns that into the condition: a white disc, true inside, black outside.\nThe result shows the left-to-right ramp inside the disc and the top-to-\nbottom ramp around it. Drag the number on the < node and the disc grows\nor shrinks.\n\nThe 't array array' fires right to left, so both pictures reach np.where\nbefore the condition does - the order matters, because only the condition\nmakes it send.\n\nRELATED:\nnp.argwhere answers a different question about the same mask: not what\nvalues to use, but WHERE the true cells are. The comparison nodes (>, <,\n...) make the condition. np.clip limits values without a mask. In PyTorch,\nt.masked_select (on the t.index_select page) takes out just the values\nwhere a mask is true. np.[] selects by position."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "init": "comment remakes the grid 10 times a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 704,
+            "position_y": 70,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "remakes the grid 10 times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "remakes the grid 10 times a second"
+        },
+        "5": {
+            "name": "np.grid",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 160,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min x",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max x",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "divisions x",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "divisions y",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "np.grid -1 1 -1 1 10 10"
+        },
+        "6": {
+            "name": "t",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t array array"
+        },
+        "7": {
+            "name": "np.[]",
+            "id": 496,
+            "position_x": 250,
+            "position_y": 470,
+            "width": 103,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.[] :,:,0"
+        },
+        "8": {
+            "name": "np.[]",
+            "id": 533,
+            "position_x": 470,
+            "position_y": 470,
+            "width": 103,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.[] :,:,1"
+        },
+        "9": {
+            "name": "heat_map",
+            "id": 570,
+            "position_x": 250,
+            "position_y": 560,
+            "width": 208,
+            "height": 250,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 607,
+            "position_x": 470,
+            "position_y": 560,
+            "width": 208,
+            "height": 250,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment 'if true': x of each point. 'if false': y",
+            "name": "comment",
+            "id": 644,
+            "position_x": 704,
+            "position_y": 610,
+            "width": 260,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "'if true': x of each point. 'if false': y",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "'if true': x of each point. 'if false': y"
+        },
+        "12": {
+            "name": "np.linalg.norm",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": "2",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "name": "<",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 560,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.75,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "output_type",
+                    "value": "bool",
+                    "value_type": "str"
+                }
+            },
+            "init": "< 0.75"
+        },
+        "14": {
+            "init": "comment drag 0.75: the radius of the disc",
+            "name": "comment",
+            "id": 755,
+            "position_x": 704,
+            "position_y": 570,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag 0.75: the radius of the disc",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag 0.75: the radius of the disc"
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 840,
+            "width": 208,
+            "height": 250,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "greys",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment the condition: true inside the disc",
+            "name": "comment",
+            "id": 829,
+            "position_x": 704,
+            "position_y": 850,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the condition: true inside the disc",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the condition: true inside the disc"
+        },
+        "17": {
+            "name": "np.where",
+            "id": 866,
+            "position_x": 470,
+            "position_y": 840,
+            "width": 64,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "18": {
+            "name": "heat_map",
+            "id": 903,
+            "position_x": 470,
+            "position_y": 960,
+            "width": 208,
+            "height": 250,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 10,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "19": {
+            "init": "comment x inside the disc, y outside it",
+            "name": "comment",
+            "id": 940,
+            "position_x": 704,
+            "position_y": 970,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "x inside the disc, y outside it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "x inside the disc, y outside it"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 1240,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.argwhere"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 158,
+            "position_y": 1240,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link greater"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 255,
+            "position_y": 1240,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np_clip"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 352,
+            "position_y": 1240,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.index_select"
+        },
+        "24": {
+            "name": "help_link",
+            "id": 1125,
+            "position_x": 503,
+            "position_y": 1240,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.[]"
+        },
+        "25": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1162,
+            "position_x": 704,
+            "position_y": 1240,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "26": {
+            "name": "close",
+            "id": 1199,
+            "position_x": 24,
+            "position_y": 1314,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "grid points",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "array",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "array",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "if true"
+        },
+        "7": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "if false"
+        },
+        "8": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "array",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "9": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "norm",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "10": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "11": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "condition"
+        },
+        "12": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "selected",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}
