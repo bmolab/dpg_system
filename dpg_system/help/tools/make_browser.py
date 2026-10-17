@@ -74,16 +74,35 @@ TREE = {
         ('Curves and plots', ['envelope', 'shape_sequencer', 'profile', 'plot', 'heat_map']),
     ]),
     'nodes_math': ('Math', 'Numbers, lists and arrays in; results out.', [
-        ('Arithmetic', ['arithmetic', 'add', 'subtract', 'multiply', 'divide', 'floor_divide', 'modulo',
-                        'power', 'min', 'max', 'reverse_subtract', 'reverse_divide', 'perm', 'combination']),
-        ('Comparison', ['comparison', 'greater', 'greater_equal', 'less', 'less_equal', 'equal', 'not_equal']),
-        ('Single-input math', ['math_single', 'abs', 'sqrt', 'exp', 'log2', 'log10', 'inverse', 'norm',
-                               'round', 'floor', 'ceil', 'trunc']),
-        ('Trigonometry', ['trig', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan']),
-        ('Functions', ['clamp', 'accumulate', 'change',
-                       'crossfade', 'continuous_rotation', 'color_convert']),
-        ('Rotations', ['quaternion_to_euler', 'quaternion_to_6d', 'quaternion_diff', 'quaternion_norm',
-                       'tracker_align', 'swing_twist']),
+        ('', [
+            ('page:nodes_math_arithmetic', 'Arithmetic', '+ - * / and the rest: one calculation with an operand'),
+            ('page:nodes_math_comparison', 'Comparison', '> >= < <= == !=: a test against an operand'),
+            ('page:nodes_math_single', 'Single-input math', 'abs, sqrt, exp, logarithms, inverse, norm, rounding'),
+            ('page:nodes_math_trig', 'Trigonometry', 'sin, cos, tan and the angles back from them'),
+            ('page:nodes_math_functions', 'Functions', 'clamping, accumulating, change, crossfades, colour'),
+            ('page:nodes_math_rotations', 'Rotations', 'quaternions, euler angles, aligning trackers'),
+        ]),
+    ]),
+    'nodes_math_arithmetic': ('Arithmetic', 'One calculation on the input, using an operand.', [
+        ('', ['arithmetic', 'add', 'subtract', 'multiply', 'divide', 'floor_divide', 'modulo',
+              'power', 'min', 'max', 'reverse_subtract', 'reverse_divide', 'perm', 'combination']),
+    ]),
+    'nodes_math_comparison': ('Comparison', 'Test the input against an operand: true or false.', [
+        ('', ['comparison', 'greater', 'greater_equal', 'less', 'less_equal', 'equal', 'not_equal']),
+    ]),
+    'nodes_math_single': ('Single-input math', 'One function of the input, no operand.', [
+        ('', ['math_single', 'abs', 'sqrt', 'exp', 'log2', 'log10', 'inverse', 'norm',
+              'round', 'floor', 'ceil', 'trunc']),
+    ]),
+    'nodes_math_trig': ('Trigonometry', 'Angles in, ratios out - and back again.', [
+        ('', ['trig', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan']),
+    ]),
+    'nodes_math_functions': ('Functions', 'Shaping, limiting and blending values.', [
+        ('', ['clamp', 'accumulate', 'change', 'crossfade', 'continuous_rotation', 'color_convert']),
+    ]),
+    'nodes_math_rotations': ('Rotations', 'Converting, comparing and aligning orientations.', [
+        ('', ['quaternion_to_euler', 'quaternion_to_6d', 'quaternion_diff', 'quaternion_norm',
+              'tracker_align', 'swing_twist']),
     ]),
     'nodes_signal': ('Signals and filters', 'Streams of values: making them, smoothing them, reacting to them.', [
         ('Sources and streams', ['signal', 'random', 'stream', 'sample_hold', 'register']),
