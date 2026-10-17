@@ -417,7 +417,8 @@ them filled and lit, so it needs an mgl_light earlier in the chain.
 THE POSE:
 'pose' takes one quaternion per joint, w first, as an array - what the
 shadow node's body quaternions outlet sends, or smpl_to_active makes from
-an SMPL pose. A plain list is not converted and will raise an error. The
+an SMPL pose. A plain list works too: nested, one [w x y z] per joint, or
+flat, read four numbers at a time. The
 node keeps the latest pose and draws it on each render, so the source and
 the display can run at different rates.
 
@@ -462,8 +463,9 @@ limb_scale left 0.7                      a whole side
 limb_scale all 1.0 2.0 2.0               everything
 limb_scale reset
 
-Send these to the 'limb_scale' inlet. They are NOT read on 'mgl chain in':
-there they are passed on down the chain and ignored.
+Send these to the 'limb_scale' inlet, or as messages into 'mgl chain in'.
+A message on the chain is used here and not passed on, so it reshapes this
+body and not any body further down the chain.
 
 'skeleton_mode' smpl rebuilds the skeleton from SMPL's own bone offsets -
 from limb_lengths if it carried them, otherwise from the neutral SMPL body
@@ -606,6 +608,9 @@ name, a name without its side (upper_arm sets both sides), left, right or
 all. One number sets the length only, two set width and depth, three set
 all three. The rows update and the whole set is sent on. 'reset' puts
 every row back to 1.0 and sends.
+
+A message naming one row, such as 'left_upper_arm 1.2 1 1', sets that row as
+an edit would: mirrored to the other side if 'symmetric' is ticked, then sent.
 
 Its rows are also saved by the presets node.
 
@@ -770,8 +775,8 @@ disk is drawn facing along that axis with a radius of the angle times
 that size times 'scale'. A disk with no rotation is not drawn. Rows beyond
 the node's disk count are ignored.
 
-Send rows even for a single disk - [[x y z]], not [x y z]. A flat list
-of three numbers is not read as one row, and drawing then fails.
+A single disk can be sent as a flat row, [x y z] or [x y z size]: a flat
+list is read as one row.
 
 WHERE THEY APPEAR:
 All the disks are drawn at the same place - the origin of the chain's

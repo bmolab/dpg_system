@@ -1,6 +1,6 @@
 {
     "height": 1079,
-    "width": 1739,
+    "width": 1720,
     "position": [
         100,
         100
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 891,
+            "position_x": 872,
             "position_y": 45,
             "width": 808,
             "height": 816,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "cv_camera brings a live camera into the patch, as a stream of pictures.\n\nTHE NAMES:\ncv_camera and cv_capture are the same node.\n\nIT IS A TAP YOU TURN ON:\nTick 'on/off' and frames start arriving, one per frame of the patch as far as\nthe camera keeps up, as RGB arrays. Untick it and the frames stop.\n\nUnticking does NOT let go of the camera. It stays open, and unavailable to\nother applications, until the node is deleted or the patch closed. Choosing a\ndifferent 'source' lets go of the old camera and opens the new one at once,\neven while the node is off.\n\n'source' lists the cameras it found. On a laptop that is usually just the built\nin one; plug in another and press 'refresh' to look again.\n\nREFRESHING PROBES EVERY CAMERA, ONE BY ONE:\n'refresh' finds cameras by trying to OPEN each index in turn, from 0 to 9.\nThere is no polite way to ask; that is how it has to be done.\n\nTwo consequences. It takes a moment, and it briefly opens every camera on the\nmachine - so an indicator light may flicker on a camera you are not using, and\nanother application holding one may see it disturbed. The node refreshes once\nwhen it is created, and after that only when you press the button.\n\nWHAT COMES OUT IS RGB, ALREADY CONVERTED:\nOpenCV works in BGR - blue, green, red - a long-standing quirk of the library\nand a reliable source of pictures with skin tones gone blue. cv_camera converts\nto RGB before sending, so everything downstream gets the ordinary order.\n\nIf you ever hand an array to an OpenCV function yourself, it will expect BGR\nand you will have to convert back.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS:\nFrames arrive as (height, width, 3) bytes - rows first. Most of the image\nnodes here expect channels FIRST, and guess when they are handed the other\norder; the guess is right for anything camera-sized. See the k. and tv. pages\nfor when it is not.\n\nWHAT TO PUT AFTER IT:\nA camera at thirty frames a second is a lot of data, and most of what you might\ndo with it does not need every frame or the full resolution. Anything expensive\ndownstream - a vision model, a large filter - is better fed from a subsample,\nand the vision_describe nodes will drop frames by themselves rather than fall\nbehind.\n\nSYNTAX:\ncv_camera\ncv_capture\n\nEXAMPLE:\ncv_camera\n\nINPUTS and PARAMETERS:\n\non/off:\nWhether frames are sent. Off does not release the camera.\n\nsource:\nWhich camera, by index. Choosing one opens it.\n\nrefresh:\nLook for cameras again. Opens each one to find out.\n\nOUTPUTS:\n\nThe single outlet carries the picture, as an RGB array of height by width by 3.\n\nRELATED:\ncv_image for a still picture from a file; it used to share this page.\nmovie_player for recorded video.\nvision_describe to get words out of what the camera sees.\nk. and tv. nodes for filtering and adjusting the image.\nmgl_texture and the gl nodes to put it on screen.",
+                    "value": "cv_camera brings a live camera into the patch, as a stream of pictures.\n\nTHE NAMES:\ncv_camera and cv_capture are the same node.\n\nIT IS A TAP YOU TURN ON:\nTick 'on/off' and frames start arriving, one per frame of the patch as far as\nthe camera keeps up, as RGB arrays. Untick it and the frames stop.\n\nUnticking also lets go of the camera: its light goes off and other\napplications can use it. Ticking again reopens it, which takes a moment.\nChoosing a different 'source' while on switches cameras at once; while off it\njust sets which camera the next tick opens.\n\n'source' lists the cameras it found. On a laptop that is usually just the built\nin one; plug in another and press 'refresh' to look again.\n\nREFRESHING PROBES EVERY CAMERA, ONE BY ONE:\n'refresh' finds cameras by trying to OPEN each index in turn, from 0 to 9.\nThere is no polite way to ask; that is how it has to be done.\n\nTwo consequences. It takes a moment, and it briefly opens every camera on the\nmachine - so an indicator light may flicker on a camera you are not using, and\nanother application holding one may see it disturbed. The node refreshes once\nwhen it is created, and after that only when you press the button.\n\nWHAT COMES OUT IS RGB, ALREADY CONVERTED:\nOpenCV works in BGR - blue, green, red - a long-standing quirk of the library\nand a reliable source of pictures with skin tones gone blue. cv_camera converts\nto RGB before sending, so everything downstream gets the ordinary order.\n\nIf you ever hand an array to an OpenCV function yourself, it will expect BGR\nand you will have to convert back.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS:\nFrames arrive as (height, width, 3) bytes - rows first. Most of the image\nnodes here expect channels FIRST, and guess when they are handed the other\norder; the guess is right for anything camera-sized. See the k. and tv. pages\nfor when it is not.\n\nWHAT TO PUT AFTER IT:\nA camera at thirty frames a second is a lot of data, and most of what you might\ndo with it does not need every frame or the full resolution. Anything expensive\ndownstream - a vision model, a large filter - is better fed from a subsample,\nand the vision_describe nodes will drop frames by themselves rather than fall\nbehind.\n\nSYNTAX:\ncv_camera\ncv_capture\n\nEXAMPLE:\ncv_camera\n\nINPUTS and PARAMETERS:\n\non/off:\nWhether frames are sent. On opens the camera, off releases it.\n\nsource:\nWhich camera, by index. Choosing one while on switches to it.\n\nrefresh:\nLook for cameras again. Opens each one to find out.\n\nOUTPUTS:\n\nThe single outlet carries the picture, as an RGB array of height by width by 3.\n\nRELATED:\ncv_image for a still picture from a file; it used to share this page.\nmovie_player for recorded video.\nvision_describe to get words out of what the camera sees.\nk. and tv. nodes for filtering and adjusting the image.\nmgl_texture and the gl nodes to put it on screen.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "cv_camera brings a live camera into the patch, as a stream of pictures.\n\nTHE NAMES:\ncv_camera and cv_capture are the same node.\n\nIT IS A TAP YOU TURN ON:\nTick 'on/off' and frames start arriving, one per frame of the patch as far as\nthe camera keeps up, as RGB arrays. Untick it and the frames stop.\n\nUnticking does NOT let go of the camera. It stays open, and unavailable to\nother applications, until the node is deleted or the patch closed. Choosing a\ndifferent 'source' lets go of the old camera and opens the new one at once,\neven while the node is off.\n\n'source' lists the cameras it found. On a laptop that is usually just the built\nin one; plug in another and press 'refresh' to look again.\n\nREFRESHING PROBES EVERY CAMERA, ONE BY ONE:\n'refresh' finds cameras by trying to OPEN each index in turn, from 0 to 9.\nThere is no polite way to ask; that is how it has to be done.\n\nTwo consequences. It takes a moment, and it briefly opens every camera on the\nmachine - so an indicator light may flicker on a camera you are not using, and\nanother application holding one may see it disturbed. The node refreshes once\nwhen it is created, and after that only when you press the button.\n\nWHAT COMES OUT IS RGB, ALREADY CONVERTED:\nOpenCV works in BGR - blue, green, red - a long-standing quirk of the library\nand a reliable source of pictures with skin tones gone blue. cv_camera converts\nto RGB before sending, so everything downstream gets the ordinary order.\n\nIf you ever hand an array to an OpenCV function yourself, it will expect BGR\nand you will have to convert back.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS:\nFrames arrive as (height, width, 3) bytes - rows first. Most of the image\nnodes here expect channels FIRST, and guess when they are handed the other\norder; the guess is right for anything camera-sized. See the k. and tv. pages\nfor when it is not.\n\nWHAT TO PUT AFTER IT:\nA camera at thirty frames a second is a lot of data, and most of what you might\ndo with it does not need every frame or the full resolution. Anything expensive\ndownstream - a vision model, a large filter - is better fed from a subsample,\nand the vision_describe nodes will drop frames by themselves rather than fall\nbehind.\n\nSYNTAX:\ncv_camera\ncv_capture\n\nEXAMPLE:\ncv_camera\n\nINPUTS and PARAMETERS:\n\non/off:\nWhether frames are sent. Off does not release the camera.\n\nsource:\nWhich camera, by index. Choosing one opens it.\n\nrefresh:\nLook for cameras again. Opens each one to find out.\n\nOUTPUTS:\n\nThe single outlet carries the picture, as an RGB array of height by width by 3.\n\nRELATED:\ncv_image for a still picture from a file; it used to share this page.\nmovie_player for recorded video.\nvision_describe to get words out of what the camera sees.\nk. and tv. nodes for filtering and adjusting the image.\nmgl_texture and the gl nodes to put it on screen."
+            "text": "cv_camera brings a live camera into the patch, as a stream of pictures.\n\nTHE NAMES:\ncv_camera and cv_capture are the same node.\n\nIT IS A TAP YOU TURN ON:\nTick 'on/off' and frames start arriving, one per frame of the patch as far as\nthe camera keeps up, as RGB arrays. Untick it and the frames stop.\n\nUnticking also lets go of the camera: its light goes off and other\napplications can use it. Ticking again reopens it, which takes a moment.\nChoosing a different 'source' while on switches cameras at once; while off it\njust sets which camera the next tick opens.\n\n'source' lists the cameras it found. On a laptop that is usually just the built\nin one; plug in another and press 'refresh' to look again.\n\nREFRESHING PROBES EVERY CAMERA, ONE BY ONE:\n'refresh' finds cameras by trying to OPEN each index in turn, from 0 to 9.\nThere is no polite way to ask; that is how it has to be done.\n\nTwo consequences. It takes a moment, and it briefly opens every camera on the\nmachine - so an indicator light may flicker on a camera you are not using, and\nanother application holding one may see it disturbed. The node refreshes once\nwhen it is created, and after that only when you press the button.\n\nWHAT COMES OUT IS RGB, ALREADY CONVERTED:\nOpenCV works in BGR - blue, green, red - a long-standing quirk of the library\nand a reliable source of pictures with skin tones gone blue. cv_camera converts\nto RGB before sending, so everything downstream gets the ordinary order.\n\nIf you ever hand an array to an OpenCV function yourself, it will expect BGR\nand you will have to convert back.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS:\nFrames arrive as (height, width, 3) bytes - rows first. Most of the image\nnodes here expect channels FIRST, and guess when they are handed the other\norder; the guess is right for anything camera-sized. See the k. and tv. pages\nfor when it is not.\n\nWHAT TO PUT AFTER IT:\nA camera at thirty frames a second is a lot of data, and most of what you might\ndo with it does not need every frame or the full resolution. Anything expensive\ndownstream - a vision model, a large filter - is better fed from a subsample,\nand the vision_describe nodes will drop frames by themselves rather than fall\nbehind.\n\nSYNTAX:\ncv_camera\ncv_capture\n\nEXAMPLE:\ncv_camera\n\nINPUTS and PARAMETERS:\n\non/off:\nWhether frames are sent. On opens the camera, off releases it.\n\nsource:\nWhich camera, by index. Choosing one while on switches to it.\n\nrefresh:\nLook for cameras again. Opens each one to find out.\n\nOUTPUTS:\n\nThe single outlet carries the picture, as an RGB array of height by width by 3.\n\nRELATED:\ncv_image for a still picture from a file; it used to share this page.\nmovie_player for recorded video.\nvision_describe to get words out of what the camera sees.\nk. and tv. nodes for filtering and adjusting the image.\nmgl_texture and the gl nodes to put it on screen."
         },
         "3": {
             "name": "toggle",
@@ -122,7 +122,7 @@
             "annotation": true,
             "position_x": 581,
             "position_y": 290,
-            "width": 280,
+            "width": 261,
             "height": 64,
             "visibility": "show_all",
             "draggable": true,
@@ -130,7 +130,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "tick to start, untick to stop the frames\n(the camera itself stays open)\n'refresh' opens every camera index in\nturn to find them - it is not instant",
+                    "value": "tick to start, untick to stop and\nrelease the camera\n'refresh' opens every camera index in\nturn to find them - it is not instant",
                     "value_type": "str"
                 },
                 "1": {
@@ -140,7 +140,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 272,
+                    "value": 253,
                     "value_type": "int"
                 },
                 "3": {
@@ -154,7 +154,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "tick to start, untick to stop the frames\n(the camera itself stays open)\n'refresh' opens every camera index in\nturn to find them - it is not instant"
+            "text": "tick to start, untick to stop and\nrelease the camera\n'refresh' opens every camera index in\nturn to find them - it is not instant"
         },
         "6": {
             "name": "info",

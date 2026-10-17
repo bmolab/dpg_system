@@ -14,10 +14,10 @@ IT IS A TAP YOU TURN ON:
 Tick 'on/off' and frames start arriving, one per frame of the patch as far as
 the camera keeps up, as RGB arrays. Untick it and the frames stop.
 
-Unticking does NOT let go of the camera. It stays open, and unavailable to
-other applications, until the node is deleted or the patch closed. Choosing a
-different 'source' lets go of the old camera and opens the new one at once,
-even while the node is off.
+Unticking also lets go of the camera: its light goes off and other
+applications can use it. Ticking again reopens it, which takes a moment.
+Choosing a different 'source' while on switches cameras at once; while off it
+just sets which camera the next tick opens.
 
 'source' lists the cameras it found. On a laptop that is usually just the built
 in one; plug in another and press 'refresh' to look again.
@@ -62,10 +62,10 @@ cv_camera
 INPUTS and PARAMETERS:
 
 on/off:
-Whether frames are sent. Off does not release the camera.
+Whether frames are sent. On opens the camera, off releases it.
 
 source:
-Which camera, by index. Choosing one opens it.
+Which camera, by index. Choosing one while on switches to it.
 
 refresh:
 Look for cameras again. Opens each one to find out.
@@ -84,7 +84,7 @@ mgl_texture and the gl nodes to put it on screen."""
 demo = [
     {'key': 'tog', 'init': 'toggle', 'pos': (30, 62), 'w': 45, 'h': 42},
     {'key': 'cam', 'init': 'cv_camera', 'pos': (30, 115), 'w': 240, 'h': 160},
-    {'key': 'c0', 'comment': True, 'text': "tick to start, untick to stop the frames\n(the camera itself stays open)\n'refresh' opens every camera index in\nturn to find them - it is not instant",
+    {'key': 'c0', 'comment': True, 'text': "tick to start, untick to stop and\nrelease the camera\n'refresh' opens every camera index in\nturn to find them - it is not instant",
      'pos': (30, 290)},
 
     {'key': 'inf', 'init': 'info', 'pos': (320, 115), 'w': 260, 'h': 80},
@@ -130,14 +130,14 @@ A path that cannot be read prints a message in the console, and the picture
 read before it is dropped: 'show image' then sends nothing until a good path
 arrives.
 
-THE ARRAY IS HEIGHT, WIDTH, CHANNELS - AND BGR:
+THE ARRAY IS HEIGHT, WIDTH, CHANNELS - IN RGB:
 The picture comes out as (height, width, 3) bytes, rows first, whatever the
 file held - an alpha channel is dropped and a grey image is made three-channel.
 
-Unlike cv_camera and movie_player, cv_image does NOT convert from OpenCV's
-order: the channels are blue, green, red. Shown as it is, red and blue swap -
-skin goes blue. Put np.flip 2 after it - reversing the last axis turns BGR
-into RGB - before anything that expects ordinary colour.
+OpenCV reads files in blue, green, red order; cv_image converts to RGB before
+sending, like cv_camera and movie_player, so the pictures from all three can
+go to the same places. If you hand the array to an OpenCV function yourself,
+it will expect BGR and you will have to convert back.
 
 SYNTAX:
 cv_image <path>
@@ -155,12 +155,11 @@ The file. Receiving it reads the file and sends the picture.
 
 OUTPUTS:
 
-The single outlet carries the picture, as a BGR array of height by width by 3.
+The single outlet carries the picture, as an RGB array of height by width by 3.
 
 RELATED:
 cv_camera for live pictures; cv_image used to share its page.
 movie_player for video files.
-np.flip to put the channels in RGB order.
 k. and tv. nodes for filtering and adjusting the image."""
 
 demo = [
@@ -173,16 +172,11 @@ demo = [
      'pos': (380, 205)},
     {'key': 'img', 'init': 'cv_image', 'pos': (30, 250), 'w': 320, 'h': 120},
     {'key': 'inf', 'init': 'info', 'pos': (30, 390), 'w': 260, 'h': 80},
-    {'key': 'c2', 'comment': True, 'text': 'height, width, 3 - in BLUE, green,\nred order, unlike the camera',
+    {'key': 'c2', 'comment': True, 'text': 'height, width, 3 - red, green, blue,\nthe same order as the camera',
      'pos': (30, 485)},
-    {'key': 'flp', 'init': 'np.flip 2', 'pos': (30, 540), 'w': 160, 'h': 80,
-     'props': {'axis': 2}},
-    {'key': 'c3', 'comment': True, 'text': 'reverse the channels: now RGB',
-     'pos': (30, 635)},
 ]
 links = [('path', 'string out', 'img', 'path in'),
          ('btn', '', 'img', 'show image'),
-         ('img', '', 'inf', 'in'),
-         ('img', '', 'flp', 'input')]
+         ('img', '', 'inf', 'in')]
 print(build('cv_image', 'cv_image - a picture from a file', body,
             demo, links, demo_width=560, text_width=800, text_height=640))

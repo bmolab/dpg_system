@@ -1437,17 +1437,29 @@ class MGLColorNode(MGLNode):
     def restore_state(self):
         self.ctx.current_color = self.prev_color
 
-    def draw(self):
-        c = self.color_input()
-        # Normalize if needed
-        if len(c) > 4: c = c[:4]
-        elif len(c) == 3: c = [*c, 255 if max(c) > 1.0 else 1.0]
+    @staticmethod
+    def normalize_rgba(c):
+        """A colour as 0-1 [r, g, b, a].
 
-        # 0-255 colours are scaled to 0-1; either way the colour is applied
-        # (it used to be set only inside this check, so 0-1 colours were lost)
-        if max(c) > 1.0:
-            c = [val / 255.0 for val in c]
-        self.ctx.current_color = tuple(c)
+        The scale is decided by r, g, b alone: the colour picker pads a
+        3-number colour with alpha 255 even when the colour is 0-1, so an
+        alpha above 1 says nothing about the colour's scale. A 0-255 colour is
+        scaled to 0-1 (alpha too); an alpha above 1 on a 0-1 colour is read
+        as 0-255. A missing alpha is opaque.
+        """
+        c = [float(v) for v in list(c)[:4]]
+        if len(c) < 3:
+            return c
+        is_255 = max(c[:3]) > 1.0
+        rgb = [v / 255.0 for v in c[:3]] if is_255 else c[:3]
+        if len(c) == 4:
+            a = c[3] / 255.0 if (is_255 or c[3] > 1.0) else c[3]
+        else:
+            a = 1.0
+        return [*rgb, a]
+
+    def draw(self):
+        self.ctx.current_color = tuple(self.normalize_rgba(self.color_input()))
 
 
 class MGLLightNode(MGLNode):
@@ -1537,15 +1549,8 @@ class MGLMaterialNode(MGLNode):
     def draw(self):
         if self.ctx is not None:
 
-            # Normalize colors
-            def norm(c):
-                # if len(c) > 3: c = c[:3] # Allow alpha
-                if max(c) > 1.0:
-                    return [val / 255.0 for val in c]
-                # Ensure 4 components (defaults to alpha 1.0 if missing)
-                if len(c) == 3:
-                    return list(c) + [1.0]
-                return c
+            # 0-1 rgba; the scale comes from r, g, b only (see mgl_color)
+            norm = MGLColorNode.normalize_rgba
 
             self.ctx.current_material = {
                 'ambient': norm(self.ambient_input()),
@@ -5055,7 +5060,13 @@ class MGLOrientationDisksNode(MGLNode):
         # Read axis-angle data
         aa_data = self.axis_angle_input()
         if aa_data is not None:
-            self.axis_angles = any_to_array(aa_data).astype(np.float32)
+            arr = any_to_array(aa_data)
+            if arr is not None:
+                arr = np.atleast_1d(arr).astype(np.float32)
+                if arr.ndim == 1:
+                    # a single row [x y z] or [x y z angle] is one disk
+                    arr = arr.reshape(1, -1)
+                self.axis_angles = arr
 
         scale = self.scale_input()
         slices = max(6, self.slices_input())

@@ -127,11 +127,10 @@ An inlet that has received nothing counts as the identity - no rotation - and
 an inlet keeps the last rotation it received. So you can drive two or three
 joints and leave the rest of the body at rest.
 
-ONLY ARRAYS COUNT:
-Each inlet wants a numpy array or a torch tensor of four numbers. A plain
-list - from a message box, say - counts as no rotation. euler_to_quaternion
-and the other quaternion nodes send arrays, so put one of them in between,
-as the example does.
+WHAT AN INLET TAKES:
+Four numbers, w x y z: a numpy array, a torch tensor, or a plain list - from
+a message box, say. euler_to_quaternion turns angles into one, as the example
+does.
 
 SYNTAX:
 pose
@@ -331,8 +330,11 @@ CAPTURING THE TARGET:
 Click 'capture in', and the NEXT pose to arrive becomes the target. Nothing
 is sent for that pose; the poses after it are scored against it.
 
-A bang or a number sent into 'capture in' does the same as a click - a
-toggle's 1 and its 0 alike each capture once.
+A bang sent into 'capture in' does the same as a click.
+
+A number - a toggle, say - switches CONTINUOUS capture: while it is non-zero,
+every pose that arrives becomes the target and nothing is scored; 0 switches
+it off, and the poses after that are scored against the last one captured.
 
 The target is held in memory only. It is not saved with the patch.
 
@@ -353,7 +355,8 @@ pose in:
 A pose: rows of w x y z quaternions.
 
 capture in:
-Click to take the next pose as the target.
+Click (or bang) to take the next pose as the target; 1 / 0 to capture
+continuously or stop.
 
 OUTPUTS:
 

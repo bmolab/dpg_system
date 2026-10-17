@@ -681,8 +681,9 @@ class PhasorNode(SynthNode):
     without working the rate out by hand.
 
     From there the position is yours: freeze it and the sound holds where it
-    stands, run the period negative and it plays backwards, narrow
-    'start'/'end' to sweep a window.
+    stands, run the frequency negative and it plays backwards (a period of 0
+    or less hands control back to the frequency), narrow 'start'/'end' to
+    sweep a window. 'phase' shifts the ramp by that fraction of a cycle.
 
     Which sampler mode you scan matters, because the two do different things:
 

@@ -134,9 +134,8 @@ Its output climbs from 0 to 1 and jumps back, once per cycle; 'start' and
 scans the whole file. A negative frequency runs it backwards. The 'wrap' 
 outlet gives a one-sample pulse each time the ramp turns over.
 
-Leave phasor~'s 'phase' inlet at 0: a non-zero value is meant as an offset, 
-but it is added again on every audio block, so the ramp lurches forward 
-instead of shifting.
+phasor~'s 'phase' inlet shifts the ramp by that fraction of a cycle, without 
+changing its speed: at phase 0.25 the output starts a quarter of the way up.
 
 SYNTAX:
 vco~ <frequency> <voices> <detune> <shape>
@@ -410,8 +409,8 @@ They differ in what moves the playhead.
 
 loop      plays round the loop window, with a short crossfade across the 
           seam so the join does not click
-oneshot   plays once from the start of the window, then stops. 'start' 
-          or the trigger inlet plays it again
+oneshot   plays once through the window, then stops. 'start' or the 
+          trigger inlet plays it again
 scrub     the playhead sits wherever 'position' says, like a record moved 
           by hand. Held still it outputs a steady value, as a stopped 
           record would
@@ -461,7 +460,8 @@ and how far, as a fraction of the window, each grain may land from
 'position' at random (default 0).
 
 trigger:
-A signal; each rising edge past 0.5 restarts from the start of the window.
+A signal; each rising edge past 0.5 restarts from the start of the window 
+(from its end, playing backwards).
 
 mode, load, path, start:
 The mode; open a file chooser; load a file by path; restart.
@@ -471,9 +471,9 @@ Off fades out over a few milliseconds, then stops computing; the playhead
 waits where it was.
 
 OPTIONS:
-reverse plays backwards in loop and granular. In oneshot it plays nothing: 
-the playhead starts at the beginning of the window and immediately runs 
-off it.
+reverse plays backwards. In oneshot the playhead starts at the end of the 
+window and runs back to the start, then stops; a negative 'rate' does the 
+same.
 loop crossfade is the seam's fade in seconds (default 0.005); scrub also 
 uses it to smooth over jumps in position.
 follow speed is how quickly follow mode's spring catches up (default 8).

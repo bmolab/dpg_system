@@ -1030,6 +1030,9 @@ class PoseNode(MoCapNode):
                 if t == torch.Tensor:
                     incoming = tensor_to_array(incoming)
                     t = np.ndarray
+                elif t == list:
+                    incoming = any_to_array(incoming)
+                    t = np.ndarray
                 if t == np.ndarray:
                     offset = self.joint_offsets[index]
                     pose[offset] = incoming
@@ -1040,6 +1043,9 @@ class PoseNode(MoCapNode):
                 t = type(incoming)
                 if t == torch.Tensor:
                     incoming = tensor_to_array(incoming)
+                    t = np.ndarray
+                elif t == list:
+                    incoming = any_to_array(incoming)
                     t = np.ndarray
                 if t == np.ndarray:
                     pose[index] = incoming
@@ -2750,9 +2756,11 @@ class TargetPoseNode(MoCapNode):
         self.axis_distances_out = self.add_output('axis distances out')
 
     def capture(self):
+        # a number or bool (a toggle sends 0 / 1) switches continuous capture
+        # on or off; anything else (a bang, a button click) captures once
         data = self.capture_in()
-        if type(data) is bool:
-            self.capturing = data
+        if isinstance(data, (bool, int, float, np.integer, np.floating)):
+            self.capturing = bool(data)
         else:
             self.capture_once = True
 

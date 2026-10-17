@@ -50,8 +50,7 @@ pelvis ... right_wrist:
 The rows themselves.
 
 reset:
-Set every joint back to the identity, and send the pose. With 'output type'
-set to list this produces a malformed pose; use numpy or torch.
+Set every joint back to the identity, and send the pose.
 
 output type:
 numpy (the default), torch or list.
@@ -100,32 +99,30 @@ left_thigh, right_thigh, mid_back, left_lower_leg, right_lower_leg,
 upper_back, left_foot, right_foot, lower_neck, left_shoulder_blade,
 right_shoulder_blade, upper_neck, left_shoulder, right_shoulder,
 left_upper_arm, right_upper_arm, left_forearm, right_forearm, left_hand and
-right_hand.
+right_hand. An SMPL-H model's left_hand and right_hand run from the wrist to
+the first knuckle of the index finger; its finger bones are not sent.
 
 gl_body understands these messages. Sent into its 'pose in' inlet, each one
 sets the matching bone of the gl_body skeleton, so the skeleton takes on the
 SMPL body's proportions.
 
 WHICH MODEL FILE:
-It needs an original SMPL body model .pkl - the 24-joint model; 'load' offers
-.pkl files, or type the path into the 'path' option. SMPL-H models do not
-work: the files in dpg_system/smplh fail to load, with an error printed, and
-an SMPL-H model's hand joints are not in its bone list either.
+An SMPL or SMPL-H body model: the 24-joint SMPL .pkl, or an SMPL-H .pkl such
+as the two in dpg_system/smplh. 'load' offers .pkl files; the 'path' option
+also takes an SMPL-H .npz. A file that cannot be read prints a message saying
+so, and nothing is sent.
+
+BETAS RESHAPE IT:
+'betas' takes a list of shape numbers. Each arrival recomputes the rest
+joints for that body shape and sends the whole skeleton again. A model has a
+fixed number of betas (SMPL 10, SMPL-H 16): a shorter list leaves the rest at
+zero, and extra numbers are ignored. Loading a model starts from its own
+default body, all betas zero.
 
 WHEN IT SENDS:
-When a model loads, and again whenever anything arrives at 'betas'.
-
-The 'path' is saved with the patch, so the model reloads when the patch
-opens - but before the patch cords are connected, so nothing downstream
-receives it. Sending anything to 'betas' sends it again. That is why the
-example connects smpl_beta_editor: it sends its betas once the patch has
-opened.
-
-BETAS DO NOT RESHAPE IT:
-'betas' takes a list of shape numbers, but the node does not apply them: the
-skeleton it sends is always the model file's own default body, whatever
-arrives. For bone lengths that follow the betas, use smpl_beta_editor's
-'limb_lengths' outlet.
+When a model loads, and again whenever betas arrive. The 'path' is saved with
+the patch, so the model reloads when the patch opens, and the skeleton goes
+out once the patch's cords are connected.
 
 SYNTAX:
 smpl_body
@@ -136,7 +133,7 @@ smpl_body
 INPUTS and PROPERTIES:
 
 betas:
-Shape numbers. Arriving re-sends the skeleton (see above).
+Shape numbers. Arriving reshapes the skeleton and sends it.
 
 load:
 Choose a model file.
@@ -151,14 +148,14 @@ One message per bone: name, x, y, z.
 
 RELATED:
 gl_body draws a skeleton with these proportions.
-smpl_beta_editor gives bone lengths for any set of betas."""
+smpl_beta_editor edits betas, and gives bone lengths for any set of them."""
 
 demo = [
     {'key': 'be', 'init': 'smpl_beta_editor', 'pos': (30, 62), 'w': 300, 'h': 420},
-    {'key': 'c0', 'comment': True, 'text': 'sends its betas when the patch opens,\nwhich makes smpl_body send again',
+    {'key': 'c0', 'comment': True, 'text': 'change a beta and smpl_body\nsends the reshaped skeleton',
      'pos': (360, 62)},
     {'key': 'sb', 'init': 'smpl_body', 'pos': (30, 500), 'w': 240, 'h': 120},
-    {'key': 'c1', 'comment': True, 'text': 'click load and choose an SMPL .pkl\n(24 joints - SMPL-H files fail)',
+    {'key': 'c1', 'comment': True, 'text': 'click load and choose an SMPL .pkl\n(SMPL or SMPL-H - dpg_system/smplh has two)',
      'pos': (360, 500)},
     {'key': 'l1', 'init': 'list', 'pos': (30, 640), 'w': 300, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
@@ -176,8 +173,9 @@ body = """smpl_take plays back a recorded SMPL motion file, frame by frame.
 THE FILE:
 An .npz file holding two arrays: 'poses', one row per frame of axis-angle
 joint rotations, and 'trans', the root translation for each frame. AMASS
-'_poses.npz' files are in this form. A file without both arrays does not
-load.
+'_poses.npz' files are in this form. 'trans' is optional: a file with only
+'poses' plays, and 'root_position' sends nothing. A file without 'poses' does
+not load.
 
 Only the first 22 joints are kept - SMPL's body joints. The hand joints in an
 SMPL-H file are dropped.
@@ -199,8 +197,8 @@ frame 0.
 'speed' is how many file frames to move on per display frame, about 60 a
 second. So speed 1 plays one file frame per display frame whatever rate the
 file was recorded at: a file recorded at 120 frames a second plays at half
-its real pace, and needs speed 2. Fractions slow it down. Negative speeds
-are not supported.
+its real pace, and needs speed 2. Fractions slow it down. Negative speeds play
+backwards, looping from frame 0 round to the last frame.
 
 'frame' shows where playback is. Setting it - by hand or by sending an
 integer - jumps there and sends that frame, so you can step through a take
@@ -235,7 +233,7 @@ joint_data:
 The pose, 22 rows of axis-angle.
 
 root_position:
-The root translation, x y z.
+The root translation, x y z (nothing if the file has no 'trans').
 
 RELATED:
 smpl_to_quats turns the pose into quaternions, as in the example.

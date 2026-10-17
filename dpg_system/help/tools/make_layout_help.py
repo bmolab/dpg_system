@@ -39,10 +39,9 @@ lines of 'leading' from the top), and everything earlier is above it - lines
 pushed off the top are not drawn. Set it low and you see only the end of a
 long text; set it near the bottom and the text fills the picture as it grows.
 
-A new node uses line 1, whatever the box shows, until active_line is changed
-- so a long text shows only its last line, at the top. The demo sets it to 8.
-Changing active_line also moves what is already shown too far; the next text
-lays out correctly.
+A new node starts at line 17, which with the default leading of 60 puts the
+last line near the foot of a 1080-high picture. Changing active_line moves
+what is already shown straight away, by exactly the change.
 
 THE TYPE:
 'font path' takes a font file. Empty uses the Inconsolata font that comes with
@@ -91,7 +90,7 @@ leading:
 Line spacing, 60.
 
 active_line:
-The line the text ends on.
+The line the text ends on (17).
 
 wrap text:
 Fold long lines to the width.
@@ -118,9 +117,8 @@ demo = [
      'props': {'text in': 'clear', 'font size': '24'}},
     {'key': 'c1', 'comment': True, 'text': 'commands build up the text',
      'pos': (30, 200)},
-    {'key': 'cl', 'init': 'cairo_layout', 'pos': (30, 250), 'w': 320, 'h': 340,
-     'props': {'active_line': 8}},
-    {'key': 'c2', 'comment': True, 'text': 'active_line 8: the text ends on the\neighth line of the picture',
+    {'key': 'cl', 'init': 'cairo_layout', 'pos': (30, 250), 'w': 320, 'h': 340},
+    {'key': 'c2', 'comment': True, 'text': 'active_line 17: the text ends on the\nseventeenth line, near the bottom',
      'pos': (30, 605)},
 
     {'key': 'inf', 'init': 'info', 'pos': (420, 250), 'w': 260, 'h': 80},

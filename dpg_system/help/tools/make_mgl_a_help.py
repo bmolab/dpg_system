@@ -462,14 +462,12 @@ Each one multiplies the matching component of every light.
 The alpha of 'ambient' and 'diffuse' multiplies into the shape's
 transparency.
 
-COLOURS ARE BEST SET AS 0 TO 255:
-Colours are read as 0 to 1, unless any value is above 1, in which case the
-whole colour is read as 0 to 255. The colour pickers keep their alpha as 255
-whatever scale the colour is in, so a 0 to 1 colour (this node's defaults
-included) is saved with an alpha of 255 - and when the patch is opened again,
-that 255 makes the whole colour read as 0 to 255, and the surface comes back
-nearly black. Sending the material its colours as 0 to 255, as the demo does,
-avoids it.
+COLOURS:
+Red green blue alpha, from 0 to 1 or from 0 to 255. The scale is read from
+red, green and blue alone: if any of them is above 1, the whole colour, alpha
+included, is read as 0 to 255. The colour pickers store a full alpha as 255
+whatever scale the colour is in, so an alpha above 1 on a 0 to 1 colour is
+read as 0 to 255 too - a patch opens again with the colours it was saved with.
 
 SYNTAX:
 mgl_material
@@ -502,8 +500,8 @@ demo = [
      'props': {'auto_render': True, 'node_display_width': 320,
                'node_display_height': 240}},
     {'key': 'mat1', 'init': 'mgl_material', 'pos': (30, 440), 'w': 240, 'h': 230,
-     'props': {'ambient': [25.0, 25.0, 25.0, 255.0], 'diffuse': [255.0, 255.0, 255.0, 255.0],
-               'specular': [128.0, 128.0, 128.0, 255.0], 'shininess': 4.0}},
+     'props': {'ambient': [0.1, 0.1, 0.1, 1.0], 'diffuse': [1.0, 1.0, 1.0, 1.0],
+               'specular': [0.5, 0.5, 0.5, 1.0], 'shininess': 4.0}},
     {'key': 'c0', 'comment': True, 'text': 'shininess 4: a broad sheen,\nfor both spheres', 'pos': (30, 440)},
     {'key': 'tr1', 'init': 'mgl_translate -0.7 0 0', 'pos': (30, 700), 'w': 160, 'h': 110,
      'props': {'x': -0.7, 'y': 0.0, 'z': 0.0}},
@@ -512,8 +510,8 @@ demo = [
     {'key': 'tr2', 'init': 'mgl_translate 1.4 0 0', 'pos': (30, 1040), 'w': 160, 'h': 110,
      'props': {'x': 1.4, 'y': 0.0, 'z': 0.0}},
     {'key': 'mat2', 'init': 'mgl_material', 'pos': (30, 1170), 'w': 240, 'h': 230,
-     'props': {'ambient': [25.0, 25.0, 25.0, 255.0], 'diffuse': [255.0, 255.0, 255.0, 255.0],
-               'specular': [255.0, 255.0, 255.0, 255.0], 'shininess': 128.0}},
+     'props': {'ambient': [0.1, 0.1, 0.1, 1.0], 'diffuse': [1.0, 1.0, 1.0, 1.0],
+               'specular': [1.0, 1.0, 1.0, 1.0], 'shininess': 128.0}},
     {'key': 'c1', 'comment': True, 'text': 'shininess 128 and a white highlight:\na small hard glint, on this one only',
      'pos': (30, 1170)},
     {'key': 's2', 'init': 'mgl_sphere', 'pos': (30, 1430), 'w': 200, 'h': 180,
@@ -544,13 +542,12 @@ the current colour.
 The alpha is the shape's transparency.
 
 THE NUMBERS:
-Red green blue alpha, either from 0 to 1 or from 0 to 255 - a colour with
-any value above 1 is read as 0 to 255. Three numbers take alpha as full.
-
-One trap: the colour picker keeps its alpha at 255 when it is handed three
-numbers, so a 0 to 1 colour sent as three numbers is saved with an alpha of
-255, and comes back nearly black when the patch is opened again. Send four
-numbers, or 0 to 255.
+Red green blue alpha, either from 0 to 1 or from 0 to 255. The scale is
+read from red, green and blue alone: if any of them is above 1, the whole
+colour, alpha included, is read as 0 to 255. Three numbers take alpha as
+full. The colour picker stores a full alpha as 255 whatever the colour's
+scale, so an alpha above 1 on a 0 to 1 colour is read as 0 to 255 too, and
+the colour is the same when the patch is opened again.
 
 SYNTAX:
 mgl_color

@@ -77,7 +77,7 @@ Whether angles are in degrees. On by default.
 order (euler_to_quaternion):
 Which axis order the three angles apply in.
 
-offset x / offset y (quaternion_to_euler):
+offset x / offset y / offset z (quaternion_to_euler):
 Constant offsets added to the result, for matching a convention that differs 
 from this one.
 

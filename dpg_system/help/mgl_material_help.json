@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "mgl_material sets how surfaces answer light, for everything drawn after it.\n\nIT IS PUT BACK, LIKE A TRANSFORM:\nA material applies from where it sits onward and is restored at the end of\nits branch. A material placed before three shapes gives all three that\nmaterial; a second material after them changes only what follows.\n\nBefore any mgl_material, the context's own material is in force: a dim grey\nambient, white diffuse, a half-grey highlight and shininess 32 - the same as\nthis node's defaults.\n\nHOW LIGHT, MATERIAL AND COLOUR COMBINE:\nShapes are always lit. What you see is roughly the light that reaches the\nsurface (each light's ambient, plus its diffuse where the surface faces it,\nscaled by the material's ambient and diffuse) multiplied by the current\ncolour, plus a highlight from each light's specular times the material's\nspecular, which the colour does not tint. With no light at all, a shape\nshows a dim fifth of its colour. mgl_line_array and mgl_text are the\nexceptions: they draw in the current colour without any lighting.\n\nTHE COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light,\n'specular' the colour of the highlight, and 'shininess' how tight that\nhighlight is. High shininess is a small hard glint; low is a broad sheen.\nEach one multiplies the matching component of every light.\n\nThe alpha of 'ambient' and 'diffuse' multiplies into the shape's\ntransparency.\n\nCOLOURS ARE BEST SET AS 0 TO 255:\nColours are read as 0 to 1, unless any value is above 1, in which case the\nwhole colour is read as 0 to 255. The colour pickers keep their alpha as 255\nwhatever scale the colour is in, so a 0 to 1 colour (this node's defaults\nincluded) is saved with an alpha of 255 - and when the patch is opened again,\nthat 255 makes the whole colour read as 0 to 255, and the surface comes back\nnearly black. Sending the material its colours as 0 to 255, as the demo does,\navoids it.\n\nSYNTAX:\nmgl_material\n\nEXAMPLE:\nmgl_material\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This is what triggers the node.\n\nambient / diffuse / specular:\nHow the surface answers each part of the light, as red green blue alpha.\n\nshininess:\nFrom 1 to 256, 32 by default.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, with this material in force downstream.\n\nRELATED:\nmgl_light for the light it answers; mgl_color for the hue. gl_material is\nthe gl equivalent.",
+                    "value": "mgl_material sets how surfaces answer light, for everything drawn after it.\n\nIT IS PUT BACK, LIKE A TRANSFORM:\nA material applies from where it sits onward and is restored at the end of\nits branch. A material placed before three shapes gives all three that\nmaterial; a second material after them changes only what follows.\n\nBefore any mgl_material, the context's own material is in force: a dim grey\nambient, white diffuse, a half-grey highlight and shininess 32 - the same as\nthis node's defaults.\n\nHOW LIGHT, MATERIAL AND COLOUR COMBINE:\nShapes are always lit. What you see is roughly the light that reaches the\nsurface (each light's ambient, plus its diffuse where the surface faces it,\nscaled by the material's ambient and diffuse) multiplied by the current\ncolour, plus a highlight from each light's specular times the material's\nspecular, which the colour does not tint. With no light at all, a shape\nshows a dim fifth of its colour. mgl_line_array and mgl_text are the\nexceptions: they draw in the current colour without any lighting.\n\nTHE COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light,\n'specular' the colour of the highlight, and 'shininess' how tight that\nhighlight is. High shininess is a small hard glint; low is a broad sheen.\nEach one multiplies the matching component of every light.\n\nThe alpha of 'ambient' and 'diffuse' multiplies into the shape's\ntransparency.\n\nCOLOURS:\nRed green blue alpha, from 0 to 1 or from 0 to 255. The scale is read from\nred, green and blue alone: if any of them is above 1, the whole colour, alpha\nincluded, is read as 0 to 255. The colour pickers store a full alpha as 255\nwhatever scale the colour is in, so an alpha above 1 on a 0 to 1 colour is\nread as 0 to 255 too - a patch opens again with the colours it was saved with.\n\nSYNTAX:\nmgl_material\n\nEXAMPLE:\nmgl_material\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This is what triggers the node.\n\nambient / diffuse / specular:\nHow the surface answers each part of the light, as red green blue alpha.\n\nshininess:\nFrom 1 to 256, 32 by default.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, with this material in force downstream.\n\nRELATED:\nmgl_light for the light it answers; mgl_color for the hue. gl_material is\nthe gl equivalent.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "mgl_material sets how surfaces answer light, for everything drawn after it.\n\nIT IS PUT BACK, LIKE A TRANSFORM:\nA material applies from where it sits onward and is restored at the end of\nits branch. A material placed before three shapes gives all three that\nmaterial; a second material after them changes only what follows.\n\nBefore any mgl_material, the context's own material is in force: a dim grey\nambient, white diffuse, a half-grey highlight and shininess 32 - the same as\nthis node's defaults.\n\nHOW LIGHT, MATERIAL AND COLOUR COMBINE:\nShapes are always lit. What you see is roughly the light that reaches the\nsurface (each light's ambient, plus its diffuse where the surface faces it,\nscaled by the material's ambient and diffuse) multiplied by the current\ncolour, plus a highlight from each light's specular times the material's\nspecular, which the colour does not tint. With no light at all, a shape\nshows a dim fifth of its colour. mgl_line_array and mgl_text are the\nexceptions: they draw in the current colour without any lighting.\n\nTHE COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light,\n'specular' the colour of the highlight, and 'shininess' how tight that\nhighlight is. High shininess is a small hard glint; low is a broad sheen.\nEach one multiplies the matching component of every light.\n\nThe alpha of 'ambient' and 'diffuse' multiplies into the shape's\ntransparency.\n\nCOLOURS ARE BEST SET AS 0 TO 255:\nColours are read as 0 to 1, unless any value is above 1, in which case the\nwhole colour is read as 0 to 255. The colour pickers keep their alpha as 255\nwhatever scale the colour is in, so a 0 to 1 colour (this node's defaults\nincluded) is saved with an alpha of 255 - and when the patch is opened again,\nthat 255 makes the whole colour read as 0 to 255, and the surface comes back\nnearly black. Sending the material its colours as 0 to 255, as the demo does,\navoids it.\n\nSYNTAX:\nmgl_material\n\nEXAMPLE:\nmgl_material\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This is what triggers the node.\n\nambient / diffuse / specular:\nHow the surface answers each part of the light, as red green blue alpha.\n\nshininess:\nFrom 1 to 256, 32 by default.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, with this material in force downstream.\n\nRELATED:\nmgl_light for the light it answers; mgl_color for the hue. gl_material is\nthe gl equivalent."
+            "text": "mgl_material sets how surfaces answer light, for everything drawn after it.\n\nIT IS PUT BACK, LIKE A TRANSFORM:\nA material applies from where it sits onward and is restored at the end of\nits branch. A material placed before three shapes gives all three that\nmaterial; a second material after them changes only what follows.\n\nBefore any mgl_material, the context's own material is in force: a dim grey\nambient, white diffuse, a half-grey highlight and shininess 32 - the same as\nthis node's defaults.\n\nHOW LIGHT, MATERIAL AND COLOUR COMBINE:\nShapes are always lit. What you see is roughly the light that reaches the\nsurface (each light's ambient, plus its diffuse where the surface faces it,\nscaled by the material's ambient and diffuse) multiplied by the current\ncolour, plus a highlight from each light's specular times the material's\nspecular, which the colour does not tint. With no light at all, a shape\nshows a dim fifth of its colour. mgl_line_array and mgl_text are the\nexceptions: they draw in the current colour without any lighting.\n\nTHE COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light,\n'specular' the colour of the highlight, and 'shininess' how tight that\nhighlight is. High shininess is a small hard glint; low is a broad sheen.\nEach one multiplies the matching component of every light.\n\nThe alpha of 'ambient' and 'diffuse' multiplies into the shape's\ntransparency.\n\nCOLOURS:\nRed green blue alpha, from 0 to 1 or from 0 to 255. The scale is read from\nred, green and blue alone: if any of them is above 1, the whole colour, alpha\nincluded, is read as 0 to 255. The colour pickers store a full alpha as 255\nwhatever scale the colour is in, so an alpha above 1 on a 0 to 1 colour is\nread as 0 to 255 too - a patch opens again with the colours it was saved with.\n\nSYNTAX:\nmgl_material\n\nEXAMPLE:\nmgl_material\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This is what triggers the node.\n\nambient / diffuse / specular:\nHow the surface answers each part of the light, as red green blue alpha.\n\nshininess:\nFrom 1 to 256, 32 by default.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, with this material in force downstream.\n\nRELATED:\nmgl_light for the light it answers; mgl_color for the hue. gl_material is\nthe gl equivalent."
         },
         "3": {
             "name": "mgl_context",
@@ -134,30 +134,30 @@
                 "0": {
                     "name": "ambient",
                     "value": [
-                        25.0,
-                        25.0,
-                        25.0,
-                        255.0
+                        0.1,
+                        0.1,
+                        0.1,
+                        1.0
                     ],
                     "value_type": "list"
                 },
                 "1": {
                     "name": "diffuse",
                     "value": [
-                        255.0,
-                        255.0,
-                        255.0,
-                        255.0
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
                     ],
                     "value_type": "list"
                 },
                 "2": {
                     "name": "specular",
                     "value": [
-                        128.0,
-                        128.0,
-                        128.0,
-                        255.0
+                        0.5,
+                        0.5,
+                        0.5,
+                        1.0
                     ],
                     "value_type": "list"
                 },
@@ -298,30 +298,30 @@
                 "0": {
                     "name": "ambient",
                     "value": [
-                        25.0,
-                        25.0,
-                        25.0,
-                        255.0
+                        0.1,
+                        0.1,
+                        0.1,
+                        1.0
                     ],
                     "value_type": "list"
                 },
                 "1": {
                     "name": "diffuse",
                     "value": [
-                        255.0,
-                        255.0,
-                        255.0,
-                        255.0
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
                     ],
                     "value_type": "list"
                 },
                 "2": {
                     "name": "specular",
                     "value": [
-                        255.0,
-                        255.0,
-                        255.0,
-                        255.0
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
                     ],
                     "value_type": "list"
                 },

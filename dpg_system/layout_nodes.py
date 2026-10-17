@@ -268,13 +268,16 @@ class CairoTextLayoutNode(Node):
         self.text_brightness = self.add_input('brightness', widget_type='drag_float', default_value=1.0)
         self.alpha_power = self.add_input('alpha power', widget_type='drag_float', default_value=0.1)
         self.leading_input = self.add_input('leading', widget_type='drag_float', default_value=60, callback=self.leading_changed)
-        self.active_line = self.add_input('active_line', widget_type='input_int', default_value=17, callback=self.active_line_changed)
+        default_active_line = 17
+        self.active_line = self.add_input('active_line', widget_type='input_int', default_value=default_active_line, callback=self.active_line_changed)
         self.wrap_input = self.add_input('wrap text', widget_type='checkbox', default_value=True, callback=self.wrap_changed)
         self.image_output = self.add_output('layout')
         self.language = None
 
         self.layout = CairoTextLayout([0, 0, width, height])
-        self.layout.set_active_line(1)  # 17
+        # Start where the widget says: restoring the default is a no-op, so
+        # its callback never fires to bring the layout into line.
+        self.layout.set_active_line(default_active_line)
 
     def leading_changed(self):
         self.layout.leading = self.leading_input()
@@ -339,9 +342,9 @@ class CairoTextLayoutNode(Node):
         self.active_line_changed()
 
     def active_line_changed(self):
-        old_active_line = self.layout.active_line
+        # draw_layout scrolls the text to the new active line itself; shifting
+        # it here as well moved it twice.
         self.layout.active_line = self.active_line()
-        self.layout.adjust_active_line(old_active_line)
         self.display_layout()
 
     def clear_layout(self):

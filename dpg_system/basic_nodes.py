@@ -2811,7 +2811,6 @@ class DictExtractNode(Node):
             if i < len(self.extract_keys):
                 key = self.extract_keys[i]
                 self.outputs[i].set_label(key)
-                self.outputs[i].send(received_dict[key])
                 self.extract_opt[i].set(key)
                 dpg.show_item(self.outputs[i].uuid)
             else:
@@ -2855,6 +2854,9 @@ class DictRetrieveNode(Node):
 
     def key_changed(self):
         key = self.key_input()
+        # a message box sends a list: one word is that word, more are joined with spaces
+        if isinstance(key, (list, tuple)):
+            key = key[0] if len(key) == 1 else any_to_string(key)
         self.key = key
         if self.key in self.dict:
             self.output.send(self.dict[self.key])
@@ -3144,7 +3146,12 @@ class DictNode(Node):
     def dump(self, message='', data=[]):
         for key in self.collection:
             out_list = [key]
-            out_list += self.collection[key]
+            value = self.collection[key]
+            # a list value is spread after the key; anything else is one item
+            if isinstance(value, (list, tuple)):
+                out_list += value
+            else:
+                out_list.append(value)
             self.output.send(out_list)
 
     def send_dict(self):

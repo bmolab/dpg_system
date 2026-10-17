@@ -75,9 +75,9 @@ keys - send the list of keys out of 'out'
 next - send the next entry, as a one-entry dictionary; it stops at the last
 reset - make next start from the first entry again
 random - send one entry, chosen at random, as a one-entry dictionary
-dump - send every entry as a list: the key followed by its value. This only
-works when every value is a list; a single number stored as a value stops it
-with an error
+dump - send every entry as a list: the key followed by its value. A value
+that is a list is spread out after the key; any other value - a number, a
+string - is one item
 search <beginning> - send, as one list, every entry whose value is itself a
 dictionary and whose path has a level beginning with the text: each item is
 the path and the dictionary found there
@@ -235,8 +235,8 @@ unpack_dict is another name for the same node.
 
 WITH NO ARGUMENTS:
 dict_extract on its own takes its keys from the first dictionary it receives,
-and grows an outlet for each. On that first dictionary each value is sent
-twice. The keys it learned are kept from then on.
+and grows an outlet for each, sending that first dictionary's values once.
+The keys it learned are kept from then on.
 
 SYNTAX:
 dict_extract <key> <key> ...
@@ -340,9 +340,9 @@ dict in:
 The dictionary to look in. It is kept until the next one arrives.
 
 key:
-The key to look up. Send it as a single string (from a string node, say),
-not as a list: a message box sends a list even for one word, and a list here
-stops the node with an error.
+The key to look up. A message box sends a list even for one word; a
+one-word list is read as that word, and a longer one as its words joined by
+spaces.
 
 OUTPUTS:
 
@@ -355,9 +355,9 @@ dict looks up by key in a collection it stores itself."""
 
 demo, links = dict_source(SRC_XY)
 demo += [
-    {'key': 'k1', 'init': 'string', 'pos': (270, 520), 'w': 120, 'h': 42,
+    {'key': 'k1', 'init': 'message', 'pos': (270, 520), 'w': 120, 'h': 42,
      'props': {'text in': 'x', 'font size': '24'}},
-    {'key': 'k2', 'init': 'string', 'pos': (270, 572), 'w': 120, 'h': 42,
+    {'key': 'k2', 'init': 'message', 'pos': (270, 572), 'w': 120, 'h': 42,
      'props': {'text in': 'name', 'font size': '24'}},
     {'key': 'c3', 'comment': True, 'text': 'then click a key - the value\ncomes back without resending',
      'pos': (270, 625)},
@@ -366,7 +366,7 @@ demo += [
      'props': {'text in': '', 'font size': '24'}},
 ]
 links += [('dc', 'dict out', 'dr', 'dict in'),
-          ('k1', 'string out', 'dr', 'key'), ('k2', 'string out', 'dr', 'key'),
+          ('k1', 'message out', 'dr', 'key'), ('k2', 'message out', 'dr', 'key'),
           ('dr', 'value out', 's1', '')]
 print(build('dict_retrieve', 'dict_retrieve - one value, by a key you can change', body,
             demo, links, demo_width=460, text_width=780, text_height=620))

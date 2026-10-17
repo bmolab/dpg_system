@@ -1628,7 +1628,7 @@ class NumpyRollingBufferNode(Node):
         self.count = 0
         # Send the now-empty window so downstream displays clear immediately
         # rather than holding the old contents until the next sample arrives.
-        self.output.send(self.buffer[0:0])
+        self.output.send(self.buffer[0:0].copy())
 
     def execute(self):
         input = any_to_array(self.input())
@@ -1643,7 +1643,9 @@ class NumpyRollingBufferNode(Node):
                 self.buffer[self.pointer + self.shape[0]] = input
                 if self.count < self.shape[0]:
                     self.count += 1
-                self.output.send(self.buffer[self.pointer:self.pointer + self.count])
+                # A copy: a slice is a view of the ring, which the next sample
+                # would rewrite under anything downstream that kept it.
+                self.output.send(self.buffer[self.pointer:self.pointer + self.count].copy())
 
 
 class NumpySubtensorNode(Node):

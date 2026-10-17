@@ -273,15 +273,17 @@ Its output is sparse: a fader is sent while it is above zero, once more at
 until it sounds again. The 'mapping' outlet sends a dict of fader names
 (left_knee, left_knee_x, left_knee_x+ ...) to sound ids when the number of
 faders changes - on the first input, and after a mode change. Changing
-start_sid does not resend it, and does not silence sounds started under the
-old ids.
+start_sid sends 0 to the faders still sounding under the old ids, then
+resends the mapping under the new ones.
 
 muscle_activation_fader MAPS MUSCLES TO SOUNDS:
 It takes the activation dict from mgl_smpl_heatmap and gives each muscle
 name the next sound id, from start_sid up, the first time it sees it,
 keeping that assignment from then on. So a muscle always plays the same
 sound, without you writing out the mapping. The assignments are saved with
-the patch; 'reset_mapping', or a change to start_sid, forgets them.
+the patch; 'reset_mapping' forgets them. Changing start_sid sends 0 to every
+muscle's old id, renumbers the muscles from the new start in the same order,
+and resends the mapping.
 
 It sends a level for every muscle in the dict on each input, and the
 'mapping' outlet sends the name-to-id dict each time, which is how you find

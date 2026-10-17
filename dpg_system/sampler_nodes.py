@@ -3116,8 +3116,19 @@ class MuscleActivationFaderNode(Node):
         self.mapping_out = self.add_output('mapping')
 
     def on_mapping_param_change(self):
-        # Changing start_sid invalidates the existing mapping - reassign next frame.
-        self.muscle_to_sid = {}
+        # start_sid moved: silence the sounds playing under the old ids, then
+        # renumber the known muscles from the new start (same order) and resend
+        # the mapping. During load this is just the saved value being restored
+        # over the saved mapping, which is already right.
+        if getattr(self, 'in_loading_process', False) or not self.muscle_to_sid:
+            return
+        base = int(self.start_sid_input())
+        if base == min(self.muscle_to_sid.values()):
+            return
+        self.fade_out.send([[sid, 0.0] for sid in self.muscle_to_sid.values()])
+        self.muscle_to_sid = {name: base + i for i, name in enumerate(self.muscle_to_sid)}
+        self.last_sent_nonzero = False
+        self.mapping_out.send(dict(self.muscle_to_sid))
 
     def on_reset(self):
         self.muscle_to_sid = {}
@@ -3232,11 +3243,13 @@ class EffortFaderNode(Node):
         self.last_sent_nonzero = False
         self.last_sid_count = 0
         self.prev_levels = None  # last sent (rounded) levels, for sparse output
+        self.sent_base = 0  # start_sid the last fade/mapping was sent under
+        self.last_names = None  # fader names of the last mapping sent
 
         self.effort_input = self.add_input('effort', callback=self.on_effort)
         self.mode_input = self.add_input('mode', widget_type='combo', default_value='magnitude', callback=self.on_mode_change)
         self.mode_input.widget.combo_items = ['magnitude', 'components', 'signed components']
-        self.start_sid_input = self.add_input('start_sid', widget_type='input_int', default_value=0)
+        self.start_sid_input = self.add_input('start_sid', widget_type='input_int', default_value=0, callback=self.on_start_sid_change)
         self.gain_input = self.add_input('gain', widget_type='drag_float', default_value=1.0, min=0.0, max=10.0)
         self.threshold_input = self.add_input('threshold', widget_type='drag_float', default_value=0.0, min=0.0, max=1.0)
         self.curve_input = self.add_input('curve', widget_type='drag_float', default_value=1.0, min=0.1, max=4.0)
@@ -3258,10 +3271,25 @@ class EffortFaderNode(Node):
         self.last_sid_count = 0
         self.prev_levels = None
 
+    def on_start_sid_change(self):
+        # Silence the faders still sounding under the old ids, then resend the
+        # mapping under the new ones (nothing has been sent yet during load).
+        if getattr(self, 'in_loading_process', False) or self.last_sid_count <= 0:
+            return
+        base = int(self.start_sid_input())
+        if base == self.sent_base:
+            return
+        self._send_zeros_for_active()
+        self.prev_levels = None
+        self.last_sent_nonzero = False
+        self.sent_base = base
+        if self.last_names is not None:
+            self.mapping_out.send({name: base + i for i, name in enumerate(self.last_names)})
+
     def _send_zeros_for_active(self):
         if self.last_sid_count <= 0:
             return
-        base = int(self.start_sid_input())
+        base = self.sent_base
         if self.prev_levels is not None and len(self.prev_levels) == self.last_sid_count:
             zero_list = [[base + i, 0.0] for i in range(self.last_sid_count) if self.prev_levels[i] > 0.0]
         else:
@@ -3342,9 +3370,11 @@ class EffortFaderNode(Node):
 
         if fade_list:
             self.fade_out.send(fade_list)
-        if len(efforts) != self.last_sid_count:
+        if len(efforts) != self.last_sid_count or base != self.sent_base:
             self.last_sid_count = len(efforts)
+            self.last_names = names
             self.mapping_out.send({names[i]: base + i for i in range(len(efforts))})
+        self.sent_base = base
 
         self.last_input_time = time.time()
         self.last_sent_nonzero = any_nonzero

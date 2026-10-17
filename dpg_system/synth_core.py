@@ -1024,7 +1024,11 @@ class PhasorUnit(Unit):
     sampler_osc~'s 'length' outlet straight into it and one cycle scans the
     whole file at natural speed, whatever file is loaded. Slow the period down
     from there and you are time-stretching; freeze it and the sound holds at a
-    position; run it negative and it plays backwards.
+    position. The period must be positive (0 or less falls back to the
+    frequency); run the frequency negative and it plays backwards.
+
+    'phase' is an offset, in cycles, added to the output: a constant offset
+    shifts the ramp without changing its speed.
 
     The 'wrap' outlet emits a one-sample pulse each time the ramp turns over,
     ready for an adsr~ trigger or anything else that wants to fire per cycle.
@@ -1042,6 +1046,8 @@ class PhasorUnit(Unit):
         self.phase = 0.0
         self.start_phase = 0.0
         self._reset_armed = True
+        self._last_output = 0.0
+        self._restarted = False
 
         self.out = self.new_outlet()
         self.wrap = self.new_outlet()
@@ -1050,6 +1056,7 @@ class PhasorUnit(Unit):
 
     def reset(self):
         self.phase = self.start_phase
+        self._restarted = True
 
     def render(self, frames):
         frequency = self.frequency_in.eval(frames)
@@ -1063,6 +1070,7 @@ class PhasorUnit(Unit):
         if edge >= 0.5:
             if self._reset_armed:
                 self.phase = self.start_phase
+                self._restarted = True
                 self._reset_armed = False
         else:
             self._reset_armed = True
@@ -1090,15 +1098,25 @@ class PhasorUnit(Unit):
         phase = self._phase[:frames]
         np.cumsum(increment, out=phase)
         phase += self.phase
+        np.mod(phase, 1.0, out=phase)
+        # The running phase carries over un-offset; 'phase' only shifts what
+        # goes out, so a constant offset moves the ramp rather than adding to
+        # it again every block.
+        self.phase = float(phase[-1])
         if offset.constant:
             if offset.value != 0.0:
                 phase += offset.value
+                np.mod(phase, 1.0, out=phase)
         else:
             phase += offset.data[:frames]
-        np.mod(phase, 1.0, out=phase)
+            np.mod(phase, 1.0, out=phase)
 
-        previous = self.phase
-        self.phase = float(phase[-1])
+        previous = self._last_output
+        if self._restarted:
+            # A reset is a jump, not a turn-over.
+            previous = float(phase[0])
+            self._restarted = False
+        self._last_output = float(phase[-1])
 
         # A turn-over is a step against the direction of travel.
         wrap = self.wrap
@@ -5392,6 +5410,9 @@ class SamplerOscUnit(Unit):
         self.position = 0.0         # in source samples
         self.velocity = 0.0         # source samples per output sample
         self.playing = True
+        # Set by a (re)start: a oneshot running backwards begins at the end of
+        # the window, which is only known once the block's increment is.
+        self._from_top = True
         self._trigger_armed = True
         self._grains = []
         self._grain_debt = 0.0
@@ -5425,6 +5446,7 @@ class SamplerOscUnit(Unit):
         self.velocity = 0.0
         self.playing = True
         self._grains = []
+        self._from_top = True
 
     def trigger(self):
         """Restart from the top of the loop window."""
@@ -5436,6 +5458,7 @@ class SamplerOscUnit(Unit):
         self.velocity = 0.0
         self.playing = True
         self._grains = []
+        self._from_top = True
 
     def _window(self, sample):
         """Loop start/end in source samples, read at control rate."""
@@ -5528,6 +5551,10 @@ class SamplerOscUnit(Unit):
 
         if mode in ('loop', 'oneshot'):
             increment = self._increment(sample, frames)
+            if self._from_top:
+                self._from_top = False
+                if mode == 'oneshot' and increment[0] < 0.0:
+                    self.position = float(end)
             np.cumsum(increment, out=positions)
             positions += self.position
 

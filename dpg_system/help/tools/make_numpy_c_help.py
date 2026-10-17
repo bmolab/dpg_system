@@ -136,7 +136,8 @@ Empties the buffer and sends the empty array, so displays clear at once.
 OUTPUTS: 
 
 out:
-The buffer's contents, newest first.
+The buffer's contents, newest first. Each send is a fresh array, so 
+anything downstream that keeps one sees it stay as it was.
 
 IT GROWS BEFORE IT ROLLS:
 A rolling buffer only reports what it has actually collected, so a freshly 

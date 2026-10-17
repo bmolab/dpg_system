@@ -1237,7 +1237,9 @@ class MGLBodyNode(MGLNode):
         # current, segfaulting in libGL (see MGLNode.execute).
         if self.mgl_input.fresh_input and threading.current_thread() is threading.main_thread():
             msg = self.mgl_input()
-            if msg == 'draw':
+            # as MGLNode.execute: 'draw' (bare or as a list) draws and passes
+            # on; anything else (e.g. a limb_scale message) is handled here
+            if (isinstance(msg, str) and msg == 'draw') or (isinstance(msg, list) and len(msg) > 0 and msg[0] == 'draw'):
                 self.ctx = MGLContext.get_instance()
                 try:
                     self.remember_state()
@@ -1248,7 +1250,9 @@ class MGLBodyNode(MGLNode):
                 finally:
                     self.restore_state()
                     self.ctx = None
-            self.mgl_output.send(msg)
+                self.mgl_output.send('draw')
+            elif msg is not None:
+                self.handle_other_messages(msg)
 
     def draw(self):
         if not self.ctx or not self.ctx.ctx:
@@ -1474,7 +1478,8 @@ class BodyProportionsNode(Node):
         for name in self.ROW_ORDER:
             self.rows[name] = self.add_input(name, widget_type='drag_float_n',
                                              default_value=[1.0, 1.0, 1.0], columns=3,
-                                             widget_width=45, callback=self._row_changed)
+                                             widget_width=45,
+                                             callback=lambda n=name: self._row_changed(n))
         self.output = self.add_output('limb_scale')
 
     # --- state ---
@@ -1504,11 +1509,12 @@ class BodyProportionsNode(Node):
         return None
 
     # --- callbacks ---
-    def _row_changed(self):
-        if self._mirroring or self.active_input is None:
-            return
-        name = self.active_input.get_label() if hasattr(self.active_input, 'get_label') else self.active_input._label
-        if name not in self.rows:
+    def _row_changed(self, name):
+        # each row's callback names its own row: a '<row> l w d' message to any
+        # inlet runs it via property_message, where active_input is unset or
+        # stale, so it cannot say which row changed. Not during load: rows are
+        # restored one by one (no mirroring) and post_load_callback sends.
+        if self._mirroring or name not in self.rows or getattr(self, 'in_loading_process', False):
             return
         if self.symmetric_input():
             other = self._mirror_name(name)

@@ -313,13 +313,13 @@ word appears anywhere in the message as a whole word - "faster" does not fire
 on "fasterer" - and it fires once however many times the word appears.
 Several words in one message each fire.
 
-The text is lowered to small letters before matching, but the arguments are
-not, so write the arguments in small letters: "word_trigger Stop" never fires.
+Capitals are ignored: the text and the arguments are both lowered to small
+letters before matching, so "word_trigger Stop" fires on "stop" and on "STOP".
 
 first_letter_trigger LISTENS FOR INITIALS:
 Name single letters as arguments. A letter's outlet sends a bang when any word
 in the message begins with it - once per message, however many words do.
-Write the letters in small letters, as for word_trigger.
+Capitals are ignored, as for word_trigger.
 
 SYNTAX:
 word_trigger <word> <word> ...
@@ -456,8 +456,9 @@ WHERE IT LOOKS FOR THE NAME:
 It does not search the whole phrase. It looks for the name after "by " - up to
 " of " or " from " if either follows - or, failing that, after "style of ".
 "by a" and "by the" are not taken as names, and "by" has to be in small
-letters and start a word. Only the first "by " in the phrase is looked at, so
-a phrase containing "nearby " before the name never finds it.
+letters and be a word of its own - "nearby " is not a "by ". When the phrase
+has several "by "s, each is tried and the one whose name scores best is used.
+With several "style of "s, the last one is used.
 
 A phrase with neither is passed through unchanged. So is a phrase where the
 name in front of " of " or " from " is longer than 32 characters or 5 spaces;
@@ -574,15 +575,16 @@ character - 'changing. ' with a space after does not count.
 
 'force string end' sends whatever has been collected, whenever the patch
 decides - an empty string if nothing has been. A fragment that is exactly
-'<backspace>' removes the last fragment collected.
+'<backspace>' removes the last fragment collected (or does nothing when nothing
+has been).
 
 SPACES:
 Fragments are joined exactly as they arrive - no space is added between them.
 Recognition output usually carries its own spaces; if yours does not, tick
 'enforce spaces', which puts a space between fragments that meet without one -
 but not before a full stop, comma or other closing punctuation, nor after an
-opening bracket. (With 'enforce spaces' on, a '<backspace>' that follows an
-added space removes the space rather than the fragment.)
+opening bracket. A '<backspace>' removes the fragment together with the space
+added in front of it.
 
 LINE BREAKS:
 'end on return' ends the sentence at a line break: what came before it is sent,
@@ -740,8 +742,7 @@ clear:
 Anything arriving here empties the window, and an empty window is sent.
 
 dump_oldest:
-Meant to drop the oldest phrase. At present anything arriving here stops with
-an error and nothing is dropped.
+Anything arriving here drops the oldest phrase and sends the window.
 
 order:
 newest_at_end (the default) or newest_at_start.
