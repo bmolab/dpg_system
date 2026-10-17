@@ -123,7 +123,7 @@ position. From then on it reports against it.
 np.distance_from_target:
 Sends the straight-line distance from the input to the target every time an
 input arrives. Nothing comes out until a target has been set. Its target is
-NOT saved with the patch - set it again after opening.
+saved with the patch.
 
 "axis" matters when the input holds several positions at once. Left at None,
 the whole difference is measured as one distance. For an array of positions,
@@ -165,8 +165,10 @@ larger than the threshold.
 nothing at all - no distance, no events. Ticking or unticking it (or
 clicking "reset_count") sets the count back to zero.
 
-It measures one position against one target. Its target is saved with the
-patch, but only as x, y and z: use three-number positions with it.
+Its target is saved with the patch, whatever its size. With "axis" set and
+several positions at the input (one per row), the nearest row decides: any
+row inside the threshold fires it, and it releases only when every row is past
+the release threshold.
 
 SYNTAX:
 np.distance_from_target
@@ -215,8 +217,9 @@ The [[sound_id, fade], ...] list, the index of the nearest target in range
 
 state / count / proximity (proximity_trigger):
 true on arrival and false on release (sent only when it changes), how many times it
-has arrived, and the distance to the target on every input. Despite its name,
-the "proximity" outlet sends the distance, so it gets SMALLER as you approach.
+has arrived, and the distance to the target on every input (one per row when
+"axis" is set). Despite its name, the "proximity" outlet sends the DISTANCE,
+not a closeness: it gets SMALLER as you approach, and is 0 at the target.
 
 RELATED:
 np.line_intersection and rotate_position used to share this page; each has
@@ -267,9 +270,9 @@ crossing is where the pointing lands, and the fraction says how far along the
 target that is.
 
 TWO DIMENSIONS ONLY:
-Every point is an x y pair. Points with a third number are refused with an
-error; to point in 3D, project onto a plane first (take the x and z of each
-point for a floor plan, for example).
+Every point is an x y pair. Points with a third number are refused: a
+message is printed once and nothing is sent. To point in 3D, project onto a
+plane first (take the x and z of each point for a floor plan, for example).
 
 ONLY "line 1 start" TRIGGERS:
 The other three inlets just store their points. Send them first, then line 1
@@ -283,9 +286,10 @@ through its end, and a crossing behind the start does not count.
 "intersect line 2 segment" (on by default): the crossing must lie between line
 2's two points, not out on the line's extension beyond them.
 
-Parallel lines never meet: the point comes out as inf inf and, with either
-check on, the crossing is reported as not valid. Turn both checks off and a
-parallel pair reports valid, with that infinite point.
+Parallel lines never meet: the point comes out as inf inf, the fraction as
+inf, and the crossing is always reported as not valid, whatever the checks.
+The same goes for a line whose two points are the same - it has no direction,
+so there is no crossing to find.
 
 SYNTAX:
 np.line_intersection
@@ -377,8 +381,8 @@ your fingers curl. About Y, a point at 1 0 0 turned by 90 degrees ends at
 ONE POSITION OR MANY:
 A single position of three numbers comes out as three numbers. An array of
 positions, one x y z per row, comes out with every row rotated. Anything else
-- a two-number point, say - is passed through UNCHANGED, with no warning, so
-if nothing seems to turn, check the shape of what you are sending.
+- a two-number point, say - is passed through UNCHANGED, and the node prints
+a warning the first time it happens.
 
 ONLY THE POSITION TRIGGERS:
 Changing "angle" does not send anything by itself - the new angle is used on
@@ -520,13 +524,13 @@ channel yourself.
 
 WHAT IT ACCEPTS:
 An image as an array of height x width x channels. Anything that is not three
-dimensional is ignored. It does not check the channel count, so an image that
-already has four channels gets a fifth.
+dimensional is ignored. An image that already has four channels is taken to
+have its alpha and is passed through unchanged.
 
-AN INTEGER IMAGE COMES OUT AS FLOAT:
-Averaging produces fractions. A float image keeps its type and its range. But
-a uint8 image (0 to 255) comes out as 64-bit float, still with values from 0
-to 255 - put np.astype uint8 after it if the next node expects bytes.
+THE TYPE IS KEPT:
+The image comes out in the type it came in: a uint8 image (0 to 255) stays
+uint8, with the average rounded down to a whole number; a float image stays
+float, with its range unchanged.
 
 SYNTAX:
 np.add_alpha
@@ -587,11 +591,12 @@ commas:
   0, 1:3   in row 0, columns 1 and 2
 
 Dimensions you leave out are taken whole, so on a grid "2" means all of row 2.
-Use positive numbers: a single negative index such as -1 selects nothing.
+-1 means the last position.
 
-THE DEFAULT CHANGES EVERYTHING:
-A fresh np.edit has indices ":" and value 0 - so until you change them, every
-array comes out entirely zeros.
+NOTHING HAPPENS UNTIL YOU TYPE A VALUE:
+A fresh np.edit has indices ":" and an empty "values" field, and passes arrays
+through unchanged until you put something in "values". Clearing the field
+again turns the edit off.
 
 WHAT THE VALUE CAN BE:
 A single number fills every chosen position. A list of numbers fills them in
@@ -603,10 +608,9 @@ The value takes the array's own type, so 2.7 written into an integer array
 becomes 2.
 
 EDITS WITHOUT A NEW ARRAY:
-Changing either field re-sends straight away, applied to the copy the node
-already holds - so successive changes build up on that copy (set 1:3 to 9,
-then change indices to 4 and both edits show). The next array that arrives
-starts again from a clean copy, with only the current edit applied.
+Changing either field re-sends straight away, applied to a fresh copy of the
+last array that arrived - so only the current edit shows (set 1:3 to 9, then
+change indices to 4, and only position 4 is 9).
 
 SYNTAX:
 np.edit <indices>
@@ -672,10 +676,10 @@ sends the same contents again without re-reading the file.
 
 The chosen path is saved with the patch (it is the "path" option), and when
 the patch is opened again the file is read and sent automatically. A path
-typed after the name (np.load /path/to/file.npz) fills in that option, but
-the file is not read until the patch is saved and opened again - "send" does
-nothing before then. A path that is not absolute is looked for relative to
-the folder the app was started from.
+typed after the name (np.load /path/to/file.npz) fills in that option and is
+read as soon as the node is made; so is a path typed into the option. A path
+that is not absolute is looked for relative to the folder the app was started
+from.
 
 Only .npz files. A plain .npy file (a single array) is not read by this node.
 

@@ -214,6 +214,8 @@ class RollingBuffer:
             self.lock.release()
 
     def update(self, incoming):
+        if isinstance(incoming, np.ndarray) and incoming.ndim == 0:
+            incoming = incoming.reshape(1)   # a 0-d array is a single value
         if not self.lock.locked():
             if self.update_style == t_BufferFill:
                 if self.buffer.shape != incoming.shape:

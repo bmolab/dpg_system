@@ -306,10 +306,7 @@ It does not change the value. Arriving at 'input' does not send anything by
 itself; the value is stored and goes out on the next frame, and every frame
 after, until a new value replaces it.
 
-IT RUNS FROM THE START:
-It fires on every frame from the moment it exists, before any value has
-arrived. Nodes after it see a trigger with no new value; most ignore that,
-but one that reacts to any trigger - a counter, say - starts counting at once.
+Until the first value arrives it sends nothing at all.
 
 SYNTAX:
 stream
@@ -334,7 +331,7 @@ tick fires every frame without carrying a value."""
 
 demo = [
     {'key': 'f0', 'init': 'float', 'pos': (30, 62), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c0', 'comment': True, 'text': 'drag this now and then', 'pos': (30, 112)},
+    {'key': 'c0', 'comment': True, 'text': 'drag this - nothing streams until you do', 'pos': (30, 112)},
     {'key': 'st', 'init': 'stream', 'pos': (30, 150), 'w': 140, 'h': 70},
     {'key': 'f1', 'init': 'float', 'pos': (30, 235), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'cnt', 'init': 'counter 1000000', 'pos': (200, 235), 'w': 123, 'h': 84,
@@ -358,16 +355,14 @@ model, a redraw - more often than it needs.
 It does not average or smooth: the values in between are simply dropped. If
 you want fewer values without losing the shape, filter first, then subsample.
 
-A NOTE ON ITS TIMING:
-subsample also watches how fast values arrive. If the input goes quiet for
-longer than the usual gap times the rate, it sends the latest value once more
-and starts counting afresh. So a stream that stops does not leave the node
-holding a value it never passed on - though if the last value WAS passed on,
-it goes out a second time.
+WHEN THE INPUT GOES QUIET:
+subsample also watches how fast values arrive. If it is holding a value it
+has not passed on and the input goes quiet for longer than the usual gap times
+the rate, it sends that value and starts counting afresh. So a stream that
+stops does not leave the node sitting on its last value. A value that was
+already passed on is never sent again.
 
-At a rate of 1 that check is tight enough that ordinary unevenness in arrival
-can trip it, so some values are sent twice; at 0 it trips after every value.
-Use 2 or more.
+A rate of 1 passes every value; so does 0.
 
 SYNTAX:
 subsample <rate: int>
@@ -382,7 +377,7 @@ The data. Receiving it triggers the node.
 
 rate:
 How many values arrive for each one that leaves. 2 halves the rate, 10 sends
-one in ten. 2 by default.
+one in ten. 0 or 1 passes everything. 2 by default.
 
 OUTPUTS:
 

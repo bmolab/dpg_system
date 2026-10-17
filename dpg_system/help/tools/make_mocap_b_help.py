@@ -488,7 +488,8 @@ How many frames are averaged. Set it to the length of the cadence cycle.
 OUTPUTS:
 
 pose out / trans out:
-The filtered data, the same shape as it came in.
+The filtered data, the same shape as it came in. A single number goes out
+as a single number.
 
 The history starts out filled with the first frame, so there is no ramp up
 from zero. Changing the window, or the size of what arrives, starts it again.
@@ -521,11 +522,10 @@ demo = [
     {'key': 'c1', 'comment': True, 'text': 'a slow movement with the cadence on it',
      'pos': (30, 570)},
     {'key': 'cf', 'init': 'cadence_filter', 'pos': (300, 310), 'w': 200, 'h': 140},
-    {'key': 'fl', 'init': 'float', 'pos': (300, 470), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'p1', 'init': 'plot', 'pos': (300, 530), 'w': 208, 'h': 176,
+    {'key': 'p1', 'init': 'plot', 'pos': (300, 470), 'w': 208, 'h': 176,
      'props': PLOT(-1.2, 1.8)},
     {'key': 'c2', 'comment': True, 'text': 'window 3: the movement, without the cadence\nset window to 1 to compare',
-     'pos': (300, 715)},
+     'pos': (300, 655)},
 ]
 links = [('tk', '', 'ct', 'input'),
          ('ct', 'count out', 'ml', 'in'),
@@ -533,8 +533,7 @@ links = [('tk', '', 'ct', 'input'),
          ('sg', '', 'ad', 'in'),
          ('ad', 'result', 'p0', 'y'),
          ('ad', 'result', 'cf', 'pose in'),
-         ('cf', 'pose out', 'fl', ''),
-         ('fl', 'float out', 'p1', 'y')]
+         ('cf', 'pose out', 'p1', 'y')]
 print(build('cadence_filter', 'cadence_filter - remove a recording rhythm', body,
             demo, links, demo_width=620, text_width=810, text_height=740))
 
@@ -592,25 +591,30 @@ previous frame array / previous diff array:
 The previous frame's speed and change per joint.
 
 frame:
-The frame number. Frame 0 is skipped, since it has no previous frame.
-Connect this: without a frame number the second test fails with an error.
+The frame number. Frame 0 is skipped, since it has no previous frame, and
+frame 1 gets only the first test. Left unconnected, nothing is skipped and
+events are filed with no frame number.
 
 file:
-The name the events are filed under.
+The name the events are filed under. A list of words is joined into one
+name.
 
 threshold 1 / threshold 2 previous / threshold low / jerk threshold pct:
 The tests above.
 
 save burst files / save path:
-Write everything found so far to a JSON file. The default path is a folder on
-the lab's Linux machine, so set your own first.
+Write everything found so far to a JSON file. The default is burst_files.json
+in your home folder; a path starting with ~ means your home folder.
+
+clear:
+Forget everything found so far, and send the empty result.
 
 OUTPUT:
 
 file_dict:
 Everything found so far, sent on every frame: for each file name, a list of
 events, each with the frame number, the arrays, and which joints jumped and by
-how much. The list only grows; create the node again to start empty.
+how much. The list keeps growing until 'clear' is clicked.
 
 RELATED:
 cadence_filter takes out the regular stepping that would otherwise read as

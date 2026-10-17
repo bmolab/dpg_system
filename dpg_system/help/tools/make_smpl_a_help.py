@@ -391,7 +391,8 @@ The root translation, x y z. Each one is sent on, shifted.
 pose:
 The current pose: 22 joints as axis-angle (three numbers each) or as
 quaternions (four, w first). Only used when calibrating. If no pose has
-arrived, calibrating does nothing.
+arrived, clicking 'calibrate' prints a message, and the calibration waits for
+the first translation after a pose arrives.
 
 config:
 A dictionary with 'betas' and 'gender', as smpl_beta_editor sends. Optional.

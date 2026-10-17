@@ -397,7 +397,7 @@ class TorchSpecialLogitNode(TorchNode):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        eps = 1e-8
+        eps = 1e-6
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.eps = self.add_input('eps', widget_type='drag_float', default_value=eps)
 

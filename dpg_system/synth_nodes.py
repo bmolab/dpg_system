@@ -952,7 +952,7 @@ class OneEuroNode(SynthNode):
     chooses per sample: at rest the cutoff drops to 'min cutoff' and the
     signal settles hard; as it moves the cutoff opens in proportion to its
     speed, so the lag falls away exactly when it would have been noticed. It
-    was made for interactive motion data (Casiello and Roussel, CHI 2012),
+    was made for interactive motion data (Casiez, Roussel and Vogel, CHI 2012),
     which is what effort data is.
 
     The two controls do separate jobs, and it is worth setting them in order.

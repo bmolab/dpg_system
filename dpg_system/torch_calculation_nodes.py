@@ -457,15 +457,30 @@ class TorchLCMGCDNode(TorchNode):
 
         self.output = self.add_output(output_name + ' tensor out')
 
+    @staticmethod
+    def to_whole(tensor_):
+        # gcd / lcm are integer-only: round float values to the nearest whole
+        # number (so 12.0, or a list arriving as a float tensor, just works)
+        if tensor_.is_floating_point():
+            tensor_ = torch.round(tensor_).to(torch.int64)
+        elif tensor_.dtype == torch.bool:
+            tensor_ = tensor_.to(torch.int64)
+        return tensor_
+
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             data = self.input_2()
             if data is not None:
-                input_tensor_2 = any_to_tensor(data, dtype=torch.int64)
+                input_tensor_2 = any_to_tensor(data, device=input_tensor.device)
                 if input_tensor_2 is not None:
-                    output_tensor = self.op(input_tensor, input_tensor_2)
-                    self.output.send(output_tensor)
+                    try:
+                        output_tensor = self.op(self.to_whole(input_tensor), self.to_whole(input_tensor_2))
+                        self.output.send(output_tensor)
+                    except Exception as e:
+                        traceback.print_exc()
+                        if self.app.verbose:
+                            print(self.label, e)
 
 
 # class TorchCropNode(Node):

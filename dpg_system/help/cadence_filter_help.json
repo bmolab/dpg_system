@@ -5,7 +5,7 @@
         100,
         100
     ],
-    "id": 829,
+    "id": 792,
     "name": "cadence_filter_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/cadence_filter_help.json",
     "nodes": {
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "cadence_filter removes a rhythm that the recording put into the data, not the\nmovement.\n\nWHAT CADENCE IS:\nA sensor running at one rate and delivered at another leaves a pattern in the\ndata that repeats every few frames. Shadow files recorded at 100 Hz and saved at\n60 are an example: from one saved frame to the next, the movement advances by\ntwo sensor frames, then two, then one, over and over - a cycle three frames\nlong. A sensor running at about 33 Hz and upsampled to 100 Hz leaves the same\nkind of three-frame cycle.\n\nThat pattern is not movement, but every measure built on frame-to-frame change\nreads it as movement, at a fixed frequency, all the time. It inflates jerk,\nit triggers glitch detectors, and it is the reason a still performer can look\nbusy.\n\nHOW IT REMOVES IT:\nEach number that arrives is averaged with the ones before it - a causal moving\naverage over 'window' frames. A pattern that repeats every N frames averages to\nnothing over a window of N frames, so the default window of 3 removes a\nthree-frame cadence exactly.\n\nCausal means it uses only past frames, so it works on a live stream. The price\nis a fixed lag: half a window less half a frame, which is one frame at a window\nof 3.\n\nWHAT IT AVERAGES:\nEvery number on its own, with no knowledge of what the numbers are. That is\nright for positions, and close enough for rotations that change little from\nframe to frame. It is not right across a jump in representation: a quaternion\nthat flips sign, or an axis-angle that wraps round, inside the window blends two\ndescriptions of the same rotation into a wrong one for a frame or two. The\nquaternions it produces are not renormalized.\n\nSYNTAX:\ncadence_filter\n\nEXAMPLE:\ncadence_filter\n\nINPUTS:\n\npose in:\nAny array of numbers - a pose, a list, a single value. Each arrival is filtered\nand sent from 'pose out'.\n\ntrans in:\nThe same, kept separately, sent from 'trans out'. The two inlets have their\nown histories, so they can run on different streams.\n\nPROPERTIES:\n\nenable:\nOff, or a window below 2, passes the data through unchanged.\n\nwindow:\nHow many frames are averaged. Set it to the length of the cadence cycle.\n\nOUTPUTS:\n\npose out / trans out:\nThe filtered data, the same shape as it came in.\n\nThe history starts out filled with the first frame, so there is no ramp up\nfrom zero. Changing the window, or the size of what arrives, starts it again.\n\nA WORD ON TRANSLATION:\nThe translation channel comes from a body-mounted sensor that projects from the\nbody and has mass, so it flops in vigorous movement - especially vertical\nmovement - in ways the joint rotations do not. It wants its own, heavier\nfiltering after this, and it should never be gate-opened on the assumption that\na large change means real motion.\n\nRELATED:\ncheck_burst flags frames where the data jumps implausibly.\nquaternion_diff_and_axis measures how much each joint turns per frame -\nthe measure the cadence shows up in.",
+                    "value": "cadence_filter removes a rhythm that the recording put into the data, not the\nmovement.\n\nWHAT CADENCE IS:\nA sensor running at one rate and delivered at another leaves a pattern in the\ndata that repeats every few frames. Shadow files recorded at 100 Hz and saved at\n60 are an example: from one saved frame to the next, the movement advances by\ntwo sensor frames, then two, then one, over and over - a cycle three frames\nlong. A sensor running at about 33 Hz and upsampled to 100 Hz leaves the same\nkind of three-frame cycle.\n\nThat pattern is not movement, but every measure built on frame-to-frame change\nreads it as movement, at a fixed frequency, all the time. It inflates jerk,\nit triggers glitch detectors, and it is the reason a still performer can look\nbusy.\n\nHOW IT REMOVES IT:\nEach number that arrives is averaged with the ones before it - a causal moving\naverage over 'window' frames. A pattern that repeats every N frames averages to\nnothing over a window of N frames, so the default window of 3 removes a\nthree-frame cadence exactly.\n\nCausal means it uses only past frames, so it works on a live stream. The price\nis a fixed lag: half a window less half a frame, which is one frame at a window\nof 3.\n\nWHAT IT AVERAGES:\nEvery number on its own, with no knowledge of what the numbers are. That is\nright for positions, and close enough for rotations that change little from\nframe to frame. It is not right across a jump in representation: a quaternion\nthat flips sign, or an axis-angle that wraps round, inside the window blends two\ndescriptions of the same rotation into a wrong one for a frame or two. The\nquaternions it produces are not renormalized.\n\nSYNTAX:\ncadence_filter\n\nEXAMPLE:\ncadence_filter\n\nINPUTS:\n\npose in:\nAny array of numbers - a pose, a list, a single value. Each arrival is filtered\nand sent from 'pose out'.\n\ntrans in:\nThe same, kept separately, sent from 'trans out'. The two inlets have their\nown histories, so they can run on different streams.\n\nPROPERTIES:\n\nenable:\nOff, or a window below 2, passes the data through unchanged.\n\nwindow:\nHow many frames are averaged. Set it to the length of the cadence cycle.\n\nOUTPUTS:\n\npose out / trans out:\nThe filtered data, the same shape as it came in. A single number goes out\nas a single number.\n\nThe history starts out filled with the first frame, so there is no ramp up\nfrom zero. Changing the window, or the size of what arrives, starts it again.\n\nA WORD ON TRANSLATION:\nThe translation channel comes from a body-mounted sensor that projects from the\nbody and has mass, so it flops in vigorous movement - especially vertical\nmovement - in ways the joint rotations do not. It wants its own, heavier\nfiltering after this, and it should never be gate-opened on the assumption that\na large change means real motion.\n\nRELATED:\ncheck_burst flags frames where the data jumps implausibly.\nquaternion_diff_and_axis measures how much each joint turns per frame -\nthe measure the cadence shows up in.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "cadence_filter removes a rhythm that the recording put into the data, not the\nmovement.\n\nWHAT CADENCE IS:\nA sensor running at one rate and delivered at another leaves a pattern in the\ndata that repeats every few frames. Shadow files recorded at 100 Hz and saved at\n60 are an example: from one saved frame to the next, the movement advances by\ntwo sensor frames, then two, then one, over and over - a cycle three frames\nlong. A sensor running at about 33 Hz and upsampled to 100 Hz leaves the same\nkind of three-frame cycle.\n\nThat pattern is not movement, but every measure built on frame-to-frame change\nreads it as movement, at a fixed frequency, all the time. It inflates jerk,\nit triggers glitch detectors, and it is the reason a still performer can look\nbusy.\n\nHOW IT REMOVES IT:\nEach number that arrives is averaged with the ones before it - a causal moving\naverage over 'window' frames. A pattern that repeats every N frames averages to\nnothing over a window of N frames, so the default window of 3 removes a\nthree-frame cadence exactly.\n\nCausal means it uses only past frames, so it works on a live stream. The price\nis a fixed lag: half a window less half a frame, which is one frame at a window\nof 3.\n\nWHAT IT AVERAGES:\nEvery number on its own, with no knowledge of what the numbers are. That is\nright for positions, and close enough for rotations that change little from\nframe to frame. It is not right across a jump in representation: a quaternion\nthat flips sign, or an axis-angle that wraps round, inside the window blends two\ndescriptions of the same rotation into a wrong one for a frame or two. The\nquaternions it produces are not renormalized.\n\nSYNTAX:\ncadence_filter\n\nEXAMPLE:\ncadence_filter\n\nINPUTS:\n\npose in:\nAny array of numbers - a pose, a list, a single value. Each arrival is filtered\nand sent from 'pose out'.\n\ntrans in:\nThe same, kept separately, sent from 'trans out'. The two inlets have their\nown histories, so they can run on different streams.\n\nPROPERTIES:\n\nenable:\nOff, or a window below 2, passes the data through unchanged.\n\nwindow:\nHow many frames are averaged. Set it to the length of the cadence cycle.\n\nOUTPUTS:\n\npose out / trans out:\nThe filtered data, the same shape as it came in.\n\nThe history starts out filled with the first frame, so there is no ramp up\nfrom zero. Changing the window, or the size of what arrives, starts it again.\n\nA WORD ON TRANSLATION:\nThe translation channel comes from a body-mounted sensor that projects from the\nbody and has mass, so it flops in vigorous movement - especially vertical\nmovement - in ways the joint rotations do not. It wants its own, heavier\nfiltering after this, and it should never be gate-opened on the assumption that\na large change means real motion.\n\nRELATED:\ncheck_burst flags frames where the data jumps implausibly.\nquaternion_diff_and_axis measures how much each joint turns per frame -\nthe measure the cadence shows up in."
+            "text": "cadence_filter removes a rhythm that the recording put into the data, not the\nmovement.\n\nWHAT CADENCE IS:\nA sensor running at one rate and delivered at another leaves a pattern in the\ndata that repeats every few frames. Shadow files recorded at 100 Hz and saved at\n60 are an example: from one saved frame to the next, the movement advances by\ntwo sensor frames, then two, then one, over and over - a cycle three frames\nlong. A sensor running at about 33 Hz and upsampled to 100 Hz leaves the same\nkind of three-frame cycle.\n\nThat pattern is not movement, but every measure built on frame-to-frame change\nreads it as movement, at a fixed frequency, all the time. It inflates jerk,\nit triggers glitch detectors, and it is the reason a still performer can look\nbusy.\n\nHOW IT REMOVES IT:\nEach number that arrives is averaged with the ones before it - a causal moving\naverage over 'window' frames. A pattern that repeats every N frames averages to\nnothing over a window of N frames, so the default window of 3 removes a\nthree-frame cadence exactly.\n\nCausal means it uses only past frames, so it works on a live stream. The price\nis a fixed lag: half a window less half a frame, which is one frame at a window\nof 3.\n\nWHAT IT AVERAGES:\nEvery number on its own, with no knowledge of what the numbers are. That is\nright for positions, and close enough for rotations that change little from\nframe to frame. It is not right across a jump in representation: a quaternion\nthat flips sign, or an axis-angle that wraps round, inside the window blends two\ndescriptions of the same rotation into a wrong one for a frame or two. The\nquaternions it produces are not renormalized.\n\nSYNTAX:\ncadence_filter\n\nEXAMPLE:\ncadence_filter\n\nINPUTS:\n\npose in:\nAny array of numbers - a pose, a list, a single value. Each arrival is filtered\nand sent from 'pose out'.\n\ntrans in:\nThe same, kept separately, sent from 'trans out'. The two inlets have their\nown histories, so they can run on different streams.\n\nPROPERTIES:\n\nenable:\nOff, or a window below 2, passes the data through unchanged.\n\nwindow:\nHow many frames are averaged. Set it to the length of the cadence cycle.\n\nOUTPUTS:\n\npose out / trans out:\nThe filtered data, the same shape as it came in. A single number goes out\nas a single number.\n\nThe history starts out filled with the first frame, so there is no ramp up\nfrom zero. Changing the window, or the size of what arrives, starts it again.\n\nA WORD ON TRANSLATION:\nThe translation channel comes from a body-mounted sensor that projects from the\nbody and has mass, so it flops in vigorous movement - especially vertical\nmovement - in ways the joint rotations do not. It wants its own, heavier\nfiltering after this, and it should never be gate-opened on the assumption that\na large change means real motion.\n\nRELATED:\ncheck_burst flags frames where the data jumps implausibly.\nquaternion_diff_and_axis measures how much each joint turns per frame -\nthe measure the cadence shows up in."
         },
         "3": {
             "name": "signal",
@@ -325,38 +325,10 @@
             "properties": {}
         },
         "12": {
-            "name": "float",
+            "name": "plot",
             "id": 681,
             "position_x": 300,
             "position_y": 470,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "13": {
-            "name": "plot",
-            "id": 718,
-            "position_x": 300,
-            "position_y": 530,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -415,12 +387,12 @@
                 }
             }
         },
-        "14": {
+        "13": {
             "name": "text_block",
-            "id": 755,
+            "id": 718,
             "annotation": true,
             "position_x": 534,
-            "position_y": 715,
+            "position_y": 655,
             "width": 298,
             "height": 40,
             "visibility": "show_all",
@@ -455,11 +427,11 @@
             },
             "text": "window 3: the movement, without the cadence\nset window to 1 to compare"
         },
-        "15": {
+        "14": {
             "name": "close",
-            "id": 792,
+            "id": 755,
             "position_x": 24,
-            "position_y": 738,
+            "position_y": 678,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -541,16 +513,6 @@
             "source_output_index": 0,
             "source_output_name": "pose out",
             "dest_node": 681,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "7": {
-            "source_node": 681,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "float out",
-            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"

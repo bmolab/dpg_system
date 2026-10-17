@@ -108,6 +108,9 @@ class BasePlotNode(Node):
                 data = data.real
             if data.dtype not in [float, np.float32, np.double, int, np.int64, np.uint8, np.bool_]:
                 return None
+            # a 0-d array is a single number: give it the shape a float gets
+            if data.ndim == 0:
+                data = data.reshape(1)
             return data
         # If we couldn't convert, return None
         return None

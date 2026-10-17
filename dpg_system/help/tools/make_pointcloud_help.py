@@ -368,9 +368,9 @@ you catch a filter eating the subject.
 
 AN EMPTY CLOUD:
 When a cloud arrives with no points in it, pc_info sends 0 from 'count' and
-nothing else - and 'cloud out' does not pass the empty frame on. So do not
-leave it inline in front of a renderer or a voxel node that should clear when
-the room is empty: branch it off to the side instead.
+nothing from min, max or centroid, but still passes the empty frame on from
+'cloud out' - so a renderer or voxel node after it clears when the room
+empties.
 
 SYNTAX:
 pc_info

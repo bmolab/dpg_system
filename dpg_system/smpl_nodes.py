@@ -1277,6 +1277,10 @@ class FloorZeroNode(SMPLNode):
     def do_calibrate(self):
         # Defer the FK to execute(), so it runs with the freshest trans + pose.
         self._calibrate_pending = True
+        if getattr(self, 'in_loading_process', False):
+            return
+        if self.pose_input() is None:
+            print('floor_zero: no pose yet - will calibrate once a pose and trans arrive')
 
     def _up_index(self):
         return 1 if self.up_axis_prop() == 'Y' else 2
@@ -1363,10 +1367,13 @@ class FloorZeroNode(SMPLNode):
         trans = any_to_array(trans).astype(np.float64).flatten()[:3]
         up = self._up_index()
 
-        if self._calibrate_pending:
+        if self._calibrate_pending and self.pose_input() is not None:
+            # stays pending until a pose has arrived
             self._calibrate_pending = False
             pose_rots = self._pose_to_rotations(self.pose_input())
-            if pose_rots is not None:
+            if pose_rots is None:
+                print('floor_zero: calibration failed: pose is not 22x3 or 22x4')
+            else:
                 try:
                     foot_rel = self._lowest_foot_rel_root(pose_rots, up)
                     # World up-coord of the sole at calibration.

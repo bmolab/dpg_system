@@ -817,7 +817,12 @@ class NumpyAddAlphaNode(Node):
         if self.input.fresh_input:
             data = any_to_array(self.input())
             if len(data.shape) == 3:
-                mean = np.mean(data, axis=2, keepdims=True)
+                if data.shape[2] == 4:
+                    # already has an alpha channel: pass it through unchanged
+                    self.output.send(data)
+                    return
+                # alpha = mean of the channels, in the input's dtype (uint8 stays uint8)
+                mean = np.mean(data, axis=2, keepdims=True).astype(data.dtype)
                 data = np.append(data, mean, axis=2)
                 self.output.send(data)
             else:
@@ -845,6 +850,7 @@ class NumpyLineIntersectionNode(Node):
         self.valid_intersection = self.add_output('intersection is valid')
         self.output = self.add_output('point of intersection')
         self.relative_point = self.add_output('fraction of segment 2')
+        self._warned_shape = False
 
     def execute(self):
         def _ok(p):
@@ -864,8 +870,22 @@ class NumpyLineIntersectionNode(Node):
         b2 = any_to_array(self.point4_input())
         if not _ok(b2):
             return
+        # two dimensions only: np.cross on 3-number points (4 homogeneous) raises
+        if any(p.ndim != 1 or p.shape[0] != 2 for p in (a1, a2, b1, b2)):
+            if not self._warned_shape:
+                print(f'{self.label}: points must be x y pairs (2-D only), got shapes '
+                      f'{[p.shape for p in (a1, a2, b1, b2)]}')
+                self._warned_shape = True
+            return
 
         intersection = self.get_intersect(a1, a2, b1, b2)
+        line_2_length = np.linalg.norm(b1 - b2)
+        if not np.all(np.isfinite(intersection)) or line_2_length == 0:
+            # parallel lines, or a line whose two points coincide: no crossing
+            self.relative_point.send(float('inf'))
+            self.output.send(intersection)
+            self.valid_intersection.send(False)
+            return
         direction_ok = True
         if self.directed():
             a1_intersect_length = np.linalg.norm(a1 - intersection)
@@ -873,7 +893,6 @@ class NumpyLineIntersectionNode(Node):
             if a1_intersect_length <= a2_intersect_length:
                 direction_ok = False
         segment_intersect_ok = True
-        line_2_length = np.linalg.norm(b1 - b2)
         intersection_seg_length_1 = np.linalg.norm(b1 - intersection)
         intersection_seg_length_2 = np.linalg.norm(b2 - intersection)
         fraction = float(intersection_seg_length_1 / line_2_length)
@@ -1160,6 +1179,15 @@ class NumpyDistanceFromTargetNode(NumpyNodeWithAxisNode):
             self.target = any_to_array(target)
             self.execute()
 
+    def save_custom(self, container):
+        if self.target is not None:
+            container['target'] = np.asarray(self.target, dtype=float).tolist()
+
+    def load_custom(self, container):
+        # target is plain node state, not a widget, so restore order doesn't matter
+        if 'target' in container:
+            self.target = np.array(container['target'], dtype=float)
+
     def execute(self):
         input_value = any_to_array(self.input())
         if self.target is not None:
@@ -1323,13 +1351,14 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
             self.execute()
 
     def save_custom(self, container):
+        # the whole target, any size; older patches saved only target_x/y/z
         if self.target is not None:
-            container['target_x'] = float(self.target[0])
-            container['target_y'] = float(self.target[1])
-            container['target_z'] = float(self.target[2])
+            container['target'] = np.asarray(self.target, dtype=float).tolist()
 
     def load_custom(self, container):
-        if 'target_x' in container:
+        if 'target' in container:
+            self.target = np.array(container['target'], dtype=float)
+        elif 'target_x' in container:
             x = float(container['target_x'])
             y = float(container['target_y'])
             z = float(container['target_z'])
@@ -1350,6 +1379,9 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
                 if self.adjust_dim_option(input_value):
                     distance = np.linalg.norm(diff, axis=self.axis)
                     self.prox_out.send(distance)
+                    # with an axis the distance is per row: the nearest one triggers
+                    # (any row inside threshold) and releases (all rows beyond release)
+                    distance = float(np.min(distance)) if np.size(distance) > 0 else np.inf
                     if distance < self.threshold() and not self.active:
                         self.active = True
                         self.counter += 1
@@ -1821,7 +1853,8 @@ class NumpyEditNode(Node):
         self.indices_input = self.add_input('indices', widget_type='text_input', widget_width=70, default_value=index_string,
                                                   callback=self.edit_section_changed)
         self.indices_input.widget.wants_resize_handle = True
-        self.edit_values_input = self.add_input('values', widget_type='text_input', widget_width=70, default_value=0.0,
+        # values start empty: a fresh node passes arrays through until a value is set
+        self.edit_values_input = self.add_input('values', widget_type='text_input', widget_width=70, default_value='',
                                                   callback=self.edit_value_changed)
         self.output = self.add_output('output')
         self.indices_width_option = self.add_option('widget width', widget_type='drag_int', default_value=70,
@@ -1859,7 +1892,10 @@ class NumpyEditNode(Node):
                 if len(dim_num) > 0:
                     dim_num = string_to_int(dim_num[0])
                     dim_nums.append([dim_num])
-                    dim_nums.append([dim_num + 1])
+                    if dim_num == -1:
+                        dim_nums.append([1000000])  # -1:0 would be empty; -1 means the last element
+                    else:
+                        dim_nums.append([dim_num + 1])
             else:
                 for j in range(len(dimmer)):
                     dim_num = re.findall(r'[-+]?\d+', dimmer[j])
@@ -1884,22 +1920,29 @@ class NumpyEditNode(Node):
         if input_array is not None:
             if self.dim_list is None:
                 self.parse_indices()
-            if len(self.dim_list) == 0:
+            if len(self.dim_list) == 0 or self.no_edit_value():
                 self.output.send(input_array)
             else:
-                self.edited_array = input_array.copy()
                 self.edit_array_and_output()
+
+    def no_edit_value(self):
+        value = self.edit_values_input() if self.value is None else self.value
+        return value is None or (isinstance(value, str) and value.strip() == '')
 
     def edit_array_and_output(self):
         if self.in_loading_process:
             return
         if self.dim_list is None:
             self.parse_indices()
-        if self.edited_array is None:
-            input_array = any_to_array(self.input())
-            if input_array is None:
-                return
-            self.edited_array = input_array.copy()
+        # each edit starts from the most recent input, so widget edits don't pile up
+        input_value = self.input()
+        if input_value is None:
+            return
+        input_array = any_to_array(input_value)
+        if self.no_edit_value():
+            self.output.send(input_array)
+            return
+        self.edited_array = input_array.copy()
         if self.value is None:
             self.value = self.edit_values_input()
         dim_list_now = []
@@ -2085,8 +2128,16 @@ class NumpyLoadNode(Node):
         self.dict = None
         self.load_button = self.add_input('load', widget_type='button', callback=self.open_load_dialog)
         self.add_input('send', widget_type='button', callback=self.send_dict)
-        self.path_option = self.add_option('path', widget_type='text_input', default_value=default_path)
+        self.path_option = self.add_option('path', widget_type='text_input', default_value=default_path,
+                                           callback=self.path_changed)
         self.data_output = self.add_output('dict out')
+
+    def path_changed(self):
+        # a typed path, or one restored when the patch opens (custom_create runs
+        # before the saved options are restored, so this is what reads it then)
+        path = self.path_option()
+        if path is not None and path != '':
+            self.load_file(path)
 
     def send_dict(self):
         if self.dict is not None:
@@ -2095,10 +2146,10 @@ class NumpyLoadNode(Node):
             self.data_output.send(self.dict)
 
     def custom_create(self, from_file=False):
-        if from_file:
-            path = self.path_option()
-            if path != '':
-                self.load_file(path)
+        # load the path given as an argument whether typed in or opened from a patch
+        path = self.path_option()
+        if path is not None and path != '':
+            self.load_file(path)
 
     def open_load_dialog(self):
         LoadDialog(self, callback=self.load_dialog_callback, extensions=['.npz'])
@@ -2367,6 +2418,7 @@ class RotatePositionNode(Node):
         self.angle_input = self.add_input('angle', widget_type='drag_float', default_value=0.0)
         self.axis_prop = self.add_property('axis', widget_type='combo', default_value='Y', callback=self.execute)
         self.axis_prop.widget.combo_items = ['X', 'Y', 'Z']
+        self._warned_shape = False
 
         self.output = self.add_output('rotated')
 
@@ -2392,4 +2444,7 @@ class RotatePositionNode(Node):
         elif pos.ndim == 2 and pos.shape[-1] == 3:
             self.output.send((pos @ mat.T).astype(np.float32))
         else:
+            if not self._warned_shape:
+                print(f'{self.label}: expected xyz positions (3 or (N, 3)), got shape {pos.shape}; passing through unrotated')
+                self._warned_shape = True
             self.output.send(pos.astype(np.float32))

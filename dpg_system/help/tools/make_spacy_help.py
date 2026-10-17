@@ -217,6 +217,7 @@ Send it these, one at a time:
     in a blue coat   -> a tall man in a blue coat
     not blue         -> a tall man in a coat
     through the park -> a tall man in a coat, through the park
+    no               -> a tall man in a coat
 
 (the spacing around the commas really is uneven - it is stitching fragments
 together, not writing them out)
@@ -232,12 +233,11 @@ A fragment that starts with 'it', 'they', 'he' or 'she' has that word swapped
 for the noun the phrase is about. A fragment that starts with 'not' takes a
 word out: 'not blue' removes the adjective 'blue'.
 
-STEPPING BACK DOES NOT WORK YET:
-'no', 'wrong' and 'go back' are meant to return to the previous phrase. At
-present that only happens once the 'clear input pause' has run out. Sent while
-the phrase is still live, the previous phrase is folded into the current one as
-if it were a new fragment, and the result is a garble ('an a tall blue man in
-a blue coat in a coat'). Do not rely on it.
+STEPPING BACK:
+'no', 'wrong' and 'go back' return to the previous phrase, whenever they
+arrive. It remembers only one step: a second 'no' undoes the first, so
+sending 'no' twice brings back the phrase you stepped away from. Sent before
+there is any previous phrase, they do nothing.
 
 THE SETTINGS, AND WHICH WAY THEY POINT:
 'replace similarity' is how alike in meaning a fragment and a part of the phrase
@@ -319,8 +319,10 @@ demo = [
      'props': MSG('not blue')},
     {'key': 'm7', 'init': 'message', 'pos': (30, 392), 'w': 240, 'h': 42,
      'props': MSG('through the park')},
-    {'key': 'c0', 'comment': True, 'text': 'click these in order, one at a time,\nless than 40 seconds apart',
-     'pos': (30, 445)},
+    {'key': 'm8', 'init': 'message', 'pos': (30, 447), 'w': 140, 'h': 42,
+     'props': MSG('no')},
+    {'key': 'c0', 'comment': True, 'text': "click these in order, one at a time,\nless than 40 seconds apart\n'no' steps back to the previous phrase",
+     'pos': (30, 500)},
 
     {'key': 'rp', 'init': 'rephrase', 'pos': (300, 62), 'w': 300, 'h': 260},
     {'key': 'l2', 'init': 'string', 'pos': (300, 340), 'w': 420, 'h': 42,
@@ -335,6 +337,7 @@ links = [('m1', 'message out', 'rp', 'text in'),
          ('m5', 'message out', 'rp', 'text in'),
          ('m6', 'message out', 'rp', 'text in'),
          ('m7', 'message out', 'rp', 'text in'),
+         ('m8', 'message out', 'rp', 'text in'),
          ('rp', 'results', 'l2', '')]
 print(build('rephrase', 'rephrase - a phrase built from fragments', body,
             demo, links, demo_width=760, text_width=800, text_height=760))

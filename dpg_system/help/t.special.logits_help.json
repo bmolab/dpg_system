@@ -1,6 +1,6 @@
 {
     "height": 781,
-    "width": 1337,
+    "width": 1374,
     "position": [
         100,
         100
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 489,
+            "position_x": 526,
             "position_y": 45,
             "width": 808,
             "height": 676,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The inverse of the sigmoid: turns a probability back into a score.\n\nWHAT IT GIVES YOU:\nGiven a probability between 0 and 1, it returns the unbounded score that a\nsigmoid would have turned into that probability - the log of p over (1 minus p).\n0.5 becomes 0, values above 0.5 become positive, values below become negative,\nand the ends stretch out without limit.\n\nThat is useful whenever you want to add, average or smooth probabilities: do it\non the logits, where 0.99 and 0.999 are properly far apart, then put the result\nback through a sigmoid.\n\nTHE ENDS ARE INFINITE - eps IS THE SAFETY MARGIN:\nAt exactly 0 the answer is minus infinity, and at exactly 1 it is plus infinity.\n'eps' clamps the input to between eps and 1 minus eps first, so the ends come\nout as large finite numbers instead.\n\nTHE DEFAULT eps IS TOO SMALL FOR THE TOP END:\neps starts at 0.00000001. Tensors here are ordinary 32-bit floats, and in those\n1 minus 0.00000001 rounds back to exactly 1 - so a probability of 1 still comes\nout as infinity. The bottom end is protected (0 gives about -18.4). To keep both\nends finite, set eps to 0.000001 or larger; the example shows both settings.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1. Receiving them does the work. Values outside 0..1\nare clamped by eps too, so they come out at the ends rather than as errors.\n\neps:\nHow far from 0 and 1 to hold the input. Default 0.00000001.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability.",
+                    "value": "The inverse of the sigmoid: turns a probability back into a score.\n\nWHAT IT GIVES YOU:\nGiven a probability between 0 and 1, it returns the unbounded score that a\nsigmoid would have turned into that probability - the log of p over (1 minus p).\n0.5 becomes 0, values above 0.5 become positive, values below become negative,\nand the ends stretch out without limit.\n\nThat is useful whenever you want to add, average or smooth probabilities: do it\non the logits, where 0.99 and 0.999 are properly far apart, then put the result\nback through a sigmoid.\n\nTHE ENDS ARE INFINITE - eps IS THE SAFETY MARGIN:\nAt exactly 0 the answer is minus infinity, and at exactly 1 it is plus infinity.\n'eps' clamps the input to between eps and 1 minus eps first, so the ends come\nout as large finite numbers instead.\n\neps starts at 0.000001, which holds 0 and 1 to about -13.8 and +13.8. A larger\neps pulls the ends in further (0.001 gives about -6.9 and +6.9); the example\nshows both.\n\nDo not set it much smaller. Tensors here are ordinary 32-bit floats, and in\nthose 1 minus anything below about 0.0000001 rounds back to exactly 1 - so the\ntop end is no longer protected and a probability of 1 comes out as infinity\nagain, even though the bottom end still looks fine.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1. Receiving them does the work. Values outside 0..1\nare clamped by eps too, so they come out at the ends rather than as errors.\n\neps:\nHow far from 0 and 1 to hold the input. Default 0.000001.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "The inverse of the sigmoid: turns a probability back into a score.\n\nWHAT IT GIVES YOU:\nGiven a probability between 0 and 1, it returns the unbounded score that a\nsigmoid would have turned into that probability - the log of p over (1 minus p).\n0.5 becomes 0, values above 0.5 become positive, values below become negative,\nand the ends stretch out without limit.\n\nThat is useful whenever you want to add, average or smooth probabilities: do it\non the logits, where 0.99 and 0.999 are properly far apart, then put the result\nback through a sigmoid.\n\nTHE ENDS ARE INFINITE - eps IS THE SAFETY MARGIN:\nAt exactly 0 the answer is minus infinity, and at exactly 1 it is plus infinity.\n'eps' clamps the input to between eps and 1 minus eps first, so the ends come\nout as large finite numbers instead.\n\nTHE DEFAULT eps IS TOO SMALL FOR THE TOP END:\neps starts at 0.00000001. Tensors here are ordinary 32-bit floats, and in those\n1 minus 0.00000001 rounds back to exactly 1 - so a probability of 1 still comes\nout as infinity. The bottom end is protected (0 gives about -18.4). To keep both\nends finite, set eps to 0.000001 or larger; the example shows both settings.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1. Receiving them does the work. Values outside 0..1\nare clamped by eps too, so they come out at the ends rather than as errors.\n\neps:\nHow far from 0 and 1 to hold the input. Default 0.00000001.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability."
+            "text": "The inverse of the sigmoid: turns a probability back into a score.\n\nWHAT IT GIVES YOU:\nGiven a probability between 0 and 1, it returns the unbounded score that a\nsigmoid would have turned into that probability - the log of p over (1 minus p).\n0.5 becomes 0, values above 0.5 become positive, values below become negative,\nand the ends stretch out without limit.\n\nThat is useful whenever you want to add, average or smooth probabilities: do it\non the logits, where 0.99 and 0.999 are properly far apart, then put the result\nback through a sigmoid.\n\nTHE ENDS ARE INFINITE - eps IS THE SAFETY MARGIN:\nAt exactly 0 the answer is minus infinity, and at exactly 1 it is plus infinity.\n'eps' clamps the input to between eps and 1 minus eps first, so the ends come\nout as large finite numbers instead.\n\neps starts at 0.000001, which holds 0 and 1 to about -13.8 and +13.8. A larger\neps pulls the ends in further (0.001 gives about -6.9 and +6.9); the example\nshows both.\n\nDo not set it much smaller. Tensors here are ordinary 32-bit floats, and in\nthose 1 minus anything below about 0.0000001 rounds back to exactly 1 - so the\ntop end is no longer protected and a probability of 1 comes out as infinity\nagain, even though the bottom end still looks fine.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1. Receiving them does the work. Values outside 0..1\nare clamped by eps too, so they come out at the ends rather than as errors.\n\neps:\nHow far from 0 and 1 to hold the input. Default 0.000001.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability."
         },
         "3": {
             "name": "button",
@@ -163,12 +163,12 @@
             }
         },
         "7": {
-            "init": "comment default eps: the 1.0 still comes out as inf",
+            "init": "comment default eps 0.000001: 0 and 1 give -13.8 and 13.8",
             "name": "comment",
             "id": 496,
             "position_x": 186,
             "position_y": 360,
-            "width": 273,
+            "width": 310,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -176,7 +176,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "default eps: the 1.0 still comes out as inf",
+                    "value": "default eps 0.000001: 0 and 1 give -13.8 and 13.8",
                     "value_type": "str"
                 },
                 "1": {
@@ -185,7 +185,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "default eps: the 1.0 still comes out as inf"
+            "comment": "default eps 0.000001: 0 and 1 give -13.8 and 13.8"
         },
         "8": {
             "name": "t.special.logits",
@@ -200,7 +200,7 @@
             "properties": {
                 "0": {
                     "name": "eps",
-                    "value": 1e-06,
+                    "value": 0.001,
                     "value_type": "float"
                 }
             }
@@ -229,12 +229,12 @@
             }
         },
         "10": {
-            "init": "comment eps 0.000001: both ends finite",
+            "init": "comment eps 0.001: the ends pulled in to -6.9 and 6.9",
             "name": "comment",
             "id": 607,
             "position_x": 186,
             "position_y": 575,
-            "width": 193,
+            "width": 285,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -242,7 +242,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "eps 0.000001: both ends finite",
+                    "value": "eps 0.001: the ends pulled in to -6.9 and 6.9",
                     "value_type": "str"
                 },
                 "1": {
@@ -251,7 +251,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "eps 0.000001: both ends finite"
+            "comment": "eps 0.001: the ends pulled in to -6.9 and 6.9"
         },
         "11": {
             "name": "close",

@@ -101,17 +101,15 @@ multiple of two cycle lengths is how long it takes before they line up again,
 which is the length of the combined pattern. The greatest common divisor is the
 largest step that lands on the beats of both.
 
-THEY WANT INTEGER TENSORS - AND THE FIRST INLET WILL NOT MAKE ONE:
-These are number theory, not arithmetic, and a float tensor is the wrong kind of
-thing to ask them about. The two inlets are treated differently:
+THEY WORK ON WHOLE NUMBERS:
+These are number theory, not arithmetic. Both inlets turn whatever arrives - a
+list, a number, a float or integer tensor - into whole numbers before the work
+is done, so a list of counts can go straight in.
 
-'tensor b in' converts whatever arrives - a list, a number, a tensor - to whole
-numbers for you.
-
-'tensor a in' does not. A list or a number arriving there becomes a FLOAT
-tensor, and the node then fails with an error in the console and sends nothing.
-Put a t.to int64 in front of it, as the example does, unless what arrives is
-already an integer tensor.
+A value with a fractional part is rounded to the NEAREST whole number first:
+2.6 counts as 3, and 9.4 as 9. That keeps a value like 11.9999 that should have
+been 12 from quietly turning into 11. If you need a different rule (always
+down, always up), put t.floor or t.ceil in front.
 
 A zero is allowed: the gcd of a number and 0 is the number itself, and the lcm
 of anything with 0 is 0.
@@ -123,7 +121,7 @@ t.lcm
 INPUTS and PARAMETERS:
 
 tensor a in:
-The first tensor, which must already be integers. Receiving it does the work.
+The first tensor, list or number. Receiving it does the work.
 
 tensor b in:
 The second tensor, or a single number applied everywhere. It is only stored
@@ -141,24 +139,20 @@ demo = [
     {'key': 'ma', 'init': 'message', 'pos': (30, 118), 'w': 220, 'h': 42,
      'props': {'text in': '12 18 7 9', 'font size': '24'}},
     {'key': 'c0', 'comment': True, 'text': 'b goes first: it is only stored', 'pos': (300, 168)},
-    {'key': 'to', 'init': 't.to int64', 'pos': (30, 205), 'w': 200, 'h': 120},
-    {'key': 'c1', 'comment': True, 'text': 'a list into tensor a would\nbecome floats - make it whole numbers',
-     'pos': (30, 335)},
-    {'key': 'gc', 'init': 't.gcd', 'pos': (30, 400), 'w': 200, 'h': 80},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 495), 'w': 220, 'h': 42,
+    {'key': 'gc', 'init': 't.gcd', 'pos': (30, 205), 'w': 200, 'h': 80},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 300), 'w': 220, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c2', 'comment': True, 'text': 'gcd: 4 6 7 9', 'pos': (30, 545)},
-    {'key': 'lc', 'init': 't.lcm', 'pos': (300, 400), 'w': 200, 'h': 80},
-    {'key': 'l2', 'init': 'list', 'pos': (300, 495), 'w': 220, 'h': 42,
+    {'key': 'c2', 'comment': True, 'text': 'gcd: 4 6 7 9', 'pos': (30, 350)},
+    {'key': 'lc', 'init': 't.lcm', 'pos': (300, 205), 'w': 200, 'h': 80},
+    {'key': 'l2', 'init': 'list', 'pos': (300, 300), 'w': 220, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c3', 'comment': True, 'text': 'lcm: 24 36 21 0', 'pos': (300, 545)},
+    {'key': 'c3', 'comment': True, 'text': 'lcm: 24 36 21 0', 'pos': (300, 350)},
 ]
 links = [('btn', '', 'mb', ''), ('btn', '', 'ma', ''),
          ('mb', 'message out', 'gc', 'tensor b in'),
          ('mb', 'message out', 'lc', 'tensor b in'),
-         ('ma', 'message out', 'to', 'in'),
-         ('to', 'tensor out', 'gc', 'tensor a in'),
-         ('to', 'tensor out', 'lc', 'tensor a in'),
+         ('ma', 'message out', 'gc', 'tensor a in'),
+         ('ma', 'message out', 'lc', 'tensor a in'),
          ('gc', 'gcd tensor out', 'l1', ''), ('lc', 'lcm tensor out', 'l2', '')]
 print(build('t.gcd', 't.gcd and t.lcm - whole numbers in common', body,
             demo, links, demo_width=560, text_width=790, text_height=620))

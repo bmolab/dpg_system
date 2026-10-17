@@ -485,7 +485,6 @@ class SubSampleNode(Node):
     def execute(self):
          if self.input.fresh_input:
             self.forced = False
-            self.active = True
             now = time.time()
             elapsed = now - self.last_time
             self.last_time = now
@@ -494,7 +493,12 @@ class SubSampleNode(Node):
             self.sample_count += 1
             if self.sample_count >= self.rate():
                 self.sample_count = 0
+                # sent now, so there is nothing for frame_task to flush
+                self.active = False
                 self.output.send(self.input())
+            else:
+                # held back: frame_task sends it if the input then goes quiet
+                self.active = True
 
             self.output_period = self.output_period * 0.9 + elapsed * 0.1
 
@@ -1339,7 +1343,10 @@ class StreamDataNode(Node):
         self.execute()
 
     def execute(self):
-        self.output.send(self.input())
+        # nothing to stream until a value has arrived
+        value = self.input()
+        if value is not None:
+            self.output.send(value)
 
 
 class TogEdgeNode(Node):

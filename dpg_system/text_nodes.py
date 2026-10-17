@@ -177,18 +177,10 @@ class WordReplaceNode(Node):
         find = self.find_input()
         replace = self.replace_input()
         if find != '':
-            if type(data) == list:
-                for i, w in enumerate(data):
-                    if type(w) == str:
-                        if w == find:
-                            data[i] = replace
+            # the string inlet has already turned a list into a string
+            if type(data) == str:
+                data = re.sub(r"\b{}\b".format(find), replace, data)
                 self.output.send(data)
-            elif type(data) == str:
-                if type(data) == str:
-                    data = re.sub(r"\b{}\b".format(find), replace, data)
-                    self.output.send(data)
-                else:
-                    self.output.send(data)
             else:
                 self.output.send(data)
         else:
@@ -219,6 +211,8 @@ class StringReplaceNode(Node):
         replace = self.replace_input()
         if find != '':
             if type(data) == list:
+                # work on a copy: other nodes may have been sent this same list
+                data = list(data)
                 for i, w in enumerate(data):
                     if type(w) == str:
                         w = re.sub(r"{}".format(find), replace, w)

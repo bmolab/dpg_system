@@ -1,11 +1,11 @@
 {
     "height": 741,
-    "width": 1585,
+    "width": 1523,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 755,
     "name": "t.gcd_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.gcd_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 747,
+            "position_x": 685,
             "position_y": 45,
             "width": 798,
             "height": 636,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Two number-theory nodes for whole-number tensors, element by element.\n\nTHE NODES:\n\nt.gcd   the greatest common divisor - the largest number that divides both\nt.lcm   the least common multiple - the smallest number both divide into\n\nTheir use in a patch is rhythmic more often than mathematical: the least common\nmultiple of two cycle lengths is how long it takes before they line up again,\nwhich is the length of the combined pattern. The greatest common divisor is the\nlargest step that lands on the beats of both.\n\nTHEY WANT INTEGER TENSORS - AND THE FIRST INLET WILL NOT MAKE ONE:\nThese are number theory, not arithmetic, and a float tensor is the wrong kind of\nthing to ask them about. The two inlets are treated differently:\n\n'tensor b in' converts whatever arrives - a list, a number, a tensor - to whole\nnumbers for you.\n\n'tensor a in' does not. A list or a number arriving there becomes a FLOAT\ntensor, and the node then fails with an error in the console and sends nothing.\nPut a t.to int64 in front of it, as the example does, unless what arrives is\nalready an integer tensor.\n\nA zero is allowed: the gcd of a number and 0 is the number itself, and the lcm\nof anything with 0 is 0.\n\nSYNTAX:\nt.gcd\nt.lcm\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, which must already be integers. Receiving it does the work.\n\ntensor b in:\nThe second tensor, or a single number applied everywhere. It is only stored\nwhen it arrives, so send it BEFORE tensor a.\n\nOUTPUTS:\n\ngcd tensor out / lcm tensor out:\nThe result, element by element, as whole numbers.",
+                    "value": "Two number-theory nodes for whole-number tensors, element by element.\n\nTHE NODES:\n\nt.gcd   the greatest common divisor - the largest number that divides both\nt.lcm   the least common multiple - the smallest number both divide into\n\nTheir use in a patch is rhythmic more often than mathematical: the least common\nmultiple of two cycle lengths is how long it takes before they line up again,\nwhich is the length of the combined pattern. The greatest common divisor is the\nlargest step that lands on the beats of both.\n\nTHEY WORK ON WHOLE NUMBERS:\nThese are number theory, not arithmetic. Both inlets turn whatever arrives - a\nlist, a number, a float or integer tensor - into whole numbers before the work\nis done, so a list of counts can go straight in.\n\nA value with a fractional part is rounded to the NEAREST whole number first:\n2.6 counts as 3, and 9.4 as 9. That keeps a value like 11.9999 that should have\nbeen 12 from quietly turning into 11. If you need a different rule (always\ndown, always up), put t.floor or t.ceil in front.\n\nA zero is allowed: the gcd of a number and 0 is the number itself, and the lcm\nof anything with 0 is 0.\n\nSYNTAX:\nt.gcd\nt.lcm\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, or a single number applied everywhere. It is only stored\nwhen it arrives, so send it BEFORE tensor a.\n\nOUTPUTS:\n\ngcd tensor out / lcm tensor out:\nThe result, element by element, as whole numbers.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Two number-theory nodes for whole-number tensors, element by element.\n\nTHE NODES:\n\nt.gcd   the greatest common divisor - the largest number that divides both\nt.lcm   the least common multiple - the smallest number both divide into\n\nTheir use in a patch is rhythmic more often than mathematical: the least common\nmultiple of two cycle lengths is how long it takes before they line up again,\nwhich is the length of the combined pattern. The greatest common divisor is the\nlargest step that lands on the beats of both.\n\nTHEY WANT INTEGER TENSORS - AND THE FIRST INLET WILL NOT MAKE ONE:\nThese are number theory, not arithmetic, and a float tensor is the wrong kind of\nthing to ask them about. The two inlets are treated differently:\n\n'tensor b in' converts whatever arrives - a list, a number, a tensor - to whole\nnumbers for you.\n\n'tensor a in' does not. A list or a number arriving there becomes a FLOAT\ntensor, and the node then fails with an error in the console and sends nothing.\nPut a t.to int64 in front of it, as the example does, unless what arrives is\nalready an integer tensor.\n\nA zero is allowed: the gcd of a number and 0 is the number itself, and the lcm\nof anything with 0 is 0.\n\nSYNTAX:\nt.gcd\nt.lcm\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, which must already be integers. Receiving it does the work.\n\ntensor b in:\nThe second tensor, or a single number applied everywhere. It is only stored\nwhen it arrives, so send it BEFORE tensor a.\n\nOUTPUTS:\n\ngcd tensor out / lcm tensor out:\nThe result, element by element, as whole numbers."
+            "text": "Two number-theory nodes for whole-number tensors, element by element.\n\nTHE NODES:\n\nt.gcd   the greatest common divisor - the largest number that divides both\nt.lcm   the least common multiple - the smallest number both divide into\n\nTheir use in a patch is rhythmic more often than mathematical: the least common\nmultiple of two cycle lengths is how long it takes before they line up again,\nwhich is the length of the combined pattern. The greatest common divisor is the\nlargest step that lands on the beats of both.\n\nTHEY WORK ON WHOLE NUMBERS:\nThese are number theory, not arithmetic. Both inlets turn whatever arrives - a\nlist, a number, a float or integer tensor - into whole numbers before the work\nis done, so a list of counts can go straight in.\n\nA value with a fractional part is rounded to the NEAREST whole number first:\n2.6 counts as 3, and 9.4 as 9. That keeps a value like 11.9999 that should have\nbeen 12 from quietly turning into 11. If you need a different rule (always\ndown, always up), put t.floor or t.ceil in front.\n\nA zero is allowed: the gcd of a number and 0 is the number itself, and the lcm\nof anything with 0 is 0.\n\nSYNTAX:\nt.gcd\nt.lcm\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, or a single number applied everywhere. It is only stored\nwhen it arrives, so send it BEFORE tensor a.\n\nOUTPUTS:\n\ngcd tensor out / lcm tensor out:\nThe result, element by element, as whole numbers."
         },
         "3": {
             "name": "button",
@@ -176,63 +176,10 @@
             "comment": "b goes first: it is only stored"
         },
         "7": {
-            "name": "t.to",
+            "name": "t.gcd",
             "id": 496,
             "position_x": 30,
             "position_y": 205,
-            "width": 163,
-            "height": 84,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.to int64"
-        },
-        "8": {
-            "name": "text_block",
-            "id": 533,
-            "annotation": true,
-            "position_x": 456,
-            "position_y": 335,
-            "width": 261,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "a list into tensor a would\nbecome floats - make it whole numbers",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "a list into tensor a would\nbecome floats - make it whole numbers"
-        },
-        "9": {
-            "name": "t.gcd",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 400,
             "width": 95,
             "height": 56,
             "visibility": "show_all",
@@ -240,11 +187,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "8": {
             "name": "list",
-            "id": 607,
+            "id": 533,
             "position_x": 30,
-            "position_y": 495,
+            "position_y": 300,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -263,12 +210,12 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "init": "comment gcd: 4 6 7 9",
             "name": "comment",
-            "id": 644,
+            "id": 570,
             "position_x": 456,
-            "position_y": 545,
+            "position_y": 350,
             "width": 82,
             "height": 30,
             "visibility": "show_all",
@@ -288,11 +235,11 @@
             },
             "comment": "gcd: 4 6 7 9"
         },
-        "12": {
+        "10": {
             "name": "t.lcm",
-            "id": 681,
+            "id": 607,
             "position_x": 300,
-            "position_y": 400,
+            "position_y": 205,
             "width": 95,
             "height": 56,
             "visibility": "show_all",
@@ -300,11 +247,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
+        "11": {
             "name": "list",
-            "id": 718,
+            "id": 644,
             "position_x": 300,
-            "position_y": 495,
+            "position_y": 300,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -323,12 +270,12 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "init": "comment lcm: 24 36 21 0",
             "name": "comment",
-            "id": 755,
+            "id": 681,
             "position_x": 456,
-            "position_y": 585,
+            "position_y": 390,
             "width": 101,
             "height": 30,
             "visibility": "show_all",
@@ -348,11 +295,11 @@
             },
             "comment": "lcm: 24 36 21 0"
         },
-        "15": {
+        "13": {
             "name": "close",
-            "id": 792,
+            "id": 718,
             "position_x": 24,
-            "position_y": 567,
+            "position_y": 372,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -393,7 +340,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 570,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor b in"
@@ -403,7 +350,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 681,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor b in"
@@ -416,14 +363,14 @@
             "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "in"
+            "dest_input_name": "tensor a in"
         },
         "5": {
-            "source_node": 496,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "tensor out",
-            "dest_node": 570,
+            "source_output_name": "message out",
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor a in"
@@ -432,28 +379,18 @@
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "tensor out",
-            "dest_node": 681,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor a in"
-        },
-        "7": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "gcd tensor out",
-            "dest_node": 607,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "8": {
-            "source_node": 681,
+        "7": {
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "lcm tensor out",
-            "dest_node": 718,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

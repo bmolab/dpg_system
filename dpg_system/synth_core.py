@@ -921,7 +921,7 @@ class OneEuroUnit(Unit):
     sample: at rest the cutoff drops to 'min cutoff' and the signal settles
     hard, and as it starts moving the cutoff opens in proportion to its speed,
     so the lag falls away exactly when it would have been noticed. It was
-    designed for interactive motion data (Casiello and Roussel, CHI 2012),
+    designed for interactive motion data (Casiez, Roussel and Vogel, CHI 2012),
     which is what effort data is.
 
     Two controls, and they do separate jobs. 'min cutoff' is how still a

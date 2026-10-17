@@ -1,6 +1,6 @@
 {
     "height": 721,
-    "width": 1455,
+    "width": 1478,
     "position": [
         100,
         100
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 617,
+            "position_x": 640,
             "position_y": 45,
             "width": 798,
             "height": 616,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "stream resends the most recent value it received, on every frame.\n\nIt turns an event into a continuous supply. Something upstream that only\nspeaks when it changes - a slider, a message, a value that arrives now and\nthen - becomes a steady stream at the frame rate, about 60 times a second.\nYou use it when something downstream needs to be fed continuously.\n\nIt does not change the value. Arriving at 'input' does not send anything by\nitself; the value is stored and goes out on the next frame, and every frame\nafter, until a new value replaces it.\n\nIT RUNS FROM THE START:\nIt fires on every frame from the moment it exists, before any value has\narrived. Nodes after it see a trigger with no new value; most ignore that,\nbut one that reacts to any trigger - a counter, say - starts counting at once.\n\nSYNTAX:\nstream\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to repeat. It does not trigger anything.\n\nstream:\nWhen checked the node repeats on every frame. Unchecked, it stops entirely -\nit does not pass values through either. On by default.\n\nOUTPUTS:\n\nout:\nThe most recent value, every frame.\n\nRELATED:\nsubsample does the opposite job: it thins a fast stream down.\ntick fires every frame without carrying a value.",
+                    "value": "stream resends the most recent value it received, on every frame.\n\nIt turns an event into a continuous supply. Something upstream that only\nspeaks when it changes - a slider, a message, a value that arrives now and\nthen - becomes a steady stream at the frame rate, about 60 times a second.\nYou use it when something downstream needs to be fed continuously.\n\nIt does not change the value. Arriving at 'input' does not send anything by\nitself; the value is stored and goes out on the next frame, and every frame\nafter, until a new value replaces it.\n\nUntil the first value arrives it sends nothing at all.\n\nSYNTAX:\nstream\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to repeat. It does not trigger anything.\n\nstream:\nWhen checked the node repeats on every frame. Unchecked, it stops entirely -\nit does not pass values through either. On by default.\n\nOUTPUTS:\n\nout:\nThe most recent value, every frame.\n\nRELATED:\nsubsample does the opposite job: it thins a fast stream down.\ntick fires every frame without carrying a value.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "stream resends the most recent value it received, on every frame.\n\nIt turns an event into a continuous supply. Something upstream that only\nspeaks when it changes - a slider, a message, a value that arrives now and\nthen - becomes a steady stream at the frame rate, about 60 times a second.\nYou use it when something downstream needs to be fed continuously.\n\nIt does not change the value. Arriving at 'input' does not send anything by\nitself; the value is stored and goes out on the next frame, and every frame\nafter, until a new value replaces it.\n\nIT RUNS FROM THE START:\nIt fires on every frame from the moment it exists, before any value has\narrived. Nodes after it see a trigger with no new value; most ignore that,\nbut one that reacts to any trigger - a counter, say - starts counting at once.\n\nSYNTAX:\nstream\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to repeat. It does not trigger anything.\n\nstream:\nWhen checked the node repeats on every frame. Unchecked, it stops entirely -\nit does not pass values through either. On by default.\n\nOUTPUTS:\n\nout:\nThe most recent value, every frame.\n\nRELATED:\nsubsample does the opposite job: it thins a fast stream down.\ntick fires every frame without carrying a value."
+            "text": "stream resends the most recent value it received, on every frame.\n\nIt turns an event into a continuous supply. Something upstream that only\nspeaks when it changes - a slider, a message, a value that arrives now and\nthen - becomes a steady stream at the frame rate, about 60 times a second.\nYou use it when something downstream needs to be fed continuously.\n\nIt does not change the value. Arriving at 'input' does not send anything by\nitself; the value is stored and goes out on the next frame, and every frame\nafter, until a new value replaces it.\n\nUntil the first value arrives it sends nothing at all.\n\nSYNTAX:\nstream\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value to repeat. It does not trigger anything.\n\nstream:\nWhen checked the node repeats on every frame. Unchecked, it stops entirely -\nit does not pass values through either. On by default.\n\nOUTPUTS:\n\nout:\nThe most recent value, every frame.\n\nRELATED:\nsubsample does the opposite job: it thins a fast stream down.\ntick fires every frame without carrying a value."
         },
         "3": {
             "name": "float",
@@ -121,12 +121,12 @@
             }
         },
         "4": {
-            "init": "comment drag this now and then",
+            "init": "comment drag this - nothing streams until you do",
             "name": "comment",
             "id": 385,
             "position_x": 356,
             "position_y": 112,
-            "width": 144,
+            "width": 254,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -134,7 +134,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "drag this now and then",
+                    "value": "drag this - nothing streams until you do",
                     "value_type": "str"
                 },
                 "1": {
@@ -143,7 +143,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "drag this now and then"
+            "comment": "drag this - nothing streams until you do"
         },
         "5": {
             "name": "stream",

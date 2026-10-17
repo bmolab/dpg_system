@@ -492,11 +492,14 @@ At exactly 0 the answer is minus infinity, and at exactly 1 it is plus infinity.
 'eps' clamps the input to between eps and 1 minus eps first, so the ends come
 out as large finite numbers instead.
 
-THE DEFAULT eps IS TOO SMALL FOR THE TOP END:
-eps starts at 0.00000001. Tensors here are ordinary 32-bit floats, and in those
-1 minus 0.00000001 rounds back to exactly 1 - so a probability of 1 still comes
-out as infinity. The bottom end is protected (0 gives about -18.4). To keep both
-ends finite, set eps to 0.000001 or larger; the example shows both settings.
+eps starts at 0.000001, which holds 0 and 1 to about -13.8 and +13.8. A larger
+eps pulls the ends in further (0.001 gives about -6.9 and +6.9); the example
+shows both.
+
+Do not set it much smaller. Tensors here are ordinary 32-bit floats, and in
+those 1 minus anything below about 0.0000001 rounds back to exactly 1 - so the
+top end is no longer protected and a probability of 1 comes out as infinity
+again, even though the bottom end still looks fine.
 
 SYNTAX:
 t.special.logits
@@ -508,7 +511,7 @@ The probabilities, 0 to 1. Receiving them does the work. Values outside 0..1
 are clamped by eps too, so they come out at the ends rather than as errors.
 
 eps:
-How far from 0 and 1 to hold the input. Default 0.00000001.
+How far from 0 and 1 to hold the input. Default 0.000001.
 
 OUTPUTS:
 
@@ -525,13 +528,13 @@ demo = [
     {'key': 'lg', 'init': 't.special.logits', 'pos': (30, 205), 'w': 220, 'h': 90},
     {'key': 'l1', 'init': 'list', 'pos': (30, 310), 'w': 360, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c1', 'comment': True, 'text': 'default eps: the 1.0 still comes out as inf',
+    {'key': 'c1', 'comment': True, 'text': 'default eps 0.000001: 0 and 1 give -13.8 and 13.8',
      'pos': (30, 360)},
     {'key': 'lg2', 'init': 't.special.logits', 'pos': (30, 420), 'w': 220, 'h': 90,
-     'props': {'eps': 0.000001}},
+     'props': {'eps': 0.001}},
     {'key': 'l2', 'init': 'list', 'pos': (30, 525), 'w': 360, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c2', 'comment': True, 'text': 'eps 0.000001: both ends finite',
+    {'key': 'c2', 'comment': True, 'text': 'eps 0.001: the ends pulled in to -6.9 and 6.9',
      'pos': (30, 575)},
 ]
 links = [('btn', '', 'm1', ''),
