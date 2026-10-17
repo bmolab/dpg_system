@@ -223,91 +223,10 @@ print(build('comparison', 'comparison - test a value, report true or false', bod
             demo, links, demo_width=445, text_width=790, text_height=620))
 
 
-# ---------------------------------------------------------------------- change
-body = """These nodes act as gates that let a value through only when it passes a test. 
-Unlike the comparison nodes, what comes out is the value itself, not true or false.
+# change, increasing, decreasing and pass are no longer generated here:
+# increasing_help.json is laid out by hand, and derive_gate_help.py copies its
+# layout into the other three. Regenerating them here would undo that.
 
-change, increasing and decreasing all compare the incoming value against the 
-PREVIOUS one. They are filters on a stream: they suppress the frames where 
-nothing interesting happened, and pass the ones where something did.
-
-pass is the same machinery with the test switched off, so everything goes through. 
-On its own it is a patch-cord tidy; given arguments it becomes a gate with 
-whatever comparison you choose.
-
-THE NODES:
-
-change       passes a value only when it differs from the one before it
-increasing   passes a value only when it is larger than the one before it
-decreasing   passes a value only when it is smaller than the one before it
-pass         passes everything, unless you give it a comparison to apply
-
-You use change to stop a slow part of the patch being retriggered by a stream 
-that is repeating the same number, and increasing or decreasing to catch the 
-moment a reading starts to move one way.
-
-SYNTAX:
-change
-pass <comparison> <operand: int or float>
-
-EXAMPLE:
-change
-pass >= 0.5
-
-INPUTS and PARAMETERS:
-
-in:
-The value to be tested and possibly passed on. Receiving data here triggers the node.
-
-comparison_property:
-The test to apply, chosen from a menu: !=, ==, >, >=, <, <= or always. 
-change, increasing and decreasing set this for you; you can still change it by hand.
-
-operand_property:
-The value being compared against. 
-While self_compare is checked this is filled in automatically after each value 
-arrives, and shows you what the node will compare against next.
-
-self_compare:
-When checked, the node compares each value against the previous one - this is 
-what makes change, increasing and decreasing behave the way their names suggest. 
-When unchecked, it compares against a fixed operand you set yourself, 
-turning the node into a threshold gate.
-
-force_int:
-When checked, values are rounded to whole numbers before being compared. 
-Useful when a noisy float stream would otherwise register as "changed" on every frame. 
-It affects only the comparison - what comes out is the unrounded value.
-
-OUTPUTS: 
-
-result:
-The input value, unchanged, on the occasions when the test succeeds. 
-When the test fails, nothing at all is sent. 
-
-For arrays and tensors the test passes if ANY element satisfies it, 
-and the whole array is then sent."""
-
-demo = starter() + [
-    {'key': 'sig', 'init': 'signal', 'pos': (30, 132), 'w': 129, 'h': 78,
-     'props': SIG('saw', 4.0, 5.0, False)},
-    {'key': 'fl', 'init': 'floor', 'pos': (30, 232), 'w': 100, 'h': 50},
-    {'key': 'c0', 'comment': True, 'text': 'a staircase - the same number for many frames',
-     'pos': (30, 290)},
-    {'key': 'i0', 'init': 'int', 'pos': (215, 235), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'ch', 'init': 'change', 'pos': (30, 330), 'w': 120, 'h': 100,
-     'props': {'self_compare': True, 'force_int': False}},
-    {'key': 'cnt', 'init': 'counter', 'pos': (215, 335), 'w': 123, 'h': 84,
-     'props': {'step': 1}},
-    {'key': 'i1', 'init': 'int', 'pos': (215, 430), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c1', 'comment': True, 'text': 'counts steps, not frames', 'pos': (30, 442)},
-]
-links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
-         ('sig', '', 'fl', 'in'), ('fl', 'result', 'i0', ''),
-         ('fl', 'result', 'ch', 'in'), ('ch', 'result', 'cnt', 'input'),
-         ('cnt', 'count out', 'i1', '')]
-print(build('change', 'change - pass a value on only when it has moved', body,
-            demo, links, demo_width=380, text_width=800, text_height=690))
 
 # ------------------------------------------------------------------- crossfade
 body = """The crossfade node blends smoothly between two inputs.

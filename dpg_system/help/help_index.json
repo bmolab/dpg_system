@@ -382,10 +382,7 @@
     "np.ceil"
   ],
   "change": [
-    "change",
-    "decreasing",
-    "increasing",
-    "pass"
+    "change"
   ],
   "combination": [
     "combination"
@@ -399,6 +396,9 @@
   "crossfade": [
     "crossfade",
     "lerp"
+  ],
+  "decreasing": [
+    "decreasing"
   ],
   "divide": [
     "/"
@@ -421,6 +421,9 @@
   ],
   "greater_equal": [
     ">="
+  ],
+  "increasing": [
+    "increasing"
   ],
   "inverse": [
     "inverse"
@@ -455,6 +458,9 @@
   ],
   "not_equal": [
     "!="
+  ],
+  "pass": [
+    "pass"
   ],
   "perm": [
     "perm"

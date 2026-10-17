@@ -127,6 +127,29 @@ check('== [1, 2, 3] <- [1, 0, 3]  list operand', feed(_m, [1, 0, 3]), [True, Fal
 check('== [1, 2, 3] <- 2   number input', feed(_m, 2), [False, True, False])
 
 # ---------------------------------------------------------------------------
+print("\nchange / increasing / decreasing / pass: the gates")
+# increasing and decreasing compared the first value with None, which raised
+# before the value was remembered, so they failed on every value forever.
+# The input was conformed to the previous value's type, so after an int 0.4
+# went out as 0. 'pass >= 0.5' read its operand from the wrong argument (and
+# unpacked decode_arg backwards), so it was None and every test raised.
+def _passed(init, seq):
+    _n, _out = make(init), []
+    _orig = _n.output.send
+    _n.output.send = lambda v, *a, **k: (_out.append(v), _orig(v, *a, **k))[1]
+    for _v in seq:
+        _n.input.receive_data(_v)
+        _n.execute()
+    return _out
+_seq = [1, 3, 3, 2, 0.4, 0.6, 5]
+check('change     ' + repr(_seq), _passed('change', _seq), [1, 3, 2, 0.4, 0.6, 5])
+check('increasing ' + repr(_seq), _passed('increasing', _seq), [3, 0.6, 5])
+check('decreasing ' + repr(_seq), _passed('decreasing', _seq), [2, 0.4])
+check('pass       ' + repr(_seq), _passed('pass', _seq), _seq)
+check('pass >= 0.5 ' + repr(_seq), _passed('pass >= 0.5', _seq), [1, 3, 3, 2, 0.6, 5])
+check('pass > 2   ' + repr(_seq), _passed('pass > 2', _seq), [3, 3, 5])
+
+# ---------------------------------------------------------------------------
 print("\nOpSingleNode: a list goes through element by element")
 # any_to_float kept only a list's first number, so 'abs' of [-3, 4] sent 3.0
 # and norm of [3, 4] sent 1.0.

@@ -1,0 +1,579 @@
+{
+    "height": 916,
+    "width": 1529,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1424,
+    "name": "increasing_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1452,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment increasing - pass a value on only when it has risen",
+            "name": "comment",
+            "id": 1470,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 635,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "increasing - pass a value on only when it has risen",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "increasing - pass a value on only when it has risen"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 1481,
+            "sid": 3,
+            "position_x": 681,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "increasing passes a value on only when it is LARGER than the one before it.\n\n1, 3, 3, 2, 5 comes out as 3, 5: 3 rose from 1, the second 3\ndid not rise, 2 fell, and 5 rose. What comes out is the value itself, not true\nor false. The first value never passes: with nothing before it, it has not\nrisen. Every value is remembered whether or not it passes, so each is\ncompared with the one just before it, not with the last one sent.\n\nIn the demo, a sine wave goes through increasing. Only the rising half of each wave\ngets through, and the plot joins those halves end to end into a sawtooth that\nonly climbs. Below it, drag the number up and the second box follows;\ndrag it the other way and the second box stays where it was.\n\nUse it to catch a reading on its way up and ignore it on the way down: a hand\nbeing raised, a sound swelling, a counter moving forward.\n\nSYNTAX:\nincreasing\n\nEXAMPLE:\nincreasing\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to be tested, and passed on if it succeeds. Receiving data here\ntriggers the node.\n\ncomparison (the first menu under the node):\nThe test: !=, ==, >, >=, <, <= or always. The node's name sets it (> here);\nyou can change it by hand, which turns this node into any of its siblings.\n\noperand (under the menu):\nWhat the value is compared with. While self_compare is checked this is the\nprevious value, filled in after each one arrives - it shows what the next value\nwill be compared with.\n\nself_compare:\nChecked (the default for this node): compare each value with the one before it.\nUnchecked: compare with a fixed operand you set yourself, making a threshold gate.\n\nforce_int:\nWhen checked, both sides are rounded to whole numbers before the comparison. It\naffects only the test - what comes out is the value as it arrived.\n\nOUTPUTS:\n\nresult:\nThe input, unchanged, whenever it is larger than the value before it.\nOtherwise nothing at all is sent.\n\nNOISE:\nA noisy stream rises on about half its frames even when nothing is really\nhappening. Smooth it first (filter, one_euro_filter), or check force_int, so only\nreal movement gets through.\n\nARRAYS AND TENSORS:\nThe test passes if ANY element passes it, and then the whole array is sent.\n\nSEE ALSO:\ndecreasing    the opposite direction\nchange        any change at all\npass          a gate with a fixed threshold\ndiff          how much each value differs from the one before",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "increasing passes a value on only when it is LARGER than the one before it.\n\n1, 3, 3, 2, 5 comes out as 3, 5: 3 rose from 1, the second 3\ndid not rise, 2 fell, and 5 rose. What comes out is the value itself, not true\nor false. The first value never passes: with nothing before it, it has not\nrisen. Every value is remembered whether or not it passes, so each is\ncompared with the one just before it, not with the last one sent.\n\nIn the demo, a sine wave goes through increasing. Only the rising half of each wave\ngets through, and the plot joins those halves end to end into a sawtooth that\nonly climbs. Below it, drag the number up and the second box follows;\ndrag it the other way and the second box stays where it was.\n\nUse it to catch a reading on its way up and ignore it on the way down: a hand\nbeing raised, a sound swelling, a counter moving forward.\n\nSYNTAX:\nincreasing\n\nEXAMPLE:\nincreasing\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to be tested, and passed on if it succeeds. Receiving data here\ntriggers the node.\n\ncomparison (the first menu under the node):\nThe test: !=, ==, >, >=, <, <= or always. The node's name sets it (> here);\nyou can change it by hand, which turns this node into any of its siblings.\n\noperand (under the menu):\nWhat the value is compared with. While self_compare is checked this is the\nprevious value, filled in after each one arrives - it shows what the next value\nwill be compared with.\n\nself_compare:\nChecked (the default for this node): compare each value with the one before it.\nUnchecked: compare with a fixed operand you set yourself, making a threshold gate.\n\nforce_int:\nWhen checked, both sides are rounded to whole numbers before the comparison. It\naffects only the test - what comes out is the value as it arrived.\n\nOUTPUTS:\n\nresult:\nThe input, unchanged, whenever it is larger than the value before it.\nOtherwise nothing at all is sent.\n\nNOISE:\nA noisy stream rises on about half its frames even when nothing is really\nhappening. Smooth it first (filter, one_euro_filter), or check force_int, so only\nreal movement gets through.\n\nARRAYS AND TENSORS:\nThe test passes if ANY element passes it, and then the whole array is sent.\n\nSEE ALSO:\ndecreasing    the opposite direction\nchange        any change at all\npass          a gate with a fixed threshold\ndiff          how much each value differs from the one before"
+        },
+        "3": {
+            "name": "signal",
+            "id": 1515,
+            "sid": 6,
+            "position_x": 34,
+            "position_y": 80,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 3.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "plot",
+            "id": 1537,
+            "sid": 7,
+            "position_x": 204,
+            "position_y": 76,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2000000476837158,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2000000476837158,
+                    "value_type": "float"
+                }
+            }
+        },
+        "5": {
+            "name": "increasing",
+            "id": 1588,
+            "sid": 8,
+            "position_x": 44,
+            "position_y": 290,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "comparison_property",
+                    "value": ">",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "operand_property",
+                    "value": -0.725809633731842,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "self_compare",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "force_int",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "plot",
+            "id": 1607,
+            "sid": 9,
+            "position_x": 204,
+            "position_y": 304,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.2000000476837158,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.2000000476837158,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "init": "comment only the rising halves get through",
+            "name": "comment",
+            "id": 1653,
+            "sid": 10,
+            "position_x": 205,
+            "position_y": 270,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "only the rising sections get through",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "only the rising sections get through"
+        },
+        "8": {
+            "name": "float",
+            "id": 1664,
+            "sid": 11,
+            "position_x": 30,
+            "position_y": 558,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.8999999761581421,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "9": {
+            "init": "comment drag this up, then the other way",
+            "name": "comment",
+            "id": 1700,
+            "sid": 12,
+            "position_x": 15,
+            "position_y": 523,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag this up, then the other way",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "drag this up, then the other way"
+        },
+        "10": {
+            "name": "increasing",
+            "id": 1711,
+            "sid": 13,
+            "position_x": 185,
+            "position_y": 559,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "comparison_property",
+                    "value": ">",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "operand_property",
+                    "value": 0.8999999761581421,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "self_compare",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "3": {
+                    "name": "force_int",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "name": "float",
+            "id": 1730,
+            "sid": 14,
+            "position_x": 280,
+            "position_y": 564,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 1.4299999475479126,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "12": {
+            "name": "close",
+            "id": 1763,
+            "sid": 15,
+            "position_x": 24,
+            "position_y": 812,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1515,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1537,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "1": {
+            "source_node": 1515,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1588,
+            "dest_node_name": "increasing",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 1588,
+            "source_node_name": "increasing",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1607,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 1664,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 1711,
+            "dest_node_name": "increasing",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 1711,
+            "source_node_name": "increasing",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1730,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

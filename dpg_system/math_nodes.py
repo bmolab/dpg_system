@@ -407,9 +407,11 @@ class ComparisonAndPassNode(Node):
             else:
                 self_compare = True
         else:
-            if len(args) > 2:
-                t, self.operand = decode_arg(args, 2)
-                # self.operand = self.arg_as_number(default_value=0.0, index=2)
+            # 'pass >= 0.5': the comparison, then the operand. (This read
+            # args[2], and unpacked decode_arg's (value, type) the wrong way
+            # round, so the operand was always None and every test raised.)
+            if len(args) > 1:
+                self.operand, t = decode_arg(args, 1)
             else:
                 self_compare = True
 
@@ -427,8 +429,8 @@ class ComparisonAndPassNode(Node):
             self.comparison_property.widget.combo_items = list(self.operations)
             self.operand_property = self.add_input('###operand_property', widget_type='drag_float', default_value=self.operand,
                                                 callback=self.operand_changed)
-            self.self_compare_property = self.add_property('self_compare', widget_type='checkbox')
-            self.force_int_property = self.add_property('force_int', widget_type='checkbox')
+            self.self_compare_property = self.add_property('self_compare', widget_type='checkbox', default_value=self_compare)
+            self.force_int_property = self.add_property('force_int', widget_type='checkbox', default_value=force_int)
 
         self.output = self.add_output('result')
 
@@ -447,47 +449,62 @@ class ComparisonAndPassNode(Node):
             self.operand = self.operand_property()
 
         input_value = self.input()
+        # The test may need the input in the operand's type, but what is sent
+        # is always the input as it arrived. (Conforming the input itself
+        # turned 0.4 into 0 once an int had gone by - change, increasing and
+        # pass all sent the rounded value.) Two plain numbers compare fine as
+        # they are.
+        numbers = (int, float, bool, np.number, np.bool_)
+        test_value = input_value
         if self.operand is not None:
-            input_value = conform_type(input_value, self.operand)
+            if not (isinstance(input_value, numbers) and isinstance(self.operand, numbers)):
+                test_value = conform_type(input_value, self.operand)
         else:
-            if not isinstance(input_value, (int, float, bool, np.number, np.bool_)):
+            if not isinstance(input_value, numbers):
                 self.force_int_property.set(False)
-        # input_value = any_to_numerical(self.input())
 
-        if type(input_value) == np.ndarray:
+        if type(test_value) == np.ndarray:
             if type(self.operand) != np.ndarray:
-                self.operand = np.zeros_like(input_value)
-                self.operand_property.set(input_value)
+                self.operand = np.zeros_like(test_value)
+                self.operand_property.set(test_value)
             if self.force_int_property():
-                input_value = input_value.round()
+                test_value = test_value.round()
                 op = self.operand.round()
             else:
                 op = self.operand
-            output_value = self.operations[self.operation](input_value, op)
+            output_value = self.operations[self.operation](test_value, op)
             if output_value.any():
                 self.output.send(input_value)
-        elif self.app.torch_available and type(input_value) == torch.Tensor:
+        elif self.app.torch_available and type(test_value) == torch.Tensor:
             if type(self.operand) != torch.Tensor:
-                self.operand = torch.zeros_like(input_value)
-                self.operand_property.set(input_value)
+                self.operand = torch.zeros_like(test_value)
+                self.operand_property.set(test_value)
             if self.force_int_property():
-                input_value = input_value.round()
+                test_value = test_value.round()
                 op = self.operand.round()
             else:
                 op = self.operand
-            output_value = self.operations[self.operation](input_value, op)
+            output_value = self.operations[self.operation](test_value, op)
             if output_value.any():
                 self.output.send(input_value)
         else:
             if type(self.operand) == np.ndarray:
                 self.operand = 0
-            if self.force_int_property():
-                input_value = any_to_int(input_value)
-                op = any_to_int(self.operand)
+            if self.operand is None:
+                # Nothing to compare against yet (the first value into a
+                # self-comparing node). Comparing with None raised for > and <,
+                # before the value was remembered, so increasing and decreasing
+                # failed on every value forever. A first value counts as a
+                # change, but not as a rise or a fall.
+                passed = self.operation in ('!=', 'always')
             else:
-                op = self.operand
-            output_value = self.operations[self.operation](input_value, op)
-            if output_value:
+                if self.force_int_property():
+                    test_value = any_to_int(test_value)
+                    op = any_to_int(self.operand)
+                else:
+                    op = self.operand
+                passed = self.operations[self.operation](test_value, op)
+            if passed:
                 self.output.send(input_value)
         if self.self_compare_property():
             self.operand = input_value
