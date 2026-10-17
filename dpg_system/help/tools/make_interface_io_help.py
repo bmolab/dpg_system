@@ -59,7 +59,7 @@ demo = [
      'props': {'step': 1}},
     {'key': 'pr', 'init': 'print count', 'pos': (30, 290), 'w': 170, 'h': 120,
      'props': {'identifier': 'count', 'precision': 3, 'end': '\\n'}},
-    {'key': 'c0', 'comment': True, 'text': 'switch it on, then watch the console\nnothing appears in the patch itself\nalways give it an identifier',
+    {'key': 'c0', 'comment': True, 'text': "check the metro's on, then watch the console\nnothing appears in the patch itself\nalways give it an identifier",
      'pos': (30, 425)},
 ]
 links = [('tog', '', 'met', 'on'), ('met', '', 'cnt', 'input'),
@@ -127,7 +127,7 @@ demo = [
     {'key': 'td', 'init': 'text_display', 'pos': (30, 370), 'w': 320, 'h': 220,
      'props': {'width': 300, 'height': 180, 'wrap': True, 'max_lines': 100,
                'autoscroll': True, 'font size': '24'}},
-    {'key': 'c0', 'comment': True, 'text': 'switch on: lines pile up and scroll\nuntick autoscroll to read back',
+    {'key': 'c0', 'comment': True, 'text': "check the metro's on: lines pile up and scroll\nuntick autoscroll to read back",
      'pos': (30, 605)},
 ]
 links = [('tog', '', 'met', 'on'), ('met', '', 'cnt', 'input'),

@@ -93,22 +93,10 @@
             "text": "The print node writes whatever it receives to the console.\n\nIt is the first thing to reach for when a patch is not doing what you expect. \nWire it in beside whatever you are unsure of and you can see the actual values \ngoing past, rather than inferring them from what happens downstream.\n\nThe output goes to the terminal the patch was launched from, not into the patch \nitself. If you started it from an application icon rather than a terminal, \nyou will not see anything - which is the usual reason a print appears to do \nnothing.\n\nSYNTAX:\nprint <identifier>\n\nEXAMPLE:\nprint incoming\n\nINPUTS and PARAMETERS:\n\nin:\nAnything at all. It is printed as it arrives.\n\nidentifier:\nA label printed before the value. Give every print node one as soon as you have \nmore than a couple - unlabelled output from three prints at once is unreadable, \nand naming them costs nothing.\n\nprecision:\nHow many decimal places to show for floating point numbers. \nRaise it when you are trying to see whether something is really zero, \nor really constant.\n\nend:\nWhat is printed after each value. A newline by default. \nSet it to a space and successive values run along one line, which is much \neasier to scan when you are watching a fast stream.\n\nOUTPUTS: \n\nNone. This node is a dead end by design.\n\nRELATED:\ninfo and type report what KIND of thing something is, rather than its value - \nwhich is often the actual question when a node is refusing data. \nstart_trace and end_trace report which nodes execute, and in what order."
         },
         "3": {
-            "name": "toggle",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
             "name": "metro",
             "id": 385,
             "position_x": 30,
-            "position_y": 112,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -133,11 +121,11 @@
             },
             "init": "metro 500"
         },
-        "5": {
+        "4": {
             "name": "counter",
             "id": 422,
             "position_x": 30,
-            "position_y": 192,
+            "position_y": 132,
             "width": 123,
             "height": 84,
             "visibility": "show_all",
@@ -151,11 +139,11 @@
                 }
             }
         },
-        "6": {
+        "5": {
             "name": "print",
             "id": 459,
             "position_x": 30,
-            "position_y": 290,
+            "position_y": 230,
             "width": 39,
             "height": 28,
             "visibility": "show_all",
@@ -180,13 +168,13 @@
             },
             "init": "print count"
         },
-        "7": {
+        "6": {
             "name": "text_block",
             "id": 496,
             "annotation": true,
-            "position_x": 185,
-            "position_y": 425,
-            "width": 255,
+            "position_x": 155,
+            "position_y": 365,
+            "width": 305,
             "height": 52,
             "visibility": "show_all",
             "draggable": true,
@@ -194,8 +182,8 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "switch it on, then watch the console\nnothing appears in the patch itself\nalways give it an identifier",
-                    "value_type": "str"
+                    "value": "check the metro's on, then watch the console\nnothing appears in the patch itself\nalways give it an identifier",
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "lock",
@@ -204,7 +192,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 247,
+                    "value": 297,
                     "value_type": "int"
                 },
                 "3": {
@@ -218,13 +206,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "switch it on, then watch the console\nnothing appears in the patch itself\nalways give it an identifier"
+            "text": "check the metro's on, then watch the console\nnothing appears in the patch itself\nalways give it an identifier"
         },
-        "8": {
+        "7": {
             "name": "close",
             "id": 533,
             "position_x": 24,
-            "position_y": 348,
+            "position_y": 288,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -241,16 +229,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "1": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
@@ -260,7 +238,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "2": {
+        "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,

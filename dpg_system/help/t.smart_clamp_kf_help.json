@@ -96,7 +96,7 @@
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 74,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -137,11 +137,11 @@
             "init": "signal 3.0 sin"
         },
         "4": {
-            "name": "toggle",
-            "id": 459,
+            "name": "tick",
+            "id": 496,
             "position_x": 200,
-            "position_y": 62,
-            "width": 45,
+            "position_y": 52,
+            "width": 33,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -155,39 +155,10 @@
             }
         },
         "5": {
-            "name": "metro",
-            "id": 496,
-            "position_x": 200,
-            "position_y": 110,
-            "width": 129,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "on",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "1": {
-                    "name": "period",
-                    "value": 16.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "units",
-                    "value": "milliseconds",
-                    "value_type": "str"
-                }
-            },
-            "init": "metro 16"
-        },
-        "6": {
             "name": "random.gauss",
             "id": 533,
             "position_x": 200,
-            "position_y": 190,
+            "position_y": 132,
             "width": 117,
             "height": 70,
             "visibility": "show_all",
@@ -196,11 +167,11 @@
             "properties": {},
             "init": "random.gauss 0.0 0.3"
         },
-        "7": {
+        "6": {
             "name": "+",
             "id": 570,
             "position_x": 30,
-            "position_y": 232,
+            "position_y": 174,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -215,12 +186,12 @@
             },
             "init": "+ 0.0"
         },
-        "8": {
+        "7": {
             "init": "comment a clean wave with occasional spikes",
             "name": "comment",
             "id": 607,
             "position_x": 355,
-            "position_y": 310,
+            "position_y": 252,
             "width": 224,
             "height": 30,
             "visibility": "show_all",
@@ -240,11 +211,11 @@
             },
             "comment": "a clean wave with occasional spikes"
         },
-        "9": {
+        "8": {
             "name": "plot",
             "id": 644,
             "position_x": 30,
-            "position_y": 350,
+            "position_y": 292,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -303,11 +274,11 @@
                 }
             }
         },
-        "10": {
+        "9": {
             "name": "t.smart_clamp_kf",
             "id": 681,
             "position_x": 30,
-            "position_y": 545,
+            "position_y": 487,
             "width": 209,
             "height": 154,
             "visibility": "show_all",
@@ -315,11 +286,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "10": {
             "name": "plot",
             "id": 718,
             "position_x": 30,
-            "position_y": 785,
+            "position_y": 727,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -378,12 +349,12 @@
                 }
             }
         },
-        "12": {
+        "11": {
             "name": "text_block",
             "id": 755,
             "annotation": true,
             "position_x": 355,
-            "position_y": 970,
+            "position_y": 912,
             "width": 286,
             "height": 40,
             "visibility": "show_all",
@@ -418,11 +389,11 @@
             },
             "text": "the spike cannot move it far in one frame\nbut a run of large steps still tracks"
         },
-        "13": {
+        "12": {
             "name": "close",
             "id": 792,
             "position_x": 24,
-            "position_y": 993,
+            "position_y": 935,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -439,18 +410,8 @@
     },
     "links": {
         "0": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "1": {
             "source_node": 496,
-            "source_node_name": "",
+            "source_node_name": "tick",
             "source_output_index": 0,
             "source_output_name": "",
             "dest_node": 533,
@@ -458,7 +419,7 @@
             "dest_input_index": 0,
             "dest_input_name": "trigger"
         },
-        "2": {
+        "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -468,7 +429,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "2": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
@@ -478,7 +439,7 @@
             "dest_input_index": 0,
             "dest_input_name": "operand"
         },
-        "4": {
+        "3": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
@@ -488,7 +449,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "5": {
+        "4": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
@@ -498,7 +459,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "6": {
+        "5": {
             "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,

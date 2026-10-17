@@ -93,22 +93,10 @@
             "text": "These collect a stream of tensors over time into one tensor.\n\nA stream gives you one value per frame, and most of what you want to ask needs\nseveral - an average, a spectrum, a trend, a picture of the recent past.\nThese hold that history.\n\nTHE NODES:\n\nt.buffer          collect samples in one of several ways\nt.rolling_buffer  keep the last N, always\n\nt.rolling_buffer IS THE ONE YOU USUALLY WANT:\nFeed it a value or a small tensor each frame and it hands back the last N of\nthem stacked together. That is what turns a stream into something the\nstatistics, filter and analysis nodes can work on - almost anything you want to\nknow about \"the recent past\" starts here.\n\nIt only reports what it has actually collected, so a freshly reset buffer is\nshort until it fills. That is deliberate: it avoids handing you a stretch of\nzeros that never happened. It does mean the buffer's length changes for the\nfirst N frames, and anything assuming a fixed size will complain during that\nwindow.\n\nt.buffer HAS SEVERAL FILL MODES:\n'update style' decides how incoming data lands - replacing the buffer wholesale,\nor filling it circularly one sample at a time. The circular mode is the rolling\nbehaviour; the replace mode is for when each message is already a complete\nbuffer and you just want to hold it.\n\n'sample to output' lets you read one position rather than the whole thing.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 frames a second, a count of 60 is one second of history, 600 is ten. Think\nin seconds rather than samples and the setting stops being arbitrary - it is\n\"how much of the past should this measurement be about\".\n\nLonger is steadier and slower to react. That is the same trade every filter\nmakes, in a different form.\n\nSYNTAX:\nt.rolling_buffer <count>\nt.buffer <count>\n\nEXAMPLE:\nt.rolling_buffer 60\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value or tensor arriving each frame.\n\nsample count:\nHow many to keep. See above - this is a time window.\n\nupdate style:\nHow incoming data fills the buffer.\n\nsample to output (t.buffer):\nRead one position instead of the whole buffer.\n\nreset:\nEmpty it and start collecting again.\n\nOUTPUTS: \n\noutput:\nThe collected tensor.\n\nRELATED:\nnp.rolling_buffer does the same for NumPy arrays.\ncapture~ fills a buffer from the audio graph at audio rate, which is the right\nnode when the stream is a signal rather than control data."
         },
         "3": {
-            "name": "toggle",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
             "name": "metro",
             "id": 385,
             "position_x": 30,
-            "position_y": 112,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -133,11 +121,11 @@
             },
             "init": "metro 30"
         },
-        "5": {
+        "4": {
             "name": "random",
             "id": 422,
             "position_x": 30,
-            "position_y": 192,
+            "position_y": 132,
             "width": 123,
             "height": 56,
             "visibility": "show_all",
@@ -157,12 +145,12 @@
             },
             "init": "random 1.0"
         },
-        "6": {
+        "5": {
             "init": "comment one value per frame",
             "name": "comment",
             "id": 459,
             "position_x": 564,
-            "position_y": 280,
+            "position_y": 220,
             "width": 125,
             "height": 30,
             "visibility": "show_all",
@@ -182,11 +170,11 @@
             },
             "comment": "one value per frame"
         },
-        "7": {
+        "6": {
             "name": "t.rolling_buffer",
             "id": 496,
             "position_x": 30,
-            "position_y": 320,
+            "position_y": 260,
             "width": 163,
             "height": 98,
             "visibility": "show_all",
@@ -195,12 +183,12 @@
             "properties": {},
             "init": "t.rolling_buffer 64"
         },
-        "8": {
+        "7": {
             "name": "text_block",
             "id": 533,
             "annotation": true,
             "position_x": 564,
-            "position_y": 535,
+            "position_y": 475,
             "width": 268,
             "height": 40,
             "visibility": "show_all",
@@ -235,11 +223,11 @@
             },
             "text": "at 30ms a frame, 64 is about 2 seconds\nthink in seconds, not samples"
         },
-        "9": {
+        "8": {
             "name": "t.mean",
             "id": 570,
             "position_x": 30,
-            "position_y": 605,
+            "position_y": 545,
             "width": 64,
             "height": 42,
             "visibility": "show_all",
@@ -247,11 +235,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "9": {
             "name": "float",
             "id": 607,
             "position_x": 30,
-            "position_y": 720,
+            "position_y": 660,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -275,12 +263,12 @@
                 }
             }
         },
-        "11": {
+        "10": {
             "init": "comment now the stream can be averaged",
             "name": "comment",
             "id": 644,
             "position_x": 564,
-            "position_y": 805,
+            "position_y": 745,
             "width": 193,
             "height": 30,
             "visibility": "show_all",
@@ -300,11 +288,11 @@
             },
             "comment": "now the stream can be averaged"
         },
-        "12": {
+        "11": {
             "name": "heat_map",
             "id": 681,
             "position_x": 330,
-            "position_y": 605,
+            "position_y": 545,
             "width": 208,
             "height": 150,
             "visibility": "show_all",
@@ -353,12 +341,12 @@
                 }
             }
         },
-        "13": {
+        "12": {
             "init": "comment the recent past, as one tensor",
             "name": "comment",
             "id": 718,
             "position_x": 564,
-            "position_y": 765,
+            "position_y": 705,
             "width": 193,
             "height": 30,
             "visibility": "show_all",
@@ -378,11 +366,11 @@
             },
             "comment": "the recent past, as one tensor"
         },
-        "14": {
+        "13": {
             "name": "close",
             "id": 755,
             "position_x": 24,
-            "position_y": 792,
+            "position_y": 732,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -399,16 +387,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "1": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
@@ -418,7 +396,7 @@
             "dest_input_index": 0,
             "dest_input_name": "trigger"
         },
-        "2": {
+        "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -428,7 +406,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "3": {
+        "2": {
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
@@ -438,7 +416,7 @@
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "4": {
+        "3": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
@@ -448,7 +426,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "5": {
+        "4": {
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,

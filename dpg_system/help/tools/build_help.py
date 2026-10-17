@@ -5,7 +5,7 @@ A help patch is: a title comment (top left), a locked text_block of prose
 and a close button at the bottom left.
 """
 import json, os
-from strip_starters import strip_patch
+from strip_starters import strip_patch, strip_toggles
 
 HELP_DIR = '/Users/drokeby/dpg_system/dpg_system/help'
 
@@ -56,7 +56,7 @@ def _props(d):
 
 
 def build(name, title, body, demo, links, demo_width=520,
-          text_width=780, text_height=620, out_dir=HELP_DIR, subpatch=None):
+          text_width=780, text_height=620, out_dir=HELP_DIR, subpatch=None, keep_toggles=False):
     """
     name        file stem, e.g. 'sample_hold'  -> sample_hold_help.json
     title       big comment across the top
@@ -190,6 +190,8 @@ def build(name, title, body, demo, links, demo_width=520,
         # a signal saved with 'on' true starts by itself: drop load_bang -> t 1
         # starters that do nothing else (see strip_starters.py)
         strip_patch(patch)
+        if not keep_toggles:
+            strip_toggles(patch)
         json.dump(patch, open(path, 'w'), indent=4)
         return path
 
@@ -245,7 +247,9 @@ def build(name, title, body, demo, links, demo_width=520,
     }
     doc = {'name': name + '_help', 'path': path,
            'patches': {'0': sub, '1': patch}}
-    strip_patch(sub)
-    strip_patch(patch)
+    for pt in (sub, patch):
+        strip_patch(pt)
+        if not keep_toggles:
+            strip_toggles(pt)
     json.dump(doc, open(path, 'w'), indent=4)
     return path

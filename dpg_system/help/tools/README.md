@@ -309,6 +309,11 @@ starters as it writes a page (generators may still call `starter()`), and
 if every cord out of it reaches a signal's `on`; a load_bang only if all it fed
 went too (tracker_align's starter also seeds a pak, so it stays).
 
+A metro saves its own on/off too, so a toggle whose only cord goes to a
+metro's `on` goes the same way (`strip_toggles`, run by `build()`; pass
+`keep_toggles=True` where the toggle is the point, as on the toggle page). For
+a per-frame trigger use `tick`, not `metro 16`.
+
 `filter`, `one_euro_filter`, `kalman_filter` and `multi_filter` are David's
 hand layouts and are no longer generated (make_filter_help.py,
 make_signal_filters_help.py). Their small overlaps are deliberate.

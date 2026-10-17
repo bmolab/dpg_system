@@ -93,28 +93,10 @@
             "text": "These two nodes change how OFTEN data moves, without changing the data itself.\n\nThey solve opposite problems. stream takes a value that arrives occasionally and \nrepeats it on every frame, turning an event into a continuous supply. \nsubsample takes a value that arrives on every frame and passes on only some of \nthem, thinning a fast stream down to something slower.\n\nBetween them they let you match a source's rate to what the rest of the patch \nwants, rather than rebuilding either end.\n\nTHE NODES:\n\nstream       resend the most recent value on every frame\nsubsample    pass on only every Nth value\n\nYou use stream when something downstream needs to be fed continuously but your \nsource only speaks when it changes. You use subsample when a fast sensor is \ndriving something expensive - a network send, a model, a redraw - more often \nthan it needs.\n\nSYNTAX:\nstream\nsubsample <rate: int>\n\nEXAMPLE:\nsubsample 4\n\nINPUTS and PARAMETERS:\n\ninput:\nThe data. On subsample this triggers the node; on stream it is stored and \nresent on every frame.\n\nstream (stream only):\nWhen checked the node repeats on every frame. Unchecked, it stops entirely - \nit does not pass values through. On by default.\n\nrate (subsample only):\nHow many values arrive for each one that leaves. \n2 halves the rate, 10 sends one in ten. A rate of 1 passes everything.\n\nOUTPUTS: \n\nout:\nThe value - repeated every frame by stream, thinned by subsample.\n\nA NOTE ON SUBSAMPLE'S TIMING:\nsubsample also watches how fast values are arriving, and if the input goes quiet \nfor longer than the expected gap it sends the last value anyway. \nThat way a stream that simply stops does not leave the node holding a value \nit never passed on. Thinning a stream loses detail permanently - if what you \nwant is fewer values without losing the shape, filter first, then subsample."
         },
         "3": {
-            "name": "toggle",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": true,
-                    "value_type": "bool"
-                }
-            }
-        },
-        "4": {
             "name": "metro",
             "id": 385,
             "position_x": 30,
-            "position_y": 112,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -139,11 +121,11 @@
             },
             "init": "metro 30"
         },
-        "5": {
+        "4": {
             "name": "counter",
             "id": 422,
             "position_x": 30,
-            "position_y": 192,
+            "position_y": 132,
             "width": 123,
             "height": 84,
             "visibility": "show_all",
@@ -157,12 +139,12 @@
                 }
             }
         },
-        "6": {
+        "5": {
             "init": "comment a fast counter",
             "name": "comment",
             "id": 459,
             "position_x": 186,
-            "position_y": 285,
+            "position_y": 225,
             "width": 95,
             "height": 30,
             "visibility": "show_all",
@@ -182,11 +164,11 @@
             },
             "comment": "a fast counter"
         },
-        "7": {
+        "6": {
             "name": "int",
             "id": 496,
             "position_x": 30,
-            "position_y": 320,
+            "position_y": 260,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -210,11 +192,11 @@
                 }
             }
         },
-        "8": {
+        "7": {
             "name": "subsample",
             "id": 533,
             "position_x": 30,
-            "position_y": 380,
+            "position_y": 320,
             "width": 117,
             "height": 56,
             "visibility": "show_all",
@@ -229,11 +211,11 @@
             },
             "init": "subsample 10"
         },
-        "9": {
+        "8": {
             "name": "int",
             "id": 570,
             "position_x": 30,
-            "position_y": 465,
+            "position_y": 405,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -257,12 +239,12 @@
                 }
             }
         },
-        "10": {
+        "9": {
             "name": "text_block",
             "id": 607,
             "annotation": true,
             "position_x": 186,
-            "position_y": 515,
+            "position_y": 455,
             "width": 224,
             "height": 40,
             "visibility": "show_all",
@@ -297,11 +279,11 @@
             },
             "text": "one value in ten gets through\ndrag rate and watch it thin out"
         },
-        "11": {
+        "10": {
             "name": "close",
             "id": 644,
             "position_x": 24,
-            "position_y": 537,
+            "position_y": 477,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -318,16 +300,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "1": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
@@ -337,7 +309,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "2": {
+        "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -347,7 +319,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "3": {
+        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -357,7 +329,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "4": {
+        "3": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,

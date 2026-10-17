@@ -118,10 +118,7 @@ outlet plotted, so you can see the filter engaging rather than guessing."""
 demo = starter() + [
     {'key': 'sig', 'init': 'signal 3.0 sin', 'pos': (30, 132), 'w': 129, 'h': 78,
      'props': SIG('sin', 3.0, 0.7)},
-    {'key': 'tog', 'init': 'toggle', 'pos': (200, 62), 'w': 45, 'h': 42,
-     'props': {'': True}},
-    {'key': 'met', 'init': 'metro 16', 'pos': (200, 110), 'w': 129, 'h': 70,
-     'props': {'on': True, 'period': 16.0, 'units': 'milliseconds'}},
+    {'key': 'met', 'init': 'tick', 'pos': (200, 62), 'w': 33, 'h': 42, 'props': {'': True}},
     {'key': 'rnd', 'init': 'random.gauss 0.0 0.3', 'pos': (200, 190), 'w': 175, 'h': 100},
     {'key': 'add', 'init': '+ 0.0', 'pos': (30, 232), 'w': 120, 'h': 70,
      'props': {'operand': 0.0}},
@@ -136,7 +133,7 @@ demo = starter() + [
      'pos': (30, 970)},
 ]
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
-         ('tog', '', 'met', 'on'), ('met', '', 'rnd', 'trigger'),
+         ('met', '', 'rnd', 'trigger'),
          ('sig', '', 'add', 'in'), ('rnd', 'out', 'add', 'operand'),
          ('add', 'result', 'p0', 'y'),
          ('add', 'result', 'sc', 'input'), ('sc', 'filtered', 'p1', 'y')]
@@ -419,10 +416,7 @@ something quieter and do not mind the rounding."""
 demo = starter() + [
     {'key': 'sig', 'init': 'signal 3.0 triangle', 'pos': (30, 132), 'w': 129, 'h': 78,
      'props': SIG('triangle', 3.0, 0.8)},
-    {'key': 'tog', 'init': 'toggle', 'pos': (200, 62), 'w': 45, 'h': 42,
-     'props': {'': True}},
-    {'key': 'met', 'init': 'metro 16', 'pos': (200, 110), 'w': 129, 'h': 70,
-     'props': {'on': True, 'period': 16.0, 'units': 'milliseconds'}},
+    {'key': 'met', 'init': 'tick', 'pos': (200, 62), 'w': 33, 'h': 42, 'props': {'': True}},
     {'key': 'rnd', 'init': 'random.gauss 0.0 0.08', 'pos': (200, 190), 'w': 175, 'h': 100},
     {'key': 'add', 'init': '+ 0.0', 'pos': (30, 232), 'w': 120, 'h': 70,
      'props': {'operand': 0.0}},
@@ -442,7 +436,7 @@ demo = starter() + [
      'pos': (330, 755)},
 ]
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
-         ('tog', '', 'met', 'on'), ('met', '', 'rnd', 'trigger'),
+         ('met', '', 'rnd', 'trigger'),
          ('sig', '', 'add', 'in'), ('rnd', 'out', 'add', 'operand'),
          ('add', 'result', 'rs', 'tensor in'),
          ('rs', 'output', 'sg', 'signal'), ('sg', 'filtered', 'p1', 'y'),

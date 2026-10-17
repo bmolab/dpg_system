@@ -329,28 +329,10 @@
             "text": "the SAME data with max y at 20 -\nnearly blank. If a display looks wrong,\ncheck min y and max y first"
         },
         "10": {
-            "name": "toggle",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 580,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": true,
-                    "value_type": "bool"
-                }
-            }
-        },
-        "11": {
             "name": "metro",
             "id": 644,
             "position_x": 30,
-            "position_y": 635,
+            "position_y": 562,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -375,12 +357,12 @@
             },
             "init": "metro 100"
         },
-        "12": {
+        "11": {
             "init": "comment ten new arrays a second",
             "name": "comment",
             "id": 681,
             "position_x": 291,
-            "position_y": 635,
+            "position_y": 562,
             "width": 150,
             "height": 30,
             "visibility": "show_all",
@@ -400,11 +382,11 @@
             },
             "comment": "ten new arrays a second"
         },
-        "13": {
+        "12": {
             "name": "np.rand",
             "id": 718,
             "position_x": 30,
-            "position_y": 720,
+            "position_y": 647,
             "width": 123,
             "height": 84,
             "visibility": "show_all",
@@ -413,11 +395,11 @@
             "properties": {},
             "init": "np.rand 8"
         },
-        "14": {
+        "13": {
             "name": "heat_scroll",
             "id": 755,
             "position_x": 30,
-            "position_y": 825,
+            "position_y": 752,
             "width": 208,
             "height": 150,
             "visibility": "show_all",
@@ -466,12 +448,12 @@
                 }
             }
         },
-        "15": {
+        "14": {
             "name": "text_block",
             "id": 792,
             "annotation": true,
             "position_x": 291,
-            "position_y": 825,
+            "position_y": 752,
             "width": 298,
             "height": 40,
             "visibility": "show_all",
@@ -506,11 +488,11 @@
             },
             "text": "heat_scroll: each array of 8 is one column,\nand the last 60 stay on screen"
         },
-        "16": {
+        "15": {
             "name": "message",
             "id": 829,
             "position_x": 30,
-            "position_y": 1005,
+            "position_y": 932,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -529,12 +511,12 @@
                 }
             }
         },
-        "17": {
+        "16": {
             "name": "text_block",
             "id": 866,
             "annotation": true,
             "position_x": 291,
-            "position_y": 1005,
+            "position_y": 932,
             "width": 243,
             "height": 40,
             "visibility": "show_all",
@@ -569,11 +551,11 @@
             },
             "text": "click 'dump' and the top heat_map\nhands back the array it is showing"
         },
-        "18": {
+        "17": {
             "name": "info",
             "id": 903,
             "position_x": 30,
-            "position_y": 1065,
+            "position_y": 992,
             "width": 235,
             "height": 42,
             "visibility": "show_all",
@@ -581,11 +563,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "19": {
+        "18": {
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 1137,
+            "position_y": 1064,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -632,16 +614,6 @@
             "dest_input_name": "y"
         },
         "3": {
-            "source_node": 607,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "4": {
             "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
@@ -651,7 +623,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "5": {
+        "4": {
             "source_node": 718,
             "source_node_name": "",
             "source_output_index": 0,
@@ -661,7 +633,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "6": {
+        "5": {
             "source_node": 829,
             "source_node_name": "",
             "source_output_index": 0,
@@ -671,7 +643,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "7": {
+        "6": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,

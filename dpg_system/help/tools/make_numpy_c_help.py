@@ -76,7 +76,7 @@ demo = [
      'props': {'on': False, 'period': 30.0, 'units': 'milliseconds'}},
     {'key': 'rnd', 'init': 'random 1.0', 'pos': (30, 192), 'w': 140, 'h': 80,
      'props': {'range': 1.0, 'bipolar': False}},
-    {'key': 'c0', 'comment': True, 'text': 'switch on: a stream of single values',
+    {'key': 'c0', 'comment': True, 'text': "check the metro's on: a stream of single values",
      'pos': (30, 280)},
     {'key': 'rb', 'init': 'np.rolling_buffer 60', 'pos': (30, 320), 'w': 200, 'h': 80},
     {'key': 'c1', 'comment': True, 'text': 'the last 60 of them, as one array',
