@@ -1,0 +1,361 @@
+{
+    "height": 1268,
+    "width": 1369,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "mgl_light_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_light_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl_light - a light for what comes after",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 500,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl_light - a light for what comes after",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl_light - a light for what comes after"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 511,
+            "position_y": 45,
+            "width": 818,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "mgl_light adds a light to the scene, for everything drawn after it.\n\nTHE DEFAULT LIGHT GOES AWAY:\nmgl_context supplies one light of its own (at 2 5 5), switchable with its\n'default_light' option. The first mgl_light in a frame removes it, so the\nlights you place are the only ones.\n\nA LIGHT IS NOT PUT BACK:\nEach mgl_light adds a light that stays on for the rest of the frame - up to\neight are used. Shapes drawn BEFORE a light do not see it; everything drawn\nafter it does, in any branch. So lights usually sit near the top of the\nchain, after the camera.\n\nITS POSITION FOLLOWS THE TRANSFORMS:\n'position' is moved by any transforms in force where the light sits. Put a\nrotate before a light and the light swings round; put the light after a\ntranslate and it travels with whatever that translate carries. A light is a\npoint: it shines from 'position' in every direction.\n\nHOW LIGHT, MATERIAL AND COLOUR COMBINE:\nShapes are always lit. What you see is roughly the light that reaches the\nsurface (each light's ambient, plus its diffuse where the surface faces it,\nscaled by the material's ambient and diffuse) multiplied by the current\ncolour, plus a highlight from each light's specular times the material's\nspecular, which the colour does not tint. With no light at all, a shape\nshows a dim fifth of its colour. mgl_line_array and mgl_text are the\nexceptions: they draw in the current colour without any lighting.\n\nTHE COMPONENTS:\n'ambient' is light that reaches every surface regardless of direction - it\nlifts the shadows. 'diffuse' is the main light, brightest on surfaces facing\nit. 'specular' is the colour of the highlight. 'intensity' scales the\ndiffuse and the highlight but not the ambient.\n\nColours are red green blue, from 0 to 1 or from 0 to 255 - a colour with any\nvalue above 1 is read as 0 to 255.\n\nSYNTAX:\nmgl_light\n\nEXAMPLE:\nmgl_light\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This is what triggers the node.\n\nposition:\nWhere the light is, 0 5 5 by default.\n\nambient / diffuse / specular:\nWhat it contributes: a dim grey ambient, white diffuse, white highlight.\n\nintensity:\nScales the diffuse and highlight, 1 by default.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, with this light added.\n\nRELATED:\nmgl_material for how surfaces answer the light; mgl_color for their colour.\nmgl_context for the default light. gl_light is the gl equivalent.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "mgl_light adds a light to the scene, for everything drawn after it.\n\nTHE DEFAULT LIGHT GOES AWAY:\nmgl_context supplies one light of its own (at 2 5 5), switchable with its\n'default_light' option. The first mgl_light in a frame removes it, so the\nlights you place are the only ones.\n\nA LIGHT IS NOT PUT BACK:\nEach mgl_light adds a light that stays on for the rest of the frame - up to\neight are used. Shapes drawn BEFORE a light do not see it; everything drawn\nafter it does, in any branch. So lights usually sit near the top of the\nchain, after the camera.\n\nITS POSITION FOLLOWS THE TRANSFORMS:\n'position' is moved by any transforms in force where the light sits. Put a\nrotate before a light and the light swings round; put the light after a\ntranslate and it travels with whatever that translate carries. A light is a\npoint: it shines from 'position' in every direction.\n\nHOW LIGHT, MATERIAL AND COLOUR COMBINE:\nShapes are always lit. What you see is roughly the light that reaches the\nsurface (each light's ambient, plus its diffuse where the surface faces it,\nscaled by the material's ambient and diffuse) multiplied by the current\ncolour, plus a highlight from each light's specular times the material's\nspecular, which the colour does not tint. With no light at all, a shape\nshows a dim fifth of its colour. mgl_line_array and mgl_text are the\nexceptions: they draw in the current colour without any lighting.\n\nTHE COMPONENTS:\n'ambient' is light that reaches every surface regardless of direction - it\nlifts the shadows. 'diffuse' is the main light, brightest on surfaces facing\nit. 'specular' is the colour of the highlight. 'intensity' scales the\ndiffuse and the highlight but not the ambient.\n\nColours are red green blue, from 0 to 1 or from 0 to 255 - a colour with any\nvalue above 1 is read as 0 to 255.\n\nSYNTAX:\nmgl_light\n\nEXAMPLE:\nmgl_light\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This is what triggers the node.\n\nposition:\nWhere the light is, 0 5 5 by default.\n\nambient / diffuse / specular:\nWhat it contributes: a dim grey ambient, white diffuse, white highlight.\n\nintensity:\nScales the diffuse and highlight, 1 by default.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, with this light added.\n\nRELATED:\nmgl_material for how surfaces answer the light; mgl_color for their colour.\nmgl_context for the default light. gl_light is the gl equivalent."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "mgl_light",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 201,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "position",
+                    "value": [
+                        -4.0,
+                        2.0,
+                        3.0
+                    ],
+                    "value_type": "list"
+                },
+                "1": {
+                    "name": "diffuse",
+                    "value": [
+                        255.0,
+                        60.0,
+                        60.0,
+                        255.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "5": {
+            "init": "comment a red light from the left",
+            "name": "comment",
+            "id": 422,
+            "position_x": 257,
+            "position_y": 440,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a red light from the left",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a red light from the left"
+        },
+        "6": {
+            "name": "mgl_light",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 710,
+            "width": 201,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "position",
+                    "value": [
+                        4.0,
+                        2.0,
+                        3.0
+                    ],
+                    "value_type": "list"
+                },
+                "1": {
+                    "name": "diffuse",
+                    "value": [
+                        60.0,
+                        120.0,
+                        255.0,
+                        255.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 257,
+            "position_y": 710,
+            "width": 218,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "and a blue one from the right:\nlights add up",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "and a blue one from the right:\nlights add up"
+        },
+        "8": {
+            "name": "mgl_sphere",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 980,
+            "width": 124,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "radius",
+                    "value": 0.8,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 257,
+            "position_y": 980,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the context's own light is gone\nonce the first mgl_light runs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the context's own light is gone\nonce the first mgl_light runs"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 1164,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        }
+    }
+}

@@ -1,0 +1,318 @@
+{
+    "height": 1324,
+    "width": 1833,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "body_proportions_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/body_proportions_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment body_proportions - reshaping a body by hand",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 537,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "body_proportions - reshaping a body by hand",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "body_proportions - reshaping a body by hand"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 985,
+            "position_y": 45,
+            "width": 808,
+            "height": 836,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "body_proportions is a panel of sliders for reshaping a body: one row per\nsegment, each with a length, a width and a depth factor.\n\nHOW IT IS USED:\nPatch its 'limb_scale' outlet to the 'limb_scale' inlet of mgl_body,\nmgl_body_orientation, mgl_smpl_mesh or mgl_smpl_heatmap - they all speak the\nsame vocabulary, so one panel can drive the skeleton and the skin together.\n\nIt sends the whole set of factors, as a dict, on every edit and once when\nthe patch opens, so the body needs no priming: open the patch and the\nsaved proportions are already applied.\n\nTHE FACTORS:\n1.0 means unchanged. Length moves the joint at the far end of the segment\nand stretches the drawn limb; width and depth fatten or thin it. Each\nsegment is named for the joint it ENDS at: left_upper_leg is hip to knee,\nleft_hand is wrist to knuckles. The pelvis bowl and the shoulder blades\nkeep their drawn shape under a length factor and only move what hangs off\nthem.\n\nThe rows are spine_lower, spine_mid, spine_upper, spine_to_neck, neck, head,\nand for each side hip, upper_leg, lower_leg, foot, toes, heel,\nshoulder_blade, collar, upper_arm, lower_arm, hand, fingers.\n\nReshaping costs nothing beyond the normal draw on mgl_body, so the factors\ncan be animated freely.\n\nSYMMETRY:\nWith 'symmetric' ticked (the default) an edit to a left row is copied to\nthe matching right row and the other way round. Untick it and each side\nkeeps its own values - how you make a lopsided body on purpose. Values\narriving at 'scales in' are not mirrored.\n\nSETTING IT FROM THE PATCH:\n'scales in' takes a dict {segment: factors}. A segment name can be a row\nname, a name without its side (upper_arm sets both sides), left, right or\nall. One number sets the length only, two set width and depth, three set\nall three. The rows update and the whole set is sent on. 'reset' puts\nevery row back to 1.0 and sends.\n\nIts rows are also saved by the presets node.\n\nSYNTAX:\nbody_proportions\n\nIt takes no arguments.\n\nEXAMPLE:\nbody_proportions\n\nINPUTS and PARAMETERS:\n\nscales in:\nA dict of factors, as above.\n\nsymmetric:\nMirror edits between left and right rows.\n\nreset:\nBack to 1.0 everywhere.\n\nspine_lower ... right_fingers:\nOne row per segment: length, width, depth.\n\nOUTPUTS:\n\nlimb_scale:\nA dict of every segment's three factors.\n\nRELATED:\nmgl_body, whose page lists the limb_scale messages those nodes also accept\ndirectly. smpl_beta_editor sets a body's base proportions from SMPL shape\nvalues; this scales on top of that.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "body_proportions is a panel of sliders for reshaping a body: one row per\nsegment, each with a length, a width and a depth factor.\n\nHOW IT IS USED:\nPatch its 'limb_scale' outlet to the 'limb_scale' inlet of mgl_body,\nmgl_body_orientation, mgl_smpl_mesh or mgl_smpl_heatmap - they all speak the\nsame vocabulary, so one panel can drive the skeleton and the skin together.\n\nIt sends the whole set of factors, as a dict, on every edit and once when\nthe patch opens, so the body needs no priming: open the patch and the\nsaved proportions are already applied.\n\nTHE FACTORS:\n1.0 means unchanged. Length moves the joint at the far end of the segment\nand stretches the drawn limb; width and depth fatten or thin it. Each\nsegment is named for the joint it ENDS at: left_upper_leg is hip to knee,\nleft_hand is wrist to knuckles. The pelvis bowl and the shoulder blades\nkeep their drawn shape under a length factor and only move what hangs off\nthem.\n\nThe rows are spine_lower, spine_mid, spine_upper, spine_to_neck, neck, head,\nand for each side hip, upper_leg, lower_leg, foot, toes, heel,\nshoulder_blade, collar, upper_arm, lower_arm, hand, fingers.\n\nReshaping costs nothing beyond the normal draw on mgl_body, so the factors\ncan be animated freely.\n\nSYMMETRY:\nWith 'symmetric' ticked (the default) an edit to a left row is copied to\nthe matching right row and the other way round. Untick it and each side\nkeeps its own values - how you make a lopsided body on purpose. Values\narriving at 'scales in' are not mirrored.\n\nSETTING IT FROM THE PATCH:\n'scales in' takes a dict {segment: factors}. A segment name can be a row\nname, a name without its side (upper_arm sets both sides), left, right or\nall. One number sets the length only, two set width and depth, three set\nall three. The rows update and the whole set is sent on. 'reset' puts\nevery row back to 1.0 and sends.\n\nIts rows are also saved by the presets node.\n\nSYNTAX:\nbody_proportions\n\nIt takes no arguments.\n\nEXAMPLE:\nbody_proportions\n\nINPUTS and PARAMETERS:\n\nscales in:\nA dict of factors, as above.\n\nsymmetric:\nMirror edits between left and right rows.\n\nreset:\nBack to 1.0 everywhere.\n\nspine_lower ... right_fingers:\nOne row per segment: length, width, depth.\n\nOUTPUTS:\n\nlimb_scale:\nA dict of every segment's three factors.\n\nRELATED:\nmgl_body, whose page lists the limb_scale messages those nodes also accept\ndirectly. smpl_beta_editor sets a body's base proportions from SMPL shape\nvalues; this scales on top of that."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_mouse_events",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "comment drag on the picture to orbit",
+            "name": "comment",
+            "id": 385,
+            "position_x": 700,
+            "position_y": 120,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag on the picture to orbit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag on the picture to orbit"
+        },
+        "5": {
+            "name": "mgl_orbit_camera",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "mgl_light",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 201,
+            "height": 220,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "mgl_body",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 860,
+            "width": 179,
+            "height": 330,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "display_mode",
+                    "value": "solid",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "body_proportions",
+            "id": 533,
+            "position_x": 400,
+            "position_y": 62,
+            "width": 274,
+            "height": 490,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 700,
+            "position_y": 1060,
+            "width": 255,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "drag a row: length, width, depth\nuntick symmetric for a lopsided body",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "drag a row: length, width, depth\nuntick symmetric for a lopsided body"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 1220,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "limb_scale",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "limb_scale"
+        }
+    }
+}

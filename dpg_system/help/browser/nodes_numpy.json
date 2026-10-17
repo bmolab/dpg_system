@@ -1,5 +1,5 @@
 {
-    "height": 312,
+    "height": 320,
     "width": 687,
     "position": [
         100,
@@ -228,12 +228,12 @@
             "annotation": true,
             "position_x": 188,
             "position_y": 206,
-            "width": 452,
-            "height": 40,
+            "width": 378,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.clip / np.max / np.min, np statistics, np cumulative,\nnp linear algebra, np targets, np.line_intersection, rotate_position",
+                    "value": "np.clip / np.max / np.min, np statistics, np cumulative,\nnp.rolling_buffer, np linear algebra, np targets,\nnp.line_intersection, rotate_position",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,12 +243,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 444,
+                    "value": 370,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.clip / np.max / np.min, np statistics, np cumulative,\nnp linear algebra, np targets, np.line_intersection, rotate_position",
+            "text": "np.clip / np.max / np.min, np statistics, np cumulative,\nnp.rolling_buffer, np linear algebra, np targets,\nnp.line_intersection, rotate_position",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,

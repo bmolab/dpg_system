@@ -1,0 +1,354 @@
+{
+    "height": 761,
+    "width": 1687,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "cv_image_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/cv_image_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment cv_image - a picture from a file",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 402,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "cv_image - a picture from a file",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "cv_image - a picture from a file"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 839,
+            "position_y": 45,
+            "width": 808,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "cv_image reads a picture from a file and sends it.\n\nIT READS WHEN THE PATH ARRIVES:\nSend a path to 'path in' - or type one into it - and the file is read and sent\nstraight away. A path given as the node's argument (cv_image <path>) is read\nwhen the node is made. 'show image' sends the picture already read again; it\ndoes not go back to the file.\n\nSo the node is not watching the file. To pick up a changed file, send the path\nagain. To walk through a directory, have something else supply one path after\nanother.\n\nA path that cannot be read prints a message in the console, and the picture\nread before it is dropped: 'show image' then sends nothing until a good path\narrives.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS - AND BGR:\nThe picture comes out as (height, width, 3) bytes, rows first, whatever the\nfile held - an alpha channel is dropped and a grey image is made three-channel.\n\nUnlike cv_camera and movie_player, cv_image does NOT convert from OpenCV's\norder: the channels are blue, green, red. Shown as it is, red and blue swap -\nskin goes blue. Put np.flip 2 after it - reversing the last axis turns BGR\ninto RGB - before anything that expects ordinary colour.\n\nSYNTAX:\ncv_image <path>\n\nEXAMPLE:\ncv_image\n\nINPUTS and PARAMETERS:\n\nshow image:\nAnything at all sends the picture again.\n\npath in:\nThe file. Receiving it reads the file and sends the picture.\n\nOUTPUTS:\n\nThe single outlet carries the picture, as a BGR array of height by width by 3.\n\nRELATED:\ncv_camera for live pictures; cv_image used to share its page.\nmovie_player for video files.\nnp.flip to put the channels in RGB order.\nk. and tv. nodes for filtering and adjusting the image.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "cv_image reads a picture from a file and sends it.\n\nIT READS WHEN THE PATH ARRIVES:\nSend a path to 'path in' - or type one into it - and the file is read and sent\nstraight away. A path given as the node's argument (cv_image <path>) is read\nwhen the node is made. 'show image' sends the picture already read again; it\ndoes not go back to the file.\n\nSo the node is not watching the file. To pick up a changed file, send the path\nagain. To walk through a directory, have something else supply one path after\nanother.\n\nA path that cannot be read prints a message in the console, and the picture\nread before it is dropped: 'show image' then sends nothing until a good path\narrives.\n\nTHE ARRAY IS HEIGHT, WIDTH, CHANNELS - AND BGR:\nThe picture comes out as (height, width, 3) bytes, rows first, whatever the\nfile held - an alpha channel is dropped and a grey image is made three-channel.\n\nUnlike cv_camera and movie_player, cv_image does NOT convert from OpenCV's\norder: the channels are blue, green, red. Shown as it is, red and blue swap -\nskin goes blue. Put np.flip 2 after it - reversing the last axis turns BGR\ninto RGB - before anything that expects ordinary colour.\n\nSYNTAX:\ncv_image <path>\n\nEXAMPLE:\ncv_image\n\nINPUTS and PARAMETERS:\n\nshow image:\nAnything at all sends the picture again.\n\npath in:\nThe file. Receiving it reads the file and sends the picture.\n\nOUTPUTS:\n\nThe single outlet carries the picture, as a BGR array of height by width by 3.\n\nRELATED:\ncv_camera for live pictures; cv_image used to share its page.\nmovie_player for video files.\nnp.flip to put the channels in RGB order.\nk. and tv. nodes for filtering and adjusting the image."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 510,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "/path/to/a/picture.jpg",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 480,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment put a real path here and press return",
+            "name": "comment",
+            "id": 385,
+            "position_x": 566,
+            "position_y": 112,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "put a real path here and press return",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "put a real path here and press return"
+        },
+        "5": {
+            "name": "button",
+            "id": 422,
+            "position_x": 380,
+            "position_y": 150,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment sends the same picture again",
+            "name": "comment",
+            "id": 459,
+            "position_x": 566,
+            "position_y": 205,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sends the same picture again",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sends the same picture again"
+        },
+        "7": {
+            "name": "cv_image",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 250,
+            "width": 136,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "info",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 235,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 566,
+            "position_y": 485,
+            "width": 243,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "height, width, 3 - in BLUE, green,\nred order, unlike the camera",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "height, width, 3 - in BLUE, green,\nred order, unlike the camera"
+        },
+        "10": {
+            "name": "np.flip",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 540,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            },
+            "init": "np.flip 2"
+        },
+        "11": {
+            "init": "comment reverse the channels: now RGB",
+            "name": "comment",
+            "id": 644,
+            "position_x": 566,
+            "position_y": 635,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "reverse the channels: now RGB",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "reverse the channels: now RGB"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 626,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "path in"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "show image"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        }
+    }
+}

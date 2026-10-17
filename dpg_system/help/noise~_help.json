@@ -1,0 +1,283 @@
+{
+    "height": 902,
+    "width": 1707,
+    "position": [
+        100,
+        100
+    ],
+    "id": 607,
+    "name": "noise~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/noise~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment noise~ - a leak, played by pressure",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "noise~ - a leak, played by pressure",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "noise~ - a leak, played by pressure"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 869,
+            "position_y": 45,
+            "width": 798,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "noise~ is the noise source: a leak of air, played by pressure.\n\n'pressure' is the whole interface. Loudness rises steeply with it, as real \nturbulence does, and brightness rises gently; at 0 there is silence. It is \nsmoothed on the way in, so an effort stream patched straight to it does not \nzipper - and a body that is still is a leak that is quiet.\n\nTHE CONTROLS:\n'color' tilts the noise from a dark rumble at 0 to full white at 1.\n\n'aperture' is the size of the hole the air comes through. A small one \nwhistles high and narrow; a wide one mostly breathes, low and broad. At 0 \nonly the whistle gets through.\n\n'whistle' is how tight that whistle is: breathy at 0, piercing and nearly \npure at 1.\n\n'sputter' breaks the flow up, as if something keeps blocking the hole and \nspitting when it clears: a flutter at low values, hard dropouts near 1. \n'rate' is how often the breaks come, from slow gulps to a buzz - and harder \npressure makes them come faster.\n\n'level' is the output gain.\n\nON ITS OWN AND THROUGH THINGS:\nThrough formant~ it becomes breath, through modal~ a rattling surface, \nthrough vcf~ classic subtractive hiss.\n\nhiss~ is the same node.\n\nSYNTAX:\nnoise~ <color>\n\nEXAMPLE:\nnoise~ 0.5\n\nINPUTS and PARAMETERS:\n\npressure:\nHow hard the air is driven, 0 to 2. Default 1. 0 is silence.\n\ncolor:\n0 dark to 1 white. Default 0.85, or the argument.\n\naperture:\n0 pinhole to 1 wide open. Default 0.35.\n\nwhistle:\n0 breathy to 1 pure. Default 0.5.\n\nsputter:\n0 a steady flow to 1 hard dropouts. Default 0.\n\nrate:\nHow often the sputter breaks come, 0.2 to 200 per second. Default 10.\n\nlevel:\nOutput gain, 0 to 2. Default 1.\n\nenable:\nOff fades out over a few milliseconds, then stops computing.\n\nEach knob takes a number or a patched signal; where there is a narrow box \nbeside it, that is a depth scaling whatever is patched in.\n\nOUTPUTS: \n\nout:\nThe signal.\n\nRELATED:\nvco~ also has 'noise' and 'pink' shapes: plain noise with none of these \ncontrols.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "noise~ is the noise source: a leak of air, played by pressure.\n\n'pressure' is the whole interface. Loudness rises steeply with it, as real \nturbulence does, and brightness rises gently; at 0 there is silence. It is \nsmoothed on the way in, so an effort stream patched straight to it does not \nzipper - and a body that is still is a leak that is quiet.\n\nTHE CONTROLS:\n'color' tilts the noise from a dark rumble at 0 to full white at 1.\n\n'aperture' is the size of the hole the air comes through. A small one \nwhistles high and narrow; a wide one mostly breathes, low and broad. At 0 \nonly the whistle gets through.\n\n'whistle' is how tight that whistle is: breathy at 0, piercing and nearly \npure at 1.\n\n'sputter' breaks the flow up, as if something keeps blocking the hole and \nspitting when it clears: a flutter at low values, hard dropouts near 1. \n'rate' is how often the breaks come, from slow gulps to a buzz - and harder \npressure makes them come faster.\n\n'level' is the output gain.\n\nON ITS OWN AND THROUGH THINGS:\nThrough formant~ it becomes breath, through modal~ a rattling surface, \nthrough vcf~ classic subtractive hiss.\n\nhiss~ is the same node.\n\nSYNTAX:\nnoise~ <color>\n\nEXAMPLE:\nnoise~ 0.5\n\nINPUTS and PARAMETERS:\n\npressure:\nHow hard the air is driven, 0 to 2. Default 1. 0 is silence.\n\ncolor:\n0 dark to 1 white. Default 0.85, or the argument.\n\naperture:\n0 pinhole to 1 wide open. Default 0.35.\n\nwhistle:\n0 breathy to 1 pure. Default 0.5.\n\nsputter:\n0 a steady flow to 1 hard dropouts. Default 0.\n\nrate:\nHow often the sputter breaks come, 0.2 to 200 per second. Default 10.\n\nlevel:\nOutput gain, 0 to 2. Default 1.\n\nenable:\nOff fades out over a few milliseconds, then stops computing.\n\nEach knob takes a number or a patched signal; where there is a narrow box \nbeside it, that is a depth scaling whatever is patched in.\n\nOUTPUTS: \n\nout:\nThe signal.\n\nRELATED:\nvco~ also has 'noise' and 'pink' shapes: plain noise with none of these \ncontrols."
+        },
+        "3": {
+            "name": "slider",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "slider 1.0"
+        },
+        "4": {
+            "init": "comment drag: the pressure, 0 is silence",
+            "name": "comment",
+            "id": 385,
+            "position_x": 634,
+            "position_y": 130,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag: the pressure, 0 is silence",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag: the pressure, 0 is silence"
+        },
+        "5": {
+            "name": "noise~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 170,
+            "width": 193,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "scope~",
+            "id": 459,
+            "position_x": 300,
+            "position_y": 170,
+            "width": 308,
+            "height": 248,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "fader_out~",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 460,
+            "width": 70,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fader",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "fader_out~ 1 2"
+        },
+        "8": {
+            "init": "comment raise the fader to hear it",
+            "name": "comment",
+            "id": 533,
+            "position_x": 634,
+            "position_y": 695,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise the fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise the fader to hear it"
+        },
+        "9": {
+            "name": "close",
+            "id": 570,
+            "position_x": 24,
+            "position_y": 798,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pressure"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "right"
+        }
+    }
+}

@@ -1,11 +1,11 @@
 {
-    "height": 1201,
-    "width": 1839,
+    "height": 1021,
+    "width": 1832,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 977,
     "name": "movie_player_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/movie_player_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment movie_player - video, and named pieces of it",
+            "init": "comment movie_player - play a video file",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 549,
+            "width": 402,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "movie_player - video, and named pieces of it",
+                    "value": "movie_player - play a video file",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "movie_player - video, and named pieces of it"
+            "comment": "movie_player - play a video file"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 991,
+            "position_x": 984,
             "position_y": 45,
             "width": 808,
-            "height": 776,
+            "height": 916,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These play a video file and keep a set of named pieces of it.\n\nTHE NODES:\n\nmovie_player     plays a file and sends frames\nmovie_clip_dict  remembers in and out points by name, and plays them back\n\nTHEY ARE DESIGNED TO BE WIRED TOGETHER:\nThe player has 'clip_start' and 'clip_end', and a 'save clip' button that sends\nthose out as a CLIP SPEC - a list of [start, end, speed]. The dictionary takes\nthat, stores it under a name you type, and can later send a command back to the\nplayer to play it.\n\nSo the working loop is: scrub to a moment, set the in and out points, name it,\nstore it. Do that a few times and you have a set of cues, kept in the patch and\nsaveable to a file.\n\nWire 'clip_spec' on the player to 'clip_spec in' on the dictionary, and\n'command out' on the dictionary back to 'input' on the player. That second cord\nis what makes the names do anything.\n\nTHE COMMANDS ARE PLAIN TEXT:\nWhat the dictionary sends is a message like:\n\n    play 240 512 1.0\n    loop 240 512 0.5\n\nwhich the player also accepts from anywhere else. That is worth knowing, because\nit means you do not need the dictionary at all if the numbers are coming from\nsomewhere else - a sequencer, a score, another patch over OSC.\n\nThe player understands open, import, play, loop, stop, pause, resume and\nsave_clip. Numbers after play or loop are read as start and end if they are\nwhole, and as speed if they have a decimal point - so 'play 100 200' and\n'play 100 200 0.5' both work, and the decimal point is what distinguishes speed\nfrom a frame number.\n\n'speed' IS A RATE, AND PLAYBACK FOLLOWS THE CLOCK:\n1.0 is the file's own rate, 0.5 half, 2.0 twice.\n\nHow it gets there is worth knowing. It accumulates fractional frames from the\nREAL time elapsed, multiplied by the file's frame rate and the speed, and moves\non only by whole frames. Two consequences:\n\nPlayback keeps real time even when the patch is running slowly. A heavy patch\ndrops frames from the video rather than playing it in slow motion, which is\nalmost always what you want and is not what a naive player does.\n\nAt slow speeds it sends FEWER frames, not repeated ones. Nothing is emitted\nuntil enough time has accumulated for the next whole frame, and nothing is\ninterpolated between frames. So a downstream counter counts real new frames,\nand the picture simply holds between them.\n\nFRAMES COME OUT AS ARRAYS:\n'frame' sends the picture, ready for the image nodes - the same kind of array\ncv_camera produces. 'frame_num' says where you are, and 'done' fires at the end - and on every\nwrap when looping, so it doubles as a lap marker. Use it to trigger whatever\ncomes next rather than watching the frame number.\n\n'frame' AS AN INLET IS A SCRUB:\nSend it a number and the player jumps there. Drive it from a signal and you are\nscrubbing rather than playing - which is a quite different instrument, and the\nreason the inlet exists alongside the transport buttons.\n\nSAVING AND LOADING A SET OF CLIPS:\n'save' and 'load' on the dictionary write the whole collection to a file, so a\nset of cues outlives the patch and can be moved between pieces. The clips are\njust names and numbers, so the file is small and readable.\n\nThe clip spec carries no reference to the movie. A set of clips belongs to the\nfile it was made from, and pointing the player at a different video will play\nthe same frame numbers of something else entirely.\n\nSYNTAX:\nmovie_player <path>\nmovie_clip_dict\n\nEXAMPLE:\nmovie_player\n\nINPUTS and PARAMETERS:\n\npath:\nThe video file.\n\nplay / stop / loop:\nTransport.\n\nframe:\nJump to a frame. Send a stream of them to scrub.\n\nspeed:\nRate. 1.0 is normal.\n\nclip_start / clip_end / save clip:\nThe in and out points, and a button that sends them as a clip spec.\n\ninput:\nText commands - play, loop, stop, open and the rest.\n\nclip name / store / delete (movie_clip_dict):\nName the current spec, keep it, or remove it.\n\nplay / loop (movie_clip_dict):\nSend the selected clip to the player.\n\nsave / load:\nThe whole collection, to and from a file.\n\nOUTPUTS: \n\nframe:\nThe picture, as an array.\n\nframe_num / done:\nWhere it is, and when it finished.\n\nclip_spec:\n[start, end, speed] for the current in and out points.\n\ncommand out (movie_clip_dict):\nThe text command for the player.\n\nRELATED:\ncv_camera for live pictures rather than recorded ones.\nThe k. and tv. nodes to filter frames on the way past.\nsampler nodes if what you want to cut up is sound rather than picture.",
+                    "value": "movie_player plays a video file and sends its frames as pictures.\n\nOPENING A FILE:\nSend 'open' and a path to the 'input' inlet - here, edit the string at the\ntop and press return. 'import' and a path does the same but reads the whole\nmovie into memory first: it takes a while and a lot of memory, and then\njumping anywhere in it is instant. A path given as the node's argument\n(movie_player <path>) is opened when the node is made, and a saved patch\nreopens its movie when it loads.\n\nThe 'path' box shows what is open. Typing a new path into it does not open\nanything - use the 'open' message.\n\nTHE COMMANDS ARE PLAIN TEXT:\nThe 'input' inlet understands open, import, play, loop, stop, pause, resume\nand save_clip. Numbers after play or loop are read as start and end if they\nare whole, and as speed if they have a decimal point:\n\n    play 240 512\n    loop 240 512 0.5\n\nso the decimal point is what distinguishes speed from a frame number. They\nset clip_start, clip_end and speed, and start from clip_start. A plain number\nsent to 'input' jumps to that frame.\n\nThat is what movie_clip_dict sends, but anything can send it - a sequencer, a\nscore, another patch over OSC.\n\nTHE BUTTONS:\n'play' starts from clip_start, and then becomes 'pause'; after a pause it\nbecomes 'resume'. 'stop' ends playback and goes back to the beginning. 'loop'\ndecides whether reaching clip_end stops or wraps round to clip_start.\n\n'speed' IS A RATE, AND PLAYBACK FOLLOWS THE CLOCK:\n1.0 is the file's own rate, 0.5 half, 2.0 twice.\n\nIt accumulates fractional frames from the REAL time elapsed, multiplied by the\nfile's frame rate and the speed, and moves on only by whole frames. Two\nconsequences:\n\nPlayback keeps real time even when the patch is running slowly. A heavy patch\ndrops frames from the video rather than playing it in slow motion.\n\nAt slow speeds it sends FEWER frames, not repeated ones. Nothing is emitted\nuntil enough time has accumulated for the next whole frame, and nothing is\ninterpolated between frames. A downstream counter counts real new frames, and\nthe picture simply holds between them.\n\nFRAMES COME OUT AS ARRAYS:\n'frame' sends the picture as an RGB array of height by width by 3 bytes - the\nsame kind of array cv_camera produces. 'frame_num' says where you are. 'done'\nbangs at the end, and on every wrap when looping, so it doubles as a lap\nmarker - use it to trigger whatever comes next rather than watching the frame\nnumber.\n\n'frame' AS AN INLET IS A SCRUB:\nSend it a number, or drag it, and the player jumps there and sends that frame.\nDrive it from a signal and you are scrubbing rather than playing - a quite\ndifferent instrument.\n\nIN AND OUT POINTS:\nclip_start and clip_end mark the piece that plays. clip_end is not itself\nplayed - playback stops on the frame before it - and 0 or less means the end\nof the movie. The small button beside each sets it to the frame showing now,\nso you can scrub to a moment and mark it. 'save clip' sends the pair, with the\nspeed, out of 'clip_spec' as [start, end, speed], for movie_clip_dict to\nstore under a name.\n\nSYNTAX:\nmovie_player <path>\n\nEXAMPLE:\nmovie_player\n\nINPUTS and PARAMETERS:\n\ninput:\nText commands - open, import, play, loop, stop, pause, resume, save_clip - or\na frame number to jump to.\n\nframe:\nJump to a frame and send it. Send a stream of them to scrub.\n\npath:\nShows the open file.\n\nplay / stop:\nTransport.\n\nloop:\nWrap at clip_end instead of stopping.\n\nspeed:\nRate. 1.0 is normal.\n\nclip_start / clip_end:\nThe in and out points; the button beside each takes the current frame.\n\nsave clip:\nSend the in and out points and speed out of 'clip_spec'.\n\nOUTPUTS:\n\nframe:\nThe picture, as an RGB array.\n\nframe_num:\nThe frame just sent.\n\ndone:\nA bang at the end of the clip, and at each wrap when looping.\n\nclip_spec:\n[start, end, speed] for the current in and out points.\n\nRELATED:\nmovie_clip_dict to keep named clips; it used to share this page.\ncv_camera for live pictures rather than recorded ones.\nThe k. and tv. nodes to filter frames on the way past.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 760,
+                    "value": 900,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These play a video file and keep a set of named pieces of it.\n\nTHE NODES:\n\nmovie_player     plays a file and sends frames\nmovie_clip_dict  remembers in and out points by name, and plays them back\n\nTHEY ARE DESIGNED TO BE WIRED TOGETHER:\nThe player has 'clip_start' and 'clip_end', and a 'save clip' button that sends\nthose out as a CLIP SPEC - a list of [start, end, speed]. The dictionary takes\nthat, stores it under a name you type, and can later send a command back to the\nplayer to play it.\n\nSo the working loop is: scrub to a moment, set the in and out points, name it,\nstore it. Do that a few times and you have a set of cues, kept in the patch and\nsaveable to a file.\n\nWire 'clip_spec' on the player to 'clip_spec in' on the dictionary, and\n'command out' on the dictionary back to 'input' on the player. That second cord\nis what makes the names do anything.\n\nTHE COMMANDS ARE PLAIN TEXT:\nWhat the dictionary sends is a message like:\n\n    play 240 512 1.0\n    loop 240 512 0.5\n\nwhich the player also accepts from anywhere else. That is worth knowing, because\nit means you do not need the dictionary at all if the numbers are coming from\nsomewhere else - a sequencer, a score, another patch over OSC.\n\nThe player understands open, import, play, loop, stop, pause, resume and\nsave_clip. Numbers after play or loop are read as start and end if they are\nwhole, and as speed if they have a decimal point - so 'play 100 200' and\n'play 100 200 0.5' both work, and the decimal point is what distinguishes speed\nfrom a frame number.\n\n'speed' IS A RATE, AND PLAYBACK FOLLOWS THE CLOCK:\n1.0 is the file's own rate, 0.5 half, 2.0 twice.\n\nHow it gets there is worth knowing. It accumulates fractional frames from the\nREAL time elapsed, multiplied by the file's frame rate and the speed, and moves\non only by whole frames. Two consequences:\n\nPlayback keeps real time even when the patch is running slowly. A heavy patch\ndrops frames from the video rather than playing it in slow motion, which is\nalmost always what you want and is not what a naive player does.\n\nAt slow speeds it sends FEWER frames, not repeated ones. Nothing is emitted\nuntil enough time has accumulated for the next whole frame, and nothing is\ninterpolated between frames. So a downstream counter counts real new frames,\nand the picture simply holds between them.\n\nFRAMES COME OUT AS ARRAYS:\n'frame' sends the picture, ready for the image nodes - the same kind of array\ncv_camera produces. 'frame_num' says where you are, and 'done' fires at the end - and on every\nwrap when looping, so it doubles as a lap marker. Use it to trigger whatever\ncomes next rather than watching the frame number.\n\n'frame' AS AN INLET IS A SCRUB:\nSend it a number and the player jumps there. Drive it from a signal and you are\nscrubbing rather than playing - which is a quite different instrument, and the\nreason the inlet exists alongside the transport buttons.\n\nSAVING AND LOADING A SET OF CLIPS:\n'save' and 'load' on the dictionary write the whole collection to a file, so a\nset of cues outlives the patch and can be moved between pieces. The clips are\njust names and numbers, so the file is small and readable.\n\nThe clip spec carries no reference to the movie. A set of clips belongs to the\nfile it was made from, and pointing the player at a different video will play\nthe same frame numbers of something else entirely.\n\nSYNTAX:\nmovie_player <path>\nmovie_clip_dict\n\nEXAMPLE:\nmovie_player\n\nINPUTS and PARAMETERS:\n\npath:\nThe video file.\n\nplay / stop / loop:\nTransport.\n\nframe:\nJump to a frame. Send a stream of them to scrub.\n\nspeed:\nRate. 1.0 is normal.\n\nclip_start / clip_end / save clip:\nThe in and out points, and a button that sends them as a clip spec.\n\ninput:\nText commands - play, loop, stop, open and the rest.\n\nclip name / store / delete (movie_clip_dict):\nName the current spec, keep it, or remove it.\n\nplay / loop (movie_clip_dict):\nSend the selected clip to the player.\n\nsave / load:\nThe whole collection, to and from a file.\n\nOUTPUTS: \n\nframe:\nThe picture, as an array.\n\nframe_num / done:\nWhere it is, and when it finished.\n\nclip_spec:\n[start, end, speed] for the current in and out points.\n\ncommand out (movie_clip_dict):\nThe text command for the player.\n\nRELATED:\ncv_camera for live pictures rather than recorded ones.\nThe k. and tv. nodes to filter frames on the way past.\nsampler nodes if what you want to cut up is sound rather than picture."
+            "text": "movie_player plays a video file and sends its frames as pictures.\n\nOPENING A FILE:\nSend 'open' and a path to the 'input' inlet - here, edit the string at the\ntop and press return. 'import' and a path does the same but reads the whole\nmovie into memory first: it takes a while and a lot of memory, and then\njumping anywhere in it is instant. A path given as the node's argument\n(movie_player <path>) is opened when the node is made, and a saved patch\nreopens its movie when it loads.\n\nThe 'path' box shows what is open. Typing a new path into it does not open\nanything - use the 'open' message.\n\nTHE COMMANDS ARE PLAIN TEXT:\nThe 'input' inlet understands open, import, play, loop, stop, pause, resume\nand save_clip. Numbers after play or loop are read as start and end if they\nare whole, and as speed if they have a decimal point:\n\n    play 240 512\n    loop 240 512 0.5\n\nso the decimal point is what distinguishes speed from a frame number. They\nset clip_start, clip_end and speed, and start from clip_start. A plain number\nsent to 'input' jumps to that frame.\n\nThat is what movie_clip_dict sends, but anything can send it - a sequencer, a\nscore, another patch over OSC.\n\nTHE BUTTONS:\n'play' starts from clip_start, and then becomes 'pause'; after a pause it\nbecomes 'resume'. 'stop' ends playback and goes back to the beginning. 'loop'\ndecides whether reaching clip_end stops or wraps round to clip_start.\n\n'speed' IS A RATE, AND PLAYBACK FOLLOWS THE CLOCK:\n1.0 is the file's own rate, 0.5 half, 2.0 twice.\n\nIt accumulates fractional frames from the REAL time elapsed, multiplied by the\nfile's frame rate and the speed, and moves on only by whole frames. Two\nconsequences:\n\nPlayback keeps real time even when the patch is running slowly. A heavy patch\ndrops frames from the video rather than playing it in slow motion.\n\nAt slow speeds it sends FEWER frames, not repeated ones. Nothing is emitted\nuntil enough time has accumulated for the next whole frame, and nothing is\ninterpolated between frames. A downstream counter counts real new frames, and\nthe picture simply holds between them.\n\nFRAMES COME OUT AS ARRAYS:\n'frame' sends the picture as an RGB array of height by width by 3 bytes - the\nsame kind of array cv_camera produces. 'frame_num' says where you are. 'done'\nbangs at the end, and on every wrap when looping, so it doubles as a lap\nmarker - use it to trigger whatever comes next rather than watching the frame\nnumber.\n\n'frame' AS AN INLET IS A SCRUB:\nSend it a number, or drag it, and the player jumps there and sends that frame.\nDrive it from a signal and you are scrubbing rather than playing - a quite\ndifferent instrument.\n\nIN AND OUT POINTS:\nclip_start and clip_end mark the piece that plays. clip_end is not itself\nplayed - playback stops on the frame before it - and 0 or less means the end\nof the movie. The small button beside each sets it to the frame showing now,\nso you can scrub to a moment and mark it. 'save clip' sends the pair, with the\nspeed, out of 'clip_spec' as [start, end, speed], for movie_clip_dict to\nstore under a name.\n\nSYNTAX:\nmovie_player <path>\n\nEXAMPLE:\nmovie_player\n\nINPUTS and PARAMETERS:\n\ninput:\nText commands - open, import, play, loop, stop, pause, resume, save_clip - or\na frame number to jump to.\n\nframe:\nJump to a frame and send it. Send a stream of them to scrub.\n\npath:\nShows the open file.\n\nplay / stop:\nTransport.\n\nloop:\nWrap at clip_end instead of stopping.\n\nspeed:\nRate. 1.0 is normal.\n\nclip_start / clip_end:\nThe in and out points; the button beside each takes the current frame.\n\nsave clip:\nSend the in and out points and speed out of 'clip_spec'.\n\nOUTPUTS:\n\nframe:\nThe picture, as an RGB array.\n\nframe_num:\nThe frame just sent.\n\ndone:\nA bang at the end of the clip, and at each wrap when looping.\n\nclip_spec:\n[start, end, speed] for the current in and out points.\n\nRELATED:\nmovie_clip_dict to keep named clips; it used to share this page.\ncv_camera for live pictures rather than recorded ones.\nThe k. and tv. nodes to filter frames on the way past."
         },
         "3": {
             "name": "string",
@@ -105,7 +105,7 @@
             "properties": {
                 "0": {
                     "name": "text in",
-                    "value": "/path/to/a/movie.mov",
+                    "value": "open /path/to/a/movie.mov",
                     "value_type": "str"
                 },
                 "1": {
@@ -121,12 +121,12 @@
             }
         },
         "4": {
-            "init": "comment point this at a file and click it",
+            "init": "comment put a real path after open and press return",
             "name": "comment",
             "id": 385,
             "position_x": 681,
             "position_y": 112,
-            "width": 211,
+            "width": 273,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -134,7 +134,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "point this at a file and click it",
+                    "value": "put a real path after open and press return",
                     "value_type": "str"
                 },
                 "1": {
@@ -143,13 +143,107 @@
                     "value_type": "str"
                 }
             },
-            "comment": "point this at a file and click it"
+            "comment": "put a real path after open and press return"
         },
         "5": {
-            "name": "movie_player",
+            "name": "message",
             "id": 422,
             "position_x": 30,
-            "position_y": 160,
+            "position_y": 150,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "play",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 150,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "loop 0 120 0.5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "message",
+            "id": 496,
+            "position_x": 400,
+            "position_y": 150,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "stop",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment loop the first 120 frames at half speed",
+            "name": "comment",
+            "id": 533,
+            "position_x": 681,
+            "position_y": 200,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "loop the first 120 frames at half speed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "loop the first 120 frames at half speed"
+        },
+        "9": {
+            "name": "movie_player",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 250,
             "width": 170,
             "height": 248,
             "visibility": "show_all",
@@ -157,12 +251,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "6": {
+        "10": {
             "name": "text_block",
-            "id": 459,
+            "id": 607,
             "annotation": true,
             "position_x": 681,
-            "position_y": 575,
+            "position_y": 665,
             "width": 255,
             "height": 40,
             "visibility": "show_all",
@@ -197,11 +291,11 @@
             },
             "text": "set clip_start and clip_end, then\n'save clip' sends them out as a spec"
         },
-        "7": {
+        "11": {
             "name": "info",
-            "id": 496,
+            "id": 644,
             "position_x": 420,
-            "position_y": 160,
+            "position_y": 250,
             "width": 235,
             "height": 42,
             "visibility": "show_all",
@@ -209,12 +303,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
+        "12": {
             "init": "comment frames are arrays, like a camera",
             "name": "comment",
-            "id": 533,
+            "id": 681,
             "position_x": 681,
-            "position_y": 255,
+            "position_y": 345,
             "width": 205,
             "height": 30,
             "visibility": "show_all",
@@ -234,11 +328,11 @@
             },
             "comment": "frames are arrays, like a camera"
         },
-        "9": {
+        "13": {
             "name": "int",
-            "id": 570,
+            "id": 718,
             "position_x": 420,
-            "position_y": 300,
+            "position_y": 390,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -262,12 +356,12 @@
                 }
             }
         },
-        "10": {
+        "14": {
             "init": "comment where it has got to",
             "name": "comment",
-            "id": 607,
+            "id": 755,
             "position_x": 681,
-            "position_y": 350,
+            "position_y": 440,
             "width": 125,
             "height": 30,
             "visibility": "show_all",
@@ -287,63 +381,48 @@
             },
             "comment": "where it has got to"
         },
-        "11": {
-            "name": "movie_clip_dict",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 650,
-            "width": 243,
-            "height": 347,
+        "15": {
+            "name": "button",
+            "id": 792,
+            "position_x": 420,
+            "position_y": 480,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "12": {
-            "name": "text_block",
-            "id": 681,
-            "annotation": true,
+        "16": {
+            "init": "comment done: the end, or each wrap",
+            "name": "comment",
+            "id": 829,
             "position_x": 681,
-            "position_y": 1065,
-            "width": 261,
-            "height": 76,
+            "position_y": 530,
+            "width": 174,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "type a name, press store. The list\nbuilds up, and save/load keeps it\nBOTH cords matter: spec up, command\nback down. Without the second one the\nnames do nothing",
+                    "name": "text",
+                    "value": "done: the end, or each wrap",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 60,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "type a name, press store. The list\nbuilds up, and save/load keeps it\nBOTH cords matter: spec up, command\nback down. Without the second one the\nnames do nothing"
+            "comment": "done: the end, or each wrap"
         },
-        "13": {
+        "17": {
             "name": "list",
-            "id": 718,
+            "id": 866,
             "position_x": 420,
-            "position_y": 650,
+            "position_y": 580,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -362,51 +441,36 @@
                 }
             }
         },
-        "14": {
-            "name": "text_block",
-            "id": 755,
-            "annotation": true,
+        "18": {
+            "init": "comment the clip spec: start, end, speed",
+            "name": "comment",
+            "id": 903,
             "position_x": 681,
-            "position_y": 700,
-            "width": 280,
-            "height": 76,
+            "position_y": 630,
+            "width": 205,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "the command it sends: 'play 240 512 1.0'\nplain text, so anything else can send\nit too - a sequencer, a score, OSC\nwhole numbers are frames, a number with\na decimal point is the speed",
+                    "name": "text",
+                    "value": "the clip spec: start, end, speed",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 272,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 60,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "the command it sends: 'play 240 512 1.0'\nplain text, so anything else can send\nit too - a sequencer, a score, OSC\nwhole numbers are frames, a number with\na decimal point is the speed"
+            "comment": "the clip spec: start, end, speed"
         },
-        "15": {
+        "19": {
             "name": "close",
-            "id": 792,
+            "id": 940,
             "position_x": 24,
-            "position_y": 1027,
+            "position_y": 652,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -427,57 +491,77 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "string out",
-            "dest_node": 422,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "path"
+            "dest_input_name": "input"
         },
         "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "frame",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "2": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "frame_num",
+            "source_output_name": "",
             "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "3": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "clip_spec",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "clip_spec in"
-        },
-        "4": {
-            "source_node": 644,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "command out",
-            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "5": {
-            "source_node": 644,
+        "2": {
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "command out",
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frame",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "frame_num",
             "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "done",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "clip_spec",
+            "dest_node": 866,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

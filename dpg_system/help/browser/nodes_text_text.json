@@ -1,11 +1,11 @@
 {
-    "height": 676,
-    "width": 699,
+    "height": 884,
+    "width": 576,
     "position": [
         100,
         100
     ],
-    "id": 1388,
+    "id": 1684,
     "name": "nodes_text_text",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_text_text.json",
     "nodes": {
@@ -274,7 +274,7 @@
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link gather_sentence building text",
+            "init": "help_link gather_sentence gather_sentence",
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
@@ -282,7 +282,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "building text",
+                    "name": "gather_sentence",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -307,12 +307,12 @@
             "annotation": true,
             "position_x": 256,
             "position_y": 258,
-            "width": 317,
-            "height": 40,
+            "width": 243,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "assembling text over time\n(fifo_string, gather_sentence, string_builder)",
+                    "value": "collect text until a sentence ends",
                     "value_type": "str"
                 },
                 "1": {
@@ -322,12 +322,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 309,
+                    "value": 235,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -336,14 +336,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "assembling text over time\n(fifo_string, gather_sentence, string_builder)",
+            "text": "collect text until a sentence ends",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
-            "init": "help_link text_change text_change",
+            "init": "help_link string_builder string_builder",
             "name": "help_link",
             "position_x": 24,
             "position_y": 306,
@@ -351,7 +351,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "text_change",
+                    "name": "string_builder",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -376,6 +376,144 @@
             "annotation": true,
             "position_x": 256,
             "position_y": 310,
+            "width": 181,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "collect text until asked",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 173,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "collect text until asked",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link fifo_string fifo_string",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "fifo_string",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 256,
+            "position_y": 362,
+            "width": 243,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a rolling window of recent phrases",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a rolling window of recent phrases",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link text_change text_change",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "text_change",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 256,
+            "position_y": 414,
             "width": 132,
             "height": 28,
             "properties": {
@@ -406,16 +544,16 @@
                 }
             },
             "text": "only what is new",
-            "id": 981,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "17": {
             "init": "help_link string_replace string_replace / word_replace",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 358,
+            "position_y": 462,
             "width": 218,
             "height": 44,
             "properties": {
@@ -435,16 +573,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1018,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "18": {
             "name": "text_block",
             "annotation": true,
             "position_x": 256,
-            "position_y": 362,
+            "position_y": 466,
             "width": 280,
             "height": 40,
             "properties": {
@@ -475,16 +613,16 @@
                 }
             },
             "text": "find and put something else in its place\n(string_replace, word_replace)",
-            "id": 1055,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "19": {
             "init": "help_link unescape_text unescape_text",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 410,
+            "position_y": 514,
             "width": 218,
             "height": 44,
             "properties": {
@@ -504,16 +642,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1092,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "20": {
             "name": "text_block",
             "annotation": true,
             "position_x": 256,
-            "position_y": 414,
+            "position_y": 518,
             "width": 224,
             "height": 28,
             "properties": {
@@ -544,16 +682,16 @@
                 }
             },
             "text": "HTML escapes back to characters",
-            "id": 1129,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "21": {
             "init": "help_link printable printable",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 462,
+            "position_y": 566,
             "width": 218,
             "height": 44,
             "properties": {
@@ -573,16 +711,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1166,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "22": {
             "name": "text_block",
             "annotation": true,
             "position_x": 256,
-            "position_y": 466,
+            "position_y": 570,
             "width": 194,
             "height": 28,
             "properties": {
@@ -613,16 +751,16 @@
                 }
             },
             "text": "keep only plain characters",
-            "id": 1203,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "23": {
             "init": "help_link text_file text_file / text_editor",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 514,
+            "position_y": 618,
             "width": 218,
             "height": 44,
             "properties": {
@@ -642,16 +780,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1240,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "24": {
             "name": "text_block",
             "annotation": true,
             "position_x": 256,
-            "position_y": 518,
+            "position_y": 622,
             "width": 200,
             "height": 40,
             "properties": {
@@ -682,16 +820,16 @@
                 }
             },
             "text": "a body of text in the patch\n(text_editor, text_file)",
-            "id": 1277,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "25": {
             "init": "help_link word_trigger word triggers",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 566,
+            "position_y": 670,
             "width": 218,
             "height": 44,
             "properties": {
@@ -711,22 +849,22 @@
                     "value_type": "str"
                 }
             },
-            "id": 1314,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "26": {
             "name": "text_block",
             "annotation": true,
             "position_x": 256,
-            "position_y": 570,
-            "width": 403,
+            "position_y": 674,
+            "width": 255,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "reacting to what was said\n(first_letter_trigger, fuzzy_match, word_gate, word_trigger)",
+                    "value": "reacting to what was said\n(first_letter_trigger, word_trigger)",
                     "value_type": "str"
                 },
                 "1": {
@@ -736,7 +874,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 395,
+                    "value": 247,
                     "value_type": "int"
                 },
                 "3": {
@@ -750,8 +888,146 @@
                     "value_type": "str"
                 }
             },
-            "text": "reacting to what was said\n(first_letter_trigger, fuzzy_match, word_gate, word_trigger)",
-            "id": 1351,
+            "text": "reacting to what was said\n(first_letter_trigger, word_trigger)",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "help_link word_gate word_gate",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 722,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "word_gate",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 256,
+            "position_y": 726,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pass only known words",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "pass only known words",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link fuzzy_match fuzzy_match",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 774,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "fuzzy_match",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 256,
+            "position_y": 778,
+            "width": 274,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "correct a name to the closest in a list",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "correct a name to the closest in a list",
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

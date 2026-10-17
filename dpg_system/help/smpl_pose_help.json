@@ -1,11 +1,11 @@
 {
-    "height": 821,
-    "width": 1824,
+    "height": 1160,
+    "width": 1447,
     "position": [
         100,
         100
     ],
-    "id": 607,
+    "id": 644,
     "name": "smpl_pose_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_pose_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment smpl_pose - the body, its shape and its posture",
+            "init": "comment smpl_pose - see and edit an SMPL pose",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 586,
+            "width": 463,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "smpl_pose - the body, its shape and its posture",
+                    "value": "smpl_pose - see and edit an SMPL pose",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "smpl_pose - the body, its shape and its posture"
+            "comment": "smpl_pose - see and edit an SMPL pose"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 976,
+            "position_x": 589,
             "position_y": 45,
-            "width": 808,
-            "height": 716,
+            "width": 818,
+            "height": 1026,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These hold an SMPL body: its shape, its pose, and recorded takes of both.\n\nWHAT SMPL IS:\nA parametric model of a human body. Its shape is a handful of numbers - the \nBETAS - and its pose is 22 joint rotations. Between them they describe a \nspecific person in a specific posture, and from that the model produces the \nactual surface: where every vertex of the body is.\n\nThat is the value of it. A skeleton tells you where the joints are; SMPL tells \nyou where the BODY is, which is what you need for contact, for volume, for \nanything about the physical thing rather than the stick figure.\n\nTHE NODES:\n\nsmpl_pose        hold and edit a 22-joint SMPL pose\nsmpl_body        the skeleton for a given set of betas\nsmpl_take        play back a recorded SMPL take\nsmpl_beta_editor tune the betas by hand and produce a config\n\nBETAS ARE THE PERSON:\nThe first beta is roughly overall size, the second roughly the tall-versus-wide \naxis, and the rest progressively subtler. They are not anatomical measurements - \nthey are the axes a model found in a population, so no single one means \n\"leg length\". You tune them by eye against the person you are working with.\n\nsmpl_beta_editor produces a CONFIG dict, and that config is what the other \nnodes want. Almost everything downstream - torque, ragdoll, floor calibration - \ntakes it, because none of them can work out where the body is without knowing \nits size and mass.\n\nIts 'limb_lengths' outlet feeds the motion capture side, so the skeleton the \nsuit assumes and the body SMPL builds can be made to agree.\n\nSYNTAX:\nsmpl_pose\nsmpl_beta_editor\nsmpl_take\n\nEXAMPLE:\nsmpl_beta_editor\n\nINPUTS and PARAMETERS:\n\nin / betas_in:\nThe pose, or the shape numbers.\n\ngender / total_mass (smpl_beta_editor):\nWhich body model, and the mass the physics nodes should assume.\n\nsolve \u03b21 / solve_target \u03b21 / solve_reg:\nFit the first beta to a target rather than setting it by hand.\n\nsave / load / file_path:\nStore a set of betas.\n\non/off / speed / frame (smpl_take):\nTransport for a recorded take.\n\nOUTPUTS: \n\nout / pose:\nThe pose.\n\nconfig:\nThe dict every other SMPL node wants - betas, gender, mass.\n\nbetas / limb_lengths:\nThe shape numbers, and the resulting bone lengths.\n\njoint_data / root_position (smpl_take):\nThe playing frames.\n\nskeleton_data (smpl_body):\nThe skeleton for those betas.",
+                    "value": "smpl_pose shows a 22-joint SMPL pose one row per joint, and lets you edit it.\n\nWHAT IT SHOWS:\nTwenty-two rows in SMPL's joint order: pelvis, left_hip, right_hip, spine1,\nleft_knee, right_knee, spine2, left_ankle, right_ankle, spine3, left_foot,\nright_foot, neck, left_collar, right_collar, head, left_shoulder,\nright_shoulder, left_elbow, right_elbow, left_wrist, right_wrist. These are\nSMPL's body joints; the hand joints are not included.\n\nEach row is one joint's rotation as a quaternion, w x y z with the real part\nfirst. Every joint starts at the identity, 1 0 0 0, which is no rotation.\n\nQUATERNIONS, NOT AXIS-ANGLE:\nSMPL files store a pose as axis-angle - three numbers per joint - and that is\nwhat smpl_take sends. Put smpl_to_quats in between. A three-column pose sent\nstraight in is shown as three-number rows, and the joint names disappear.\n\nEDITING:\nChange any number in a row and the whole pose goes out of 'out'. The numbers\ngo out exactly as typed - nothing normalises them - so keep each row a unit\nquaternion, its four squares adding up to one. 0.707 0 0.707 0 is a quarter\nturn about y; 1 1 0 0 is not a rotation at all.\n\nA POSE ARRIVING:\nA pose sent into 'in' replaces the rows and goes straight out, so smpl_pose\nalso works as a readout. While a stream is arriving, it overwrites your edits\non the next frame. A bang into 'in' sends the rows as they are.\n\nThe rows are saved with the patch.\n\nSYNTAX:\nsmpl_pose\n\nEXAMPLE:\nsmpl_pose\n\nINPUTS:\n\nin:\nA 22-joint quaternion pose, or a bang to send the current rows.\n\npelvis ... right_wrist:\nThe rows themselves.\n\nreset:\nSet every joint back to the identity, and send the pose. With 'output type'\nset to list this produces a malformed pose; use numpy or torch.\n\noutput type:\nnumpy (the default), torch or list.\n\nOPTIONS:\nsave and load write the rows to a .npy file and read them back.\n\nOUTPUT:\n\nout:\nThe pose, 22 rows of four.\n\nRELATED:\ngl_body draws a 22-row SMPL quaternion pose directly.\nsmpl_quats_to_joints splits one into an outlet per joint.\nactive_pose is the same editor for the 20 Shadow active joints.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 800,
+                    "value": 810,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 700,
+                    "value": 1010,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,35 +90,83 @@
                     "value_type": "str"
                 }
             },
-            "text": "These hold an SMPL body: its shape, its pose, and recorded takes of both.\n\nWHAT SMPL IS:\nA parametric model of a human body. Its shape is a handful of numbers - the \nBETAS - and its pose is 22 joint rotations. Between them they describe a \nspecific person in a specific posture, and from that the model produces the \nactual surface: where every vertex of the body is.\n\nThat is the value of it. A skeleton tells you where the joints are; SMPL tells \nyou where the BODY is, which is what you need for contact, for volume, for \nanything about the physical thing rather than the stick figure.\n\nTHE NODES:\n\nsmpl_pose        hold and edit a 22-joint SMPL pose\nsmpl_body        the skeleton for a given set of betas\nsmpl_take        play back a recorded SMPL take\nsmpl_beta_editor tune the betas by hand and produce a config\n\nBETAS ARE THE PERSON:\nThe first beta is roughly overall size, the second roughly the tall-versus-wide \naxis, and the rest progressively subtler. They are not anatomical measurements - \nthey are the axes a model found in a population, so no single one means \n\"leg length\". You tune them by eye against the person you are working with.\n\nsmpl_beta_editor produces a CONFIG dict, and that config is what the other \nnodes want. Almost everything downstream - torque, ragdoll, floor calibration - \ntakes it, because none of them can work out where the body is without knowing \nits size and mass.\n\nIts 'limb_lengths' outlet feeds the motion capture side, so the skeleton the \nsuit assumes and the body SMPL builds can be made to agree.\n\nSYNTAX:\nsmpl_pose\nsmpl_beta_editor\nsmpl_take\n\nEXAMPLE:\nsmpl_beta_editor\n\nINPUTS and PARAMETERS:\n\nin / betas_in:\nThe pose, or the shape numbers.\n\ngender / total_mass (smpl_beta_editor):\nWhich body model, and the mass the physics nodes should assume.\n\nsolve \u03b21 / solve_target \u03b21 / solve_reg:\nFit the first beta to a target rather than setting it by hand.\n\nsave / load / file_path:\nStore a set of betas.\n\non/off / speed / frame (smpl_take):\nTransport for a recorded take.\n\nOUTPUTS: \n\nout / pose:\nThe pose.\n\nconfig:\nThe dict every other SMPL node wants - betas, gender, mass.\n\nbetas / limb_lengths:\nThe shape numbers, and the resulting bone lengths.\n\njoint_data / root_position (smpl_take):\nThe playing frames.\n\nskeleton_data (smpl_body):\nThe skeleton for those betas."
+            "text": "smpl_pose shows a 22-joint SMPL pose one row per joint, and lets you edit it.\n\nWHAT IT SHOWS:\nTwenty-two rows in SMPL's joint order: pelvis, left_hip, right_hip, spine1,\nleft_knee, right_knee, spine2, left_ankle, right_ankle, spine3, left_foot,\nright_foot, neck, left_collar, right_collar, head, left_shoulder,\nright_shoulder, left_elbow, right_elbow, left_wrist, right_wrist. These are\nSMPL's body joints; the hand joints are not included.\n\nEach row is one joint's rotation as a quaternion, w x y z with the real part\nfirst. Every joint starts at the identity, 1 0 0 0, which is no rotation.\n\nQUATERNIONS, NOT AXIS-ANGLE:\nSMPL files store a pose as axis-angle - three numbers per joint - and that is\nwhat smpl_take sends. Put smpl_to_quats in between. A three-column pose sent\nstraight in is shown as three-number rows, and the joint names disappear.\n\nEDITING:\nChange any number in a row and the whole pose goes out of 'out'. The numbers\ngo out exactly as typed - nothing normalises them - so keep each row a unit\nquaternion, its four squares adding up to one. 0.707 0 0.707 0 is a quarter\nturn about y; 1 1 0 0 is not a rotation at all.\n\nA POSE ARRIVING:\nA pose sent into 'in' replaces the rows and goes straight out, so smpl_pose\nalso works as a readout. While a stream is arriving, it overwrites your edits\non the next frame. A bang into 'in' sends the rows as they are.\n\nThe rows are saved with the patch.\n\nSYNTAX:\nsmpl_pose\n\nEXAMPLE:\nsmpl_pose\n\nINPUTS:\n\nin:\nA 22-joint quaternion pose, or a bang to send the current rows.\n\npelvis ... right_wrist:\nThe rows themselves.\n\nreset:\nSet every joint back to the identity, and send the pose. With 'output type'\nset to list this produces a malformed pose; use numpy or torch.\n\noutput type:\nnumpy (the default), torch or list.\n\nOPTIONS:\nsave and load write the rows to a .npy file and read them back.\n\nOUTPUT:\n\nout:\nThe pose, 22 rows of four.\n\nRELATED:\ngl_body draws a 22-row SMPL quaternion pose directly.\nsmpl_quats_to_joints splits one into an outlet per joint.\nactive_pose is the same editor for the 20 Shadow active joints."
         },
         "3": {
-            "name": "smpl_beta_editor",
+            "name": "button",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 229,
-            "height": 322,
+            "width": 45,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "4": {
-            "name": "text_block",
+            "init": "comment click to send the pose",
+            "name": "comment",
             "id": 385,
+            "position_x": 341,
+            "position_y": 62,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send the pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to send the pose"
+        },
+        "5": {
+            "name": "smpl_pose",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 285,
+            "height": 378,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "[18]",
+                    "value": [
+                        0.7071,
+                        0.0,
+                        0.7071,
+                        0.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
             "annotation": true,
-            "position_x": 691,
-            "position_y": 415,
-            "width": 255,
-            "height": 40,
+            "position_x": 341,
+            "position_y": 130,
+            "width": 218,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "tune by eye against the person\nconfig is what everything else wants",
+                    "value": "left_elbow is set to a quarter\nturn about y - edit any row\nand the pose goes out",
                     "value_type": "str"
                 },
                 "1": {
@@ -128,7 +176,77 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 247,
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "left_elbow is set to a quarter\nturn about y - edit any row\nand the pose goes out"
+        },
+        "7": {
+            "name": "quaternion_to_euler",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 125,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "name": "vector",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 900,
+            "width": 160,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 341,
+            "position_y": 900,
+            "width": 212,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the same pose as x y z angles\nin degrees, one row per joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
                     "value_type": "int"
                 },
                 "3": {
@@ -142,74 +260,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "tune by eye against the person\nconfig is what everything else wants"
+            "text": "the same pose as x y z angles\nin degrees, one row per joint"
         },
-        "5": {
-            "name": "smpl_body",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 490,
-            "width": 88,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "6": {
-            "name": "smpl_take",
-            "id": 459,
-            "position_x": 380,
-            "position_y": 62,
-            "width": 123,
-            "height": 112,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "7": {
-            "name": "smpl_pose",
-            "id": 496,
-            "position_x": 380,
-            "position_y": 285,
-            "width": 285,
-            "height": 378,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "8": {
-            "init": "comment a recorded take driving a pose",
-            "name": "comment",
-            "id": 533,
-            "position_x": 691,
-            "position_y": 500,
-            "width": 193,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a recorded take driving a pose",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a recorded take driving a pose"
-        },
-        "9": {
+        "10": {
             "name": "close",
-            "id": 570,
+            "id": 607,
             "position_x": 24,
-            "position_y": 693,
+            "position_y": 1056,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -229,18 +286,28 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "betas",
+            "source_output_name": "",
             "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "betas"
+            "dest_input_name": "in"
         },
         "1": {
-            "source_node": 459,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "joint_data",
+            "source_output_name": "out",
             "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternion"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "euler angles",
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

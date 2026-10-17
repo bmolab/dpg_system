@@ -1,11 +1,11 @@
 {
-    "height": 528,
+    "height": 684,
     "width": 804,
     "position": [
         100,
         100
     ],
-    "id": 1166,
+    "id": 1388,
     "name": "nodes_body_smpl_bodies",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_body_smpl_bodies.json",
     "nodes": {
@@ -205,7 +205,7 @@
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link smpl_pose smpl_pose / body / take",
+            "init": "help_link smpl_pose smpl_pose",
             "name": "help_link",
             "position_x": 24,
             "position_y": 210,
@@ -213,7 +213,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "smpl_pose / body / take",
+                    "name": "smpl_pose",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -238,12 +238,12 @@
             "annotation": true,
             "position_x": 244,
             "position_y": 214,
-            "width": 348,
-            "height": 40,
+            "width": 188,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "the body, its shape and its posture\n(smpl_beta_editor, smpl_body, smpl_pose, smpl_take)",
+                    "value": "see and edit an SMPL pose",
                     "value_type": "str"
                 },
                 "1": {
@@ -253,12 +253,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 340,
+                    "value": 180,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -267,14 +267,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "the body, its shape and its posture\n(smpl_beta_editor, smpl_body, smpl_pose, smpl_take)",
+            "text": "see and edit an SMPL pose",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link smpl_pose_adjust smpl_pose_adjust",
+            "init": "help_link smpl_body smpl_body",
             "name": "help_link",
             "position_x": 24,
             "position_y": 262,
@@ -282,7 +282,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "smpl_pose_adjust",
+                    "name": "smpl_body",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -307,6 +307,213 @@
             "annotation": true,
             "position_x": 244,
             "position_y": 266,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the skeleton of an SMPL model",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the skeleton of an SMPL model",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link smpl_take smpl_take",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 314,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl_take",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 318,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "play a recorded SMPL take",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "play a recorded SMPL take",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link smpl_beta_editor smpl_beta_editor",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 366,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl_beta_editor",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 370,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the shape of the body",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the shape of the body",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link smpl_pose_adjust smpl_pose_adjust",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 418,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl_pose_adjust",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 422,
             "width": 163,
             "height": 28,
             "properties": {
@@ -337,16 +544,16 @@
                 }
             },
             "text": "per-joint corrections",
-            "id": 907,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "11": {
+        "17": {
             "init": "help_link smpl_mag_yaw_correct smpl_mag_yaw_correct",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 314,
+            "position_y": 470,
             "width": 206,
             "height": 44,
             "properties": {
@@ -366,16 +573,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 944,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "18": {
             "name": "text_block",
             "annotation": true,
             "position_x": 244,
-            "position_y": 318,
+            "position_y": 474,
             "width": 175,
             "height": 28,
             "properties": {
@@ -406,16 +613,16 @@
                 }
             },
             "text": "heading, joint by joint",
-            "id": 981,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "19": {
             "init": "help_link floor_zero floor_zero",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 366,
+            "position_y": 522,
             "width": 206,
             "height": 44,
             "properties": {
@@ -435,16 +642,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1018,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "20": {
             "name": "text_block",
             "annotation": true,
             "position_x": 244,
-            "position_y": 370,
+            "position_y": 526,
             "width": 188,
             "height": 28,
             "properties": {
@@ -475,16 +682,16 @@
                 }
             },
             "text": "put the feet on the floor",
-            "id": 1055,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "21": {
             "init": "help_link smpl_pose_to_joints smpl pose / quats to joints",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 418,
+            "position_y": 574,
             "width": 206,
             "height": 44,
             "properties": {
@@ -504,16 +711,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1092,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "22": {
             "name": "text_block",
             "annotation": true,
             "position_x": 244,
-            "position_y": 422,
+            "position_y": 578,
             "width": 298,
             "height": 40,
             "properties": {
@@ -544,7 +751,7 @@
                 }
             },
             "text": "one outlet per joint\n(smpl_pose_to_joints, smpl_quats_to_joints)",
-            "id": 1129,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

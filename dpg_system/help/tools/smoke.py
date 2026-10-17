@@ -112,7 +112,7 @@ def main():
                     continue
                 key = (id(n), label, out.get_label())
                 seen[key] = []
-                def tap(v, _k=key, _orig=out.send, *a, **k):
+                def tap(v=None, _k=key, _orig=out.send, *a, **k):
                     seen[_k].append(v)
                     return _orig(v, *a, **k)
                 out.send = tap

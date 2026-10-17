@@ -1,5 +1,5 @@
 {
-    "height": 528,
+    "height": 552,
     "width": 718,
     "position": [
         100,
@@ -292,12 +292,12 @@
             "annotation": true,
             "position_x": 219,
             "position_y": 266,
-            "width": 428,
-            "height": 28,
+            "width": 459,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "poses, body / joints, quaternion_diff_and_axis, take / take_dict",
+                    "value": "pose / shadow_pose, active_pose, active_joints, target_pose,\npose_adjust, calibrate_pose, body / joints, quaternion_diff_and_axis,\ntake / take_dict",
                     "value_type": "str"
                 },
                 "1": {
@@ -307,12 +307,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 420,
+                    "value": 451,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -321,7 +321,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "poses, body / joints, quaternion_diff_and_axis, take / take_dict",
+            "text": "pose / shadow_pose, active_pose, active_joints, target_pose,\npose_adjust, calibrate_pose, body / joints, quaternion_diff_and_axis,\ntake / take_dict",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
@@ -331,7 +331,7 @@
             "init": "help_link nodes_body_smpl_bodies SMPL bodies",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 314,
+            "position_y": 322,
             "width": 181,
             "height": 44,
             "properties": {
@@ -355,13 +355,13 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 219,
-            "position_y": 318,
+            "position_y": 326,
             "width": 459,
-            "height": 40,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "shadow / smpl conversions, smpl_pose / body / take, smpl_pose_adjust,\nsmpl_mag_yaw_correct, floor_zero, smpl pose / quats to joints",
+                    "value": "shadow / smpl conversions, smpl_pose, smpl_body, smpl_take,\nsmpl_beta_editor, smpl_pose_adjust, smpl_mag_yaw_correct, floor_zero,\nsmpl pose / quats to joints",
                     "value_type": "str"
                 },
                 "1": {
@@ -376,7 +376,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -385,7 +385,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "shadow / smpl conversions, smpl_pose / body / take, smpl_pose_adjust,\nsmpl_mag_yaw_correct, floor_zero, smpl pose / quats to joints",
+            "text": "shadow / smpl conversions, smpl_pose, smpl_body, smpl_take,\nsmpl_beta_editor, smpl_pose_adjust, smpl_mag_yaw_correct, floor_zero,\nsmpl pose / quats to joints",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
@@ -395,7 +395,7 @@
             "init": "help_link nodes_body_effort_and_dynamics Effort and dynamics",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 366,
+            "position_y": 382,
             "width": 181,
             "height": 44,
             "properties": {
@@ -419,13 +419,13 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 219,
-            "position_y": 370,
-            "width": 397,
+            "position_y": 386,
+            "width": 459,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "smpl_torque, torque gangs, smpl_ragdoll / ragdoll_blend_ui,\nsmpl_resist, pybullet_body, effort / muscle faders",
+                    "value": "smpl_torque, torque gangs, smpl_ragdoll / ragdoll_blend_ui,\nsmpl_resist, pybullet_body, effort / muscle faders, crossfade_scanner",
                     "value_type": "str"
                 },
                 "1": {
@@ -435,7 +435,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 389,
+                    "value": 451,
                     "value_type": "int"
                 },
                 "3": {
@@ -449,7 +449,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "smpl_torque, torque gangs, smpl_ragdoll / ragdoll_blend_ui,\nsmpl_resist, pybullet_body, effort / muscle faders",
+            "text": "smpl_torque, torque gangs, smpl_ragdoll / ragdoll_blend_ui,\nsmpl_resist, pybullet_body, effort / muscle faders, crossfade_scanner",
             "id": 1055,
             "visibility": "show_all",
             "draggable": true,
@@ -459,7 +459,7 @@
             "init": "help_link nodes_body_drawing_bodies Drawing bodies",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 418,
+            "position_y": 434,
             "width": 181,
             "height": 44,
             "properties": {
@@ -483,13 +483,13 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 219,
-            "position_y": 422,
-            "width": 348,
-            "height": 40,
+            "position_y": 438,
+            "width": 440,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "mgl body drawing, mgl_smpl_mesh / mgl_smpl_heatmap,\ngl_body (alt, simple), limb_size",
+                    "value": "mgl_body, body_proportions, mgl_body_orientation,\nmgl_orientation_disks, mgl_contact_disks, mgl_torque_arc,\nmgl_smpl_mesh / mgl_smpl_heatmap, gl_body (alt, simple), limb_size",
                     "value_type": "str"
                 },
                 "1": {
@@ -499,12 +499,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 340,
+                    "value": 432,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -513,7 +513,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "mgl body drawing, mgl_smpl_mesh / mgl_smpl_heatmap,\ngl_body (alt, simple), limb_size",
+            "text": "mgl_body, body_proportions, mgl_body_orientation,\nmgl_orientation_disks, mgl_contact_disks, mgl_torque_arc,\nmgl_smpl_mesh / mgl_smpl_heatmap, gl_body (alt, simple), limb_size",
             "id": 1129,
             "visibility": "show_all",
             "draggable": true,

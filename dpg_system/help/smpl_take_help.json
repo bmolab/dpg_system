@@ -1,0 +1,320 @@
+{
+    "height": 1231,
+    "width": 1447,
+    "position": [
+        100,
+        100
+    ],
+    "id": 681,
+    "name": "smpl_take_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_take_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment smpl_take - play a recorded SMPL take",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 463,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smpl_take - play a recorded SMPL take",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smpl_take - play a recorded SMPL take"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 589,
+            "position_y": 45,
+            "width": 818,
+            "height": 1126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "smpl_take plays back a recorded SMPL motion file, frame by frame.\n\nTHE FILE:\nAn .npz file holding two arrays: 'poses', one row per frame of axis-angle\njoint rotations, and 'trans', the root translation for each frame. AMASS\n'_poses.npz' files are in this form. A file without both arrays does not\nload.\n\nOnly the first 22 joints are kept - SMPL's body joints. The hand joints in an\nSMPL-H file are dropped.\n\nWHAT IT SENDS:\n'joint_data' is the pose: 22 rows of three numbers in axis-angle form. The\ndirection of the three numbers is the axis, and their length is the angle in\nradians. 'root_position' is x y z.\n\nBoth are exactly as the file has them. Nothing is converted: an AMASS file is\nZ-up, and so is what comes out.\n\nPLAYING:\nClick 'load' to choose a file, or type its path into the 'path' option; the\npath is saved with the patch. 'on/off' plays, once a file is loaded - ticking\nit first starts playback as soon as a file loads. At the end it loops back to\nframe 0.\n\n'speed' is how many file frames to move on per display frame, about 60 a\nsecond. So speed 1 plays one file frame per display frame whatever rate the\nfile was recorded at: a file recorded at 120 frames a second plays at half\nits real pace, and needs speed 2. Fractions slow it down. Negative speeds\nare not supported.\n\n'frame' shows where playback is. Setting it - by hand or by sending an\ninteger - jumps there and sends that frame, so you can step through a take\nwhile it is stopped.\n\nSYNTAX:\nsmpl_take\n\nEXAMPLE:\nsmpl_take\n\nINPUTS and PROPERTIES:\n\non/off:\nPlay or stop.\n\nspeed:\nFile frames per display frame.\n\nframe:\nThe current frame. Setting it sends that frame.\n\nload:\nChoose a file.\n\npath (option):\nThe file. Setting it loads the file.\n\nOUTPUTS:\n\njoint_data:\nThe pose, 22 rows of axis-angle.\n\nroot_position:\nThe root translation, x y z.\n\nRELATED:\nsmpl_to_quats turns the pose into quaternions, as in the example.\nsmpl_torque, mgl_smpl_mesh and floor_zero take axis-angle poses and\ntranslations like these.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1110,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "smpl_take plays back a recorded SMPL motion file, frame by frame.\n\nTHE FILE:\nAn .npz file holding two arrays: 'poses', one row per frame of axis-angle\njoint rotations, and 'trans', the root translation for each frame. AMASS\n'_poses.npz' files are in this form. A file without both arrays does not\nload.\n\nOnly the first 22 joints are kept - SMPL's body joints. The hand joints in an\nSMPL-H file are dropped.\n\nWHAT IT SENDS:\n'joint_data' is the pose: 22 rows of three numbers in axis-angle form. The\ndirection of the three numbers is the axis, and their length is the angle in\nradians. 'root_position' is x y z.\n\nBoth are exactly as the file has them. Nothing is converted: an AMASS file is\nZ-up, and so is what comes out.\n\nPLAYING:\nClick 'load' to choose a file, or type its path into the 'path' option; the\npath is saved with the patch. 'on/off' plays, once a file is loaded - ticking\nit first starts playback as soon as a file loads. At the end it loops back to\nframe 0.\n\n'speed' is how many file frames to move on per display frame, about 60 a\nsecond. So speed 1 plays one file frame per display frame whatever rate the\nfile was recorded at: a file recorded at 120 frames a second plays at half\nits real pace, and needs speed 2. Fractions slow it down. Negative speeds\nare not supported.\n\n'frame' shows where playback is. Setting it - by hand or by sending an\ninteger - jumps there and sends that frame, so you can step through a take\nwhile it is stopped.\n\nSYNTAX:\nsmpl_take\n\nEXAMPLE:\nsmpl_take\n\nINPUTS and PROPERTIES:\n\non/off:\nPlay or stop.\n\nspeed:\nFile frames per display frame.\n\nframe:\nThe current frame. Setting it sends that frame.\n\nload:\nChoose a file.\n\npath (option):\nThe file. Setting it loads the file.\n\nOUTPUTS:\n\njoint_data:\nThe pose, 22 rows of axis-angle.\n\nroot_position:\nThe root translation, x y z.\n\nRELATED:\nsmpl_to_quats turns the pose into quaternions, as in the example.\nsmpl_torque, mgl_smpl_mesh and floor_zero take axis-angle poses and\ntranslations like these."
+        },
+        "3": {
+            "name": "smpl_take",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 123,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 341,
+            "position_y": 62,
+            "width": 218,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click load and choose an AMASS\n_poses.npz, then tick on/off",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click load and choose an AMASS\n_poses.npz, then tick on/off"
+        },
+        "5": {
+            "name": "list",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 280,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment root position, x y z (Z is up)",
+            "name": "comment",
+            "id": 459,
+            "position_x": 341,
+            "position_y": 280,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "root position, x y z (Z is up)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "root position, x y z (Z is up)"
+        },
+        "7": {
+            "name": "smpl_to_quats",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 156,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment axis-angle in, quaternions out",
+            "name": "comment",
+            "id": 533,
+            "position_x": 341,
+            "position_y": 340,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axis-angle in, quaternions out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "axis-angle in, quaternions out"
+        },
+        "9": {
+            "name": "smpl_pose",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 450,
+            "width": 285,
+            "height": 378,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment the playing pose, joint by joint",
+            "name": "comment",
+            "id": 607,
+            "position_x": 341,
+            "position_y": 450,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the playing pose, joint by joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the playing pose, joint by joint"
+        },
+        "11": {
+            "name": "close",
+            "id": 644,
+            "position_x": 24,
+            "position_y": 858,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "root_position",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "joint_data",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "smpl pose"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "smpl pose as quaternions",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

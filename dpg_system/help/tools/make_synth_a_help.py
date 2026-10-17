@@ -1,4 +1,4 @@
-"""audio_out~ (the framework), sources, filters, levels."""
+"""audio_out~ (the framework), oscillators, sig~, noise~, sampler_osc~, filters, levels."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
@@ -91,104 +91,421 @@ print(build('audio_out~', 'audio_out~ - where sound leaves the patch', body, dem
             links, demo_width=580, text_width=820, text_height=800))
 
 # ----------------------------------------------------------------- oscillators
-body = """These are the sources: the nodes that make a signal rather than change one.
+body = """These are the oscillators: nodes that make a repeating signal rather 
+than change one.
 
 THE NODES:
 
-vco~          a band-limited oscillator, with detuned unison. The workhorse
-phasor~       a plain 0 to 1 ramp, for driving positions rather than for hearing
-lfo~          a low frequency oscillator - though nothing stops it reaching 
-              audio rate, where it becomes an unbandlimited modulator for FM and AM
-noise~        a leak, played by pressure - the rack's noise source
-hiss~         the same node
-sig~          a control value brought into the audio graph, with glide
-sampler_osc~  recorded material treated as an oscillator
+vco~     a band-limited oscillator, with detuned unison. The one to listen to
+lfo~     a low frequency oscillator for modulating things - though nothing 
+         stops it reaching audio rate, where it becomes an unbandlimited 
+         modulator for FM and AM
+phasor~  a plain 0 to 1 ramp, for driving positions rather than for hearing
 
-PITCH IS TWO INLETS:
-vco~ and sampler_osc~ both take a base 'frequency' in Hz and an exponential 
-'pitch' inlet in octaves that scales it. Patch an envelope into pitch for a 
+vco~ PITCH IS TWO INLETS:
+'frequency' is the base pitch in Hz, and 'pitch' is added to it in OCTAVES: 
+1 is an octave up, -1 an octave down. Patch an envelope into pitch for a 
 sweep, an LFO for vibrato. Because it is exponential, the same modulation 
-produces the same musical interval at any base frequency - which is why the 
-two are separate, and why the identical signal that sweeps a vco~ sweeps a 
-sampler_osc~ the same way.
+gives the same musical interval at any base frequency. The demo's lfo~, at 
+depth 0.05, wobbles the pitch by a twentieth of an octave either way.
 
 There is a third, 'linear fm', in Hz rather than octaves. Linear FM detunes 
 rather than transposes, which is what makes it inharmonic and metallic.
 
-sig~ IS THE IMPORTANT ONE HERE:
-It is the entry point for effort data. A 60 Hz control stream stepping a gain 
-directly will zipper - you hear each step. sig~ glides between the values, 
-smoothing them into a continuous signal without ever lagging more than the 
-glide time behind.
+vco~ UNISON:
+The 'voices' option stacks up to eight copies of the oscillator, spread 
+'detune' cents apart around the note; 'spread' pans them across left and 
+right out, and 'drift' gives each its own slow wander in cents. With one 
+voice, or spread at 0, right out carries the same signal as left out.
+
+lfo~ IS FOR MODULATION:
+It is not band limited, so its edges are clean steps - which is right for 
+driving other things and harsh to listen to. Besides the usual waves it has 
+'sample_hold' (a new random value each cycle), 'smooth_random' (a glide from 
+one random value to the next each cycle) and 'noise'. 'depth' scales the 
+output and 'offset' is added after, so depth 0.2 offset 0.5 swings between 
+0.3 and 0.7. Untick the 'bipolar' option and the wave runs 0 to 1 before 
+depth and offset, instead of -1 to 1.
+
+phasor~ IS A POSITION:
+Its output climbs from 0 to 1 and jumps back, once per cycle; 'start' and 
+'end' rescale that range. 'period' in seconds, when above 0, overrides 
+'frequency' - patch sampler_osc~'s length outlet into it and one cycle 
+scans the whole file. A negative frequency runs it backwards. The 'wrap' 
+outlet gives a one-sample pulse each time the ramp turns over.
+
+Leave phasor~'s 'phase' inlet at 0: a non-zero value is meant as an offset, 
+but it is added again on every audio block, so the ramp lurches forward 
+instead of shifting.
 
 SYNTAX:
-vco~ <frequency>
-lfo~ <rate>
-sig~ <value>
+vco~ <frequency> <voices> <detune> <shape>
+lfo~ <rate> <shape>
+phasor~ <frequency>
 
 EXAMPLE:
-vco~ 220
+vco~ 110 3 12 saw
 
 INPUTS and PARAMETERS:
 
-frequency / rate:
-The base pitch in Hz, or the LFO's rate.
+frequency (vco~, phasor~) / rate (lfo~):
+The base frequency in Hz. vco~ defaults to 110, lfo~ and phasor~ to 1.
 
-pitch:
-Exponential, in octaves. Adds to the base frequency musically.
+pitch (vco~):
+Added in octaves, exponentially.
 
-linear fm:
-Linear, in Hz. Adds to it arithmetically.
+linear fm (vco~):
+Added in Hz.
 
-shape:
-The waveform.
+width (vco~, lfo~):
+Pulse width of the square wave, 0.01 to 0.99. Only the square uses it.
 
-width:
-Pulse width, for shapes that have one.
+phase mod (vco~):
+Shifts the wave's phase, in cycles - patch an audio signal here for phase 
+modulation.
+
+sync (vco~):
+Hard sync: each rising edge past 0.5 restarts the cycle.
 
 detune (vco~):
-Spreads the unison voices apart. A little is thickness; a lot is a chorus.
+Cents between unison voices. Default 10. Does nothing with one voice.
 
-sync / phase mod:
-Hard sync and phase modulation inputs.
+shape:
+vco~: saw, square, triangle, sine, noise, pink (the last two ignore pitch).
+lfo~: sine, triangle, saw (falling), ramp (rising), square, sample_hold, 
+smooth_random, noise.
 
-value / glide (sig~):
-The control value, and how long it takes to arrive there.
+depth / offset (lfo~):
+Scales the output, then adds to it.
 
-pressure / color / sputter (noise~):
-How hard the leak is blowing, how dark it is, and how irregular. 
-Stillness is silence by construction.
+reset (lfo~, phasor~):
+A rising edge past 0.5 restarts the cycle at the 'start phase' option.
+
+period / start / end / phase (phasor~):
+As described above.
+
+enable:
+Off fades out over a few milliseconds, then stops computing altogether, so 
+a switched-off oscillator costs almost nothing.
+
+Each inlet with a knob takes a number or a patched signal; where there is 
+a narrow box beside the knob, that is a depth scaling whatever is patched in.
 
 OUTPUTS: 
 
-left out / right out / signal / out:
+left out / right out (vco~), signal (lfo~):
 The signal.
 
+phase / wrap (phasor~):
+The ramp, and a pulse at each turn-over.
+
 RELATED:
+sig~ brings a control value into the audio graph.
+noise~ is the noise source; sampler_osc~ treats a recording as an oscillator.
 additive~ builds an oscillator from a drawn spectrum instead of a chosen wave."""
+
+demo = [
+    {'key': 'lfo', 'init': 'lfo~ 5', 'pos': (30, 62), 'w': 200, 'h': 160,
+     'props': {'depth': 0.05}},
+    {'key': 'c0', 'comment': True, 'text': '5 Hz, depth 0.05 of an octave',
+     'pos': (260, 62)},
+    {'key': 'vco', 'init': 'vco~ 220', 'pos': (30, 260), 'w': 220, 'h': 200},
+    {'key': 'c1', 'comment': True, 'text': 'into pitch: vibrato', 'pos': (30, 470)},
+    {'key': 'sc', 'init': 'scope~', 'pos': (300, 260), 'w': 260, 'h': 220},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 510), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
+    {'key': 'c2', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 745)},
+    {'key': 'ph', 'init': 'phasor~ 0.5', 'pos': (300, 510), 'w': 220, 'h': 180},
+    {'key': 'sn', 'init': 'snapshot~', 'pos': (300, 710), 'w': 220, 'h': 140},
+    {'key': 'f1', 'init': 'float', 'pos': (300, 870), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c3', 'comment': True, 'text': 'phasor~: 0 to 1 every two seconds',
+     'pos': (300, 920)},
+]
+links = [('lfo', 'signal', 'vco', 'pitch'),
+         ('vco', 'left out', 'sc', 'in'),
+         ('vco', 'left out', 'fo', 'left'),
+         ('ph', 'phase', 'sn', 'in'), ('sn', 'value', 'f1', '')]
+print(build('vco~', 'vco~, lfo~, phasor~ - oscillators', body, demo, links,
+            demo_width=590, text_width=820, text_height=1150))
+
+# ------------------------------------------------------------------------ sig~
+body = """sig~ brings a control value into the audio graph, gliding smoothly to 
+each new value.
+
+It is the entry point for effort data and for anything else that arrives as 
+messages - a slider, a 60 Hz sensor stream, a computed number. Patched 
+straight into a gain or a pitch, a stream like that steps, and you hear each 
+step as a zipper or a click. sig~ turns it into a continuous signal: each 
+new value is approached smoothly rather than jumped to.
+
+GLIDE:
+'glide' is in seconds: how long it takes to cover about two thirds of the 
+way to a new value. It closes the rest of the gap ever more slowly, so it is 
+effectively there after about three glides. The default, 0.02, is just long 
+enough to stop a zipper; longer glides become audible portamento, as in the 
+demo. 0 jumps straight to each value.
+
+SCALE AND OFFSET:
+The value is multiplied by 'scale' and has 'offset' added before it glides, 
+so a 0 to 1 control can become, say, a -1 to 1 swing without another node.
+
+SYNTAX:
+sig~ <value>
+
+EXAMPLE:
+sig~ 0.5
+
+INPUTS and PARAMETERS:
+
+value:
+The control value. Send it numbers, or drag it. The argument sets the 
+starting value, which the output glides up to from 0 as the patch starts.
+
+glide:
+Seconds to cover about two thirds of a change. Default 0.02.
+
+scale / offset:
+The output is value times scale, plus offset. Defaults 1 and 0.
+
+enable:
+Off fades out over a few milliseconds, then stops computing.
+
+OUTPUTS: 
+
+signal:
+The smoothed signal.
+
+RELATED:
+snapshot~ goes the other way: a signal's value back out as a number.
+ramp~ moves to each value in a straight line over a set time."""
 
 demo = [
     {'key': 'sl', 'init': 'slider 0.0', 'pos': (30, 62), 'w': 220, 'h': 60,
      'props': {'min': 0.0, 'max': 1.0, 'format': '%.2f', 'width': 200}},
-    {'key': 'c0', 'comment': True, 'text': 'a control value, stepping at frame rate',
+    {'key': 'c0', 'comment': True, 'text': 'drag: a value stepping at frame rate',
      'pos': (30, 130)},
-    {'key': 'sg', 'init': 'sig~', 'pos': (30, 170), 'w': 200, 'h': 140},
-    {'key': 'c1', 'comment': True, 'text': 'sig~ glides it into a smooth signal',
+    {'key': 'sg', 'init': 'sig~', 'pos': (30, 170), 'w': 200, 'h': 140,
+     'props': {'glide': 0.3}},
+    {'key': 'c1', 'comment': True, 'text': 'glide 0.3: a slow, smooth follow',
      'pos': (30, 320)},
-    {'key': 'vco', 'init': 'vco~ 110', 'pos': (30, 360), 'w': 220, 'h': 200},
-    {'key': 'c2', 'comment': True, 'text': 'into pitch: exponential, so octaves',
+    {'key': 'sn', 'init': 'snapshot~', 'pos': (300, 170), 'w': 220, 'h': 140},
+    {'key': 'f1', 'init': 'float', 'pos': (300, 330), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c2', 'comment': True, 'text': 'the signal, read back', 'pos': (300, 380)},
+    {'key': 'vco', 'init': 'vco~ 220', 'pos': (30, 360), 'w': 220, 'h': 200},
+    {'key': 'c3', 'comment': True, 'text': 'into pitch: up to an octave, gliding',
      'pos': (30, 570)},
-    {'key': 'sc', 'init': 'scope~', 'pos': (300, 360), 'w': 260, 'h': 220},
     {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 610), 'w': 220, 'h': 220,
      'props': {'fader': 0.0}},
-    {'key': 'c3', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 845)},
+    {'key': 'c4', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 845)},
 ]
 links = [('sl', 'float out', 'sg', 'value'),
+         ('sg', 'signal', 'sn', 'in'), ('sn', 'value', 'f1', ''),
          ('sg', 'signal', 'vco', 'pitch'),
-         ('vco', 'left out', 'sc', 'in'),
          ('vco', 'left out', 'fo', 'left')]
-print(build('vco~', 'vco~ and the other sources - making a signal', body, demo, links,
-            demo_width=590, text_width=820, text_height=800))
+print(build('sig~', 'sig~ - a control value, as a smooth signal', body, demo, links,
+            demo_width=560, text_width=790, text_height=700))
+
+# ---------------------------------------------------------------------- noise~
+body = """noise~ is the noise source: a leak of air, played by pressure.
+
+'pressure' is the whole interface. Loudness rises steeply with it, as real 
+turbulence does, and brightness rises gently; at 0 there is silence. It is 
+smoothed on the way in, so an effort stream patched straight to it does not 
+zipper - and a body that is still is a leak that is quiet.
+
+THE CONTROLS:
+'color' tilts the noise from a dark rumble at 0 to full white at 1.
+
+'aperture' is the size of the hole the air comes through. A small one 
+whistles high and narrow; a wide one mostly breathes, low and broad. At 0 
+only the whistle gets through.
+
+'whistle' is how tight that whistle is: breathy at 0, piercing and nearly 
+pure at 1.
+
+'sputter' breaks the flow up, as if something keeps blocking the hole and 
+spitting when it clears: a flutter at low values, hard dropouts near 1. 
+'rate' is how often the breaks come, from slow gulps to a buzz - and harder 
+pressure makes them come faster.
+
+'level' is the output gain.
+
+ON ITS OWN AND THROUGH THINGS:
+Through formant~ it becomes breath, through modal~ a rattling surface, 
+through vcf~ classic subtractive hiss.
+
+hiss~ is the same node.
+
+SYNTAX:
+noise~ <color>
+
+EXAMPLE:
+noise~ 0.5
+
+INPUTS and PARAMETERS:
+
+pressure:
+How hard the air is driven, 0 to 2. Default 1. 0 is silence.
+
+color:
+0 dark to 1 white. Default 0.85, or the argument.
+
+aperture:
+0 pinhole to 1 wide open. Default 0.35.
+
+whistle:
+0 breathy to 1 pure. Default 0.5.
+
+sputter:
+0 a steady flow to 1 hard dropouts. Default 0.
+
+rate:
+How often the sputter breaks come, 0.2 to 200 per second. Default 10.
+
+level:
+Output gain, 0 to 2. Default 1.
+
+enable:
+Off fades out over a few milliseconds, then stops computing.
+
+Each knob takes a number or a patched signal; where there is a narrow box 
+beside it, that is a depth scaling whatever is patched in.
+
+OUTPUTS: 
+
+out:
+The signal.
+
+RELATED:
+vco~ also has 'noise' and 'pink' shapes: plain noise with none of these 
+controls."""
+
+demo = [
+    {'key': 'sl', 'init': 'slider 1.0', 'pos': (30, 62), 'w': 220, 'h': 60,
+     'props': {'min': 0.0, 'max': 2.0, 'format': '%.2f', 'width': 200}},
+    {'key': 'c0', 'comment': True, 'text': 'drag: the pressure, 0 is silence',
+     'pos': (30, 130)},
+    {'key': 'nz', 'init': 'noise~', 'pos': (30, 170), 'w': 240, 'h': 260},
+    {'key': 'sc', 'init': 'scope~', 'pos': (300, 170), 'w': 260, 'h': 220},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 460), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
+    {'key': 'c1', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 695)},
+]
+links = [('sl', 'float out', 'nz', 'pressure'),
+         ('nz', 'out', 'sc', 'in'),
+         ('nz', 'out', 'fo', 'left'), ('nz', 'out', 'fo', 'right')]
+print(build('noise~', 'noise~ - a leak, played by pressure', body, demo, links,
+            demo_width=590, text_width=790, text_height=760))
+
+# ---------------------------------------------------------------- sampler_osc~
+body = """sampler_osc~ treats a recording as an oscillator: a sound file played 
+under the control of signals.
+
+Click 'load' to choose a file, or send a file path to 'path' (a bang there 
+opens the chooser too). The file is remembered with the patch. When it 
+loads, the 'length' outlet sends its duration in seconds.
+
+THE MODES:
+They differ in what moves the playhead.
+
+loop      plays round the loop window, with a short crossfade across the 
+          seam so the join does not click
+oneshot   plays once from the start of the window, then stops. 'start' 
+          or the trigger inlet plays it again
+scrub     the playhead sits wherever 'position' says, like a record moved 
+          by hand. Held still it outputs a steady value, as a stopped 
+          record would
+follow    'position' is a target the playhead chases on a spring, so 
+          movement becomes playback speed: the material sounds while the 
+          control moves, and is quiet when it stops. The one for effort 
+          data
+granular  short overlapping grains, taken from around 'position'
+
+SPEED AND PITCH:
+In loop, oneshot and granular, playback speed is 'rate' (a plain 
+multiplier: 2 is twice as fast) times 'pitch' in octaves, exactly as on 
+vco~ - so the same envelope or LFO that sweeps a vco~ sweeps this the same 
+way. In granular they set each grain's speed and pitch while the grains 
+keep their place, so pitch and position are independent. scrub and follow 
+ignore both: there 'position' alone moves the playhead.
+
+POSITION AND THE WINDOW:
+'loop start' and 'loop end' choose a window within the file, as fractions 
+from 0 (the start) to 1 (the end). 'position' runs 0 to 1 across that window.
+
+The demo is the classic scan: the file's length sets phasor~'s period, so 
+its 0 to 1 ramp sweeps the scrub position through the whole file at its 
+natural speed. Change phasor~'s period by hand from there and the speed 
+and pitch change together, like tape.
+
+SYNTAX:
+sampler_osc~ <path> <mode>
+
+EXAMPLE:
+sampler_osc~ granular
+
+INPUTS and PARAMETERS:
+
+rate / pitch:
+Speed as a multiplier, and transposition in octaves. Defaults 1 and 0.
+
+position:
+0 to 1 across the loop window. Used by scrub, follow and granular.
+
+loop start / loop end:
+The window, as fractions of the file. Defaults 0 and 1.
+
+grain size / grain rate / jitter (granular):
+Grain length in seconds (default 0.08), grains per second (default 20), 
+and how far, as a fraction of the window, each grain may land from 
+'position' at random (default 0).
+
+trigger:
+A signal; each rising edge past 0.5 restarts from the start of the window.
+
+mode, load, path, start:
+The mode; open a file chooser; load a file by path; restart.
+
+enable:
+Off fades out over a few milliseconds, then stops computing; the playhead 
+waits where it was.
+
+OPTIONS:
+reverse plays backwards in loop and granular. In oneshot it plays nothing: 
+the playhead starts at the beginning of the window and immediately runs 
+off it.
+loop crossfade is the seam's fade in seconds (default 0.005); scrub also 
+uses it to smooth over jumps in position.
+follow speed is how quickly follow mode's spring catches up (default 8).
+
+OUTPUTS: 
+
+left out / right out:
+The signal. A mono file comes out of both.
+
+length:
+The loaded file's duration in seconds, sent when it loads.
+
+RELATED:
+phasor~ is the ramp for scanning position.
+polyphonic_sampler~ and granular_sampler~ are the other sample players."""
+
+demo = [
+    {'key': 'so', 'init': 'sampler_osc~ scrub', 'pos': (30, 62), 'w': 260, 'h': 400},
+    {'key': 'c0', 'comment': True, 'text': "click 'load' and choose a sound file",
+     'pos': (320, 62)},
+    {'key': 'ph', 'init': 'phasor~', 'pos': (320, 120), 'w': 220, 'h': 180},
+    {'key': 'c1', 'comment': True, 'text': 'length sets the period; the ramp scans',
+     'pos': (320, 310)},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 490), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
+    {'key': 'c2', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 725)},
+]
+links = [('so', 'length', 'ph', 'period'),
+         ('ph', 'phase', 'so', 'position'),
+         ('so', 'left out', 'fo', 'left'), ('so', 'right out', 'fo', 'right')]
+print(build('sampler_osc~', 'sampler_osc~ - a recording, played as an oscillator',
+            body, demo, links, demo_width=590, text_width=800, text_height=1100))
 
 # ----------------------------------------------------------------- vcf~ family
 body = """These shape a sound by what FREQUENCIES it contains, rather than by its level.

@@ -1,4 +1,4 @@
-"""np cumulative, target geometry, utilities."""
+"""np cumulative, rolling buffer, target geometry, utilities."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
@@ -15,91 +15,165 @@ a profile across a body.
 
 THE NODES:
 
-np.cumsum          the running total at each position
-np.cumprod         the running product
-np.diff            the difference between neighbouring elements
-np.rolling_buffer  keep the last N things that arrived, as one array
+np.cumsum   the running total at each position
+np.cumprod  the running product
+np.diff     the difference between each element and the one before it
 
-cumsum and diff undo each other. diff turns positions into steps; cumsum turns 
-steps back into positions. Reach for diff when an array holds where something 
-WAS and you want how far it MOVED between samples, and cumsum when you have 
-the movements and want the path.
+cumsum and diff are nearly each other's opposites. diff turns positions into 
+steps; cumsum turns steps back into positions. Reach for diff when an array 
+holds where something WAS and you want how far it MOVED between samples, and 
+cumsum when you have the movements and want the path.
 
-np.rolling_buffer is the one that works across time rather than within an 
-array. Feed it a value or a small array on every frame and it hands back the 
-last N of them stacked together - which is how a stream becomes something you 
-can take a mean of, plot as a history, or run a filter across. 
-Almost anything you want to know about "the recent past" starts here.
+"Nearly", because the starting point is lost on the way. In the demo, 
+3 1 4 1 5 9 summed and then differenced comes back as 1 4 1 5 9: the first 
+value has nothing before it to differ from. To rebuild a path from its 
+steps exactly, you need to know where it started.
 
 SYNTAX:
-np.cumsum
-np.diff <order: int>
-np.rolling_buffer <length> <width> ...
+np.cumsum <axis>
+np.cumprod <axis>
+np.diff <order> <axis>
 
 EXAMPLE:
-np.rolling_buffer 60
+np.diff 2
 
 INPUTS and PARAMETERS:
 
-in / input:
-The array, or on rolling_buffer the latest sample. Receiving it triggers 
-the node.
+in:
+The array (a list of numbers works too). Receiving it triggers the node.
 
 axis:
-Which direction to accumulate or difference along.
+Which direction to accumulate or difference along. Default -1, the last 
+axis - along each row. An axis the array does not have sends nothing.
 
 order (np.diff):
 How many times to difference. 1 gives you the change, 2 the change in the 
-change - so from positions, order 1 is speed and order 2 is acceleration.
+change - so from positions, order 1 is speed and order 2 is acceleration. 
+Anything below 1 is treated as 1.
 
-reset (np.rolling_buffer):
-Empties the buffer and starts collecting again.
+OUTPUTS: 
+
+cumsum / cumprod:
+The running result, the same shape as the input.
+
+differences (np.diff):
+The differences.
+
+np.diff IS SHORTER:
+np.diff returns an array SHORTER than its input - with six positions there 
+are only five gaps between them, and each further order loses one more. 
+Anything expecting the original length will complain. An array too short 
+to difference at the chosen order sends nothing at all.
+
+RELATED:
+np.rolling_buffer collects a stream into an array these can run along.
+t.energy sums the size of the differences into one number."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'm1', 'init': 'message', 'pos': (30, 118), 'w': 200, 'h': 42,
+     'props': {'text in': '3 1 4 1 5 9', 'font size': '24'}},
+    {'key': 'c0', 'comment': True, 'text': 'click: six numbers', 'pos': (250, 125)},
+    {'key': 'cs', 'init': 'np.cumsum', 'pos': (30, 180), 'w': 150, 'h': 70},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 265), 'w': 280, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'the running total', 'pos': (330, 272)},
+    {'key': 'df', 'init': 'np.diff', 'pos': (30, 330), 'w': 150, 'h': 90},
+    {'key': 'l2', 'init': 'list', 'pos': (30, 435), 'w': 280, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'differenced: back, minus the first',
+     'pos': (330, 442)},
+    {'key': 'cp', 'init': 'np.cumprod', 'pos': (30, 500), 'w': 150, 'h': 70},
+    {'key': 'l3', 'init': 'list', 'pos': (30, 585), 'w': 280, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': 'the running product', 'pos': (330, 592)},
+]
+links = [('btn', '', 'm1', ''),
+         ('m1', 'message out', 'cs', 'in'), ('cs', '', 'l1', '', 0),
+         ('cs', '', 'df', 'in', 0), ('df', 'differences', 'l2', ''),
+         ('m1', 'message out', 'cp', 'in'), ('cp', '', 'l3', '', 0)]
+print(build('np_cumulative', 'np.cumsum, np.cumprod, np.diff - the running story',
+            body, demo, links, demo_width=560, text_width=800, text_height=760))
+
+# ---------------------------------------------------------- np.rolling_buffer
+body = """np.rolling_buffer keeps the last N things that arrived, as one array.
+
+It works across TIME rather than within an array. Feed it a value or a small 
+array on every frame and it hands back the most recent N of them stacked 
+together - which is how a stream becomes something you can take a mean of, 
+plot as a history, or run a filter across. Almost anything you want to know 
+about "the recent past" starts here.
+
+NEWEST FIRST:
+Row 0 of the output is the sample that just arrived; the last row is the 
+oldest still kept. A plot of it scrolls from left to right, with now at the 
+left edge.
+
+THE SHAPE:
+The arguments are the buffer's shape. The first is how many samples to keep; 
+any after it are the shape of each sample. np.rolling_buffer 60 keeps 60 
+single numbers; np.rolling_buffer 60 3 keeps 60 three-value samples, as a 60 
+by 3 array. With no arguments it keeps 16 single numbers.
+
+A sample of the wrong shape is ignored without complaint - if nothing comes 
+out, check what is going in. A sample with one extra leading axis of size 1 
+(a 1 by 3 array into a buffer of threes) is accepted.
+
+SYNTAX:
+np.rolling_buffer <length> <sample shape...>
+
+EXAMPLE:
+np.rolling_buffer 60 3
+
+INPUTS and PARAMETERS:
+
+input:
+The latest sample. Receiving it adds it to the buffer and sends the buffer.
+
+reset:
+Empties the buffer and sends the empty array, so displays clear at once.
 
 OUTPUTS: 
 
 out:
-The running result, or the buffer's contents.
+The buffer's contents, newest first.
 
-TWO THINGS TO WATCH:
-np.diff returns an array one element SHORTER than its input - with five 
-positions there are only four gaps between them. Anything expecting the 
-original length will complain.
-
+IT GROWS BEFORE IT ROLLS:
 A rolling buffer only reports what it has actually collected, so a freshly 
-reset one is short until it fills. That is deliberate - it avoids feeding you 
-a stretch of zeros that never happened - but it does mean the buffer's length 
-changes for the first N frames."""
+reset one is short until it fills: 1 row, then 2, up to N. That is 
+deliberate - it avoids feeding you a stretch of zeros that never happened - 
+but it does mean the output's length changes for the first N samples.
+
+RELATED:
+np.cumsum and np.diff run along the buffer once you have one."""
 
 demo = [
-    {'key': 'tog', 'init': 'toggle', 'pos': (30, 62), 'w': 45, 'h': 42},
-    {'key': 'met', 'init': 'metro 30', 'pos': (30, 112), 'w': 129, 'h': 70,
-     'props': {'on': False, 'period': 30.0, 'units': 'milliseconds'}},
-    {'key': 'rnd', 'init': 'random 1.0', 'pos': (30, 192), 'w': 140, 'h': 80,
+    {'key': 'met', 'init': 'metro 30', 'pos': (30, 62), 'w': 129, 'h': 70,
+     'props': {'on': True, 'period': 30.0, 'units': 'milliseconds'}},
+    {'key': 'rnd', 'init': 'random 1.0', 'pos': (30, 142), 'w': 140, 'h': 80,
      'props': {'range': 1.0, 'bipolar': False}},
-    {'key': 'c0', 'comment': True, 'text': "check the metro's on: a stream of single values",
-     'pos': (30, 280)},
-    {'key': 'rb', 'init': 'np.rolling_buffer 60', 'pos': (30, 320), 'w': 200, 'h': 80},
+    {'key': 'c0', 'comment': True, 'text': 'a stream of single values',
+     'pos': (30, 230)},
+    {'key': 'rb', 'init': 'np.rolling_buffer 60', 'pos': (30, 270), 'w': 200, 'h': 80},
     {'key': 'c1', 'comment': True, 'text': 'the last 60 of them, as one array',
-     'pos': (30, 410)},
-    {'key': 'mn', 'init': 'np.mean', 'pos': (30, 450), 'w': 140, 'h': 70},
-    {'key': 'f1', 'init': 'float', 'pos': (30, 535), 'w': 127, 'h': 42, 'props': FLT},
+     'pos': (30, 360)},
+    {'key': 'mn', 'init': 'np.mean', 'pos': (30, 400), 'w': 140, 'h': 70},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 485), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c2', 'comment': True, 'text': 'now the stream can be averaged',
-     'pos': (30, 585)},
-    {'key': 'cs', 'init': 'np.cumsum', 'pos': (280, 450), 'w': 150, 'h': 70},
-    {'key': 'p1', 'init': 'plot', 'pos': (280, 535), 'w': 208, 'h': 176,
+     'pos': (30, 535)},
+    {'key': 'p1', 'init': 'plot', 'pos': (280, 400), 'w': 208, 'h': 176,
      'props': {'color': 'none', 'width': 200, 'height': 128, 'style': 'line',
                'update style': 'input is multi-channel sample', 'sample count': 60,
-               'min x': 0.0, 'max x': 60.0, 'min y': 0.0, 'max y': 40.0}},
-    {'key': 'c3', 'comment': True, 'text': 'the running total across the buffer',
-     'pos': (280, 720)},
+               'min x': 0.0, 'max x': 60.0, 'min y': 0.0, 'max y': 1.0}},
+    {'key': 'c3', 'comment': True, 'text': 'the history: newest at the left',
+     'pos': (280, 585)},
 ]
-links = [('tog', '', 'met', 'on'), ('met', '', 'rnd', 'trigger'),
+links = [('met', '', 'rnd', 'trigger'),
          ('rnd', 'out', 'rb', 'input'),
          ('rb', 'out', 'mn', 'in'), ('mn', '', 'f1', '', 0),
-         ('rb', 'out', 'cs', 'in'), ('cs', '', 'p1', 'y', 0)]
-print(build('np_cumulative', 'np cumulative - the running story, not the total',
-            body, demo, links, demo_width=520, text_width=800, text_height=700))
-
+         ('rb', 'out', 'p1', 'y')]
+print(build('np.rolling_buffer', 'np.rolling_buffer - the recent past, as an array',
+            body, demo, links, demo_width=520, text_width=790, text_height=700))
 
 # ----------------------------------------------------------------- np_target
 body = """These nodes measure a position against a reference, and report when it gets close.

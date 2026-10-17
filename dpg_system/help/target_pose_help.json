@@ -1,0 +1,482 @@
+{
+    "height": 1260,
+    "width": 1464,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "target_pose_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/target_pose_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment target_pose - how far from a captured pose",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "target_pose - how far from a captured pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "target_pose - how far from a captured pose"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 606,
+            "position_y": 45,
+            "width": 818,
+            "height": 946,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "target_pose compares each pose that arrives with a stored target pose, and says\nhow far apart they are - in total, and joint by joint.\n\nHOW FAR:\nFor each joint it measures the angle between the joint's rotation in the pose\nand its rotation in the target: the size of the single turn that would take\none to the other. It is in radians, from 0 when they match to 3.14 (half a\nturn) at most. A quaternion and its negative are the same rotation, and\ncount as a match.\n\n'score out' is the sum of those angles over all the joints.\n\n'axis distances out' sends the angles themselves, one per joint in the pose's\nrow order. Despite the name, it is one number per JOINT, not per axis: it\ntells you which joints are off, rather than only how much in all.\n\nEvery row of both is normalised before comparing, so a quaternion that is\nnot quite unit length does not distort the result.\n\nCAPTURING THE TARGET:\nClick 'capture in', and the NEXT pose to arrive becomes the target. Nothing\nis sent for that pose; the poses after it are scored against it.\n\nA bang or a number sent into 'capture in' does the same as a click - a\ntoggle's 1 and its 0 alike each capture once.\n\nThe target is held in memory only. It is not saved with the patch.\n\nBEFORE THE FIRST CAPTURE:\nThe target starts as 20 joints at rest, so the score is how far the pose is\nfrom the rest pose. A pose with more than 20 rows - a 37-row Shadow pose -\nfails with an error until a pose of that size has been captured.\n\nSYNTAX:\ntarget_pose\n\nEXAMPLE:\ntarget_pose\n\nINPUTS:\n\npose in:\nA pose: rows of w x y z quaternions.\n\ncapture in:\nClick to take the next pose as the target.\n\nOUTPUTS:\n\nscore out:\nThe total angle between pose and target, in radians.\n\naxis distances out:\nThe angle for each joint, in radians.\n\nRELATED:\ncalibrate_pose captures a pose and measures every later one FROM it.\nquaternion_distance measures between two single rotations.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 930,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "target_pose compares each pose that arrives with a stored target pose, and says\nhow far apart they are - in total, and joint by joint.\n\nHOW FAR:\nFor each joint it measures the angle between the joint's rotation in the pose\nand its rotation in the target: the size of the single turn that would take\none to the other. It is in radians, from 0 when they match to 3.14 (half a\nturn) at most. A quaternion and its negative are the same rotation, and\ncount as a match.\n\n'score out' is the sum of those angles over all the joints.\n\n'axis distances out' sends the angles themselves, one per joint in the pose's\nrow order. Despite the name, it is one number per JOINT, not per axis: it\ntells you which joints are off, rather than only how much in all.\n\nEvery row of both is normalised before comparing, so a quaternion that is\nnot quite unit length does not distort the result.\n\nCAPTURING THE TARGET:\nClick 'capture in', and the NEXT pose to arrive becomes the target. Nothing\nis sent for that pose; the poses after it are scored against it.\n\nA bang or a number sent into 'capture in' does the same as a click - a\ntoggle's 1 and its 0 alike each capture once.\n\nThe target is held in memory only. It is not saved with the patch.\n\nBEFORE THE FIRST CAPTURE:\nThe target starts as 20 joints at rest, so the score is how far the pose is\nfrom the rest pose. A pose with more than 20 rows - a 37-row Shadow pose -\nfails with an error until a pose of that size has been captured.\n\nSYNTAX:\ntarget_pose\n\nEXAMPLE:\ntarget_pose\n\nINPUTS:\n\npose in:\nA pose: rows of w x y z quaternions.\n\ncapture in:\nClick to take the next pose as the target.\n\nOUTPUTS:\n\nscore out:\nThe total angle between pose and target, in radians.\n\naxis distances out:\nThe angle for each joint, in radians.\n\nRELATED:\ncalibrate_pose captures a pose and measures every later one FROM it.\nquaternion_distance measures between two single rotations."
+        },
+        "3": {
+            "name": "signal",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 90.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 sin"
+        },
+        "4": {
+            "name": "pack",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 162,
+            "width": 33,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 3"
+        },
+        "5": {
+            "name": "euler_to_quaternion",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 277,
+            "width": 125,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 321,
+            "position_y": 277,
+            "width": 212,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one joint swinging 90 degrees\neach way about x",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one joint swinging 90 degrees\neach way about x"
+        },
+        "7": {
+            "name": "pose",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 131,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "button",
+            "id": 533,
+            "position_x": 250,
+            "position_y": 720,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "init": "comment click: the next pose becomes the target",
+            "name": "comment",
+            "id": 570,
+            "position_x": 321,
+            "position_y": 720,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click: the next pose becomes the target",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click: the next pose becomes the target"
+        },
+        "10": {
+            "name": "target_pose",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 780,
+            "width": 119,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "float",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 940,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 321,
+            "position_y": 940,
+            "width": 255,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "total angle from the target, radians\nat rest until you capture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "total angle from the target, radians\nat rest until you capture"
+        },
+        "13": {
+            "name": "vector",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 1000,
+            "width": 160,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "text_block",
+            "id": 755,
+            "annotation": true,
+            "position_x": 321,
+            "position_y": 1000,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one angle per joint: only the\nleft elbow (row 14) is ever off",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one angle per joint: only the\nleft elbow (row 14) is ever off"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1156,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "xyz rotation"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion rotation",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left elbow"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "capture in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "score out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "axis distances out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

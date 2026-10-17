@@ -4,50 +4,46 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
 from help_common import SIG, PLOT, INT, FLT, starter
 
-body = """These are where pictures come into a patch.
+# ------------------------------------------------------------------ cv_camera
+body = """cv_camera brings a live camera into the patch, as a stream of pictures.
 
-THE NODES:
+THE NAMES:
+cv_camera and cv_capture are the same node.
 
-cv_camera    a live camera. 'cv_capture' is the same node
-cv_capture   the other spelling
-cv_image     a still image from a file
+IT IS A TAP YOU TURN ON:
+Tick 'on/off' and frames start arriving, one per frame of the patch as far as
+the camera keeps up, as RGB arrays. Untick it and the frames stop.
 
-cv_camera IS A TAP YOU TURN ON:
-Tick 'on/off' and frames start arriving, one per rendered frame, as RGB arrays.
-Untick it and the camera is released - which matters, because a camera held open
-by one patch is not available to anything else.
+Unticking does NOT let go of the camera. It stays open, and unavailable to
+other applications, until the node is deleted or the patch closed. Choosing a
+different 'source' lets go of the old camera and opens the new one at once,
+even while the node is off.
 
 'source' lists the cameras it found. On a laptop that is usually just the built
 in one; plug in another and press 'refresh' to look again.
 
 REFRESHING PROBES EVERY CAMERA, ONE BY ONE:
-'refresh' finds cameras by trying to OPEN each index in turn, up to ten. There
-is no polite way to ask; that is how it has to be done.
+'refresh' finds cameras by trying to OPEN each index in turn, from 0 to 9.
+There is no polite way to ask; that is how it has to be done.
 
 Two consequences. It takes a moment, and it briefly opens every camera on the
 machine - so an indicator light may flicker on a camera you are not using, and
 another application holding one may see it disturbed. The node refreshes once
-when it is created, and after that only when you press the button, so this is
-not happening continuously.
+when it is created, and after that only when you press the button.
 
 WHAT COMES OUT IS RGB, ALREADY CONVERTED:
-OpenCV works in BGR - blue, green, red - which is a long-standing quirk of the
-library and a reliable source of pictures that look wrong in an unmistakable
-way, with skin tones gone blue. These nodes convert to RGB before sending, so
-what leaves them is the ordinary order and everything downstream is right.
+OpenCV works in BGR - blue, green, red - a long-standing quirk of the library
+and a reliable source of pictures with skin tones gone blue. cv_camera converts
+to RGB before sending, so everything downstream gets the ordinary order.
 
-Worth knowing anyway, because if you ever hand an array to an OpenCV function
-yourself, it will expect BGR and you will have to convert back.
+If you ever hand an array to an OpenCV function yourself, it will expect BGR
+and you will have to convert back.
 
 THE ARRAY IS HEIGHT, WIDTH, CHANNELS:
-Frames arrive as (height, width, 3) - rows first. Most of the image nodes here
-expect channels FIRST, and guess when they are handed the other order; the guess
-is right for anything camera-sized. See the k. and tv. pages for when it is not.
-
-cv_image IS A FILE, LOADED ON DEMAND:
-Put a path in 'path in' and send anything to 'show image' to load and send it.
-It is not watching the file - it reads when triggered, so the same node can walk
-through a directory if something else is supplying the paths.
+Frames arrive as (height, width, 3) bytes - rows first. Most of the image
+nodes here expect channels FIRST, and guess when they are handed the other
+order; the guess is right for anything camera-sized. See the k. and tv. pages
+for when it is not.
 
 WHAT TO PUT AFTER IT:
 A camera at thirty frames a second is a lot of data, and most of what you might
@@ -59,7 +55,6 @@ behind.
 SYNTAX:
 cv_camera
 cv_capture
-cv_image <path>
 
 EXAMPLE:
 cv_camera
@@ -67,25 +62,21 @@ cv_camera
 INPUTS and PARAMETERS:
 
 on/off:
-Whether the camera is running. Off releases it.
+Whether frames are sent. Off does not release the camera.
 
 source:
-Which camera, by index.
+Which camera, by index. Choosing one opens it.
 
 refresh:
 Look for cameras again. Opens each one to find out.
 
-show image (cv_image):
-Anything at all - it triggers the load.
-
-path in (cv_image):
-Where the file is.
-
-OUTPUTS: 
+OUTPUTS:
 
 The single outlet carries the picture, as an RGB array of height by width by 3.
 
 RELATED:
+cv_image for a still picture from a file; it used to share this page.
+movie_player for recorded video.
 vision_describe to get words out of what the camera sees.
 k. and tv. nodes for filtering and adjusting the image.
 mgl_texture and the gl nodes to put it on screen."""
@@ -93,7 +84,7 @@ mgl_texture and the gl nodes to put it on screen."""
 demo = [
     {'key': 'tog', 'init': 'toggle', 'pos': (30, 62), 'w': 45, 'h': 42},
     {'key': 'cam', 'init': 'cv_camera', 'pos': (30, 115), 'w': 240, 'h': 160},
-    {'key': 'c0', 'comment': True, 'text': "tick to start. Untick to release the\ncamera for something else to use\n'refresh' opens every camera index in\nturn to find them - it is not instant",
+    {'key': 'c0', 'comment': True, 'text': "tick to start, untick to stop the frames\n(the camera itself stays open)\n'refresh' opens every camera index in\nturn to find them - it is not instant",
      'pos': (30, 290)},
 
     {'key': 'inf', 'init': 'info', 'pos': (320, 115), 'w': 260, 'h': 80},
@@ -113,19 +104,85 @@ demo = [
                'number format': '%.0f'}},
     {'key': 'c8', 'comment': True, 'text': 'the camera, as one brightness channel',
      'pos': (30, 955)},
-
-    {'key': 'img', 'init': 'cv_image', 'pos': (320, 440), 'w': 320, 'h': 120},
-    {'key': 'btn', 'init': 'button', 'pos': (320, 380), 'w': 88, 'h': 46},
-    {'key': 'inf2', 'init': 'info', 'pos': (320, 580), 'w': 260, 'h': 80},
-    {'key': 'c9', 'comment': True, 'text': 'a still, loaded when triggered - so\nit can walk a directory if something\nelse supplies the paths',
-     'pos': (320, 675)},
 ]
 links = [('tog', '', 'cam', 'on/off'),
          ('cam', '', 'inf', 'in'),
          ('cam', '', 'sub', 'input'),
          ('sub', 'out', 'gs', 'tensor in'),
-         ('gs', 'output', 'sq', 'tensor in'), ('sq', 'output', 'hm', 'y'),
+         ('gs', 'output', 'sq', 'tensor in'), ('sq', 'output', 'hm', 'y')]
+print(build('cv_camera', 'cv_camera - a live camera', body,
+            demo, links, demo_width=680, text_width=800, text_height=800))
+
+# ------------------------------------------------------------------- cv_image
+body = """cv_image reads a picture from a file and sends it.
+
+IT READS WHEN THE PATH ARRIVES:
+Send a path to 'path in' - or type one into it - and the file is read and sent
+straight away. A path given as the node's argument (cv_image <path>) is read
+when the node is made. 'show image' sends the picture already read again; it
+does not go back to the file.
+
+So the node is not watching the file. To pick up a changed file, send the path
+again. To walk through a directory, have something else supply one path after
+another.
+
+A path that cannot be read prints a message in the console, and the picture
+read before it is dropped: 'show image' then sends nothing until a good path
+arrives.
+
+THE ARRAY IS HEIGHT, WIDTH, CHANNELS - AND BGR:
+The picture comes out as (height, width, 3) bytes, rows first, whatever the
+file held - an alpha channel is dropped and a grey image is made three-channel.
+
+Unlike cv_camera and movie_player, cv_image does NOT convert from OpenCV's
+order: the channels are blue, green, red. Shown as it is, red and blue swap -
+skin goes blue. Put np.flip 2 after it - reversing the last axis turns BGR
+into RGB - before anything that expects ordinary colour.
+
+SYNTAX:
+cv_image <path>
+
+EXAMPLE:
+cv_image
+
+INPUTS and PARAMETERS:
+
+show image:
+Anything at all sends the picture again.
+
+path in:
+The file. Receiving it reads the file and sends the picture.
+
+OUTPUTS:
+
+The single outlet carries the picture, as a BGR array of height by width by 3.
+
+RELATED:
+cv_camera for live pictures; cv_image used to share its page.
+movie_player for video files.
+np.flip to put the channels in RGB order.
+k. and tv. nodes for filtering and adjusting the image."""
+
+demo = [
+    {'key': 'path', 'init': 'string', 'pos': (30, 62), 'w': 520, 'h': 42,
+     'props': {'text in': '/path/to/a/picture.jpg', 'font size': '24', 'width': 480}},
+    {'key': 'c0', 'comment': True, 'text': 'put a real path here and press return',
+     'pos': (30, 112)},
+    {'key': 'btn', 'init': 'button', 'pos': (380, 150), 'w': 88, 'h': 46},
+    {'key': 'c1', 'comment': True, 'text': 'sends the same picture again',
+     'pos': (380, 205)},
+    {'key': 'img', 'init': 'cv_image', 'pos': (30, 250), 'w': 320, 'h': 120},
+    {'key': 'inf', 'init': 'info', 'pos': (30, 390), 'w': 260, 'h': 80},
+    {'key': 'c2', 'comment': True, 'text': 'height, width, 3 - in BLUE, green,\nred order, unlike the camera',
+     'pos': (30, 485)},
+    {'key': 'flp', 'init': 'np.flip 2', 'pos': (30, 540), 'w': 160, 'h': 80,
+     'props': {'axis': 2}},
+    {'key': 'c3', 'comment': True, 'text': 'reverse the channels: now RGB',
+     'pos': (30, 635)},
+]
+links = [('path', 'string out', 'img', 'path in'),
          ('btn', '', 'img', 'show image'),
-         ('img', '', 'inf2', 'in')]
-print(build('cv_camera', 'cv_camera and cv_image - pictures in', body,
-            demo, links, demo_width=680, text_width=800, text_height=720))
+         ('img', '', 'inf', 'in'),
+         ('img', '', 'flp', 'input')]
+print(build('cv_image', 'cv_image - a picture from a file', body,
+            demo, links, demo_width=560, text_width=800, text_height=640))

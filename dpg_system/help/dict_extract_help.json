@@ -1,0 +1,401 @@
+{
+    "height": 881,
+    "width": 1532,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "dict_extract_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/dict_extract_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment dict_extract - one outlet per key",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 414,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "dict_extract - one outlet per key",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "dict_extract - one outlet per key"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 684,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The dict_extract node takes a dictionary apart: one outlet per key you\nname, each sending the value filed under that key.\n\n\"dict_extract x y\" has an x outlet and a y outlet. When a dictionary arrives,\neach key that is in it sends its value; a key that is missing sends nothing.\nThe outlets fire from right to left - the last key first - so the leftmost\noutlet is the last to send.\n\nunpack_dict is another name for the same node.\n\nWITH NO ARGUMENTS:\ndict_extract on its own takes its keys from the first dictionary it receives,\nand grows an outlet for each. On that first dictionary each value is sent\ntwice. The keys it learned are kept from then on.\n\nSYNTAX:\ndict_extract <key> <key> ...\nunpack_dict <key> <key> ...\n\nEXAMPLE:\ndict_extract x y confidence\n\nINPUTS and PARAMETERS:\n\ndict in:\nThe dictionary to take apart.\n\nkey count (option):\nHow many outlets are shown, up to 32.\n\nkey 0, key 1, ... (options):\nThe key each outlet carries. Changing one relabels its outlet.\n\ninclude key in output (option):\nWhen ticked, each outlet sends its key and value together as a two-element\nlist, rather than the value alone.\n\nOUTPUTS:\n\n<one outlet per key>:\nThe value filed under that key.\n\nRELATED:\ndict_retrieve takes out one value, by a key that can change while the patch\nruns. construct_dict does the reverse of this node.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The dict_extract node takes a dictionary apart: one outlet per key you\nname, each sending the value filed under that key.\n\n\"dict_extract x y\" has an x outlet and a y outlet. When a dictionary arrives,\neach key that is in it sends its value; a key that is missing sends nothing.\nThe outlets fire from right to left - the last key first - so the leftmost\noutlet is the last to send.\n\nunpack_dict is another name for the same node.\n\nWITH NO ARGUMENTS:\ndict_extract on its own takes its keys from the first dictionary it receives,\nand grows an outlet for each. On that first dictionary each value is sent\ntwice. The keys it learned are kept from then on.\n\nSYNTAX:\ndict_extract <key> <key> ...\nunpack_dict <key> <key> ...\n\nEXAMPLE:\ndict_extract x y confidence\n\nINPUTS and PARAMETERS:\n\ndict in:\nThe dictionary to take apart.\n\nkey count (option):\nHow many outlets are shown, up to 32.\n\nkey 0, key 1, ... (options):\nThe key each outlet carries. Changing one relabels its outlet.\n\ninclude key in output (option):\nWhen ticked, each outlet sends its key and value together as a two-element\nlist, rather than the value alone.\n\nOUTPUTS:\n\n<one outlet per key>:\nThe value filed under that key.\n\nRELATED:\ndict_retrieve takes out one value, by a key that can change while the patch\nruns. construct_dict does the reverse of this node."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment click to send a dictionary",
+            "name": "comment",
+            "id": 385,
+            "position_x": 356,
+            "position_y": 115,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send a dictionary",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to send a dictionary"
+        },
+        "5": {
+            "name": "repeat_in_order",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 101,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "repeat_in_order 2"
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 235,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "{\"x\": 0.25, \"y\": 0.75, \"name\": \"left hand\"}",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "dict",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 295,
+            "width": 101,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "dict_extract",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 82,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "key count",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "key 0",
+                    "value": "x",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "key 1",
+                    "value": "y",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "include key in output",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            },
+            "init": "dict_extract x y"
+        },
+        "9": {
+            "name": "float",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 640,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 200,
+            "position_y": 640,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 356,
+            "position_y": 695,
+            "width": 298,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one outlet per named key -\nname is in the dictionary but not asked for",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one outlet per named key -\nname is in the dictionary but not asked for"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 712,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "first",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "second",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "send dict"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "store"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "dict out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

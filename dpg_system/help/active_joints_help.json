@@ -1,0 +1,422 @@
+{
+    "height": 1314,
+    "width": 1545,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "active_joints_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/active_joints_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment active_joints - 37 Shadow joints down to 20",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 537,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "active_joints - 37 Shadow joints down to 20",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "active_joints - 37 Shadow joints down to 20"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 687,
+            "position_y": 45,
+            "width": 818,
+            "height": 736,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "active_joints reduces a full 37-row Shadow pose to the 20 joints most work\nuses.\n\nWHY 20:\nThe shadow node sends 37 rows per body. Twenty of them are the joints that\ncarry the movement of the body: the spine and head, the hips, knees and\nankles, the shoulder blades, shoulders, elbows and wrists. Reducing early\nkeeps everything downstream smaller and in one agreed order.\n\nWHAT IT TAKES:\nA pose of 37 rows, as a numpy array or a torch tensor - straight from the\nshadow node's 'body N quaternions' outlet, from a take, or from shadow_pose.\nAnything else produces nothing: a pose that is already 20 rows, a flat array\nof 148 numbers, or a list.\n\nWHAT IT SENDS:\nThe 20 rows, in this order: base of skull, upper vertebrae, mid vertebrae,\nlower vertebrae, spine pelvis, pelvis anchor, left hip, knee and ankle, right\nhip, knee and ankle, left shoulder blade, shoulder, elbow and wrist, then the\nsame four on the right.\n\nIt picks rows and does not change them, and sends the same kind it received:\nnumpy in, numpy out; torch in, torch out.\n\nSYNTAX:\nactive_joints\n\nEXAMPLE:\nactive_joints\n\nINPUTS:\n\nfull pose quats in:\nA 37-row Shadow pose.\n\nOUTPUT:\n\nactive joint quats out:\nThe 20-row pose.\n\nRELATED:\nshadow_pose builds a 37-row pose from single joints, as in the example.\nactive_pose shows a 20-joint pose with its joint names.\nbody_to_joints splits a pose into one outlet per joint.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 720,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "active_joints reduces a full 37-row Shadow pose to the 20 joints most work\nuses.\n\nWHY 20:\nThe shadow node sends 37 rows per body. Twenty of them are the joints that\ncarry the movement of the body: the spine and head, the hips, knees and\nankles, the shoulder blades, shoulders, elbows and wrists. Reducing early\nkeeps everything downstream smaller and in one agreed order.\n\nWHAT IT TAKES:\nA pose of 37 rows, as a numpy array or a torch tensor - straight from the\nshadow node's 'body N quaternions' outlet, from a take, or from shadow_pose.\nAnything else produces nothing: a pose that is already 20 rows, a flat array\nof 148 numbers, or a list.\n\nWHAT IT SENDS:\nThe 20 rows, in this order: base of skull, upper vertebrae, mid vertebrae,\nlower vertebrae, spine pelvis, pelvis anchor, left hip, knee and ankle, right\nhip, knee and ankle, left shoulder blade, shoulder, elbow and wrist, then the\nsame four on the right.\n\nIt picks rows and does not change them, and sends the same kind it received:\nnumpy in, numpy out; torch in, torch out.\n\nSYNTAX:\nactive_joints\n\nEXAMPLE:\nactive_joints\n\nINPUTS:\n\nfull pose quats in:\nA 37-row Shadow pose.\n\nOUTPUT:\n\nactive joint quats out:\nThe 20-row pose.\n\nRELATED:\nshadow_pose builds a 37-row pose from single joints, as in the example.\nactive_pose shows a 20-joint pose with its joint names.\nbody_to_joints splits a pose into one outlet per joint."
+        },
+        "3": {
+            "name": "signal",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 90.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 sin"
+        },
+        "4": {
+            "name": "pack",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 162,
+            "width": 33,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 3"
+        },
+        "5": {
+            "name": "euler_to_quaternion",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 277,
+            "width": 125,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 377,
+            "position_y": 277,
+            "width": 212,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one joint swinging 90 degrees\neach way about x",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one joint swinging 90 degrees\neach way about x"
+        },
+        "7": {
+            "name": "shadow_pose",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 131,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 377,
+            "position_y": 400,
+            "width": 280,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a 37-row pose with the left elbow moving\n- the same shape the shadow node sends",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a 37-row pose with the left elbow moving\n- the same shape the shadow node sends"
+        },
+        "9": {
+            "name": "active_joints",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 144,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "init": "comment 37 rows in, 20 out",
+            "name": "comment",
+            "id": 607,
+            "position_x": 377,
+            "position_y": 720,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "37 rows in, 20 out",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "37 rows in, 20 out"
+        },
+        "11": {
+            "name": "active_pose",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 830,
+            "width": 321,
+            "height": 350,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 377,
+            "position_y": 830,
+            "width": 200,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the left elbow lands on its\nown row of the 20",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the left elbow lands on its\nown row of the 20"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 1210,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "xyz rotation"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "quaternion rotation",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left elbow"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "full pose quats in"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "active joint quats out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

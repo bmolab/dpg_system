@@ -1,11 +1,11 @@
 {
-    "height": 468,
-    "width": 637,
+    "height": 624,
+    "width": 514,
     "position": [
         100,
         100
     ],
-    "id": 1092,
+    "id": 1314,
     "name": "nodes_sound_sources",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_sound_sources.json",
     "nodes": {
@@ -169,12 +169,12 @@
             "annotation": true,
             "position_x": 219,
             "position_y": 154,
-            "width": 378,
+            "width": 163,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "making a signal\n(hiss~, lfo~, noise~, phasor~, sampler_osc~, sig~, vco~)",
+                    "value": "oscillators\n(lfo~, phasor~, vco~)",
                     "value_type": "str"
                 },
                 "1": {
@@ -184,7 +184,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 370,
+                    "value": 155,
                     "value_type": "int"
                 },
                 "3": {
@@ -198,14 +198,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "making a signal\n(hiss~, lfo~, noise~, phasor~, sampler_osc~, sig~, vco~)",
+            "text": "oscillators\n(lfo~, phasor~, vco~)",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link additive~ additive~ / shape_modes",
+            "init": "help_link noise~ noise~ / hiss~",
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
@@ -213,7 +213,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "additive~ / shape_modes",
+                    "name": "noise~ / hiss~",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -238,6 +238,213 @@
             "annotation": true,
             "position_x": 219,
             "position_y": 206,
+            "width": 194,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a leak, played by pressure\n(hiss~, noise~)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 186,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a leak, played by pressure\n(hiss~, noise~)",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link sig~ sig~",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 181,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "sig~",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 165,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 219,
+            "position_y": 258,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a control value, as a smooth signal",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a control value, as a smooth signal",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link sampler_osc~ sampler_osc~",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 181,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "sampler_osc~",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 165,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 219,
+            "position_y": 310,
+            "width": 255,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a recording, played as an oscillator",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a recording, played as an oscillator",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link additive~ additive~ / shape_modes",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 181,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "additive~ / shape_modes",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 165,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 219,
+            "position_y": 362,
             "width": 249,
             "height": 40,
             "properties": {
@@ -268,16 +475,16 @@
                 }
             },
             "text": "built from a description\n(additive~, shape_modes, spectrum~)",
-            "id": 833,
+            "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "9": {
+        "15": {
             "init": "help_link adc~ adc~ / mic~",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 254,
+            "position_y": 410,
             "width": 181,
             "height": 44,
             "properties": {
@@ -297,16 +504,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 870,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "10": {
+        "16": {
             "name": "text_block",
             "annotation": true,
             "position_x": 219,
-            "position_y": 258,
+            "position_y": 414,
             "width": 194,
             "height": 40,
             "properties": {
@@ -337,16 +544,16 @@
                 }
             },
             "text": "sound in from a microphone\n(adc~, mic~)",
-            "id": 907,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "11": {
+        "17": {
             "init": "help_link record~ record~",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 306,
+            "position_y": 462,
             "width": 181,
             "height": 44,
             "properties": {
@@ -366,16 +573,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 944,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "18": {
             "name": "text_block",
             "annotation": true,
             "position_x": 219,
-            "position_y": 310,
+            "position_y": 466,
             "width": 95,
             "height": 28,
             "properties": {
@@ -406,16 +613,16 @@
                 }
             },
             "text": "takes kept",
-            "id": 981,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "19": {
             "init": "help_link t.audio_source t.audio_source",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 358,
+            "position_y": 514,
             "width": 181,
             "height": 44,
             "properties": {
@@ -435,16 +642,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1018,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "20": {
             "name": "text_block",
             "annotation": true,
             "position_x": 219,
-            "position_y": 362,
+            "position_y": 518,
             "width": 188,
             "height": 28,
             "properties": {
@@ -475,7 +682,7 @@
                 }
             },
             "text": "the microphone as tensors",
-            "id": 1055,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

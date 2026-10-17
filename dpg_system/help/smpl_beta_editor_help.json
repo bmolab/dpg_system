@@ -1,0 +1,362 @@
+{
+    "height": 1581,
+    "width": 1473,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "smpl_beta_editor_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_beta_editor_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment smpl_beta_editor - the shape of the body",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 500,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smpl_beta_editor - the shape of the body",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smpl_beta_editor - the shape of the body"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 615,
+            "position_y": 45,
+            "width": 818,
+            "height": 1476,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "smpl_beta_editor sets the shape of an SMPL body by hand, and sends it in the\nforms the other SMPL nodes want.\n\nWHAT BETAS ARE:\nSMPL describes a body's shape with a handful of numbers called betas. They\nare not measurements. They are the main ways in which the bodies of a large\nscanned population differ from the average, so each one changes several\nproportions at once. 0 is the average body; the sliders run from -5 to 5.\n\nThe names on the first few sliders are rough guides to what each one does:\nsize, weight, arm ratio, leg ratio, and so on. Check by eye. Note that a\nPOSITIVE beta_0 makes this body SMALLER: at 2, the thigh is about 8 percent\nshorter than at 0, and at -2 about 8 percent longer.\n\nGENDER:\nmale, female or neutral - which body model to use. Only the male and female\nSMPL-H models are installed here, and for the limb lengths this node works\nout, neutral uses the male model.\n\nWHAT IT SENDS:\nAll three outlets send whenever anything changes, and again when the patch\nopens.\n\nconfig is a dictionary with 'betas' (the ten numbers) and 'gender'. It is\nwhat smpl_torque, floor_zero and the other SMPL nodes take on their config\ninlets. It does not carry the mass.\n\nbetas is the ten numbers on their own.\n\nlimb_lengths is a dictionary: 'lengths' (bone lengths in metres - upper_leg,\nlower_leg, upper_arm, lower_arm, foot, hand, collar, neck, head, the spine\nsegments, pelvis_width, shoulder_width), 'masses' (per segment, from\ntotal_mass and the shape), 'offsets', and 'total_mass_scaled' (total_mass\nadjusted for the first two betas). mgl_body and tracker_root_inference take\nit on their 'limb_lengths' inlets.\n\ntotal_mass, in kilograms, is used only for limb_lengths.\n\nCHANGING WEIGHT WITHOUT CHANGING BONES:\n'solve \u03b21' sets the weight beta (beta_1) to 'solve_target \u03b21' while keeping\nthe major bone lengths where they were: it re-fits the other nine betas to\nhold them. The first solve remembers the betas at that moment as its\nreference, and later solves start from the same reference, so repeated\nsolves do not drift. 'clear solve ref' forgets it - and so do reset, load,\nand new betas arriving. The 'solve_reg' option sets how strongly the other\nbetas are held near the reference while fitting.\n\nSAVING:\nsave writes the betas, gender and total_mass to a .npy file, and load reads\none back. With the 'file_path' option set they use that file without asking;\notherwise a file dialog opens.\n\nSYNTAX:\nsmpl_beta_editor\n\nEXAMPLE:\nsmpl_beta_editor\n\nINPUTS and PROPERTIES:\n\nbeta_0 size ... beta_9 breadth:\nThe ten betas.\n\ngender / total_mass:\nAs above.\n\nbetas_in:\nUp to ten numbers, or a dictionary with 'betas' and optionally 'gender' and\n'total_mass' - such as a config. Sets the sliders and sends.\n\nreset:\nSet every beta to 0. Gender and mass are left alone.\n\nsave / load:\nStore a body, and bring it back.\n\nsolve_target \u03b21 / solve \u03b21 / clear solve ref:\nChange weight while holding the bones, as above.\n\nOUTPUTS:\n\nconfig:\nbetas and gender, for the other SMPL nodes.\n\nbetas:\nThe ten numbers.\n\nlimb_lengths:\nBone lengths, segment masses and offsets for this body.\n\nRELATED:\nsmpl_torque, floor_zero and smpl_ragdoll take the config.\nmgl_body takes the limb lengths.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1460,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "smpl_beta_editor sets the shape of an SMPL body by hand, and sends it in the\nforms the other SMPL nodes want.\n\nWHAT BETAS ARE:\nSMPL describes a body's shape with a handful of numbers called betas. They\nare not measurements. They are the main ways in which the bodies of a large\nscanned population differ from the average, so each one changes several\nproportions at once. 0 is the average body; the sliders run from -5 to 5.\n\nThe names on the first few sliders are rough guides to what each one does:\nsize, weight, arm ratio, leg ratio, and so on. Check by eye. Note that a\nPOSITIVE beta_0 makes this body SMALLER: at 2, the thigh is about 8 percent\nshorter than at 0, and at -2 about 8 percent longer.\n\nGENDER:\nmale, female or neutral - which body model to use. Only the male and female\nSMPL-H models are installed here, and for the limb lengths this node works\nout, neutral uses the male model.\n\nWHAT IT SENDS:\nAll three outlets send whenever anything changes, and again when the patch\nopens.\n\nconfig is a dictionary with 'betas' (the ten numbers) and 'gender'. It is\nwhat smpl_torque, floor_zero and the other SMPL nodes take on their config\ninlets. It does not carry the mass.\n\nbetas is the ten numbers on their own.\n\nlimb_lengths is a dictionary: 'lengths' (bone lengths in metres - upper_leg,\nlower_leg, upper_arm, lower_arm, foot, hand, collar, neck, head, the spine\nsegments, pelvis_width, shoulder_width), 'masses' (per segment, from\ntotal_mass and the shape), 'offsets', and 'total_mass_scaled' (total_mass\nadjusted for the first two betas). mgl_body and tracker_root_inference take\nit on their 'limb_lengths' inlets.\n\ntotal_mass, in kilograms, is used only for limb_lengths.\n\nCHANGING WEIGHT WITHOUT CHANGING BONES:\n'solve \u03b21' sets the weight beta (beta_1) to 'solve_target \u03b21' while keeping\nthe major bone lengths where they were: it re-fits the other nine betas to\nhold them. The first solve remembers the betas at that moment as its\nreference, and later solves start from the same reference, so repeated\nsolves do not drift. 'clear solve ref' forgets it - and so do reset, load,\nand new betas arriving. The 'solve_reg' option sets how strongly the other\nbetas are held near the reference while fitting.\n\nSAVING:\nsave writes the betas, gender and total_mass to a .npy file, and load reads\none back. With the 'file_path' option set they use that file without asking;\notherwise a file dialog opens.\n\nSYNTAX:\nsmpl_beta_editor\n\nEXAMPLE:\nsmpl_beta_editor\n\nINPUTS and PROPERTIES:\n\nbeta_0 size ... beta_9 breadth:\nThe ten betas.\n\ngender / total_mass:\nAs above.\n\nbetas_in:\nUp to ten numbers, or a dictionary with 'betas' and optionally 'gender' and\n'total_mass' - such as a config. Sets the sliders and sends.\n\nreset:\nSet every beta to 0. Gender and mass are left alone.\n\nsave / load:\nStore a body, and bring it back.\n\nsolve_target \u03b21 / solve \u03b21 / clear solve ref:\nChange weight while holding the bones, as above.\n\nOUTPUTS:\n\nconfig:\nbetas and gender, for the other SMPL nodes.\n\nbetas:\nThe ten numbers.\n\nlimb_lengths:\nBone lengths, segment masses and offsets for this body.\n\nRELATED:\nsmpl_torque, floor_zero and smpl_ragdoll take the config.\nmgl_body takes the limb lengths."
+        },
+        "3": {
+            "name": "smpl_beta_editor",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 229,
+            "height": 322,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment move a slider: everything is sent again",
+            "name": "comment",
+            "id": 385,
+            "position_x": 336,
+            "position_y": 62,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "move a slider: everything is sent again",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "move a slider: everything is sent again"
+        },
+        "5": {
+            "name": "vector",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 160,
+            "height": 210,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment the ten betas",
+            "name": "comment",
+            "id": 459,
+            "position_x": 336,
+            "position_y": 500,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the ten betas",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the ten betas"
+        },
+        "7": {
+            "name": "dict_extract",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 800,
+            "width": 82,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "dict_extract lengths"
+        },
+        "8": {
+            "name": "dict_extract",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 880,
+            "width": 82,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "dict_extract upper_leg upper_arm"
+        },
+        "9": {
+            "name": "float",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 980,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 980,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 336,
+            "position_y": 980,
+            "width": 249,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "thigh and upper arm length, metres\n- watch them shrink as beta_0 rises",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "thigh and upper arm length, metres\n- watch them shrink as beta_0 rises"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 1052,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "betas",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "limb_lengths",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "dict in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

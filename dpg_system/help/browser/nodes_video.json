@@ -164,12 +164,12 @@
             "annotation": true,
             "position_x": 176,
             "position_y": 154,
-            "width": 440,
+            "width": 428,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "cv_camera / cv_capture / cv_image, movie_player / movie_clip_dict,\nndi_receiver, visca_camera / ptz_camera",
+                    "value": "cv_camera / cv_capture, cv_image, movie_player, movie_clip_dict,\nndi_receiver, visca_camera / ptz_camera",
                     "value_type": "str"
                 },
                 "1": {
@@ -179,7 +179,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 432,
+                    "value": 420,
                     "value_type": "int"
                 },
                 "3": {
@@ -193,7 +193,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "cv_camera / cv_capture / cv_image, movie_player / movie_clip_dict,\nndi_receiver, visca_camera / ptz_camera",
+            "text": "cv_camera / cv_capture, cv_image, movie_player, movie_clip_dict,\nndi_receiver, visca_camera / ptz_camera",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,

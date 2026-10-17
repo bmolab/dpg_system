@@ -1,6 +1,6 @@
 {
-    "height": 1310,
-    "width": 1825,
+    "height": 1021,
+    "width": 1820,
     "position": [
         100,
         100
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 977,
+            "position_x": 972,
             "position_y": 45,
             "width": 808,
-            "height": 776,
+            "height": 916,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These set text as an image, for putting on a screen rather than reading in the patch.\n\nTHE NODES:\n\ncairo_layout   general typesetting - font, size, leading, wrapping\nllm_layout     the same, purpose-built for a language model's output\n\nWHY NOT text_display:\ntext_display is for you, while you work. These are for an audience. They render\nthrough Cairo into an image, so the result goes to a projector, a texture, or\nanything else that takes a picture - with a font you chose, at a size you chose,\nlaid out how you want it.\n\nThe 'layout' outlet is that image: 1920 by 1080, three channels, as floats -\na full HD frame, laid out height-first like a camera frame rather than\nchannels-first. So it goes straight into the same places a camera picture does,\nand the k. and tv. filters will guess its orientation correctly.\n\ncairo_layout IS THE PLAIN ONE:\nSend it text and it sets it. 'font path' takes a font file; leave it empty and\nit falls back to a bundled monospace, and then to Cairo's own default, so a\nmissing font never stops the node working - it just looks wrong, which is easier\nto diagnose than a crash.\n\n'leading' is the distance between lines, in the typographer's sense - line\nspacing, not letter spacing. It is the setting that does most for how the text\nfeels, and the one worth adjusting first.\n\n'brightness' and 'alpha power' control how the text sits against what is behind\nit. Alpha power shapes the falloff of the transparency rather than scaling it,\nwhich is what you want when text is being composited over an image and a plain\nopacity setting makes it either invisible or a solid block.\n\n'wrap text' folds long lines to the width instead of letting them run off.\n\nllm_layout IS BUILT FOR TEXT ARRIVING A TOKEN AT A TIME:\nWire gemma_4's 'layout_out' to its 'input'. That outlet does not send text - it\nsends COMMANDS, and this node is what understands them:\n\nadd                    another token\nprompt / streaming_prompt   the prompt, shown differently from the answer\nchoose / choice_list   which alternative was picked, and what the others were\nstep_back              undo a token\ntemperature / show_probs    display settings changing\nsave                   write the text out\n\nSo the two nodes together give you a screen that shows the model writing,\nincluding the parts a plain text display cannot show: which alternatives it was\nconsidering, and which one was chosen.\n\n'active_line' IS WHY IT READS WELL:\nNew text always appears on the same line of the screen - line 17 by default -\nand everything above scrolls up as it fills. The writing happens at a fixed\nheight rather than creeping down the page, which is far easier to read and to\npoint a camera at.\n\nThe node moves it up to line 5 while a streaming prompt is being entered, so\nthere is room below for the answer, and back again afterwards. That is worth\nknowing so it does not look like a fault when the text jumps.\n\n'colour_mode' SHOWS THE MODEL'S UNCERTAINTY:\nEach token can be coloured by temperature, entropy or probability - so the text\ncarries how sure the model was as it wrote. Confident passages and uncertain\nones look different, which is a reading of the generation you cannot get from\nthe words alone.\n\n'include prompt' decides whether what you asked is shown along with the answer.\n\nSYNTAX:\ncairo_layout\nllm_layout\n\nEXAMPLE:\ncairo_layout\n\nINPUTS and PARAMETERS:\n\ninput:\nText, for cairo_layout. Layout commands, for llm_layout.\n\nclear:\nEmpty it.\n\nfont path / font size:\nThe typeface and its size. Empty falls back to a bundled font.\n\nleading:\nLine spacing. The setting that matters most.\n\nbrightness / alpha power:\nHow the text sits over what is behind it.\n\nwrap text:\nFold long lines to the width.\n\nactive_line:\nWhich line of the screen new text appears on.\n\ncolour_mode (llm_layout):\nColour each token by temperature, entropy or probability.\n\ninclude prompt:\nShow the prompt as well as the answer.\n\nOUTPUTS: \n\nlayout:\nThe rendered image.\n\nRELATED:\ngemma_4, whose 'layout_out' this is built to receive.\ntext_display to read text inside the patch instead.\nmgl_texture or gl nodes to get the image onto a screen.",
+                    "value": "cairo_layout sets text as a picture, for a screen or projector rather than the patch.\n\nWHY NOT text_display:\ntext_display is for you, while you work. This is for an audience. It renders\nthrough Cairo into an image, so the result goes to a projector, a texture, or\nanything else that takes a picture - in a font you chose, at a size you chose.\n\nThe 'layout' outlet is that image: 1920 by 1080 unless the node is given\nanother size (cairo_layout <width> <height>), three channels, as floats from\n0 to 1 - laid out height-first like a camera frame rather than channels-first.\nSo it goes straight into the same places a camera picture does. The text is\nwhite on black.\n\nTWO INLETS, TWO JOBS:\n'input' REPLACES: each text that arrives clears the picture and sets the new\ntext. 'command' builds up and edits:\n\nadd <words>        append words to what is there\nadd_char <c>       append one character, with no space before it\ndelete_line        remove back to the last line break\nclear / reset      empty it\nscroll_up / scroll_down   move active_line by one\nsave               write the text to llama_output_<date>.txt in the\n                   folder the app was started from\n\nInside the text, \\n is a line break, a word \\c clears the picture and a word\n\\d deletes back to the last line break.\n\n'active_line' IS WHERE THE TEXT ENDS:\nThe last line of the text sits on line 'active_line' of the picture (counting\nlines of 'leading' from the top), and everything earlier is above it - lines\npushed off the top are not drawn. Set it low and you see only the end of a\nlong text; set it near the bottom and the text fills the picture as it grows.\n\nA new node uses line 1, whatever the box shows, until active_line is changed\n- so a long text shows only its last line, at the top. The demo sets it to 8.\nChanging active_line also moves what is already shown too far; the next text\nlays out correctly.\n\nTHE TYPE:\n'font path' takes a font file. Empty uses the Inconsolata font that comes with\nthe app; a path that cannot be loaded falls back to Cairo's own default, so a\nmissing font never stops the node working - it just looks wrong, which is\neasier to diagnose than a crash.\n\n'leading' is the distance between lines in pixels - line spacing, not letter\nspacing. Changing 'font size' resets it to one and a half times the size, so\nset the size first.\n\n'wrap text' folds long lines to the width instead of letting them run off.\n\nBRIGHTNESS PER WORD:\nA word can arrive with a weight from 0 to 1, as a [word, weight] pair in a\nlist. Its grey level is the weight raised to 'alpha power', times\n'brightness'. Plain words have weight 1, so for them only 'brightness'\nmatters. 'alpha power' shapes the falloff: at 1 a weight of 0.1 is a dark\ngrey, at the default 0.1 it is nearly as bright as the rest. A word of\nweight 0 is left out.\n\nSYNTAX:\ncairo_layout <width> <height>\n\nEXAMPLE:\ncairo_layout\n\nINPUTS and PARAMETERS:\n\ninput:\nText to show, replacing what was there.\n\ncommand:\nThe commands above.\n\nclear:\nEmpty it.\n\nfont path / font size:\nThe typeface and its size (40).\n\nbrightness / alpha power:\nThe grey level of the text, and how word weights map to it.\n\nleading:\nLine spacing, 60.\n\nactive_line:\nThe line the text ends on.\n\nwrap text:\nFold long lines to the width.\n\nOUTPUTS:\n\nlayout:\nThe rendered image.\n\nRELATED:\nllm_layout, the same idea built for a language model's output; it used to\nshare this page. text_display to read text inside the patch instead.\nmgl_texture or gl nodes to get the image onto a screen.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 760,
+                    "value": 900,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These set text as an image, for putting on a screen rather than reading in the patch.\n\nTHE NODES:\n\ncairo_layout   general typesetting - font, size, leading, wrapping\nllm_layout     the same, purpose-built for a language model's output\n\nWHY NOT text_display:\ntext_display is for you, while you work. These are for an audience. They render\nthrough Cairo into an image, so the result goes to a projector, a texture, or\nanything else that takes a picture - with a font you chose, at a size you chose,\nlaid out how you want it.\n\nThe 'layout' outlet is that image: 1920 by 1080, three channels, as floats -\na full HD frame, laid out height-first like a camera frame rather than\nchannels-first. So it goes straight into the same places a camera picture does,\nand the k. and tv. filters will guess its orientation correctly.\n\ncairo_layout IS THE PLAIN ONE:\nSend it text and it sets it. 'font path' takes a font file; leave it empty and\nit falls back to a bundled monospace, and then to Cairo's own default, so a\nmissing font never stops the node working - it just looks wrong, which is easier\nto diagnose than a crash.\n\n'leading' is the distance between lines, in the typographer's sense - line\nspacing, not letter spacing. It is the setting that does most for how the text\nfeels, and the one worth adjusting first.\n\n'brightness' and 'alpha power' control how the text sits against what is behind\nit. Alpha power shapes the falloff of the transparency rather than scaling it,\nwhich is what you want when text is being composited over an image and a plain\nopacity setting makes it either invisible or a solid block.\n\n'wrap text' folds long lines to the width instead of letting them run off.\n\nllm_layout IS BUILT FOR TEXT ARRIVING A TOKEN AT A TIME:\nWire gemma_4's 'layout_out' to its 'input'. That outlet does not send text - it\nsends COMMANDS, and this node is what understands them:\n\nadd                    another token\nprompt / streaming_prompt   the prompt, shown differently from the answer\nchoose / choice_list   which alternative was picked, and what the others were\nstep_back              undo a token\ntemperature / show_probs    display settings changing\nsave                   write the text out\n\nSo the two nodes together give you a screen that shows the model writing,\nincluding the parts a plain text display cannot show: which alternatives it was\nconsidering, and which one was chosen.\n\n'active_line' IS WHY IT READS WELL:\nNew text always appears on the same line of the screen - line 17 by default -\nand everything above scrolls up as it fills. The writing happens at a fixed\nheight rather than creeping down the page, which is far easier to read and to\npoint a camera at.\n\nThe node moves it up to line 5 while a streaming prompt is being entered, so\nthere is room below for the answer, and back again afterwards. That is worth\nknowing so it does not look like a fault when the text jumps.\n\n'colour_mode' SHOWS THE MODEL'S UNCERTAINTY:\nEach token can be coloured by temperature, entropy or probability - so the text\ncarries how sure the model was as it wrote. Confident passages and uncertain\nones look different, which is a reading of the generation you cannot get from\nthe words alone.\n\n'include prompt' decides whether what you asked is shown along with the answer.\n\nSYNTAX:\ncairo_layout\nllm_layout\n\nEXAMPLE:\ncairo_layout\n\nINPUTS and PARAMETERS:\n\ninput:\nText, for cairo_layout. Layout commands, for llm_layout.\n\nclear:\nEmpty it.\n\nfont path / font size:\nThe typeface and its size. Empty falls back to a bundled font.\n\nleading:\nLine spacing. The setting that matters most.\n\nbrightness / alpha power:\nHow the text sits over what is behind it.\n\nwrap text:\nFold long lines to the width.\n\nactive_line:\nWhich line of the screen new text appears on.\n\ncolour_mode (llm_layout):\nColour each token by temperature, entropy or probability.\n\ninclude prompt:\nShow the prompt as well as the answer.\n\nOUTPUTS: \n\nlayout:\nThe rendered image.\n\nRELATED:\ngemma_4, whose 'layout_out' this is built to receive.\ntext_display to read text inside the patch instead.\nmgl_texture or gl nodes to get the image onto a screen."
+            "text": "cairo_layout sets text as a picture, for a screen or projector rather than the patch.\n\nWHY NOT text_display:\ntext_display is for you, while you work. This is for an audience. It renders\nthrough Cairo into an image, so the result goes to a projector, a texture, or\nanything else that takes a picture - in a font you chose, at a size you chose.\n\nThe 'layout' outlet is that image: 1920 by 1080 unless the node is given\nanother size (cairo_layout <width> <height>), three channels, as floats from\n0 to 1 - laid out height-first like a camera frame rather than channels-first.\nSo it goes straight into the same places a camera picture does. The text is\nwhite on black.\n\nTWO INLETS, TWO JOBS:\n'input' REPLACES: each text that arrives clears the picture and sets the new\ntext. 'command' builds up and edits:\n\nadd <words>        append words to what is there\nadd_char <c>       append one character, with no space before it\ndelete_line        remove back to the last line break\nclear / reset      empty it\nscroll_up / scroll_down   move active_line by one\nsave               write the text to llama_output_<date>.txt in the\n                   folder the app was started from\n\nInside the text, \\n is a line break, a word \\c clears the picture and a word\n\\d deletes back to the last line break.\n\n'active_line' IS WHERE THE TEXT ENDS:\nThe last line of the text sits on line 'active_line' of the picture (counting\nlines of 'leading' from the top), and everything earlier is above it - lines\npushed off the top are not drawn. Set it low and you see only the end of a\nlong text; set it near the bottom and the text fills the picture as it grows.\n\nA new node uses line 1, whatever the box shows, until active_line is changed\n- so a long text shows only its last line, at the top. The demo sets it to 8.\nChanging active_line also moves what is already shown too far; the next text\nlays out correctly.\n\nTHE TYPE:\n'font path' takes a font file. Empty uses the Inconsolata font that comes with\nthe app; a path that cannot be loaded falls back to Cairo's own default, so a\nmissing font never stops the node working - it just looks wrong, which is\neasier to diagnose than a crash.\n\n'leading' is the distance between lines in pixels - line spacing, not letter\nspacing. Changing 'font size' resets it to one and a half times the size, so\nset the size first.\n\n'wrap text' folds long lines to the width instead of letting them run off.\n\nBRIGHTNESS PER WORD:\nA word can arrive with a weight from 0 to 1, as a [word, weight] pair in a\nlist. Its grey level is the weight raised to 'alpha power', times\n'brightness'. Plain words have weight 1, so for them only 'brightness'\nmatters. 'alpha power' shapes the falloff: at 1 a weight of 0.1 is a dark\ngrey, at the default 0.1 it is nearly as bright as the rest. A word of\nweight 0 is left out.\n\nSYNTAX:\ncairo_layout <width> <height>\n\nEXAMPLE:\ncairo_layout\n\nINPUTS and PARAMETERS:\n\ninput:\nText to show, replacing what was there.\n\ncommand:\nThe commands above.\n\nclear:\nEmpty it.\n\nfont path / font size:\nThe typeface and its size (40).\n\nbrightness / alpha power:\nThe grey level of the text, and how word weights map to it.\n\nleading:\nLine spacing, 60.\n\nactive_line:\nThe line the text ends on.\n\nwrap text:\nFold long lines to the width.\n\nOUTPUTS:\n\nlayout:\nThe rendered image.\n\nRELATED:\nllm_layout, the same idea built for a language model's output; it used to\nshare this page. text_display to read text inside the patch instead.\nmgl_texture or gl nodes to get the image onto a screen."
         },
         "3": {
             "name": "string",
@@ -121,32 +121,134 @@
             }
         },
         "4": {
-            "name": "cairo_layout",
+            "init": "comment edit and press return: replaces the text",
+            "name": "comment",
             "id": 385,
+            "position_x": 681,
+            "position_y": 112,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "edit and press return: replaces the text",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "edit and press return: replaces the text"
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
             "position_x": 30,
-            "position_y": 120,
+            "position_y": 150,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "add and the light had gone",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 370,
+            "position_y": 150,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "clear",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment commands build up the text",
+            "name": "comment",
+            "id": 496,
+            "position_x": 681,
+            "position_y": 200,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "commands build up the text",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "commands build up the text"
+        },
+        "8": {
+            "name": "cairo_layout",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 250,
             "width": 160,
             "height": 168,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "active_line",
+                    "value": 8,
+                    "value_type": "int"
+                }
+            }
         },
-        "5": {
+        "9": {
             "name": "text_block",
-            "id": 422,
+            "id": 570,
             "annotation": true,
-            "position_x": 661,
-            "position_y": 475,
-            "width": 274,
-            "height": 64,
+            "position_x": 681,
+            "position_y": 605,
+            "width": 249,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "leading is line spacing - the setting\nthat does most for how it feels\nempty font path falls back to a bundled\none - a missing file never stops it",
+                    "value": "active_line 8: the text ends on the\neighth line of the picture",
                     "value_type": "str"
                 },
                 "1": {
@@ -156,12 +258,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 266,
+                    "value": 241,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 48,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -170,13 +272,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "leading is line spacing - the setting\nthat does most for how it feels\nempty font path falls back to a bundled\none - a missing file never stops it"
+            "text": "active_line 8: the text ends on the\neighth line of the picture"
         },
-        "6": {
+        "10": {
             "name": "info",
-            "id": 459,
-            "position_x": 400,
-            "position_y": 120,
+            "id": 607,
+            "position_x": 420,
+            "position_y": 250,
             "width": 235,
             "height": 42,
             "visibility": "show_all",
@@ -184,12 +286,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "7": {
+        "11": {
             "name": "text_block",
-            "id": 496,
+            "id": 644,
             "annotation": true,
-            "position_x": 661,
-            "position_y": 215,
+            "position_x": 681,
+            "position_y": 345,
             "width": 261,
             "height": 52,
             "visibility": "show_all",
@@ -224,115 +326,11 @@
             },
             "text": "the layout is an IMAGE - send it to a\ntexture, a projector, anything that\ntakes a picture"
         },
-        "8": {
-            "name": "gemma_4",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 630,
-            "width": 230,
-            "height": 546,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "name": "llm_layout",
-            "id": 570,
-            "position_x": 420,
-            "position_y": 630,
-            "width": 160,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "10": {
-            "name": "text_block",
-            "id": 607,
-            "annotation": true,
-            "position_x": 661,
-            "position_y": 905,
-            "width": 286,
-            "height": 88,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "layout_out does not send TEXT - it sends\ncommands, and this node understands them\nso the screen can show which alternatives\nthe model weighed, not just what it said\ncolour_mode paints each token by how\nsure the model was as it wrote it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 278,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 72,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "layout_out does not send TEXT - it sends\ncommands, and this node understands them\nso the screen can show which alternatives\nthe model weighed, not just what it said\ncolour_mode paints each token by how\nsure the model was as it wrote it"
-        },
-        "11": {
-            "name": "text_block",
-            "id": 644,
-            "annotation": true,
-            "position_x": 661,
-            "position_y": 1145,
-            "width": 268,
-            "height": 52,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "new text stays on active_line, and the\nrest scrolls up past it - the writing\nhappens at a fixed height on screen",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 260,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "new text stays on active_line, and the\nrest scrolls up past it - the writing\nhappens at a fixed height on screen"
-        },
         "12": {
             "name": "close",
             "id": 681,
             "position_x": 24,
-            "position_y": 1206,
+            "position_y": 448,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -353,30 +351,40 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "string out",
-            "dest_node": 385,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "layout",
-            "dest_node": 459,
+            "source_output_name": "",
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "in"
+            "dest_input_name": "command"
         },
         "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "command"
+        },
+        "3": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "layout_out",
-            "dest_node": 570,
+            "source_output_name": "layout",
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "input"
+            "dest_input_name": "in"
         }
     }
 }

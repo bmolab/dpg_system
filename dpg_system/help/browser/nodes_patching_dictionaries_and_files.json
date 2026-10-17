@@ -1,11 +1,11 @@
 {
-    "height": 372,
-    "width": 822,
+    "height": 624,
+    "width": 551,
     "position": [
         100,
         100
     ],
-    "id": 944,
+    "id": 1314,
     "name": "nodes_patching_dictionaries_and_files",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_patching_dictionaries_and_files.json",
     "nodes": {
@@ -136,21 +136,21 @@
             "presentation_state": "show_all"
         },
         "5": {
-            "init": "help_link dict dictionaries",
+            "init": "help_link dict dict",
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 150,
+            "width": 230,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "dictionaries",
+                    "name": "dict",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 134,
+                    "value": 214,
                     "value_type": "int"
                 },
                 "2": {
@@ -167,14 +167,14 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 188,
+            "position_x": 268,
             "position_y": 154,
-            "width": 594,
-            "height": 52,
+            "width": 175,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "named values travelling together\n(construct_dict, dict, dict_extract, dict_keys, dict_retrieve, dict_stream, gather_to_dict,\n unpack_dict)",
+                    "value": "a store of named values",
                     "value_type": "str"
                 },
                 "1": {
@@ -184,12 +184,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 586,
+                    "value": 167,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 36,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -198,28 +198,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "named values travelling together\n(construct_dict, dict, dict_extract, dict_keys, dict_retrieve, dict_stream, gather_to_dict,\n unpack_dict)",
+            "text": "a store of named values",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link dict_search dict_search",
+            "init": "help_link construct_dict construct_dict / gather_to_dict",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 210,
-            "width": 150,
+            "position_y": 202,
+            "width": 230,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "dict_search",
+                    "name": "construct_dict / gather_to_dict",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 134,
+                    "value": 214,
                     "value_type": "int"
                 },
                 "2": {
@@ -236,8 +236,353 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 188,
-            "position_y": 214,
+            "position_x": 268,
+            "position_y": 206,
+            "width": 231,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "gather inlets into a dictionary\n(construct_dict, gather_to_dict)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "gather inlets into a dictionary\n(construct_dict, gather_to_dict)",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link dict_extract dict_extract / unpack_dict",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 230,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "dict_extract / unpack_dict",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 268,
+            "position_y": 258,
+            "width": 200,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one outlet per key\n(dict_extract, unpack_dict)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one outlet per key\n(dict_extract, unpack_dict)",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link dict_keys dict_keys",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 230,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "dict_keys",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 268,
+            "position_y": 310,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the names in a dictionary",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the names in a dictionary",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link dict_retrieve dict_retrieve",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 230,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "dict_retrieve",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 268,
+            "position_y": 362,
+            "width": 243,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one value, by a key you can change",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one value, by a key you can change",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link dict_stream dict_stream",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 230,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "dict_stream",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 268,
+            "position_y": 414,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "entries one at a time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "entries one at a time",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link dict_search dict_search",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 462,
+            "width": 230,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "dict_search",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 268,
+            "position_y": 466,
             "width": 237,
             "height": 28,
             "properties": {
@@ -268,17 +613,17 @@
                 }
             },
             "text": "find a branch of a tree by typing",
-            "id": 833,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "9": {
+        "19": {
             "init": "help_link directory_iterator directory_iterator",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 262,
-            "width": 150,
+            "position_y": 514,
+            "width": 230,
             "height": 44,
             "properties": {
                 "0": {
@@ -288,7 +633,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 134,
+                    "value": 214,
                     "value_type": "int"
                 },
                 "2": {
@@ -297,16 +642,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 870,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "10": {
+        "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 188,
-            "position_y": 266,
+            "position_x": 268,
+            "position_y": 518,
             "width": 200,
             "height": 28,
             "properties": {
@@ -337,7 +682,7 @@
                 }
             },
             "text": "walk a folder, file by file",
-            "id": 907,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

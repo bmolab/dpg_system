@@ -1,11 +1,11 @@
 {
-    "height": 2200,
-    "width": 1375,
+    "height": 1298,
+    "width": 1999,
     "position": [
         100,
         100
     ],
-    "id": 903,
+    "id": 940,
     "name": "mgl_camera_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_camera_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment mgl camera, light, material and colour - seeing the scene",
+            "init": "comment mgl_camera - where the scene is seen from",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 709,
+            "width": 512,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "mgl camera, light, material and colour - seeing the scene",
+                    "value": "mgl_camera - where the scene is seen from",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "mgl camera, light, material and colour - seeing the scene"
+            "comment": "mgl_camera - where the scene is seen from"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 517,
+            "position_x": 1141,
             "position_y": 45,
             "width": 818,
-            "height": 1116,
+            "height": 1016,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These decide where the scene is seen from, how it is lit, and what colour \nand surface it has.\n\nTHE NODES:\n\nmgl_camera        a fixed viewpoint: a position, a target and a field of view\nmgl_orbit_camera  a viewpoint you can drag - it takes the context's interaction \n                  events and turns them into yaw, elevation and distance\nmgl_light         a light source\nmgl_material      how surfaces respond to light\nmgl_color         a colour that tints whatever follows\n\nYOU DO NOT NEED EITHER TO SEE SOMETHING:\nmgl_context supplies a default camera (at 0 0 3, looking at the origin) and \na default light, both switchable in its options ('default_camera', \n'default_light'). A camera node replaces the default viewpoint for \neverything drawn after it, and the first mgl_light in a frame removes the \ndefault light, so the lights you place are the only ones.\n\nWHAT IS UNDONE AT THE END OF A BRANCH, AND WHAT IS NOT:\nmgl_material and mgl_color behave like transforms: they apply from where they \nsit onward and are put back afterwards, so a material placed before three \nshapes gives all three that material, and a second material after them \nchanges only what follows.\n\nCameras and lights are not put back. A camera sets the view for the rest of \nthe frame, including branches drawn after its own. Each mgl_light adds a \nlight that stays on for the rest of the frame - up to eight are used - \nso shapes drawn before a light do not see it, and everything drawn after it \ndoes. A light's position is moved by any transforms in force where it sits.\n\nCOLOUR AND MATERIAL MULTIPLY:\nShapes are always lit. What you see is roughly the light that reaches the \nsurface (its ambient plus diffuse, scaled by the material's ambient and \ndiffuse) multiplied by the current colour, plus a highlight from the \nmaterial's specular, which the colour does not tint. So mgl_color sets the \nhue and keeps the shading; mgl_material sets how the surface answers light. \nWith no light at all, a shape shows a dim fifth of its colour.\nmgl_line_array and mgl_text are the exceptions: they draw in the current \ncolour without any lighting.\n\nTHE MATERIAL COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light, \n'specular' the colour of the highlight, and 'shininess' how tight that \nhighlight is. High shininess is a small hard glint; low is a broad sheen. \nThe light node has the matching three, and each pair multiplies.\n\nSYNTAX:\nmgl_camera\nmgl_orbit_camera\nmgl_light\nmgl_material\nmgl_color\n\nEXAMPLE:\nmgl_orbit_camera\n\nINPUTS and PARAMETERS:\n\nmgl chain in (all five):\nThe chain. This is what triggers the node.\n\nfov (both cameras):\nThe vertical field of view in degrees, 60 by default. Wide values exaggerate \ndepth; narrow ones flatten it.\n\npos / target / up (mgl_camera):\nWhere the camera is (0 0 3), what it looks at (the origin), and which way \nis up (0 1 0).\n\nnear / far (options, both cameras):\nThe nearest and farthest distances drawn, 0.1 and 100.\n\ntarget / distance / yaw / elevation (mgl_orbit_camera):\nWhat to orbit around, how far away (3), and where on the orbit: yaw is the \nangle around the vertical in degrees - 0 puts the camera on the plus z side - \nand elevation the angle above the horizontal (20).\n\nui (mgl_orbit_camera):\nPatch this from the context's 'ui' outlet. Dragging with the left button \norbits, the scroll wheel zooms. The events come from the context's own \npicture - its window or fullscreen view, or the picture inside the node \nwhen the context's 'node_mouse_events' option is ticked, as here.\n\ntop / bottom / front / back / left / right (messages, mgl_orbit_camera):\nSnap to that view, keeping target and distance. 'front' looks at a subject \nfacing minus z from in front of it.\n\nprojection / drag_speed / zoom_speed (options, mgl_orbit_camera):\nPerspective or orthographic, and how fast dragging and scrolling move it.\n\nposition / ambient / diffuse / specular / intensity (mgl_light):\nWhere the light is (0 5 5) and what it contributes; intensity scales its \ndiffuse and highlight, not its ambient.\n\nambient / diffuse / specular / shininess (mgl_material):\nHow the surface answers. Shininess runs from 1 to 256, 32 by default.\n\ncolor (mgl_color):\nThe colour, as red green blue alpha, either from 0 to 1 or from 0 to 255 - \na colour with any value above 1 is read as 0 to 255. Three numbers take \nalpha as full.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, with the setting in force downstream.\n\nRELATED:\nmgl_context for the default camera and light. mgl_texture puts an image on \na surface; it used to share this page. The gl_ equivalents are gl_light, \ngl_material and gl_color.",
+                    "value": "mgl_camera and mgl_orbit_camera decide where the scene is seen from.\n\nTHE NODES:\n\nmgl_camera        a fixed viewpoint: a position, a target and a field of view\nmgl_orbit_camera  a viewpoint you can drag - it takes the context's interaction\n                  events and turns them into yaw, elevation and distance\n\nThey are two forms of the same thing. Both set the view and the projection\nfor whatever is drawn after them; they differ only in how you say where the\neye is.\n\nYOU DO NOT NEED ONE TO SEE SOMETHING:\nmgl_context supplies a default camera (at 0 0 3, looking at the origin),\nswitchable with its 'default_camera' option and adjustable with its\n'camera_' options. A camera node replaces that view for everything drawn\nafter it.\n\nA CAMERA IS NOT PUT BACK:\nTransforms, colours and materials are undone at the end of the branch they\nsit in. A camera is not: it sets the view for the rest of the frame,\nincluding branches drawn after its own. So it belongs near the top of the\nchain, before anything it should see. Two cameras in one chain means the\nsecond one wins for everything after it.\n\nTHE ORBIT CAMERA:\nThe eye sits on a sphere around 'target'. 'distance' is the radius, 'yaw'\nthe angle around the vertical in degrees - 0 puts the eye on the plus z side\n- and 'elevation' the angle above the horizontal.\n\nPatch the context's 'ui' outlet into its 'ui' inlet and the picture becomes\nthe control: dragging with the left button orbits (elevation stops at 89\ndegrees either way), and the scroll wheel zooms by changing the distance.\nThe events come from the context's own picture - its window or fullscreen\nview, or the picture inside the node when the context's 'node_mouse_events'\noption is ticked, as here.\n\nThe messages top, bottom, front, back, left and right snap it to that view,\nkeeping target and distance. 'front' looks at a subject facing minus z from\nin front of it; 'side' is an older name for 'right'.\n\nORTHOGRAPHIC:\nThe orbit camera's 'projection' option can be orthographic - no perspective,\nparallel lines stay parallel. The picture keeps the same scale at the target\nwhen you switch, and zooming still works, because the visible height is set\nfrom distance and field of view. In that mode 'near' is not used, and 'far'\nis the half-depth of the slab drawn, centred on the target.\n\nSYNTAX:\nmgl_camera\nmgl_orbit_camera\n\nEXAMPLE:\nmgl_orbit_camera\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This is what triggers the node.\n\nfov (both):\nThe vertical field of view in degrees, 60 by default. Wide values exaggerate\ndepth; narrow ones flatten it.\n\npos / target / up (mgl_camera):\nWhere the camera is (0 0 3), what it looks at (the origin), and which way\nis up (0 1 0).\n\ntarget / distance / yaw / elevation (mgl_orbit_camera):\nWhat to orbit around, how far away (3), and where on the orbit (yaw 0,\nelevation 20).\n\nui (mgl_orbit_camera):\nInteraction events from mgl_context's 'ui' outlet.\n\nnear / far (options, both):\nThe nearest and farthest distances drawn, 0.1 and 100.\n\nprojection / drag_speed / zoom_speed (options, mgl_orbit_camera):\nPerspective or orthographic, and how fast dragging and scrolling move it.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, seen from this camera.\n\nRELATED:\nmgl_context for the default camera. mgl_light, mgl_material and mgl_color\nused to share this page.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 1100,
+                    "value": 1000,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,12 +90,99 @@
                     "value_type": "str"
                 }
             },
-            "text": "These decide where the scene is seen from, how it is lit, and what colour \nand surface it has.\n\nTHE NODES:\n\nmgl_camera        a fixed viewpoint: a position, a target and a field of view\nmgl_orbit_camera  a viewpoint you can drag - it takes the context's interaction \n                  events and turns them into yaw, elevation and distance\nmgl_light         a light source\nmgl_material      how surfaces respond to light\nmgl_color         a colour that tints whatever follows\n\nYOU DO NOT NEED EITHER TO SEE SOMETHING:\nmgl_context supplies a default camera (at 0 0 3, looking at the origin) and \na default light, both switchable in its options ('default_camera', \n'default_light'). A camera node replaces the default viewpoint for \neverything drawn after it, and the first mgl_light in a frame removes the \ndefault light, so the lights you place are the only ones.\n\nWHAT IS UNDONE AT THE END OF A BRANCH, AND WHAT IS NOT:\nmgl_material and mgl_color behave like transforms: they apply from where they \nsit onward and are put back afterwards, so a material placed before three \nshapes gives all three that material, and a second material after them \nchanges only what follows.\n\nCameras and lights are not put back. A camera sets the view for the rest of \nthe frame, including branches drawn after its own. Each mgl_light adds a \nlight that stays on for the rest of the frame - up to eight are used - \nso shapes drawn before a light do not see it, and everything drawn after it \ndoes. A light's position is moved by any transforms in force where it sits.\n\nCOLOUR AND MATERIAL MULTIPLY:\nShapes are always lit. What you see is roughly the light that reaches the \nsurface (its ambient plus diffuse, scaled by the material's ambient and \ndiffuse) multiplied by the current colour, plus a highlight from the \nmaterial's specular, which the colour does not tint. So mgl_color sets the \nhue and keeps the shading; mgl_material sets how the surface answers light. \nWith no light at all, a shape shows a dim fifth of its colour.\nmgl_line_array and mgl_text are the exceptions: they draw in the current \ncolour without any lighting.\n\nTHE MATERIAL COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light, \n'specular' the colour of the highlight, and 'shininess' how tight that \nhighlight is. High shininess is a small hard glint; low is a broad sheen. \nThe light node has the matching three, and each pair multiplies.\n\nSYNTAX:\nmgl_camera\nmgl_orbit_camera\nmgl_light\nmgl_material\nmgl_color\n\nEXAMPLE:\nmgl_orbit_camera\n\nINPUTS and PARAMETERS:\n\nmgl chain in (all five):\nThe chain. This is what triggers the node.\n\nfov (both cameras):\nThe vertical field of view in degrees, 60 by default. Wide values exaggerate \ndepth; narrow ones flatten it.\n\npos / target / up (mgl_camera):\nWhere the camera is (0 0 3), what it looks at (the origin), and which way \nis up (0 1 0).\n\nnear / far (options, both cameras):\nThe nearest and farthest distances drawn, 0.1 and 100.\n\ntarget / distance / yaw / elevation (mgl_orbit_camera):\nWhat to orbit around, how far away (3), and where on the orbit: yaw is the \nangle around the vertical in degrees - 0 puts the camera on the plus z side - \nand elevation the angle above the horizontal (20).\n\nui (mgl_orbit_camera):\nPatch this from the context's 'ui' outlet. Dragging with the left button \norbits, the scroll wheel zooms. The events come from the context's own \npicture - its window or fullscreen view, or the picture inside the node \nwhen the context's 'node_mouse_events' option is ticked, as here.\n\ntop / bottom / front / back / left / right (messages, mgl_orbit_camera):\nSnap to that view, keeping target and distance. 'front' looks at a subject \nfacing minus z from in front of it.\n\nprojection / drag_speed / zoom_speed (options, mgl_orbit_camera):\nPerspective or orthographic, and how fast dragging and scrolling move it.\n\nposition / ambient / diffuse / specular / intensity (mgl_light):\nWhere the light is (0 5 5) and what it contributes; intensity scales its \ndiffuse and highlight, not its ambient.\n\nambient / diffuse / specular / shininess (mgl_material):\nHow the surface answers. Shininess runs from 1 to 256, 32 by default.\n\ncolor (mgl_color):\nThe colour, as red green blue alpha, either from 0 to 1 or from 0 to 255 - \na colour with any value above 1 is read as 0 to 255. Three numbers take \nalpha as full.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, with the setting in force downstream.\n\nRELATED:\nmgl_context for the default camera and light. mgl_texture puts an image on \na surface; it used to share this page. The gl_ equivalents are gl_light, \ngl_material and gl_color."
+            "text": "mgl_camera and mgl_orbit_camera decide where the scene is seen from.\n\nTHE NODES:\n\nmgl_camera        a fixed viewpoint: a position, a target and a field of view\nmgl_orbit_camera  a viewpoint you can drag - it takes the context's interaction\n                  events and turns them into yaw, elevation and distance\n\nThey are two forms of the same thing. Both set the view and the projection\nfor whatever is drawn after them; they differ only in how you say where the\neye is.\n\nYOU DO NOT NEED ONE TO SEE SOMETHING:\nmgl_context supplies a default camera (at 0 0 3, looking at the origin),\nswitchable with its 'default_camera' option and adjustable with its\n'camera_' options. A camera node replaces that view for everything drawn\nafter it.\n\nA CAMERA IS NOT PUT BACK:\nTransforms, colours and materials are undone at the end of the branch they\nsit in. A camera is not: it sets the view for the rest of the frame,\nincluding branches drawn after its own. So it belongs near the top of the\nchain, before anything it should see. Two cameras in one chain means the\nsecond one wins for everything after it.\n\nTHE ORBIT CAMERA:\nThe eye sits on a sphere around 'target'. 'distance' is the radius, 'yaw'\nthe angle around the vertical in degrees - 0 puts the eye on the plus z side\n- and 'elevation' the angle above the horizontal.\n\nPatch the context's 'ui' outlet into its 'ui' inlet and the picture becomes\nthe control: dragging with the left button orbits (elevation stops at 89\ndegrees either way), and the scroll wheel zooms by changing the distance.\nThe events come from the context's own picture - its window or fullscreen\nview, or the picture inside the node when the context's 'node_mouse_events'\noption is ticked, as here.\n\nThe messages top, bottom, front, back, left and right snap it to that view,\nkeeping target and distance. 'front' looks at a subject facing minus z from\nin front of it; 'side' is an older name for 'right'.\n\nORTHOGRAPHIC:\nThe orbit camera's 'projection' option can be orthographic - no perspective,\nparallel lines stay parallel. The picture keeps the same scale at the target\nwhen you switch, and zooming still works, because the visible height is set\nfrom distance and field of view. In that mode 'near' is not used, and 'far'\nis the half-depth of the slab drawn, centred on the target.\n\nSYNTAX:\nmgl_camera\nmgl_orbit_camera\n\nEXAMPLE:\nmgl_orbit_camera\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This is what triggers the node.\n\nfov (both):\nThe vertical field of view in degrees, 60 by default. Wide values exaggerate\ndepth; narrow ones flatten it.\n\npos / target / up (mgl_camera):\nWhere the camera is (0 0 3), what it looks at (the origin), and which way\nis up (0 1 0).\n\ntarget / distance / yaw / elevation (mgl_orbit_camera):\nWhat to orbit around, how far away (3), and where on the orbit (yaw 0,\nelevation 20).\n\nui (mgl_orbit_camera):\nInteraction events from mgl_context's 'ui' outlet.\n\nnear / far (options, both):\nThe nearest and farthest distances drawn, 0.1 and 100.\n\nprojection / drag_speed / zoom_speed (options, mgl_orbit_camera):\nPerspective or orthographic, and how fast dragging and scrolling move it.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, seen from this camera.\n\nRELATED:\nmgl_context for the default camera. mgl_light, mgl_material and mgl_color\nused to share this page."
         },
         "3": {
             "name": "mgl_context",
             "id": 348,
             "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "name": "mgl_camera",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 188,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "pos",
+                    "value": [
+                        2.0,
+                        1.5,
+                        3.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "5": {
+            "init": "comment a fixed eye, up and to the right",
+            "name": "comment",
+            "id": 422,
+            "position_x": 856,
+            "position_y": 440,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a fixed eye, up and to the right",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a fixed eye, up and to the right"
+        },
+        "6": {
+            "name": "mgl_box",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 176,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "mgl_context",
+            "id": 496,
+            "position_x": 420,
             "position_y": 62,
             "width": 92,
             "height": 84,
@@ -125,13 +212,13 @@
                 }
             }
         },
-        "4": {
+        "8": {
             "name": "text_block",
-            "id": 385,
+            "id": 533,
             "annotation": true,
-            "position_x": 257,
+            "position_x": 856,
             "position_y": 120,
-            "width": 212,
+            "width": 218,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -139,7 +226,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "drag on the picture to orbit,\nscroll to zoom",
+                    "value": "drag on this picture to orbit,\nscroll to zoom",
                     "value_type": "str"
                 },
                 "1": {
@@ -149,7 +236,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 204,
+                    "value": 210,
                     "value_type": "int"
                 },
                 "3": {
@@ -163,13 +250,82 @@
                     "value_type": "str"
                 }
             },
-            "text": "drag on the picture to orbit,\nscroll to zoom"
+            "text": "drag on this picture to orbit,\nscroll to zoom"
         },
-        "5": {
+        "9": {
+            "name": "message",
+            "id": 570,
+            "position_x": 420,
+            "position_y": 420,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "front",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 560,
+            "position_y": 420,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "top",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 700,
+            "position_y": 420,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "right",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
             "name": "mgl_orbit_camera",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 440,
+            "id": 681,
+            "position_x": 420,
+            "position_y": 480,
             "width": 188,
             "height": 126,
             "visibility": "show_all",
@@ -177,12 +333,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "6": {
+        "13": {
             "init": "comment fed from the context's ui outlet",
             "name": "comment",
-            "id": 459,
-            "position_x": 257,
-            "position_y": 440,
+            "id": 718,
+            "position_x": 856,
+            "position_y": 480,
             "width": 205,
             "height": 30,
             "visibility": "show_all",
@@ -202,60 +358,23 @@
             },
             "comment": "fed from the context's ui outlet"
         },
-        "7": {
-            "name": "mgl_light",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 630,
-            "width": 201,
-            "height": 220,
+        "14": {
+            "name": "mgl_box",
+            "id": 755,
+            "position_x": 420,
+            "position_y": 710,
+            "width": 176,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
-            "init": "comment replaces the context's default light",
-            "name": "comment",
-            "id": 533,
-            "position_x": 257,
-            "position_y": 630,
-            "width": 230,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "replaces the context's default light",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "replaces the context's default light"
-        },
-        "9": {
-            "name": "mgl_material",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 900,
-            "width": 148,
-            "height": 206,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "10": {
+        "15": {
             "name": "mgl_translate",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 1160,
+            "id": 792,
+            "position_x": 420,
+            "position_y": 880,
             "width": 88,
             "height": 98,
             "visibility": "show_all",
@@ -264,12 +383,12 @@
             "properties": {
                 "0": {
                     "name": "x",
-                    "value": -0.8,
+                    "value": 0.6,
                     "value_type": "float"
                 },
                 "1": {
                     "name": "y",
-                    "value": 0.0,
+                    "value": 0.6,
                     "value_type": "float"
                 },
                 "2": {
@@ -278,104 +397,33 @@
                     "value_type": "float"
                 }
             },
-            "init": "mgl_translate -0.8 0 0"
+            "init": "mgl_translate 0.6 0.6 0"
         },
-        "11": {
+        "16": {
             "name": "mgl_sphere",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 1300,
+            "id": 829,
+            "position_x": 420,
+            "position_y": 1010,
             "width": 124,
             "height": 154,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
-        },
-        "12": {
-            "init": "comment material only: white, lit",
-            "name": "comment",
-            "id": 681,
-            "position_x": 257,
-            "position_y": 1300,
-            "width": 162,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "material only: white, lit",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "material only: white, lit"
-        },
-        "13": {
-            "name": "mgl_translate",
-            "id": 718,
-            "position_x": 30,
-            "position_y": 1510,
-            "width": 88,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "x",
-                    "value": 1.6,
+                    "name": "radius",
+                    "value": 0.3,
                     "value_type": "float"
-                },
-                "1": {
-                    "name": "y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "z",
-                    "value": 0.0,
-                    "value_type": "float"
-                }
-            },
-            "init": "mgl_translate 1.6 0 0"
-        },
-        "14": {
-            "name": "mgl_color",
-            "id": 755,
-            "position_x": 30,
-            "position_y": 1650,
-            "width": 128,
-            "height": 92,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": [
-                        255.0,
-                        140.0,
-                        0.0,
-                        255.0
-                    ],
-                    "value_type": "list"
                 }
             }
         },
-        "15": {
+        "17": {
             "name": "text_block",
-            "id": 792,
+            "id": 866,
             "annotation": true,
-            "position_x": 257,
-            "position_y": 1650,
-            "width": 194,
+            "position_x": 856,
+            "position_y": 1010,
+            "width": 255,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -383,7 +431,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "colour tints what follows,\nand the shading stays",
+                    "value": "a ball on the plus x, plus y corner,\nso you can tell which way you face",
                     "value_type": "str"
                 },
                 "1": {
@@ -393,7 +441,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 186,
+                    "value": 247,
                     "value_type": "int"
                 },
                 "3": {
@@ -407,25 +455,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "colour tints what follows,\nand the shading stays"
+            "text": "a ball on the plus x, plus y corner,\nso you can tell which way you face"
         },
-        "16": {
-            "name": "mgl_box",
-            "id": 829,
-            "position_x": 30,
-            "position_y": 1940,
-            "width": 176,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "17": {
+        "18": {
             "name": "close",
-            "id": 866,
+            "id": 903,
             "position_x": 24,
-            "position_y": 2096,
+            "position_y": 1194,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -446,27 +482,27 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "mgl_chain",
-            "dest_node": 422,
+            "dest_node": 385,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"
         },
         "1": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "ui",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "ui"
-        },
-        "2": {
-            "source_node": 422,
+            "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "mgl chain out",
-            "dest_node": 496,
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"
@@ -475,18 +511,18 @@
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "mgl chain out",
-            "dest_node": 570,
+            "source_output_name": "ui",
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "mgl chain in"
+            "dest_input_name": "ui"
         },
         "4": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "mgl chain out",
-            "dest_node": 607,
+            "source_output_name": "",
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"
@@ -495,8 +531,8 @@
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "mgl chain out",
-            "dest_node": 644,
+            "source_output_name": "",
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"
@@ -505,14 +541,14 @@
             "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "mgl chain out",
-            "dest_node": 718,
+            "source_output_name": "",
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "mgl chain in"
         },
         "7": {
-            "source_node": 718,
+            "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "mgl chain out",
@@ -523,6 +559,16 @@
         },
         "8": {
             "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "9": {
+            "source_node": 792,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "mgl chain out",

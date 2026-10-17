@@ -245,114 +245,253 @@ pairs - that a polyphonic sampler plays directly.
 THE NODES:
 
 effort_fader             from smpl_torque's combined_effort
-muscle_activation_fader  from a muscle activation dict
-crossfade_scanner        from a single number, 0 to 1
+muscle_activation_fader  from mgl_smpl_heatmap's muscle activations
 
 effort_fader MAPS JOINTS TO SOUNDS:
-smpl_torque's 'combined_effort' is a per-joint effort vector, and its magnitude
-is CAPACITY-RELATIVE - a fraction of that joint's maximum torque rather than an
-absolute figure. So a small joint working hard and a large one working hard read
-similarly, which is what you want when the sound should reflect exertion rather
-than size.
+smpl_torque's 'combined_effort' is one effort vector per joint, and its size
+is CAPACITY-RELATIVE - a fraction of that joint's maximum torque rather than
+an absolute figure. So a small joint working hard and a large one working
+hard read similarly, which is what you want when the sound should reflect
+exertion rather than size.
 
-Two modes:
-  magnitude   one fader per joint - the vector's length.
-              sound id = start_sid + joint
-  components  three faders per joint - one per axis.
-              sound id = start_sid + joint * 3 + axis
+Three modes:
+  magnitude          one fader per joint - the vector's length.
+                     sound id = start_sid + joint
+  components         three faders per joint - the size along each axis.
+                     sound id = start_sid + joint * 3 + axis
+  signed components  six faders per joint - each axis split into a
+                     positive and a negative fader (x+, x-, y+, y-, z+, z-).
+                     sound id = start_sid + joint * 6 + axis * 2 + (0 or 1)
 
-Magnitude asks how hard a joint is working. Components asks in which direction,
-and gives you three times as many sounds to say it with.
+Magnitude asks how hard a joint is working. Components asks in which
+direction; signed components also tells pushing one way from pushing the
+other, which is a different kind of engagement. A list of one number per
+joint is accepted too: signed components then gives two faders per joint.
+
+Its output is sparse: a fader is sent while it is above zero, once more at
+0 on the frame it falls silent (so the voice stops), and is then left out
+until it sounds again. The 'mapping' outlet sends a dict of fader names
+(left_knee, left_knee_x, left_knee_x+ ...) to sound ids when the number of
+faders changes - on the first input, and after a mode change. Changing
+start_sid does not resend it, and does not silence sounds started under the
+old ids.
 
 muscle_activation_fader MAPS MUSCLES TO SOUNDS:
-It takes the activation dict from mgl_smpl_heatmap and assigns each muscle name
-a sound id on first sight, keeping that assignment stable across frames. So a
-muscle always plays the same sound, without you writing out the mapping.
+It takes the activation dict from mgl_smpl_heatmap and gives each muscle
+name the next sound id, from start_sid up, the first time it sees it,
+keeping that assignment from then on. So a muscle always plays the same
+sound, without you writing out the mapping. The assignments are saved with
+the patch; 'reset_mapping', or a change to start_sid, forgets them.
 
-The 'mapping' outlet reports what it decided, which is how you find out which
-sound is which.
+It sends a level for every muscle in the dict on each input, and the
+'mapping' outlet sends the name-to-id dict each time, which is how you find
+out which sound is which.
 
 SHAPING MATTERS MORE THAN THE MAPPING:
-Both faders have 'threshold', 'curve' and 'gain', and these do most of the work.
+Both have 'threshold', 'curve' and 'gain', and these do most of the work.
 Raw activation or effort mapped straight to level gives a wash - everything
 makes a bit of sound all the time, and nothing stands out.
 
-The threshold silences what is merely present, the curve decides how sharply
-level rises with effort, and gain sets the top. Set the threshold first, by
-watching what a still body produces and putting it above that.
+A value below the threshold is silenced; the threshold is compared with the
+raw value, before the curve. The rest is raised to the power 'curve' (above
+1 makes level rise late and steeply), multiplied by 'gain', and capped at
+1. Set the threshold first, by watching what a still body produces and
+putting it above that.
 
-'top_n' on effort_fader keeps only the loudest few joints, which is a blunter
-version of the same idea and sometimes the better one - it guarantees the
-texture never fills up regardless of how the thresholds are set.
+'top_n' on effort_fader keeps only the strongest few. It subtracts the
+level of the strongest fader left out from every level, so at most top_n
+sound and each one fades in and out of the group smoothly rather than
+jumping. It guarantees the texture never fills up, however the threshold is
+set. 0 turns it off.
 
-crossfade_scanner IS THE SIMPLE CASE:
-One number from 0 to 1 walks a crossfade along a chain of sounds - the first
-fades up, then crossfades into the second, and so on. Any single continuous
-control - a limb height, a distance, a fader - becomes a path through a set of
-sounds. 'equal_power' keeps the loudness even through each crossover rather than
-dipping in the middle.
+WHEN THE DATA STOPS:
+If no input arrives for 'stale_timeout' seconds while something is
+sounding, each node sends 0 to its faders (effort_fader to the ones that
+were sounding, muscle_activation_fader to every muscle it knows), so the
+sampler's voices are released rather than left hanging.
 """ + FADE + """
 SYNTAX:
 effort_fader
 muscle_activation_fader
-crossfade_scanner
+
+Neither takes arguments.
 
 EXAMPLE:
 effort_fader
 
 INPUTS and PARAMETERS:
 
-effort / muscle activations / value:
-The measurement.
+effort (effort_fader):
+One effort vector (or one number) per joint.
 
-start_sid:
-Which sound id the mapping begins at.
+muscle activations (muscle_activation_fader):
+A dict of muscle name to activation, 0 to 1.
 
 mode (effort_fader):
-magnitude or components.
+magnitude, components or signed components.
 
-threshold / curve / gain:
+start_sid:
+The first sound id.
+
+gain / threshold / curve:
 The shaping. See above - this is where the work is.
 
 top_n (effort_fader):
-Keep only the loudest few.
+Keep only the strongest few. 0 for all.
 
 stale_timeout:
-How long before a sound that has stopped being mentioned fades out.
+Seconds without input before sounding faders are sent to 0. 0.25 by default.
 
 reset_mapping (muscle_activation_fader):
 Forget the name-to-id assignments and start again.
 
-n / sound_ids / equal_power (crossfade_scanner):
-How many sounds, which ids, and whether to hold the loudness through crossovers.
-
-OUTPUTS: 
+OUTPUTS:
 
 fade:
-The [sound_id, level] list, for a polyphonic sampler.
+The [sound_id, level] list, for a polyphonic sampler's 'fade' inlet.
 
 mapping:
-Which name or joint got which sound id."""
+Which joint, axis or muscle got which sound id.
+
+RELATED:
+smpl_torque and mgl_smpl_heatmap produce the measurements;
+polyphonic_sampler~ plays the fade list. crossfade_scanner makes a fade list
+from a single number."""
 
 demo = [
-    {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 280, 'h': 320},
-    {'key': 'be', 'init': 'smpl_beta_editor', 'pos': (350, 62), 'w': 300, 'h': 340},
-    {'key': 'ss', 'init': 'shadow_to_smpl', 'pos': (30, 400), 'w': 260, 'h': 140},
-    {'key': 'st', 'init': 'smpl_torque', 'pos': (30, 560), 'w': 300, 'h': 340},
-    {'key': 'ef', 'init': 'effort_fader', 'pos': (30, 1070), 'w': 280, 'h': 300},
-    {'key': 'c0', 'comment': True, 'text': 'set threshold above what a still body gives\notherwise everything sounds, always',
-     'pos': (30, 1385)},
-    {'key': 'se', 'init': 'sampler_engine', 'pos': (380, 560), 'w': 260, 'h': 180},
-    {'key': 'ps', 'init': 'polyphonic_sampler~', 'pos': (380, 760), 'w': 300, 'h': 320},
-    {'key': 'c2', 'comment': True, 'text': 'the fade list plays the whole texture\nin one message',
-     'pos': (380, 1245)},
+    {'key': 'met', 'init': 'metro 100', 'pos': (30, 62), 'w': 129, 'h': 70,
+     'props': {'on': True, 'period': 100.0, 'units': 'milliseconds'}},
+    {'key': 'nr', 'init': 'np.rand 24 3', 'pos': (30, 150), 'w': 140, 'h': 110,
+     'props': {'min': -0.6, 'max': 0.6}},
+    {'key': 'c0', 'comment': True,
+     'text': 'stands in for smpl_torque combined_effort:\n24 joints, an effort vector each',
+     'pos': (30, 150)},
+    {'key': 'ef', 'init': 'effort_fader', 'pos': (30, 290), 'w': 280, 'h': 300,
+     'props': {'threshold': 0.6, 'top_n': 4}},
+    {'key': 'c1', 'comment': True,
+     'text': 'threshold silences the weak ones,\ntop_n keeps the strongest 4',
+     'pos': (30, 290)},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 610), 'w': 560, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'the fade list: [sound_id, level] pairs',
+     'pos': (30, 660)},
+    {'key': 'btn', 'init': 'button', 'pos': (30, 720), 'w': 88, 'h': 46},
+    {'key': 'c3', 'comment': True, 'text': 'click to send three muscle activations',
+     'pos': (30, 720)},
+    # repeat_in_order: one click stores the text in the dict, THEN sends it on
+    {'key': 'rp', 'init': 'repeat_in_order 2', 'pos': (30, 780), 'w': 190, 'h': 70},
+    {'key': 's0', 'init': 'string', 'pos': (30, 870), 'w': 500, 'h': 42,
+     'props': {'text in': '{"pectoralis": 0.8, "deltoid": 0.3, "biceps": 0.05}',
+               'font size': '24'}},
+    {'key': 'dc', 'init': 'dict', 'pos': (30, 930), 'w': 160, 'h': 180},
+    {'key': 'mf', 'init': 'muscle_activation_fader', 'pos': (30, 1130), 'w': 280, 'h': 260,
+     'props': {'threshold': 0.1, 'stale_timeout': 3.0}},
+    {'key': 'c4', 'comment': True,
+     'text': 'each muscle gets the next id on first sight;\nbiceps is under the threshold;\nno new data for 3 seconds sends zeros',
+     'pos': (30, 1130)},
+    {'key': 'l2', 'init': 'list', 'pos': (30, 1410), 'w': 400, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'l3', 'init': 'string', 'pos': (30, 1470), 'w': 500, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c5', 'comment': True, 'text': 'fade, then mapping',
+     'pos': (30, 1410)},
 ]
-links = [('sh', 'body 1 quaternions', 'ss', 'pose'),
-         ('sh', 'body 1 positions', 'ss', 'positions'),
-         ('be', 'config', 'ss', 'config'),
-         ('ss', 'pose', 'st', 'pose'), ('ss', 'trans', 'st', 'trans'),
-         ('be', 'config', 'st', 'config'),
-         ('st', 'combined_effort', 'ef', 'effort'),
-         ('ef', 'fade', 'ps', 'fade')]
-print(build('effort_fader', 'effort_fader - a moving body playing sounds', body,
-            demo, links, demo_width=700, text_width=810, text_height=820))
+links = [('met', '', 'nr', ''),
+         ('nr', 'random array', 'ef', 'effort'),
+         ('ef', 'fade', 'l1', ''),
+         ('btn', '', 'rp', ''),
+         ('rp', 'first', 's0', ''),
+         ('rp', 'second', 'dc', 'send dict'),
+         ('s0', 'string out', 'dc', 'store'),
+         ('dc', 'dict out', 'mf', 'muscle activations'),
+         ('mf', 'fade', 'l2', ''),
+         ('mf', 'mapping', 'l3', '')]
+print(build('effort_fader', 'effort_fader - body measurements as sound levels', body,
+            demo, links, demo_width=620, text_width=810, text_height=820))
+
+# ---------------------------------------------------------- crossfade_scanner
+body = """crossfade_scanner turns one number from 0 to 1 into a walk through a chain
+of sounds, as a fade list for a polyphonic sampler.
+
+Any single continuous control - a limb height, a distance, a fader - becomes
+a path through a set of sounds.
+
+HOW THE RANGE IS DIVIDED:
+0 to 1 is split into 'n' equal sections, one per sound. At 0 everything is
+silent. Through the first section the first sound fades up to full. Through
+each section after that the previous sound fades out as the next fades in.
+At 1 the last sound is at full and the rest are silent. So with 4 sounds,
+0.25 is the first alone, 0.375 is the first and second at half each, and
+0.5 is the second alone.
+
+'equal_power' bends each level along a quarter sine, so that at the middle
+of a crossover both sounds sit at about 0.71 rather than 0.5 - the
+loudness holds steady through the crossover instead of dipping.
+
+WHICH SOUNDS:
+By default the sound ids are 0 to n-1. Send a list of ids to 'sound_ids' to
+choose them - its length becomes n. Changing 'n' afterwards goes back to 0
+to n-1. The ids are saved with the patch.
+
+WHAT IT SENDS:
+The whole list - every sound with its level, silent ones at 0 - each time
+the value, n, the ids or equal_power changes.
+
+THE fade LIST:
+[[sound_id, level], ...] is what a polyphonic sampler's 'fade' inlet takes:
+each listed sound plays at its level, and a sound at 0 is silenced. So the
+whole crossfade is one message.
+
+SYNTAX:
+crossfade_scanner
+
+It takes no arguments.
+
+EXAMPLE:
+crossfade_scanner
+
+INPUTS and PARAMETERS:
+
+value:
+The position along the chain, 0 to 1.
+
+n:
+How many sounds, 2 to 128. 4 by default.
+
+sound_ids:
+A list of sound ids; sets n to its length.
+
+equal_power:
+Hold the loudness through each crossover.
+
+OUTPUTS:
+
+fade:
+The [sound_id, level] list.
+
+RELATED:
+polyphonic_sampler~ plays the list. effort_fader and muscle_activation_fader
+make fade lists from body data. crossfade blends two values."""
+
+demo = [
+    {'key': 'sg', 'init': 'signal', 'pos': (30, 62), 'w': 180, 'h': 180,
+     'props': SIG('triangle', period=12.0, rng=1.0, bipolar=False)},
+    {'key': 'c0', 'comment': True, 'text': 'a slow sweep from 0 to 1 and back',
+     'pos': (30, 62)},
+    {'key': 'm1', 'init': 'message', 'pos': (340, 62), 'w': 200, 'h': 42,
+     'props': {'text in': '10 11 12', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'click: three sounds, ids 10 to 12',
+     'pos': (340, 110)},
+    {'key': 'cs', 'init': 'crossfade_scanner', 'pos': (30, 270), 'w': 300, 'h': 180},
+    {'key': 'c2', 'comment': True, 'text': 'tick equal_power and watch the middles',
+     'pos': (30, 270)},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 470), 'w': 560, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': 'the fade list, for a polyphonic sampler',
+     'pos': (30, 520)},
+]
+links = [('sg', '', 'cs', 'value'),
+         ('m1', '', 'cs', 'sound_ids'),
+         ('cs', 'fade', 'l1', '')]
+print(build('crossfade_scanner', 'crossfade_scanner - one number walks through sounds',
+            body, demo, links, demo_width=620, text_width=790, text_height=760))

@@ -1,6 +1,6 @@
 {
     "height": 416,
-    "width": 576,
+    "width": 564,
     "position": [
         100,
         100
@@ -169,12 +169,12 @@
             "annotation": true,
             "position_x": 281,
             "position_y": 154,
-            "width": 255,
+            "width": 175,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "live data from the suit\n(shadow, shadow_pose, shadow_sensor)",
+                    "value": "live data from the suit\n(shadow, shadow_sensor)",
                     "value_type": "str"
                 },
                 "1": {
@@ -184,7 +184,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 247,
+                    "value": 167,
                     "value_type": "int"
                 },
                 "3": {
@@ -198,7 +198,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "live data from the suit\n(shadow, shadow_pose, shadow_sensor)",
+            "text": "live data from the suit\n(shadow, shadow_sensor)",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,

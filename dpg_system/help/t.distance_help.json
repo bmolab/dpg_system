@@ -1,11 +1,11 @@
 {
-    "height": 1041,
+    "height": 981,
     "width": 1594,
     "position": [
         100,
         100
     ],
-    "id": 977,
+    "id": 866,
     "name": "t.distance_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.distance_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t distance and similarity - how big, how alike",
+            "init": "comment t.length, t.dist, t.cosine_similarity - size, distance, likeness",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 574,
+            "width": 795,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t distance and similarity - how big, how alike",
+                    "value": "t.length, t.dist, t.cosine_similarity - size, distance, likeness",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,7 +51,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t distance and similarity - how big, how alike"
+            "comment": "t.length, t.dist, t.cosine_similarity - size, distance, likeness"
         },
         "2": {
             "name": "text_block",
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These measure how big something is, or how alike two things are.\n\nTHE NODES:\n\nt.length             the length of a tensor, taken as one long vector - \n                     its distance from the origin\nt.dist               the distance between TWO tensors - the length of the \n                     difference between them\nt.cdist              the same measurement, by another route\nt.normalize          divide by that length, giving a unit vector\nt.cosine_similarity  how much two tensors point the same way, regardless of \n                     how big either is\nt.corrcoef           the correlation between rows - how much they move together\nt.energy             the total absolute CHANGE across a tensor\n\nSIZE AND DIRECTION ARE SEPARATE QUESTIONS:\nt.length answers the first, t.normalize removes it so only direction is left, \nand t.cosine_similarity compares two directions with size taken out of both. \nThat separation is usually what you want: two poses can be the same shape at \ndifferent scales, and two movements the same gesture at different intensities.\n\ncosine similarity runs from 1 for pointing the same way, through 0 for at right \nangles, to -1 for opposite. It is the right comparison for anything where \nmagnitude is a confound.\n\nt.corrcoef IS DIFFERENT:\nIt asks whether things move TOGETHER over the samples you give it - correlation, \nnot alignment. Feed it a tensor whose rows are channels and whose columns are \ntime and you get back a matrix of how much each pair of channels co-varies. \nThat is the measured prior for which things habitually happen at once.\n\nt.energy IS MOTION, NOT SIZE:\nIt differences along an axis, takes the absolute value, and sums - so it is the \ntotal distance travelled rather than how far from the origin the tensor ended \nup. A signal that wanders a long way and comes back has high energy and low \nlength. For asking how much a body moved, this is the measure, not t.length.\n\nSYNTAX:\nt.length\nt.dist\nt.cosine_similarity\nt.energy <n>\n\nEXAMPLE:\nt.cosine_similarity\n\nINPUTS and PARAMETERS:\n\ntensor in / input 1 / input 2:\nThe tensors. Receiving the first triggers the node.\n\ntensor 2 in (t.dist):\nThe tensor to measure the distance to. It does not trigger anything, so send \nit before the first - or wire both from the same trigger, the second inlet \nfirst. Until it has received something t.dist sends nothing.\n\ndim:\nWhich axis to measure along, where that makes sense. Without one, the whole \ntensor is treated as a single vector.\n\nn (t.energy):\nHow many times to difference before summing. 1 is total movement; \n2 is total change in movement.\n\nOUTPUTS: \n\nlength (t.length) / distance (t.dist) / output / tensor out:\nThe measurement - a single number for length, distance and energy, \na tensor for normalize and corrcoef.\n\nA NOTE ON NORMALIZING NEAR ZERO:\nA tensor whose length is nearly zero has no meaningful direction, and dividing \nby that length produces a large and arbitrary unit vector. When normalized data \nstarts jumping about during the still moments, that is why - clamp the length \naway from zero, or gate on it.",
+                    "value": "These measure how big a tensor is, how far apart two tensors are, and \nhow alike their directions are.\n\nTHE NODES:\n\nt.length             the length of a tensor, taken as one long vector - \n                     its distance from the origin\nt.dist               the distance between TWO tensors - the length of the \n                     difference between them\nt.cdist              the length of a single vector, by another route\nt.cosine_similarity  how much two vectors point the same way, regardless of \n                     how big either is\n\nSIZE AND DIRECTION ARE SEPARATE QUESTIONS:\nt.length and t.dist answer \"how big\" and \"how far apart\". t.cosine_similarity \nanswers \"how alike\" with size taken out of both, so two poses that are the \nsame shape at different scales, or two movements that are the same gesture at \ndifferent intensities, still read as alike.\n\nCosine similarity runs from 1 for pointing the same way, through 0 for at \nright angles, to -1 for opposite. It is the right comparison for anything \nwhere magnitude would get in the way.\n\nTHE WHOLE TENSOR IS ONE VECTOR:\nt.length and t.dist do not work along an axis. Every value in the tensor is \ntreated as one coordinate of a single long vector, and you get one number \nback. For one length per row, split the tensor first.\n\nt.cdist gives the same answer as t.length for a single vector, but only for \nthat: give it a tensor with more than one row and it reports an error and \nsends nothing. Use t.length.\n\nt.cosine_similarity compares one-dimensional vectors. Give it two tables and \nit compares them column by column, which gives more than one number, and it \nreports an error and sends nothing.\n\nSYNTAX:\nt.length\nt.dist\nt.cdist\nt.cosine_similarity\n\nEXAMPLE:\nt.dist\n\nINPUTS and PARAMETERS:\n\ntensor in (t.length, t.dist) / input (t.cdist):\nThe tensor. Receiving it triggers the node.\n\ntensor 2 in (t.dist):\nThe tensor to measure the distance to. It does not trigger anything, and it \nis kept, so send it first - or wire both from the same source, with the \ncord to this inlet made first. Until it has received something t.dist sends \nnothing.\n\ninput 1 (t.cosine_similarity):\nThe first vector. Receiving it triggers the node.\n\ninput 2 (t.cosine_similarity):\nThe second vector. It must arrive afresh before EVERY input 1: the node does \nnot reuse an old input 2, so sending input 1 on its own a second time \ngives nothing.\n\nOUTPUTS: \n\nlength (t.length) / distance (t.dist) / output (t.cdist, t.cosine_similarity):\nA single number.\n\nRELATED:\nt.normalize divides a tensor by its length, leaving only its direction.\nt.energy measures how much a tensor changes from value to value.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These measure how big something is, or how alike two things are.\n\nTHE NODES:\n\nt.length             the length of a tensor, taken as one long vector - \n                     its distance from the origin\nt.dist               the distance between TWO tensors - the length of the \n                     difference between them\nt.cdist              the same measurement, by another route\nt.normalize          divide by that length, giving a unit vector\nt.cosine_similarity  how much two tensors point the same way, regardless of \n                     how big either is\nt.corrcoef           the correlation between rows - how much they move together\nt.energy             the total absolute CHANGE across a tensor\n\nSIZE AND DIRECTION ARE SEPARATE QUESTIONS:\nt.length answers the first, t.normalize removes it so only direction is left, \nand t.cosine_similarity compares two directions with size taken out of both. \nThat separation is usually what you want: two poses can be the same shape at \ndifferent scales, and two movements the same gesture at different intensities.\n\ncosine similarity runs from 1 for pointing the same way, through 0 for at right \nangles, to -1 for opposite. It is the right comparison for anything where \nmagnitude is a confound.\n\nt.corrcoef IS DIFFERENT:\nIt asks whether things move TOGETHER over the samples you give it - correlation, \nnot alignment. Feed it a tensor whose rows are channels and whose columns are \ntime and you get back a matrix of how much each pair of channels co-varies. \nThat is the measured prior for which things habitually happen at once.\n\nt.energy IS MOTION, NOT SIZE:\nIt differences along an axis, takes the absolute value, and sums - so it is the \ntotal distance travelled rather than how far from the origin the tensor ended \nup. A signal that wanders a long way and comes back has high energy and low \nlength. For asking how much a body moved, this is the measure, not t.length.\n\nSYNTAX:\nt.length\nt.dist\nt.cosine_similarity\nt.energy <n>\n\nEXAMPLE:\nt.cosine_similarity\n\nINPUTS and PARAMETERS:\n\ntensor in / input 1 / input 2:\nThe tensors. Receiving the first triggers the node.\n\ntensor 2 in (t.dist):\nThe tensor to measure the distance to. It does not trigger anything, so send \nit before the first - or wire both from the same trigger, the second inlet \nfirst. Until it has received something t.dist sends nothing.\n\ndim:\nWhich axis to measure along, where that makes sense. Without one, the whole \ntensor is treated as a single vector.\n\nn (t.energy):\nHow many times to difference before summing. 1 is total movement; \n2 is total change in movement.\n\nOUTPUTS: \n\nlength (t.length) / distance (t.dist) / output / tensor out:\nThe measurement - a single number for length, distance and energy, \na tensor for normalize and corrcoef.\n\nA NOTE ON NORMALIZING NEAR ZERO:\nA tensor whose length is nearly zero has no meaningful direction, and dividing \nby that length produces a large and arbitrary unit vector. When normalized data \nstarts jumping about during the still moments, that is why - clamp the length \naway from zero, or gate on it."
+            "text": "These measure how big a tensor is, how far apart two tensors are, and \nhow alike their directions are.\n\nTHE NODES:\n\nt.length             the length of a tensor, taken as one long vector - \n                     its distance from the origin\nt.dist               the distance between TWO tensors - the length of the \n                     difference between them\nt.cdist              the length of a single vector, by another route\nt.cosine_similarity  how much two vectors point the same way, regardless of \n                     how big either is\n\nSIZE AND DIRECTION ARE SEPARATE QUESTIONS:\nt.length and t.dist answer \"how big\" and \"how far apart\". t.cosine_similarity \nanswers \"how alike\" with size taken out of both, so two poses that are the \nsame shape at different scales, or two movements that are the same gesture at \ndifferent intensities, still read as alike.\n\nCosine similarity runs from 1 for pointing the same way, through 0 for at \nright angles, to -1 for opposite. It is the right comparison for anything \nwhere magnitude would get in the way.\n\nTHE WHOLE TENSOR IS ONE VECTOR:\nt.length and t.dist do not work along an axis. Every value in the tensor is \ntreated as one coordinate of a single long vector, and you get one number \nback. For one length per row, split the tensor first.\n\nt.cdist gives the same answer as t.length for a single vector, but only for \nthat: give it a tensor with more than one row and it reports an error and \nsends nothing. Use t.length.\n\nt.cosine_similarity compares one-dimensional vectors. Give it two tables and \nit compares them column by column, which gives more than one number, and it \nreports an error and sends nothing.\n\nSYNTAX:\nt.length\nt.dist\nt.cdist\nt.cosine_similarity\n\nEXAMPLE:\nt.dist\n\nINPUTS and PARAMETERS:\n\ntensor in (t.length, t.dist) / input (t.cdist):\nThe tensor. Receiving it triggers the node.\n\ntensor 2 in (t.dist):\nThe tensor to measure the distance to. It does not trigger anything, and it \nis kept, so send it first - or wire both from the same source, with the \ncord to this inlet made first. Until it has received something t.dist sends \nnothing.\n\ninput 1 (t.cosine_similarity):\nThe first vector. Receiving it triggers the node.\n\ninput 2 (t.cosine_similarity):\nThe second vector. It must arrive afresh before EVERY input 1: the node does \nnot reuse an old input 2, so sending input 1 on its own a second time \ngives nothing.\n\nOUTPUTS: \n\nlength (t.length) / distance (t.dist) / output (t.cdist, t.cosine_similarity):\nA single number.\n\nRELATED:\nt.normalize divides a tensor by its length, leaving only its direction.\nt.energy measures how much a tensor changes from value to value."
         },
         "3": {
             "name": "button",
@@ -153,12 +153,12 @@
             "init": "t.rand 8"
         },
         "6": {
-            "init": "comment two random directions",
+            "init": "comment click: two random directions",
             "name": "comment",
             "id": 459,
             "position_x": 439,
             "position_y": 310,
-            "width": 138,
+            "width": 181,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -166,7 +166,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "two random directions",
+                    "value": "click: two random directions",
                     "value_type": "str"
                 },
                 "1": {
@@ -175,7 +175,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "two random directions"
+            "comment": "click: two random directions"
         },
         "7": {
             "name": "t.length",
@@ -308,11 +308,11 @@
             "comment": "1 same way, 0 at right angles, -1 opposite"
         },
         "13": {
-            "name": "t.energy",
+            "name": "t.dist",
             "id": 718,
             "position_x": 30,
-            "position_y": 540,
-            "width": 99,
+            "position_y": 560,
+            "width": 76,
             "height": 56,
             "visibility": "show_all",
             "draggable": true,
@@ -348,76 +348,11 @@
             }
         },
         "15": {
-            "init": "comment total movement, not total size",
+            "init": "comment t.dist: how far apart the two are",
             "name": "comment",
             "id": 792,
             "position_x": 439,
             "position_y": 715,
-            "width": 193,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "total movement, not total size",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "total movement, not total size"
-        },
-        "16": {
-            "name": "t.dist",
-            "id": 829,
-            "position_x": 30,
-            "position_y": 760,
-            "width": 76,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "17": {
-            "name": "float",
-            "id": 866,
-            "position_x": 30,
-            "position_y": 865,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "18": {
-            "init": "comment t.dist: how far apart the two are",
-            "name": "comment",
-            "id": 903,
-            "position_x": 439,
-            "position_y": 915,
             "width": 211,
             "height": 30,
             "visibility": "show_all",
@@ -437,11 +372,11 @@
             },
             "comment": "t.dist: how far apart the two are"
         },
-        "19": {
+        "16": {
             "name": "close",
-            "id": 940,
+            "id": 829,
             "position_x": 24,
-            "position_y": 937,
+            "position_y": 737,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -498,16 +433,6 @@
             "dest_input_name": ""
         },
         "4": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "input 1"
-        },
-        "5": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -516,6 +441,16 @@
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input 2"
+        },
+        "5": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input 1"
         },
         "6": {
             "source_node": 607,
@@ -528,6 +463,16 @@
             "dest_input_name": ""
         },
         "7": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2 in"
+        },
+        "8": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
@@ -537,42 +482,12 @@
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "8": {
+        "9": {
             "source_node": 718,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "tensor out",
-            "dest_node": 755,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "9": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 829,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor 2 in"
-        },
-        "10": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 829,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "11": {
-            "source_node": 829,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "distance",
-            "dest_node": 866,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

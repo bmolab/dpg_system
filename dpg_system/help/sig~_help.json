@@ -1,0 +1,415 @@
+{
+    "height": 1052,
+    "width": 1554,
+    "position": [
+        100,
+        100
+    ],
+    "id": 792,
+    "name": "sig~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/sig~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment sig~ - a control value, as a smooth signal",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sig~ - a control value, as a smooth signal",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sig~ - a control value, as a smooth signal"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 716,
+            "position_y": 45,
+            "width": 798,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "sig~ brings a control value into the audio graph, gliding smoothly to \neach new value.\n\nIt is the entry point for effort data and for anything else that arrives as \nmessages - a slider, a 60 Hz sensor stream, a computed number. Patched \nstraight into a gain or a pitch, a stream like that steps, and you hear each \nstep as a zipper or a click. sig~ turns it into a continuous signal: each \nnew value is approached smoothly rather than jumped to.\n\nGLIDE:\n'glide' is in seconds: how long it takes to cover about two thirds of the \nway to a new value. It closes the rest of the gap ever more slowly, so it is \neffectively there after about three glides. The default, 0.02, is just long \nenough to stop a zipper; longer glides become audible portamento, as in the \ndemo. 0 jumps straight to each value.\n\nSCALE AND OFFSET:\nThe value is multiplied by 'scale' and has 'offset' added before it glides, \nso a 0 to 1 control can become, say, a -1 to 1 swing without another node.\n\nSYNTAX:\nsig~ <value>\n\nEXAMPLE:\nsig~ 0.5\n\nINPUTS and PARAMETERS:\n\nvalue:\nThe control value. Send it numbers, or drag it. The argument sets the \nstarting value, which the output glides up to from 0 as the patch starts.\n\nglide:\nSeconds to cover about two thirds of a change. Default 0.02.\n\nscale / offset:\nThe output is value times scale, plus offset. Defaults 1 and 0.\n\nenable:\nOff fades out over a few milliseconds, then stops computing.\n\nOUTPUTS: \n\nsignal:\nThe smoothed signal.\n\nRELATED:\nsnapshot~ goes the other way: a signal's value back out as a number.\nramp~ moves to each value in a straight line over a set time.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "sig~ brings a control value into the audio graph, gliding smoothly to \neach new value.\n\nIt is the entry point for effort data and for anything else that arrives as \nmessages - a slider, a 60 Hz sensor stream, a computed number. Patched \nstraight into a gain or a pitch, a stream like that steps, and you hear each \nstep as a zipper or a click. sig~ turns it into a continuous signal: each \nnew value is approached smoothly rather than jumped to.\n\nGLIDE:\n'glide' is in seconds: how long it takes to cover about two thirds of the \nway to a new value. It closes the rest of the gap ever more slowly, so it is \neffectively there after about three glides. The default, 0.02, is just long \nenough to stop a zipper; longer glides become audible portamento, as in the \ndemo. 0 jumps straight to each value.\n\nSCALE AND OFFSET:\nThe value is multiplied by 'scale' and has 'offset' added before it glides, \nso a 0 to 1 control can become, say, a -1 to 1 swing without another node.\n\nSYNTAX:\nsig~ <value>\n\nEXAMPLE:\nsig~ 0.5\n\nINPUTS and PARAMETERS:\n\nvalue:\nThe control value. Send it numbers, or drag it. The argument sets the \nstarting value, which the output glides up to from 0 as the patch starts.\n\nglide:\nSeconds to cover about two thirds of a change. Default 0.02.\n\nscale / offset:\nThe output is value times scale, plus offset. Defaults 1 and 0.\n\nenable:\nOff fades out over a few milliseconds, then stops computing.\n\nOUTPUTS: \n\nsignal:\nThe smoothed signal.\n\nRELATED:\nsnapshot~ goes the other way: a signal's value back out as a number.\nramp~ moves to each value in a straight line over a set time."
+        },
+        "3": {
+            "name": "slider",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "slider 0.0"
+        },
+        "4": {
+            "init": "comment drag: a value stepping at frame rate",
+            "name": "comment",
+            "id": 385,
+            "position_x": 456,
+            "position_y": 130,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag: a value stepping at frame rate",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag: a value stepping at frame rate"
+        },
+        "5": {
+            "name": "sig~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 170,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "glide",
+                    "value": 0.3,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "init": "comment glide 0.3: a slow, smooth follow",
+            "name": "comment",
+            "id": 459,
+            "position_x": 456,
+            "position_y": 320,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "glide 0.3: a slow, smooth follow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "glide 0.3: a slow, smooth follow"
+        },
+        "7": {
+            "name": "snapshot~",
+            "id": 496,
+            "position_x": 300,
+            "position_y": 170,
+            "width": 88,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "float",
+            "id": 533,
+            "position_x": 300,
+            "position_y": 330,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the signal, read back",
+            "name": "comment",
+            "id": 570,
+            "position_x": 456,
+            "position_y": 380,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the signal, read back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the signal, read back"
+        },
+        "10": {
+            "name": "vco~",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 360,
+            "width": 199,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 220"
+        },
+        "11": {
+            "init": "comment into pitch: up to an octave, gliding",
+            "name": "comment",
+            "id": 644,
+            "position_x": 456,
+            "position_y": 570,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "into pitch: up to an octave, gliding",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "into pitch: up to an octave, gliding"
+        },
+        "12": {
+            "name": "fader_out~",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 610,
+            "width": 70,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fader",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "fader_out~ 1 2"
+        },
+        "13": {
+            "init": "comment raise the fader to hear it",
+            "name": "comment",
+            "id": 718,
+            "position_x": 456,
+            "position_y": 845,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise the fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise the fader to hear it"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
+            "position_x": 24,
+            "position_y": 948,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "value"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "value",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pitch"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

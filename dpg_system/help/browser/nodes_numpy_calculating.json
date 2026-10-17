@@ -1,11 +1,11 @@
 {
-    "height": 588,
+    "height": 640,
     "width": 848,
     "position": [
         100,
         100
     ],
-    "id": 1240,
+    "id": 1314,
     "name": "nodes_numpy_calculating",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_calculating.json",
     "nodes": {
@@ -307,12 +307,12 @@
             "annotation": true,
             "position_x": 232,
             "position_y": 266,
-            "width": 348,
+            "width": 231,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "the running story, not the total\n(np.cumprod, np.cumsum, np.diff, np.rolling_buffer)",
+                    "value": "the running story\n(np.cumprod, np.cumsum, np.diff)",
                     "value_type": "str"
                 },
                 "1": {
@@ -322,7 +322,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 340,
+                    "value": 223,
                     "value_type": "int"
                 },
                 "3": {
@@ -336,14 +336,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "the running story, not the total\n(np.cumprod, np.cumsum, np.diff, np.rolling_buffer)",
+            "text": "the running story\n(np.cumprod, np.cumsum, np.diff)",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
-            "init": "help_link np_linalg np linear algebra",
+            "init": "help_link np.rolling_buffer np.rolling_buffer",
             "name": "help_link",
             "position_x": 24,
             "position_y": 314,
@@ -351,7 +351,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "np linear algebra",
+                    "name": "np.rolling_buffer",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -376,6 +376,75 @@
             "annotation": true,
             "position_x": 232,
             "position_y": 318,
+            "width": 206,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the recent past, as an array",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 198,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the recent past, as an array",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link np_linalg np linear algebra",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 366,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np linear algebra",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 370,
             "width": 514,
             "height": 52,
             "properties": {
@@ -406,16 +475,16 @@
                 }
             },
             "text": "vectors and matrices\n(euclidean_distance, np.cross, np.dot, np.inner, np.linalg.det, np.linalg.inv,\n np.linalg.matrix_rank, np.linalg.norm, np.linalg.solve, np.matmul, np.outer)",
-            "id": 981,
+            "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "15": {
             "init": "help_link np_target np targets",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 374,
+            "position_y": 426,
             "width": 194,
             "height": 44,
             "properties": {
@@ -435,16 +504,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1018,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "16": {
             "name": "text_block",
             "annotation": true,
             "position_x": 232,
-            "position_y": 378,
+            "position_y": 430,
             "width": 452,
             "height": 40,
             "properties": {
@@ -475,16 +544,16 @@
                 }
             },
             "text": "how near is this to that\n(np.distance_from_target, np.proximity_to_target, proximity_trigger)",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "17": {
             "init": "help_link np.line_intersection np.line_intersection",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 426,
+            "position_y": 478,
             "width": 194,
             "height": 44,
             "properties": {
@@ -504,16 +573,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1092,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "18": {
             "name": "text_block",
             "annotation": true,
             "position_x": 232,
-            "position_y": 430,
+            "position_y": 482,
             "width": 163,
             "height": 28,
             "properties": {
@@ -544,16 +613,16 @@
                 }
             },
             "text": "where two lines cross",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "19": {
             "init": "help_link rotate_position rotate_position",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 478,
+            "position_y": 530,
             "width": 194,
             "height": 44,
             "properties": {
@@ -573,16 +642,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1166,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "20": {
             "name": "text_block",
             "annotation": true,
             "position_x": 232,
-            "position_y": 482,
+            "position_y": 534,
             "width": 194,
             "height": 28,
             "properties": {
@@ -613,7 +682,7 @@
                 }
             },
             "text": "turn a point about an axis",
-            "id": 1203,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

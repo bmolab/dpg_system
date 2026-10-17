@@ -1,4 +1,4 @@
-"""t complex, integer/sign utilities, distance & similarity, decompositions."""
+"""t complex, integer/sign utilities, distance & similarity, normalize, energy, corrcoef, decompositions."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
@@ -224,7 +224,8 @@ print(build('t.copysign', 't.copysign - size from one, sign from another', body,
             demo, links, demo_width=480, text_width=790, text_height=600))
 
 # ------------------------------------------------------------------ t.distance
-body = """These measure how big something is, or how alike two things are.
+body = """These measure how big a tensor is, how far apart two tensors are, and 
+how alike their directions are.
 
 THE NODES:
 
@@ -232,73 +233,69 @@ t.length             the length of a tensor, taken as one long vector -
                      its distance from the origin
 t.dist               the distance between TWO tensors - the length of the 
                      difference between them
-t.cdist              the same measurement, by another route
-t.normalize          divide by that length, giving a unit vector
-t.cosine_similarity  how much two tensors point the same way, regardless of 
+t.cdist              the length of a single vector, by another route
+t.cosine_similarity  how much two vectors point the same way, regardless of 
                      how big either is
-t.corrcoef           the correlation between rows - how much they move together
-t.energy             the total absolute CHANGE across a tensor
 
 SIZE AND DIRECTION ARE SEPARATE QUESTIONS:
-t.length answers the first, t.normalize removes it so only direction is left, 
-and t.cosine_similarity compares two directions with size taken out of both. 
-That separation is usually what you want: two poses can be the same shape at 
-different scales, and two movements the same gesture at different intensities.
+t.length and t.dist answer "how big" and "how far apart". t.cosine_similarity 
+answers "how alike" with size taken out of both, so two poses that are the 
+same shape at different scales, or two movements that are the same gesture at 
+different intensities, still read as alike.
 
-cosine similarity runs from 1 for pointing the same way, through 0 for at right 
-angles, to -1 for opposite. It is the right comparison for anything where 
-magnitude is a confound.
+Cosine similarity runs from 1 for pointing the same way, through 0 for at 
+right angles, to -1 for opposite. It is the right comparison for anything 
+where magnitude would get in the way.
 
-t.corrcoef IS DIFFERENT:
-It asks whether things move TOGETHER over the samples you give it - correlation, 
-not alignment. Feed it a tensor whose rows are channels and whose columns are 
-time and you get back a matrix of how much each pair of channels co-varies. 
-That is the measured prior for which things habitually happen at once.
+THE WHOLE TENSOR IS ONE VECTOR:
+t.length and t.dist do not work along an axis. Every value in the tensor is 
+treated as one coordinate of a single long vector, and you get one number 
+back. For one length per row, split the tensor first.
 
-t.energy IS MOTION, NOT SIZE:
-It differences along an axis, takes the absolute value, and sums - so it is the 
-total distance travelled rather than how far from the origin the tensor ended 
-up. A signal that wanders a long way and comes back has high energy and low 
-length. For asking how much a body moved, this is the measure, not t.length.
+t.cdist gives the same answer as t.length for a single vector, but only for 
+that: give it a tensor with more than one row and it reports an error and 
+sends nothing. Use t.length.
+
+t.cosine_similarity compares one-dimensional vectors. Give it two tables and 
+it compares them column by column, which gives more than one number, and it 
+reports an error and sends nothing.
 
 SYNTAX:
 t.length
 t.dist
+t.cdist
 t.cosine_similarity
-t.energy <n>
 
 EXAMPLE:
-t.cosine_similarity
+t.dist
 
 INPUTS and PARAMETERS:
 
-tensor in / input 1 / input 2:
-The tensors. Receiving the first triggers the node.
+tensor in (t.length, t.dist) / input (t.cdist):
+The tensor. Receiving it triggers the node.
 
 tensor 2 in (t.dist):
-The tensor to measure the distance to. It does not trigger anything, so send 
-it before the first - or wire both from the same trigger, the second inlet 
-first. Until it has received something t.dist sends nothing.
+The tensor to measure the distance to. It does not trigger anything, and it 
+is kept, so send it first - or wire both from the same source, with the 
+cord to this inlet made first. Until it has received something t.dist sends 
+nothing.
 
-dim:
-Which axis to measure along, where that makes sense. Without one, the whole 
-tensor is treated as a single vector.
+input 1 (t.cosine_similarity):
+The first vector. Receiving it triggers the node.
 
-n (t.energy):
-How many times to difference before summing. 1 is total movement; 
-2 is total change in movement.
+input 2 (t.cosine_similarity):
+The second vector. It must arrive afresh before EVERY input 1: the node does 
+not reuse an old input 2, so sending input 1 on its own a second time 
+gives nothing.
 
 OUTPUTS: 
 
-length (t.length) / distance (t.dist) / output / tensor out:
-The measurement - a single number for length, distance and energy, 
-a tensor for normalize and corrcoef.
+length (t.length) / distance (t.dist) / output (t.cdist, t.cosine_similarity):
+A single number.
 
-A NOTE ON NORMALIZING NEAR ZERO:
-A tensor whose length is nearly zero has no meaningful direction, and dividing 
-by that length produces a large and arbitrary unit vector. When normalized data 
-starts jumping about during the still moments, that is why - clamp the length 
-away from zero, or gate on it."""
+RELATED:
+t.normalize divides a tensor by its length, leaving only its direction.
+t.energy measures how much a tensor changes from value to value."""
 
 demo = [
     {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
@@ -306,7 +303,7 @@ demo = [
      'props': {'min': -1.0, 'max': 1.0}},
     {'key': 'r2', 'init': 't.rand 8', 'pos': (250, 120), 'w': 180, 'h': 180,
      'props': {'min': -1.0, 'max': 1.0}},
-    {'key': 'c0', 'comment': True, 'text': 'two random directions', 'pos': (30, 310)},
+    {'key': 'c0', 'comment': True, 'text': 'click: two random directions', 'pos': (30, 310)},
     {'key': 'ln', 'init': 't.length', 'pos': (30, 350), 'w': 160, 'h': 80},
     {'key': 'f1', 'init': 'float', 'pos': (30, 445), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c1', 'comment': True, 'text': 'how far from the origin', 'pos': (30, 495)},
@@ -314,24 +311,224 @@ demo = [
     {'key': 'f2', 'init': 'float', 'pos': (250, 455), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c2', 'comment': True, 'text': '1 same way, 0 at right angles, -1 opposite',
      'pos': (250, 505)},
-    {'key': 'en', 'init': 't.energy', 'pos': (30, 540), 'w': 180, 'h': 110},
-    {'key': 'f3', 'init': 'float', 'pos': (30, 665), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c3', 'comment': True, 'text': 'total movement, not total size',
-     'pos': (30, 715)},
-    {'key': 'ds', 'init': 't.dist', 'pos': (30, 760), 'w': 180, 'h': 90},
-    {'key': 'f4', 'init': 'float', 'pos': (30, 865), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'ds', 'init': 't.dist', 'pos': (30, 560), 'w': 180, 'h': 90},
+    {'key': 'f4', 'init': 'float', 'pos': (30, 665), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c4', 'comment': True, 'text': 't.dist: how far apart the two are',
-     'pos': (30, 915)},
+     'pos': (30, 715)},
 ]
 links = [('btn', '', 'r2', '###input'), ('btn', '', 'r1', '###input'),
          ('r1', 'random tensor', 'ln', 'tensor in'), ('ln', '', 'f1', '', 0),
-         ('r1', 'random tensor', 'cs', 'input 1'),
-         ('r2', 'random tensor', 'cs', 'input 2'), ('cs', 'output', 'f2', ''),
-         ('r1', 'random tensor', 'en', 'tensor in'), ('en', 'tensor out', 'f3', ''),
+         ('r2', 'random tensor', 'cs', 'input 2'),
+         ('r1', 'random tensor', 'cs', 'input 1'), ('cs', 'output', 'f2', ''),
          ('r2', 'random tensor', 'ds', 'tensor 2 in'),
          ('r1', 'random tensor', 'ds', 'tensor in'), ('ds', 'distance', 'f4', '')]
-print(build('t.distance', 't distance and similarity - how big, how alike', body,
-            demo, links, demo_width=520, text_width=810, text_height=860))
+print(build('t.distance', 't.length, t.dist, t.cosine_similarity - size, distance, likeness',
+            body, demo, links, demo_width=520, text_width=810, text_height=860))
+
+# ----------------------------------------------------------------- t.normalize
+body = """t.normalize divides a tensor by its length, so what is left is only its 
+direction.
+
+Every result has length 1 - a unit vector - whatever size the input was. 
+Two inputs that point the same way but differ in size come out identical. 
+That is how you compare shapes or gestures without their intensity getting 
+in the way.
+
+IT WORKS ALONG AN AXIS:
+'dim' says which axis the length is measured along, and every slice along it 
+is scaled separately. On a table of rows with dim 1, each ROW becomes a unit 
+vector. 
+
+The default is 1, which suits a table of rows but not a single vector: a 
+one-dimensional tensor has no axis 1, so the node reports an error and sends 
+nothing. For a single vector set dim to 0 (as in the demo) or -1.
+
+SYNTAX:
+t.normalize
+
+EXAMPLE:
+t.normalize
+
+INPUTS and PARAMETERS:
+
+tensor in:
+The tensor. Receiving it triggers the node.
+
+dim:
+The axis to measure length along. Default 1: each row of a table. 
+Use 0 or -1 for a single vector.
+
+OUTPUTS: 
+
+normalized tensor out:
+The same shape, with every slice along 'dim' scaled to length 1.
+
+A NOTE ON NORMALIZING NEAR ZERO:
+A vector whose length is nearly zero has no meaningful direction, yet 
+dividing by that tiny length still produces a full-size unit vector - 
+pointing wherever the noise happened to point. When normalized data jumps 
+about during still moments, that is why: check the length first with 
+t.length and gate on it. Only an exactly zero vector comes back as zeros.
+
+RELATED:
+t.length gives the length that is divided out here.
+t.cosine_similarity compares two directions without normalizing first."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'r1', 'init': 't.rand 8', 'pos': (30, 120), 'w': 180, 'h': 180,
+     'props': {'min': -1.0, 'max': 1.0}},
+    {'key': 'c0', 'comment': True, 'text': 'click: eight random values', 'pos': (30, 310)},
+    {'key': 'l1', 'init': 't.length', 'pos': (250, 120), 'w': 160, 'h': 80},
+    {'key': 'f1', 'init': 'float', 'pos': (250, 215), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c1', 'comment': True, 'text': 'its length before', 'pos': (250, 265)},
+    {'key': 'nm', 'init': 't.normalize', 'pos': (30, 350), 'w': 200, 'h': 90,
+     'props': {'dim': 0}},
+    {'key': 'c2', 'comment': True, 'text': 'dim 0: one vector', 'pos': (250, 370)},
+    {'key': 'hm', 'init': 'heat_map', 'pos': (30, 460), 'w': 208, 'h': 148,
+     'props': HM(8, -1.0, 1.0)},
+    {'key': 'c3', 'comment': True, 'text': 'same direction, smaller values', 'pos': (30, 620)},
+    {'key': 'l2', 'init': 't.length', 'pos': (250, 460), 'w': 160, 'h': 80},
+    {'key': 'f2', 'init': 'float', 'pos': (250, 555), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c4', 'comment': True, 'text': 'its length after: always 1', 'pos': (250, 605)},
+]
+links = [('btn', '', 'r1', '###input'),
+         ('r1', 'random tensor', 'l1', 'tensor in'), ('l1', '', 'f1', '', 0),
+         ('r1', 'random tensor', 'nm', 'tensor in'),
+         ('nm', 'normalized tensor out', 'hm', 'y'),
+         ('nm', 'normalized tensor out', 'l2', 'tensor in'), ('l2', '', 'f2', '', 0)]
+print(build('t.normalize', 't.normalize - direction without size', body,
+            demo, links, demo_width=470, text_width=790, text_height=660))
+
+# -------------------------------------------------------------------- t.energy
+body = """t.energy adds up how much a tensor CHANGES from one value to the next.
+
+It takes the differences between neighbouring values, makes them all 
+positive, and sums them. So it measures the total distance travelled, not 
+how far from zero the values ended up. A signal that wanders a long way and 
+comes back has high energy and a small final value. For asking how much 
+something moved over a stretch of samples, this is the measure.
+
+'n' takes the difference more than once before summing. With n = 1 you get 
+the total change; with n = 2, the total change in the change - how much the 
+movement itself speeds up and slows down, which is a measure of jerkiness 
+rather than of travel.
+
+WHICH AXIS:
+With no argument, the differences run along the LAST axis. Give an axis as 
+the argument - t.energy 0 - and a 'dim' inlet appears so it can be changed. 
+Either way the result is one number, summed over everything.
+
+A tensor no longer than n along that axis has no differences to take, and 
+gives 0.
+
+SYNTAX:
+t.energy <dim>
+
+EXAMPLE:
+t.energy
+
+INPUTS and PARAMETERS:
+
+tensor in:
+The tensor. Receiving it triggers the node.
+
+n:
+How many times to take the difference before summing. 1 is total change; 
+2 is total change in the change. Default 1.
+
+dim (only with an argument):
+The axis to take the differences along.
+
+OUTPUTS: 
+
+tensor out:
+A single number, as a one-value tensor.
+
+RELATED:
+t.diff gives the differences themselves, before summing.
+t.length is size rather than change: the demo shows both on the same values."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'r1', 'init': 't.rand 8', 'pos': (30, 120), 'w': 180, 'h': 180,
+     'props': {'min': -1.0, 'max': 1.0}},
+    {'key': 'hm', 'init': 'heat_map', 'pos': (250, 120), 'w': 208, 'h': 148,
+     'props': HM(8, -1.0, 1.0)},
+    {'key': 'c0', 'comment': True, 'text': 'click: eight values in a row', 'pos': (30, 310)},
+    {'key': 'en', 'init': 't.energy', 'pos': (30, 350), 'w': 180, 'h': 110},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 475), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c1', 'comment': True, 'text': 'total change along the row', 'pos': (30, 525)},
+    {'key': 'ln', 'init': 't.length', 'pos': (250, 350), 'w': 160, 'h': 80},
+    {'key': 'f2', 'init': 'float', 'pos': (250, 475), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c2', 'comment': True, 'text': 'size, for contrast', 'pos': (250, 525)},
+]
+links = [('btn', '', 'r1', '###input'), ('r1', 'random tensor', 'hm', 'y'),
+         ('r1', 'random tensor', 'en', 'tensor in'), ('en', 'tensor out', 'f1', ''),
+         ('r1', 'random tensor', 'ln', 'tensor in'), ('ln', '', 'f2', '', 0)]
+print(build('t.energy', 't.energy - how much it changes', body,
+            demo, links, demo_width=480, text_width=790, text_height=640))
+
+# ------------------------------------------------------------------- t.corrcoef
+body = """t.corrcoef measures how much the rows of a tensor move TOGETHER.
+
+Feed it a tensor whose rows are channels and whose columns are samples over 
+time, and it returns a square table with one entry for every pair of 
+channels: their correlation.
+
+  1    the two rise and fall together
+  0    no linear relation
+ -1    one rises exactly as the other falls
+
+The diagonal is always 1 - every channel moves exactly with itself. The table 
+is symmetric, since A with B is B with A.
+
+This is not alignment, which is what t.cosine_similarity measures. 
+Correlation removes each channel's average and its scale before comparing, 
+so two channels that wobble in step correlate fully even if one is far 
+bigger than the other or sits far from zero. Over a long recording, the table 
+is a measured picture of which things habitually happen at once.
+
+FEW SAMPLES, LOUD CORRELATIONS:
+With only a handful of columns, chance alone produces sizeable correlations - 
+the demo's eight random samples per row show it. Give it many samples before 
+trusting a number.
+
+A row that never changes has no correlation with anything: its entries come 
+out as NaN (not a number). A one-dimensional tensor counts as a single row 
+and gives 1.
+
+SYNTAX:
+t.corrcoef
+
+EXAMPLE:
+t.corrcoef
+
+INPUTS and PARAMETERS:
+
+tensor in:
+Rows are channels, columns are samples. Receiving it triggers the node.
+
+OUTPUTS: 
+
+tensor out:
+The table of correlations, one row and one column per input row."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'r1', 'init': 't.rand 4 8', 'pos': (30, 120), 'w': 180, 'h': 180},
+    {'key': 'c0', 'comment': True, 'text': 'click: 4 channels, 8 samples each',
+     'pos': (30, 310)},
+    {'key': 'cc', 'init': 't.corrcoef', 'pos': (30, 350), 'w': 180, 'h': 70},
+    {'key': 'hm', 'init': 'heat_map', 'pos': (30, 440), 'w': 208, 'h': 148,
+     'props': HM(4, -1.0, 1.0)},
+    {'key': 'c1', 'comment': True, 'text': 'diagonal is 1; the rest is chance',
+     'pos': (30, 600)},
+]
+links = [('btn', '', 'r1', '###input'), ('r1', 'random tensor', 'cc', 'tensor in'),
+         ('cc', 'tensor out', 'hm', 'y')]
+print(build('t.corrcoef', 't.corrcoef - what moves together', body,
+            demo, links, demo_width=400, text_width=790, text_height=700))
 
 # --------------------------------------------------------------- decompositions
 body = """These break a matrix apart into the pieces it is made of.

@@ -1,0 +1,459 @@
+{
+    "height": 1121,
+    "width": 1966,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "llm_layout_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/llm_layout_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment llm_layout - a language model writing, as a picture",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 635,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "llm_layout - a language model writing, as a picture",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "llm_layout - a language model writing, as a picture"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1118,
+            "position_y": 45,
+            "width": 808,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "llm_layout shows a language model writing, as a picture, token by token.\n\nIT TAKES COMMANDS, NOT TEXT:\nWire gemma_4's 'layout_out' to its 'input' (qwen_moe and bonsai_2 have the\nsame outlet). That outlet does not send text - it sends COMMANDS, and this\nnode is what understands them:\n\nadd <id> <token> <value>    another token, coloured by the value\nprompt <id> <token>         a token of the prompt, in white\nstreaming_prompt / accept_streamed_prompt / backspace_streaming_prompt\n                            a prompt being typed in live\nchoice_list / choose        the alternatives the model weighed, and which\n                            one was picked\nstep_back <n>               take back the last n tokens\ntemperature / show_probs    display settings changing\nscroll_up / scroll_down     move active_line by one\nclear / reset               empty it\nsave                        write the text to llama_output_<date>.txt in\n                            the folder the app was started from\n\nSo the two nodes together give you a screen that shows the model writing,\nincluding the parts a plain text display cannot show: which alternatives it\nwas considering, and which one was chosen.\n\nThe picture is 1920 by 1080, three channels, as floats from 0 to 1, laid out\nheight-first like a camera frame, in the Inconsolata font.\n\n'active_line' IS WHY IT READS WELL:\nNew text always appears on the same line of the screen - line 17 by default -\nand everything above scrolls up as it fills. The writing happens at a fixed\nheight rather than creeping down the page, which is far easier to read and to\npoint a camera at.\n\nWhen the model's 'show_probs' is switched on, the node moves it up to line 5,\nso there is room below for the list of alternatives, and back to 17 when it is\nswitched off. That is worth knowing so it does not look like a fault when the\ntext jumps.\n\n'colour_mode' SHOWS THE MODEL'S UNCERTAINTY:\nEach 'add' carries a value, and the token is coloured by it - so the text\ncarries how sure the model was as it wrote. Which value is sent is set on the\nmodel ('display_mode' on gemma_4): its temperature, the entropy, or the\nprobability of the token. 'colour_mode' here picks the colour scale to read it\nwith, and should match.\n\n'include prompt' decides whether 'prompt' tokens - what you asked - are shown\nalong with the answer.\n\nSYNTAX:\nllm_layout\n\nEXAMPLE:\nllm_layout\n\nINPUTS and PARAMETERS:\n\ninput:\nThe layout commands.\n\nclear:\nEmpty it.\n\nactive_line:\nWhich line of the screen new text appears on, 17.\n\ncolour_mode:\ntemperature, entropy or probability - the scale for each token's value.\n\ninclude prompt:\nShow the prompt as well as the answer.\n\nOUTPUTS:\n\nlayout:\nThe rendered image.\n\nRELATED:\ngemma_4, qwen_moe and bonsai_2, whose 'layout_out' this is built to receive.\ncairo_layout for plain text as a picture; llm_layout used to share its page.\nmgl_texture or gl nodes to get the image onto a screen.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "llm_layout shows a language model writing, as a picture, token by token.\n\nIT TAKES COMMANDS, NOT TEXT:\nWire gemma_4's 'layout_out' to its 'input' (qwen_moe and bonsai_2 have the\nsame outlet). That outlet does not send text - it sends COMMANDS, and this\nnode is what understands them:\n\nadd <id> <token> <value>    another token, coloured by the value\nprompt <id> <token>         a token of the prompt, in white\nstreaming_prompt / accept_streamed_prompt / backspace_streaming_prompt\n                            a prompt being typed in live\nchoice_list / choose        the alternatives the model weighed, and which\n                            one was picked\nstep_back <n>               take back the last n tokens\ntemperature / show_probs    display settings changing\nscroll_up / scroll_down     move active_line by one\nclear / reset               empty it\nsave                        write the text to llama_output_<date>.txt in\n                            the folder the app was started from\n\nSo the two nodes together give you a screen that shows the model writing,\nincluding the parts a plain text display cannot show: which alternatives it\nwas considering, and which one was chosen.\n\nThe picture is 1920 by 1080, three channels, as floats from 0 to 1, laid out\nheight-first like a camera frame, in the Inconsolata font.\n\n'active_line' IS WHY IT READS WELL:\nNew text always appears on the same line of the screen - line 17 by default -\nand everything above scrolls up as it fills. The writing happens at a fixed\nheight rather than creeping down the page, which is far easier to read and to\npoint a camera at.\n\nWhen the model's 'show_probs' is switched on, the node moves it up to line 5,\nso there is room below for the list of alternatives, and back to 17 when it is\nswitched off. That is worth knowing so it does not look like a fault when the\ntext jumps.\n\n'colour_mode' SHOWS THE MODEL'S UNCERTAINTY:\nEach 'add' carries a value, and the token is coloured by it - so the text\ncarries how sure the model was as it wrote. Which value is sent is set on the\nmodel ('display_mode' on gemma_4): its temperature, the entropy, or the\nprobability of the token. 'colour_mode' here picks the colour scale to read it\nwith, and should match.\n\n'include prompt' decides whether 'prompt' tokens - what you asked - are shown\nalong with the answer.\n\nSYNTAX:\nllm_layout\n\nEXAMPLE:\nllm_layout\n\nINPUTS and PARAMETERS:\n\ninput:\nThe layout commands.\n\nclear:\nEmpty it.\n\nactive_line:\nWhich line of the screen new text appears on, 17.\n\ncolour_mode:\ntemperature, entropy or probability - the scale for each token's value.\n\ninclude prompt:\nShow the prompt as well as the answer.\n\nOUTPUTS:\n\nlayout:\nThe rendered image.\n\nRELATED:\ngemma_4, qwen_moe and bonsai_2, whose 'layout_out' this is built to receive.\ncairo_layout for plain text as a picture; llm_layout used to share its page.\nmgl_texture or gl nodes to get the image onto a screen."
+        },
+        "3": {
+            "name": "toggle",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment switch on and WAIT - the model loads",
+            "name": "comment",
+            "id": 385,
+            "position_x": 796,
+            "position_y": 70,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "switch on and WAIT - the model loads",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "switch on and WAIT - the model loads"
+        },
+        "5": {
+            "name": "string",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 510,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "Describe a room nobody has entered for a year.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 480,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "init": "comment then edit the prompt and press return",
+            "name": "comment",
+            "id": 459,
+            "position_x": 796,
+            "position_y": 170,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "then edit the prompt and press return",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "then edit the prompt and press return"
+        },
+        "7": {
+            "name": "gemma_4",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 215,
+            "width": 230,
+            "height": 546,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "n_ctx",
+                    "value": "8192",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 420,
+            "position_y": 215,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "add 0 hello 1.0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "message",
+            "id": 570,
+            "position_x": 640,
+            "position_y": 215,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "clear",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 796,
+            "position_y": 265,
+            "width": 200,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the same commands by hand -\nno model needed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the same commands by hand -\nno model needed"
+        },
+        "11": {
+            "name": "llm_layout",
+            "id": 644,
+            "position_x": 420,
+            "position_y": 330,
+            "width": 160,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 796,
+            "position_y": 605,
+            "width": 292,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "layout_out sends COMMANDS, and this node\nunderstands them: tokens, the alternatives\nweighed, and how sure the model was",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "layout_out sends COMMANDS, and this node\nunderstands them: tokens, the alternatives\nweighed, and how sure the model was"
+        },
+        "13": {
+            "name": "info",
+            "id": 718,
+            "position_x": 420,
+            "position_y": 690,
+            "width": 235,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "init": "comment the layout is an image",
+            "name": "comment",
+            "id": 755,
+            "position_x": 796,
+            "position_y": 785,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the layout is an image",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the layout is an image"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 791,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "on / off"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "prompt"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "layout_out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "layout",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

@@ -1,6 +1,6 @@
 {
-    "height": 412,
-    "width": 650,
+    "height": 436,
+    "width": 669,
     "position": [
         100,
         100
@@ -164,12 +164,12 @@
             "annotation": true,
             "position_x": 170,
             "position_y": 154,
-            "width": 428,
-            "height": 64,
+            "width": 459,
+            "height": 88,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "mgl context / display / enable, mgl camera / light / material,\nmgl transforms, mgl shapes, mgl meshes and models,\nmgl_texture / mgl_image, mgl_text, mgl_shader, mgl body drawing,\nmgl_smpl_mesh / mgl_smpl_heatmap",
+                    "value": "mgl context / display / enable, mgl_camera / mgl_orbit_camera,\nmgl_light, mgl_material, mgl_color, mgl transforms, mgl shapes,\nmgl meshes and models, mgl_texture / mgl_image, mgl_text, mgl_shader,\nmgl_body, body_proportions, mgl_body_orientation,\nmgl_orientation_disks, mgl_contact_disks, mgl_torque_arc,\nmgl_smpl_mesh / mgl_smpl_heatmap",
                     "value_type": "str"
                 },
                 "1": {
@@ -179,12 +179,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 420,
+                    "value": 451,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 48,
+                    "value": 72,
                     "value_type": "int"
                 },
                 "4": {
@@ -193,7 +193,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "mgl context / display / enable, mgl camera / light / material,\nmgl transforms, mgl shapes, mgl meshes and models,\nmgl_texture / mgl_image, mgl_text, mgl_shader, mgl body drawing,\nmgl_smpl_mesh / mgl_smpl_heatmap",
+            "text": "mgl context / display / enable, mgl_camera / mgl_orbit_camera,\nmgl_light, mgl_material, mgl_color, mgl transforms, mgl shapes,\nmgl meshes and models, mgl_texture / mgl_image, mgl_text, mgl_shader,\nmgl_body, body_proportions, mgl_body_orientation,\nmgl_orientation_disks, mgl_contact_disks, mgl_torque_arc,\nmgl_smpl_mesh / mgl_smpl_heatmap",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
@@ -203,7 +203,7 @@
             "init": "help_link nodes_graphics_point_clouds Point clouds",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 222,
+            "position_y": 246,
             "width": 132,
             "height": 44,
             "properties": {
@@ -227,13 +227,13 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 170,
-            "position_y": 226,
-            "width": 440,
+            "position_y": 250,
+            "width": 434,
             "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "femto / femto_bolt, pc_background / pc_denoise, pc_crop, pc_voxel,\npc_info, pc_cluster_filter, mgl_cluster_boxes,\nt point cloud voxels / crop",
+                    "value": "femto / femto_bolt, pc_background, pc_denoise, pc_crop, pc_voxel,\npc_info, pc_cluster_filter, mgl_cluster_boxes,\nt point cloud voxels / crop",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,7 +243,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 432,
+                    "value": 426,
                     "value_type": "int"
                 },
                 "3": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "femto / femto_bolt, pc_background / pc_denoise, pc_crop, pc_voxel,\npc_info, pc_cluster_filter, mgl_cluster_boxes,\nt point cloud voxels / crop",
+            "text": "femto / femto_bolt, pc_background, pc_denoise, pc_crop, pc_voxel,\npc_info, pc_cluster_filter, mgl_cluster_boxes,\nt point cloud voxels / crop",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
@@ -267,7 +267,7 @@
             "init": "help_link nodes_graphics_older_gl Older GL",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 282,
+            "position_y": 306,
             "width": 132,
             "height": 44,
             "properties": {
@@ -291,7 +291,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 170,
-            "position_y": 286,
+            "position_y": 310,
             "width": 434,
             "height": 64,
             "properties": {

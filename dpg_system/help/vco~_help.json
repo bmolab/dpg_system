@@ -1,11 +1,11 @@
 {
-    "height": 1052,
-    "width": 1780,
+    "height": 1271,
+    "width": 1743,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 792,
     "name": "vco~_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/vco~_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment vco~ and the other sources - making a signal",
+            "init": "comment vco~, lfo~, phasor~ - oscillators",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 549,
+            "width": 414,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "vco~ and the other sources - making a signal",
+                    "value": "vco~, lfo~, phasor~ - oscillators",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "vco~ and the other sources - making a signal"
+            "comment": "vco~, lfo~, phasor~ - oscillators"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 912,
+            "position_x": 875,
             "position_y": 45,
             "width": 828,
-            "height": 816,
+            "height": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These are the sources: the nodes that make a signal rather than change one.\n\nTHE NODES:\n\nvco~          a band-limited oscillator, with detuned unison. The workhorse\nphasor~       a plain 0 to 1 ramp, for driving positions rather than for hearing\nlfo~          a low frequency oscillator - though nothing stops it reaching \n              audio rate, where it becomes an unbandlimited modulator for FM and AM\nnoise~        a leak, played by pressure - the rack's noise source\nhiss~         the same node\nsig~          a control value brought into the audio graph, with glide\nsampler_osc~  recorded material treated as an oscillator\n\nPITCH IS TWO INLETS:\nvco~ and sampler_osc~ both take a base 'frequency' in Hz and an exponential \n'pitch' inlet in octaves that scales it. Patch an envelope into pitch for a \nsweep, an LFO for vibrato. Because it is exponential, the same modulation \nproduces the same musical interval at any base frequency - which is why the \ntwo are separate, and why the identical signal that sweeps a vco~ sweeps a \nsampler_osc~ the same way.\n\nThere is a third, 'linear fm', in Hz rather than octaves. Linear FM detunes \nrather than transposes, which is what makes it inharmonic and metallic.\n\nsig~ IS THE IMPORTANT ONE HERE:\nIt is the entry point for effort data. A 60 Hz control stream stepping a gain \ndirectly will zipper - you hear each step. sig~ glides between the values, \nsmoothing them into a continuous signal without ever lagging more than the \nglide time behind.\n\nSYNTAX:\nvco~ <frequency>\nlfo~ <rate>\nsig~ <value>\n\nEXAMPLE:\nvco~ 220\n\nINPUTS and PARAMETERS:\n\nfrequency / rate:\nThe base pitch in Hz, or the LFO's rate.\n\npitch:\nExponential, in octaves. Adds to the base frequency musically.\n\nlinear fm:\nLinear, in Hz. Adds to it arithmetically.\n\nshape:\nThe waveform.\n\nwidth:\nPulse width, for shapes that have one.\n\ndetune (vco~):\nSpreads the unison voices apart. A little is thickness; a lot is a chorus.\n\nsync / phase mod:\nHard sync and phase modulation inputs.\n\nvalue / glide (sig~):\nThe control value, and how long it takes to arrive there.\n\npressure / color / sputter (noise~):\nHow hard the leak is blowing, how dark it is, and how irregular. \nStillness is silence by construction.\n\nOUTPUTS: \n\nleft out / right out / signal / out:\nThe signal.\n\nRELATED:\nadditive~ builds an oscillator from a drawn spectrum instead of a chosen wave.",
+                    "value": "These are the oscillators: nodes that make a repeating signal rather \nthan change one.\n\nTHE NODES:\n\nvco~     a band-limited oscillator, with detuned unison. The one to listen to\nlfo~     a low frequency oscillator for modulating things - though nothing \n         stops it reaching audio rate, where it becomes an unbandlimited \n         modulator for FM and AM\nphasor~  a plain 0 to 1 ramp, for driving positions rather than for hearing\n\nvco~ PITCH IS TWO INLETS:\n'frequency' is the base pitch in Hz, and 'pitch' is added to it in OCTAVES: \n1 is an octave up, -1 an octave down. Patch an envelope into pitch for a \nsweep, an LFO for vibrato. Because it is exponential, the same modulation \ngives the same musical interval at any base frequency. The demo's lfo~, at \ndepth 0.05, wobbles the pitch by a twentieth of an octave either way.\n\nThere is a third, 'linear fm', in Hz rather than octaves. Linear FM detunes \nrather than transposes, which is what makes it inharmonic and metallic.\n\nvco~ UNISON:\nThe 'voices' option stacks up to eight copies of the oscillator, spread \n'detune' cents apart around the note; 'spread' pans them across left and \nright out, and 'drift' gives each its own slow wander in cents. With one \nvoice, or spread at 0, right out carries the same signal as left out.\n\nlfo~ IS FOR MODULATION:\nIt is not band limited, so its edges are clean steps - which is right for \ndriving other things and harsh to listen to. Besides the usual waves it has \n'sample_hold' (a new random value each cycle), 'smooth_random' (a glide from \none random value to the next each cycle) and 'noise'. 'depth' scales the \noutput and 'offset' is added after, so depth 0.2 offset 0.5 swings between \n0.3 and 0.7. Untick the 'bipolar' option and the wave runs 0 to 1 before \ndepth and offset, instead of -1 to 1.\n\nphasor~ IS A POSITION:\nIts output climbs from 0 to 1 and jumps back, once per cycle; 'start' and \n'end' rescale that range. 'period' in seconds, when above 0, overrides \n'frequency' - patch sampler_osc~'s length outlet into it and one cycle \nscans the whole file. A negative frequency runs it backwards. The 'wrap' \noutlet gives a one-sample pulse each time the ramp turns over.\n\nLeave phasor~'s 'phase' inlet at 0: a non-zero value is meant as an offset, \nbut it is added again on every audio block, so the ramp lurches forward \ninstead of shifting.\n\nSYNTAX:\nvco~ <frequency> <voices> <detune> <shape>\nlfo~ <rate> <shape>\nphasor~ <frequency>\n\nEXAMPLE:\nvco~ 110 3 12 saw\n\nINPUTS and PARAMETERS:\n\nfrequency (vco~, phasor~) / rate (lfo~):\nThe base frequency in Hz. vco~ defaults to 110, lfo~ and phasor~ to 1.\n\npitch (vco~):\nAdded in octaves, exponentially.\n\nlinear fm (vco~):\nAdded in Hz.\n\nwidth (vco~, lfo~):\nPulse width of the square wave, 0.01 to 0.99. Only the square uses it.\n\nphase mod (vco~):\nShifts the wave's phase, in cycles - patch an audio signal here for phase \nmodulation.\n\nsync (vco~):\nHard sync: each rising edge past 0.5 restarts the cycle.\n\ndetune (vco~):\nCents between unison voices. Default 10. Does nothing with one voice.\n\nshape:\nvco~: saw, square, triangle, sine, noise, pink (the last two ignore pitch).\nlfo~: sine, triangle, saw (falling), ramp (rising), square, sample_hold, \nsmooth_random, noise.\n\ndepth / offset (lfo~):\nScales the output, then adds to it.\n\nreset (lfo~, phasor~):\nA rising edge past 0.5 restarts the cycle at the 'start phase' option.\n\nperiod / start / end / phase (phasor~):\nAs described above.\n\nenable:\nOff fades out over a few milliseconds, then stops computing altogether, so \na switched-off oscillator costs almost nothing.\n\nEach inlet with a knob takes a number or a patched signal; where there is \na narrow box beside the knob, that is a depth scaling whatever is patched in.\n\nOUTPUTS: \n\nleft out / right out (vco~), signal (lfo~):\nThe signal.\n\nphase / wrap (phasor~):\nThe ramp, and a pulse at each turn-over.\n\nRELATED:\nsig~ brings a control value into the audio graph.\nnoise~ is the noise source; sampler_osc~ treats a recording as an oscillator.\nadditive~ builds an oscillator from a drawn spectrum instead of a chosen wave.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 800,
+                    "value": 1150,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,49 +90,34 @@
                     "value_type": "str"
                 }
             },
-            "text": "These are the sources: the nodes that make a signal rather than change one.\n\nTHE NODES:\n\nvco~          a band-limited oscillator, with detuned unison. The workhorse\nphasor~       a plain 0 to 1 ramp, for driving positions rather than for hearing\nlfo~          a low frequency oscillator - though nothing stops it reaching \n              audio rate, where it becomes an unbandlimited modulator for FM and AM\nnoise~        a leak, played by pressure - the rack's noise source\nhiss~         the same node\nsig~          a control value brought into the audio graph, with glide\nsampler_osc~  recorded material treated as an oscillator\n\nPITCH IS TWO INLETS:\nvco~ and sampler_osc~ both take a base 'frequency' in Hz and an exponential \n'pitch' inlet in octaves that scales it. Patch an envelope into pitch for a \nsweep, an LFO for vibrato. Because it is exponential, the same modulation \nproduces the same musical interval at any base frequency - which is why the \ntwo are separate, and why the identical signal that sweeps a vco~ sweeps a \nsampler_osc~ the same way.\n\nThere is a third, 'linear fm', in Hz rather than octaves. Linear FM detunes \nrather than transposes, which is what makes it inharmonic and metallic.\n\nsig~ IS THE IMPORTANT ONE HERE:\nIt is the entry point for effort data. A 60 Hz control stream stepping a gain \ndirectly will zipper - you hear each step. sig~ glides between the values, \nsmoothing them into a continuous signal without ever lagging more than the \nglide time behind.\n\nSYNTAX:\nvco~ <frequency>\nlfo~ <rate>\nsig~ <value>\n\nEXAMPLE:\nvco~ 220\n\nINPUTS and PARAMETERS:\n\nfrequency / rate:\nThe base pitch in Hz, or the LFO's rate.\n\npitch:\nExponential, in octaves. Adds to the base frequency musically.\n\nlinear fm:\nLinear, in Hz. Adds to it arithmetically.\n\nshape:\nThe waveform.\n\nwidth:\nPulse width, for shapes that have one.\n\ndetune (vco~):\nSpreads the unison voices apart. A little is thickness; a lot is a chorus.\n\nsync / phase mod:\nHard sync and phase modulation inputs.\n\nvalue / glide (sig~):\nThe control value, and how long it takes to arrive there.\n\npressure / color / sputter (noise~):\nHow hard the leak is blowing, how dark it is, and how irregular. \nStillness is silence by construction.\n\nOUTPUTS: \n\nleft out / right out / signal / out:\nThe signal.\n\nRELATED:\nadditive~ builds an oscillator from a drawn spectrum instead of a chosen wave."
+            "text": "These are the oscillators: nodes that make a repeating signal rather \nthan change one.\n\nTHE NODES:\n\nvco~     a band-limited oscillator, with detuned unison. The one to listen to\nlfo~     a low frequency oscillator for modulating things - though nothing \n         stops it reaching audio rate, where it becomes an unbandlimited \n         modulator for FM and AM\nphasor~  a plain 0 to 1 ramp, for driving positions rather than for hearing\n\nvco~ PITCH IS TWO INLETS:\n'frequency' is the base pitch in Hz, and 'pitch' is added to it in OCTAVES: \n1 is an octave up, -1 an octave down. Patch an envelope into pitch for a \nsweep, an LFO for vibrato. Because it is exponential, the same modulation \ngives the same musical interval at any base frequency. The demo's lfo~, at \ndepth 0.05, wobbles the pitch by a twentieth of an octave either way.\n\nThere is a third, 'linear fm', in Hz rather than octaves. Linear FM detunes \nrather than transposes, which is what makes it inharmonic and metallic.\n\nvco~ UNISON:\nThe 'voices' option stacks up to eight copies of the oscillator, spread \n'detune' cents apart around the note; 'spread' pans them across left and \nright out, and 'drift' gives each its own slow wander in cents. With one \nvoice, or spread at 0, right out carries the same signal as left out.\n\nlfo~ IS FOR MODULATION:\nIt is not band limited, so its edges are clean steps - which is right for \ndriving other things and harsh to listen to. Besides the usual waves it has \n'sample_hold' (a new random value each cycle), 'smooth_random' (a glide from \none random value to the next each cycle) and 'noise'. 'depth' scales the \noutput and 'offset' is added after, so depth 0.2 offset 0.5 swings between \n0.3 and 0.7. Untick the 'bipolar' option and the wave runs 0 to 1 before \ndepth and offset, instead of -1 to 1.\n\nphasor~ IS A POSITION:\nIts output climbs from 0 to 1 and jumps back, once per cycle; 'start' and \n'end' rescale that range. 'period' in seconds, when above 0, overrides \n'frequency' - patch sampler_osc~'s length outlet into it and one cycle \nscans the whole file. A negative frequency runs it backwards. The 'wrap' \noutlet gives a one-sample pulse each time the ramp turns over.\n\nLeave phasor~'s 'phase' inlet at 0: a non-zero value is meant as an offset, \nbut it is added again on every audio block, so the ramp lurches forward \ninstead of shifting.\n\nSYNTAX:\nvco~ <frequency> <voices> <detune> <shape>\nlfo~ <rate> <shape>\nphasor~ <frequency>\n\nEXAMPLE:\nvco~ 110 3 12 saw\n\nINPUTS and PARAMETERS:\n\nfrequency (vco~, phasor~) / rate (lfo~):\nThe base frequency in Hz. vco~ defaults to 110, lfo~ and phasor~ to 1.\n\npitch (vco~):\nAdded in octaves, exponentially.\n\nlinear fm (vco~):\nAdded in Hz.\n\nwidth (vco~, lfo~):\nPulse width of the square wave, 0.01 to 0.99. Only the square uses it.\n\nphase mod (vco~):\nShifts the wave's phase, in cycles - patch an audio signal here for phase \nmodulation.\n\nsync (vco~):\nHard sync: each rising edge past 0.5 restarts the cycle.\n\ndetune (vco~):\nCents between unison voices. Default 10. Does nothing with one voice.\n\nshape:\nvco~: saw, square, triangle, sine, noise, pink (the last two ignore pitch).\nlfo~: sine, triangle, saw (falling), ramp (rising), square, sample_hold, \nsmooth_random, noise.\n\ndepth / offset (lfo~):\nScales the output, then adds to it.\n\nreset (lfo~, phasor~):\nA rising edge past 0.5 restarts the cycle at the 'start phase' option.\n\nperiod / start / end / phase (phasor~):\nAs described above.\n\nenable:\nOff fades out over a few milliseconds, then stops computing altogether, so \na switched-off oscillator costs almost nothing.\n\nEach inlet with a knob takes a number or a patched signal; where there is \na narrow box beside the knob, that is a depth scaling whatever is patched in.\n\nOUTPUTS: \n\nleft out / right out (vco~), signal (lfo~):\nThe signal.\n\nphase / wrap (phasor~):\nThe ramp, and a pulse at each turn-over.\n\nRELATED:\nsig~ brings a control value into the audio graph.\nnoise~ is the noise source; sampler_osc~ treats a recording as an oscillator.\nadditive~ builds an oscillator from a drawn spectrum instead of a chosen wave."
         },
         "3": {
-            "name": "slider",
+            "name": "lfo~",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 230,
-            "height": 42,
+            "width": 180,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "min",
-                    "value": 0.0,
+                    "name": "depth",
+                    "value": 0.05,
                     "value_type": "float"
-                },
-                "1": {
-                    "name": "max",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                },
-                "3": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
                 }
             },
-            "init": "slider 0.0"
+            "init": "lfo~ 5"
         },
         "4": {
-            "init": "comment a control value, stepping at frame rate",
+            "init": "comment 5 Hz, depth 0.05 of an octave",
             "name": "comment",
             "id": 385,
             "position_x": 634,
-            "position_y": 130,
-            "width": 248,
+            "position_y": 62,
+            "width": 187,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -140,7 +125,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "a control value, stepping at frame rate",
+                    "value": "5 Hz, depth 0.05 of an octave",
                     "value_type": "str"
                 },
                 "1": {
@@ -149,65 +134,28 @@
                     "value_type": "str"
                 }
             },
-            "comment": "a control value, stepping at frame rate"
+            "comment": "5 Hz, depth 0.05 of an octave"
         },
         "5": {
-            "name": "sig~",
+            "name": "vco~",
             "id": 422,
             "position_x": 30,
-            "position_y": 170,
-            "width": 129,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "6": {
-            "init": "comment sig~ glides it into a smooth signal",
-            "name": "comment",
-            "id": 459,
-            "position_x": 634,
-            "position_y": 320,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "sig~ glides it into a smooth signal",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "sig~ glides it into a smooth signal"
-        },
-        "7": {
-            "name": "vco~",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 360,
+            "position_y": 260,
             "width": 199,
             "height": 182,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "vco~ 110"
+            "init": "vco~ 220"
         },
-        "8": {
-            "init": "comment into pitch: exponential, so octaves",
+        "6": {
+            "init": "comment into pitch: vibrato",
             "name": "comment",
-            "id": 533,
+            "id": 459,
             "position_x": 634,
-            "position_y": 570,
-            "width": 224,
+            "position_y": 470,
+            "width": 125,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -215,7 +163,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "into pitch: exponential, so octaves",
+                    "value": "into pitch: vibrato",
                     "value_type": "str"
                 },
                 "1": {
@@ -224,13 +172,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "into pitch: exponential, so octaves"
+            "comment": "into pitch: vibrato"
         },
-        "9": {
+        "7": {
             "name": "scope~",
-            "id": 570,
+            "id": 496,
             "position_x": 300,
-            "position_y": 360,
+            "position_y": 260,
             "width": 308,
             "height": 248,
             "visibility": "show_all",
@@ -238,11 +186,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "8": {
             "name": "fader_out~",
-            "id": 607,
+            "id": 533,
             "position_x": 30,
-            "position_y": 610,
+            "position_y": 510,
             "width": 70,
             "height": 308,
             "visibility": "show_all",
@@ -257,12 +205,12 @@
             },
             "init": "fader_out~ 1 2"
         },
-        "11": {
+        "9": {
             "init": "comment raise the fader to hear it",
             "name": "comment",
-            "id": 644,
+            "id": 570,
             "position_x": 634,
-            "position_y": 845,
+            "position_y": 745,
             "width": 168,
             "height": 30,
             "visibility": "show_all",
@@ -282,11 +230,89 @@
             },
             "comment": "raise the fader to hear it"
         },
+        "10": {
+            "name": "phasor~",
+            "id": 607,
+            "position_x": 300,
+            "position_y": 510,
+            "width": 199,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "phasor~ 0.5"
+        },
+        "11": {
+            "name": "snapshot~",
+            "id": 644,
+            "position_x": 300,
+            "position_y": 710,
+            "width": 88,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
         "12": {
-            "name": "close",
+            "name": "float",
             "id": 681,
+            "position_x": 300,
+            "position_y": 870,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment phasor~: 0 to 1 every two seconds",
+            "name": "comment",
+            "id": 718,
+            "position_x": 634,
+            "position_y": 920,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "phasor~: 0 to 1 every two seconds",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "phasor~: 0 to 1 every two seconds"
+        },
+        "14": {
+            "name": "close",
+            "id": 755,
             "position_x": 24,
-            "position_y": 948,
+            "position_y": 942,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -306,41 +332,51 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "float out",
+            "source_output_name": "signal",
             "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "value"
+            "dest_input_name": "pitch"
         },
         "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "signal",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "pitch"
-        },
-        "2": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 570,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
-            "source_node": 496,
+        "2": {
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 607,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "left"
+        },
+        "3": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "phase",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "value",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
         }
     }
 }

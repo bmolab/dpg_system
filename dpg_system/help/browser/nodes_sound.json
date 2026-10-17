@@ -164,12 +164,12 @@
             "annotation": true,
             "position_x": 213,
             "position_y": 154,
-            "width": 397,
+            "width": 409,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "oscillators, additive~ / shape_modes, adc~ / mic~, record~,\nt.audio_source",
+                    "value": "oscillators, noise~ / hiss~, sig~, sampler_osc~,\nadditive~ / shape_modes, adc~ / mic~, record~, t.audio_source",
                     "value_type": "str"
                 },
                 "1": {
@@ -179,7 +179,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 389,
+                    "value": 401,
                     "value_type": "int"
                 },
                 "3": {
@@ -193,7 +193,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "oscillators, additive~ / shape_modes, adc~ / mic~, record~,\nt.audio_source",
+            "text": "oscillators, noise~ / hiss~, sig~, sampler_osc~,\nadditive~ / shape_modes, adc~ / mic~, record~, t.audio_source",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
@@ -553,7 +553,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "polyphonic / granular / scratch, sampler engine / voices,\neffort / muscle faders",
+                    "value": "polyphonic / granular / scratch, sampler engine / voices,\neffort / muscle faders, crossfade_scanner",
                     "value_type": "str"
                 },
                 "1": {
@@ -577,7 +577,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "polyphonic / granular / scratch, sampler engine / voices,\neffort / muscle faders",
+            "text": "polyphonic / granular / scratch, sampler engine / voices,\neffort / muscle faders, crossfade_scanner",
             "id": 1203,
             "visibility": "show_all",
             "draggable": true,

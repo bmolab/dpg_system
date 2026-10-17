@@ -1,5 +1,5 @@
 {
-    "height": 364,
+    "height": 372,
     "width": 681,
     "position": [
         100,
@@ -228,12 +228,12 @@
             "annotation": true,
             "position_x": 213,
             "position_y": 206,
-            "width": 428,
-            "height": 40,
+            "width": 422,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t reductions, t.max / min / argsort, t.any / t.all / t.argwhere,\nt.histc / t.bincount / t.bucketize, t cumulative",
+                    "value": "t reductions, t.max / min / argmax, t.argsort,\nt.any / t.all / t.argwhere, t.histc / t.bincount / t.bucketize,\nt cumulative",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,12 +243,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 420,
+                    "value": 414,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t reductions, t.max / min / argsort, t.any / t.all / t.argwhere,\nt.histc / t.bincount / t.bucketize, t cumulative",
+            "text": "t reductions, t.max / min / argmax, t.argsort,\nt.any / t.all / t.argwhere, t.histc / t.bincount / t.bucketize,\nt cumulative",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
@@ -267,7 +267,7 @@
             "init": "help_link nodes_torch_calc_distances_and_matrices Distances and matrices",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 254,
+            "position_y": 262,
             "width": 175,
             "height": 44,
             "properties": {
@@ -291,13 +291,13 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 213,
-            "position_y": 258,
-            "width": 268,
-            "height": 28,
+            "position_y": 266,
+            "width": 428,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.distance, t decompositions, t losses",
+                    "value": "t.distance, t.normalize, t.energy, t.corrcoef, t decompositions,\nt losses",
                     "value_type": "str"
                 },
                 "1": {
@@ -307,12 +307,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 260,
+                    "value": 420,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -321,7 +321,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.distance, t decompositions, t losses",
+            "text": "t.distance, t.normalize, t.energy, t.corrcoef, t decompositions,\nt losses",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,

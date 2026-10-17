@@ -656,17 +656,13 @@ print(build('mgl_cluster_boxes', 'mgl_cluster_boxes - draw what is in each box',
             demo, links, demo_width=900, text_width=810, text_height=790))
 
 # -------------------------------------------------------------- pc_background
-body = """These remove what you do not want: the room itself, and the sensor's noise.
-
-THE NODES:
-
-pc_background   learn the empty room, then subtract it
-pc_denoise      drop speckle and flicker
+body = """pc_background learns the empty room, then removes it from every cloud after.
 """ + FRAME + """
-pc_background: SHOW IT THE EMPTY ROOM:
+SHOW IT THE EMPTY ROOM:
 Press 'learn' with nobody in the volume. It watches for 'frames' frames, marks
 every voxel that was occupied in at least 'min hits' of them, and from then on
-throws away any point landing in one of those voxels.
+throws away any point landing in one of those voxels. While it is learning it
+passes the whole scene through unchanged.
 
 What is left is whatever is NEW - which for most installations is the person.
 It is far more robust than trying to crop a person out geometrically, because it
@@ -676,69 +672,55 @@ PRESS learn WITH THE CLOUD ALREADY RUNNING:
 This is the one procedural trap. The learned model is tied to the exact voxel
 grid it was built on, so if the volume changes - because the first frame arrives
 carrying a crop, or because you adjust the crop or the voxel size - the model no
-longer maps to anything and the run is thrown away.
+longer maps to anything and is thrown away.
 
 Start the sensor, get the crop the way you want it, and only then press learn.
-Doing it the other way round, the node now tells you it has abandoned the run;
-it used to announce that it had started learning and then stop in silence.
+Done the other way round, the node prints in the console that it has abandoned
+the run, and you press learn again.
 
 'dilate' IS USUALLY WORTH 1:
 Sensor noise makes points on a learned surface jitter into neighbouring voxels,
 where the model does not expect them, and they survive as a thin crust of false
 foreground. dilate grows the background by that many voxels to catch them.
 
-Measured on a 3,000-point wall with realistic jitter:
+Measured on a 3,000-point wall jittering by 2 cm, with 5 cm voxels:
 
-dilate 0    229 points of wall survive
-dilate 1      1 point survives
-dilate 2      0 points survive
+dilate 0     37 points of wall survive
+dilate 1      0 points survive
 
-and in the same test the person in front was untouched at every setting -
-1,500 points in, 1,500 out from dilate 1 upward. The cost of dilating is that
-the background grows slightly, so something pressed right up against a learned
-surface starts to disappear into it. 1 is the sensible default; go higher only
-if the crust persists.
+and a 1,500-point person in front of the wall was untouched at every setting.
+The cost of dilating is that the background grows slightly, so something
+pressed right up against a learned surface starts to disappear into it. The
+node starts at 0; 1 is the sensible setting, and higher only if the crust
+persists. dilate is applied when learning finishes, so change it before
+pressing learn.
 
 'clear' throws the model away and passes everything through again.
 
-pc_denoise: TWO FILTERS, EITHER OR BOTH:
-'min points' is the spatial one - drop any voxel holding fewer than that many
-points this frame. Speckle is by definition isolated, so it goes first.
-
-'persistence' is the temporal one - keep a running average of how often each
-voxel is occupied, and drop the ones that only flicker on briefly. 0 turns it
-off. 'decay' sets how long that memory is. This is the one for a sensor that
-sparkles in mid-air, which no amount of spatial filtering will fix, because at
-any single instant the sparkle looks like a real point.
-
-THE TRAP: min points AND voxel size ARE ONE CONTROL, NOT TWO:
-'min points' means nothing on its own - it is a density, and density depends
-entirely on how big the voxel is. The same setting can be harmless or
-catastrophic. Measured on a solid 1,500-point object:
-
-                 min points 1    2       4
-voxel 0.04 m         1500      194       5
-voxel 0.08 m         1500      861     215
-voxel 0.15 m         1500     1345    1099
-
-At the default voxel size, asking for just two points per voxel destroys seven
-eighths of a perfectly real object. If denoising is eating your subject, this is
-why - raise the voxel size or lower min points, and change them together.
+THE GRID:
+'voxel size (cm)' is the resolution of the model, 5 cm by default. If an
+upstream pc_voxel has put its voxel size on the frame, that is used instead.
+The volume is the crop carried on the frame, or else the 'min (x,y,z)' and
+'max (x,y,z)' options (-3 -3 0 to 3 3 6). Points outside the volume pass
+through untouched.
 
 SYNTAX:
 pc_background
-pc_denoise
 
 EXAMPLE:
-pc_denoise
+pc_background
 
 INPUTS and PARAMETERS:
 
 point cloud:
 The cloud. Receiving it does the work.
 
+voxel size (cm):
+The model's resolution.
+
 learn / frames / min hits:
-Start learning, over how many frames, requiring how many hits per voxel.
+Start learning, over how many frames (60), requiring how many hits per voxel
+(20).
 
 dilate (voxels):
 Grow the learned background to catch surface jitter. 1 is usually right.
@@ -746,23 +728,18 @@ Grow the learned background to catch surface jitter. 1 is usually right.
 clear:
 Forget the background.
 
-min points / persistence / decay:
-The spatial filter, the temporal one, and its memory.
+min (x,y,z) / max (x,y,z) (options):
+The volume, used only when the frame carries no crop.
 
-OUTPUTS: 
+OUTPUTS:
 
 foreground:
 What was not in the learned background.
 
-denoised:
-What survived the filters.
-
-Points outside the volume pass through both nodes untouched - the filtering only
-happens inside the box.
-
 RELATED:
-pc_crop, which should come before either of these.
-pc_info to see how many points you are actually losing."""
+pc_crop, which should come before it. pc_denoise for speckle and flicker,
+which used to share this page. pc_info to see how many points you are
+actually losing."""
 
 demo = [
     {'key': 'src', 'init': 'femto', 'pos': (30, 62), 'w': 280, 'h': 300},
@@ -774,19 +751,113 @@ demo = [
     {'key': 'c1', 'comment': True, 'text': 'get the crop right, THEN press learn\nwith nobody in the volume - changing\nthe volume abandons the run\ndilate 1 catches the jitter crust on\nlearned surfaces - almost always worth it',
      'pos': (30, 950)},
 
-    {'key': 'den', 'init': 'pc_denoise', 'pos': (420, 635), 'w': 300, 'h': 260},
-    {'key': 'c6', 'comment': True, 'text': 'min points is a DENSITY: it means\nnothing without the voxel size. At 0.04\nmin points 2 removes 7/8 of a real object',
-     'pos': (420, 910)},
-
-    {'key': 'info', 'init': 'pc_info', 'pos': (420, 1020), 'w': 240, 'h': 180},
-    {'key': 'i1', 'init': 'int', 'pos': (420, 1215), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c9', 'comment': True, 'text': 'watch the count while you tune - it is\nhow you catch a filter eating the subject',
-     'pos': (420, 1265)},
+    {'key': 'info', 'init': 'pc_info', 'pos': (420, 635), 'w': 240, 'h': 180},
+    {'key': 'i1', 'init': 'int', 'pos': (420, 830), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c9', 'comment': True, 'text': 'step into the volume after learning:\nthe count is you',
+     'pos': (420, 880)},
 ]
 links = [('src', 'point_cloud', 'crop', 'point cloud'),
          ('crop', 'cropped', 'bg', 'point cloud'),
-         ('bg', 'foreground', 'den', 'point cloud'),
+         ('bg', 'foreground', 'info', 'point cloud'),
+         ('info', 'count', 'i1', '')]
+print(build('pc_background', 'pc_background - subtract the empty room', body,
+            demo, links, demo_width=780, text_width=810, text_height=790))
+
+# ---------------------------------------------------------------- pc_denoise
+body = """pc_denoise drops speckle and flicker: points with too few neighbours, or that do not stay.
+""" + FRAME + """
+TWO FILTERS, EITHER OR BOTH:
+'min points' is the spatial one - drop any voxel holding fewer than that many
+points this frame. Speckle is by definition isolated, so it goes first.
+
+'persistence' is the temporal one - keep a running average of how often each
+voxel is occupied, from 0 (never) to 1 (every frame), and drop the voxels whose
+average is below 'persistence'. 0 turns it off. 'decay' sets how long that
+memory is: closer to 1 is a longer memory. This is the one for a sensor that
+sparkles in mid-air, which no amount of spatial filtering will fix, because at
+any single instant the sparkle looks like a real point.
+
+Persistence also holds back something that has just arrived. At decay 0.7 and
+persistence 0.5, a voxel has to be occupied two frames running before its
+points come through.
+
+THE TRAP: min points AND voxel size ARE ONE CONTROL, NOT TWO:
+'min points' means nothing on its own - it is a density, and density depends
+entirely on how big the voxel is. The same setting can be harmless or
+catastrophic. In the demo, an object of 3,000 points filling a 40 cm cube sits
+in 300 points of scattered speckle:
+
+                 min points 1     2      4
+voxel 4 cm           3300      2850   1730
+voxel 8 cm           3300      3000   2970
+
+At 4 cm, min points 2 removes all the speckle and about 150 points of the
+object with it; min points 4 removes more than 40 percent of the object. At
+8 cm the same settings keep it all. If denoising is eating your subject, this
+is why - raise the voxel size or lower min points, and change them together.
+
+THE GRID:
+'voxel size (cm)' is 4 by default. If an upstream pc_voxel has put its voxel
+size on the frame, that is used instead. The volume is the crop carried on
+the frame, or else the 'min (x,y,z)' and 'max (x,y,z)' options (-5 -5 -1 to
+5 5 10). Points outside the volume pass through untouched - the filtering only
+happens inside it.
+
+SYNTAX:
+pc_denoise
+
+EXAMPLE:
+pc_denoise
+
+INPUTS and PARAMETERS:
+
+point cloud:
+The cloud. Receiving it does the work.
+
+voxel size (cm):
+The grid the density is counted on.
+
+min points:
+The spatial filter: fewest points a voxel may hold, 2 by default.
+
+persistence / decay:
+The temporal filter, 0 to 1 (0 is off), and its memory (0.7).
+
+min (x,y,z) / max (x,y,z) (options):
+The volume, used only when the frame carries no crop.
+
+OUTPUTS:
+
+denoised:
+What survived the filters.
+
+RELATED:
+pc_crop, which should come before it. pc_background removes the room, and
+used to share this page. pc_info to see how many points you are actually
+losing."""
+
+demo = [
+    {'key': 'met', 'init': 'metro 100', 'pos': (30, 62), 'w': 129, 'h': 70,
+     'props': {'on': True, 'period': 100.0, 'units': 'milliseconds'}},
+    {'key': 'obj', 'init': 'np.rand 3000 3', 'pos': (30, 150), 'w': 140, 'h': 130,
+     'props': {'min': 0.0, 'max': 0.4, 'dtype': 'float32'}},
+    {'key': 'spk', 'init': 'np.rand 300 3', 'pos': (220, 150), 'w': 140, 'h': 130,
+     'props': {'min': -1.0, 'max': 3.0, 'dtype': 'float32'}},
+    {'key': 'c0', 'comment': True, 'text': 'an object: 3000 points in a 40 cm cube,\nand 300 specks scattered over 4 metres',
+     'pos': (30, 295)},
+    {'key': 'cat', 'init': 'np.concatenate 0', 'pos': (30, 345), 'w': 160, 'h': 80},
+    {'key': 'den', 'init': 'pc_denoise', 'pos': (30, 445), 'w': 300, 'h': 200},
+    {'key': 'c1', 'comment': True, 'text': 'try min points 4, then voxel size 8\nor min points 1 and persistence 0.5:\nthe specks never stay, so they go',
+     'pos': (30, 660)},
+    {'key': 'info', 'init': 'pc_info', 'pos': (30, 730), 'w': 240, 'h': 160},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 905), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c2', 'comment': True, 'text': 'about 2850 of 3300 survive',
+     'pos': (30, 955)},
+]
+links = [('met', '', 'obj', ''), ('met', '', 'spk', ''),
+         ('obj', '', 'cat', 'in', 0), ('spk', '', 'cat', 'in 2', 0),
+         ('cat', 'concatenate', 'den', 'point cloud'),
          ('den', 'denoised', 'info', 'point cloud'),
          ('info', 'count', 'i1', '')]
-print(build('pc_background', 'pc_background and pc_denoise - removing things', body,
-            demo, links, demo_width=780, text_width=810, text_height=790))
+print(build('pc_denoise', 'pc_denoise - drop speckle and flicker', body,
+            demo, links, demo_width=420, text_width=810, text_height=790))

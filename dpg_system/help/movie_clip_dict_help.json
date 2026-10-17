@@ -1,0 +1,494 @@
+{
+    "height": 1021,
+    "width": 1915,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "movie_clip_dict_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/movie_clip_dict_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment movie_clip_dict - named pieces of a movie",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "movie_clip_dict - named pieces of a movie",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "movie_clip_dict - named pieces of a movie"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1067,
+            "position_y": 45,
+            "width": 808,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "movie_clip_dict keeps named pieces of a movie, and tells movie_player to play them.\n\nA CLIP IS THREE NUMBERS:\n[start, end, speed] - the in and out frames and the rate. That is what\nmovie_player sends from its 'clip_spec' outlet when you press 'save clip'.\nThis node keeps any number of them under names.\n\nWIRING IT TO A PLAYER:\nWire the player's 'clip_spec' to 'clip_spec in', and 'command out' back to\nthe player's 'input'. That second cord is what makes the names do anything.\n\nThe working loop is: scrub to a moment, set the in and out points, press\n'save clip' on the player, type a name here and press 'store'. Do that a few\ntimes and you have a set of cues.\n\nWHAT IT SENDS:\n'play' or 'loop' sends the selected clip as a line of text:\n\n    play 240 512 1.0\n    loop 240 512 0.5\n\nwhich movie_player reads as start, end and speed. The speed always carries a\ndecimal point, which is how the player tells it from a frame number. The same\nclip goes out of 'clip_spec out' as a list.\n\nTHE MESSAGES:\nstore <name> keeps the last spec received under that name; store <name>\n<start> <end> <speed> keeps the numbers given instead, so clips can be made\nwithout a player at all - as the demo does. play <name> and loop <name> send\nthat clip; a name on its own plays it. select <name> picks it and sends its\nspec without playing. delete <name> removes it. list sends all the names out\nof 'command out'.\n\nTHE BUTTONS AND THE LIST:\n'store' keeps the last spec under the name typed in 'clip name'. Clicking a\nname in the list selects it, puts it in 'clip name' and sends its spec;\n'play', 'loop' and 'delete' act on the selected clip.\n\nKEEPING THEM:\nThe clips are saved inside the patch. 'save' and 'load' also write and read\nthe whole collection as a small JSON file, so a set of cues can outlive the\npatch and move between pieces. 'save <path>' and 'load <path>' as messages\nskip the file dialog.\n\nThe clips carry no reference to the movie. A set of clips belongs to the file\nit was made from; pointed at a different video, the player will play the same\nframe numbers of something else entirely.\n\nSYNTAX:\nmovie_clip_dict\n\nEXAMPLE:\nmovie_clip_dict\n\nINPUTS and PARAMETERS:\n\ninput:\nThe messages above, or a clip name to play.\n\nclip_spec in:\n[start, end, speed] from movie_player's 'clip_spec'. Kept until 'store'.\n\nclip name / store:\nName the last spec received, and keep it.\n\nplay / loop / delete:\nAct on the selected clip.\n\nclips:\nThe list of names.\n\nsave / load:\nThe whole collection, to and from a JSON file.\n\nOUTPUTS:\n\ncommand out:\nThe play or loop command for the player (and the names, after 'list').\n\nclip_spec out:\nThe chosen clip as [start, end, speed].\n\nRELATED:\nmovie_player, which plays what this sends, and used to share this page.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "movie_clip_dict keeps named pieces of a movie, and tells movie_player to play them.\n\nA CLIP IS THREE NUMBERS:\n[start, end, speed] - the in and out frames and the rate. That is what\nmovie_player sends from its 'clip_spec' outlet when you press 'save clip'.\nThis node keeps any number of them under names.\n\nWIRING IT TO A PLAYER:\nWire the player's 'clip_spec' to 'clip_spec in', and 'command out' back to\nthe player's 'input'. That second cord is what makes the names do anything.\n\nThe working loop is: scrub to a moment, set the in and out points, press\n'save clip' on the player, type a name here and press 'store'. Do that a few\ntimes and you have a set of cues.\n\nWHAT IT SENDS:\n'play' or 'loop' sends the selected clip as a line of text:\n\n    play 240 512 1.0\n    loop 240 512 0.5\n\nwhich movie_player reads as start, end and speed. The speed always carries a\ndecimal point, which is how the player tells it from a frame number. The same\nclip goes out of 'clip_spec out' as a list.\n\nTHE MESSAGES:\nstore <name> keeps the last spec received under that name; store <name>\n<start> <end> <speed> keeps the numbers given instead, so clips can be made\nwithout a player at all - as the demo does. play <name> and loop <name> send\nthat clip; a name on its own plays it. select <name> picks it and sends its\nspec without playing. delete <name> removes it. list sends all the names out\nof 'command out'.\n\nTHE BUTTONS AND THE LIST:\n'store' keeps the last spec under the name typed in 'clip name'. Clicking a\nname in the list selects it, puts it in 'clip name' and sends its spec;\n'play', 'loop' and 'delete' act on the selected clip.\n\nKEEPING THEM:\nThe clips are saved inside the patch. 'save' and 'load' also write and read\nthe whole collection as a small JSON file, so a set of cues can outlive the\npatch and move between pieces. 'save <path>' and 'load <path>' as messages\nskip the file dialog.\n\nThe clips carry no reference to the movie. A set of clips belongs to the file\nit was made from; pointed at a different video, the player will play the same\nframe numbers of something else entirely.\n\nSYNTAX:\nmovie_clip_dict\n\nEXAMPLE:\nmovie_clip_dict\n\nINPUTS and PARAMETERS:\n\ninput:\nThe messages above, or a clip name to play.\n\nclip_spec in:\n[start, end, speed] from movie_player's 'clip_spec'. Kept until 'store'.\n\nclip name / store:\nName the last spec received, and keep it.\n\nplay / loop / delete:\nAct on the selected clip.\n\nclips:\nThe list of names.\n\nsave / load:\nThe whole collection, to and from a JSON file.\n\nOUTPUTS:\n\ncommand out:\nThe play or loop command for the player (and the names, after 'list').\n\nclip_spec out:\nThe chosen clip as [start, end, speed].\n\nRELATED:\nmovie_player, which plays what this sends, and used to share this page."
+        },
+        "3": {
+            "name": "message",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "store intro 0 120 1.0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 112,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "store chorus 240 512 0.5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "init": "comment click these first: two clips, by hand",
+            "name": "comment",
+            "id": 422,
+            "position_x": 776,
+            "position_y": 85,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click these first: two clips, by hand",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click these first: two clips, by hand"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 175,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "play intro",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "message",
+            "id": 496,
+            "position_x": 190,
+            "position_y": 175,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "loop chorus",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 350,
+            "position_y": 175,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "list",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "movie_clip_dict",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 243,
+            "height": 347,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 776,
+            "position_y": 655,
+            "width": 261,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "or type a name and press store to\nkeep the spec that came from a player",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "or type a name and press store to\nkeep the spec that came from a player"
+        },
+        "11": {
+            "name": "string",
+            "id": 644,
+            "position_x": 420,
+            "position_y": 240,
+            "width": 330,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                }
+            }
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 776,
+            "position_y": 290,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the command: 'play 0 120 1.0' -\nwire it to movie_player's input",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the command: 'play 0 120 1.0' -\nwire it to movie_player's input"
+        },
+        "13": {
+            "name": "list",
+            "id": 718,
+            "position_x": 420,
+            "position_y": 360,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "init": "comment the same clip, as a spec",
+            "name": "comment",
+            "id": 755,
+            "position_x": 776,
+            "position_y": 410,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same clip, as a spec",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same clip, as a spec"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 617,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "command out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "clip_spec out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

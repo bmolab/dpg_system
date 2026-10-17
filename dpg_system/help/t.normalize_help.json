@@ -1,0 +1,498 @@
+{
+    "height": 781,
+    "width": 1467,
+    "position": [
+        100,
+        100
+    ],
+    "id": 866,
+    "name": "t.normalize_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.normalize_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.normalize - direction without size",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 451,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.normalize - direction without size",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.normalize - direction without size"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 629,
+            "position_y": 45,
+            "width": 798,
+            "height": 676,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.normalize divides a tensor by its length, so what is left is only its \ndirection.\n\nEvery result has length 1 - a unit vector - whatever size the input was. \nTwo inputs that point the same way but differ in size come out identical. \nThat is how you compare shapes or gestures without their intensity getting \nin the way.\n\nIT WORKS ALONG AN AXIS:\n'dim' says which axis the length is measured along, and every slice along it \nis scaled separately. On a table of rows with dim 1, each ROW becomes a unit \nvector. \n\nThe default is 1, which suits a table of rows but not a single vector: a \none-dimensional tensor has no axis 1, so the node reports an error and sends \nnothing. For a single vector set dim to 0 (as in the demo) or -1.\n\nSYNTAX:\nt.normalize\n\nEXAMPLE:\nt.normalize\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim:\nThe axis to measure length along. Default 1: each row of a table. \nUse 0 or -1 for a single vector.\n\nOUTPUTS: \n\nnormalized tensor out:\nThe same shape, with every slice along 'dim' scaled to length 1.\n\nA NOTE ON NORMALIZING NEAR ZERO:\nA vector whose length is nearly zero has no meaningful direction, yet \ndividing by that tiny length still produces a full-size unit vector - \npointing wherever the noise happened to point. When normalized data jumps \nabout during still moments, that is why: check the length first with \nt.length and gate on it. Only an exactly zero vector comes back as zeros.\n\nRELATED:\nt.length gives the length that is divided out here.\nt.cosine_similarity compares two directions without normalizing first.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 660,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.normalize divides a tensor by its length, so what is left is only its \ndirection.\n\nEvery result has length 1 - a unit vector - whatever size the input was. \nTwo inputs that point the same way but differ in size come out identical. \nThat is how you compare shapes or gestures without their intensity getting \nin the way.\n\nIT WORKS ALONG AN AXIS:\n'dim' says which axis the length is measured along, and every slice along it \nis scaled separately. On a table of rows with dim 1, each ROW becomes a unit \nvector. \n\nThe default is 1, which suits a table of rows but not a single vector: a \none-dimensional tensor has no axis 1, so the node reports an error and sends \nnothing. For a single vector set dim to 0 (as in the demo) or -1.\n\nSYNTAX:\nt.normalize\n\nEXAMPLE:\nt.normalize\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim:\nThe axis to measure length along. Default 1: each row of a table. \nUse 0 or -1 for a single vector.\n\nOUTPUTS: \n\nnormalized tensor out:\nThe same shape, with every slice along 'dim' scaled to length 1.\n\nA NOTE ON NORMALIZING NEAR ZERO:\nA vector whose length is nearly zero has no meaningful direction, yet \ndividing by that tiny length still produces a full-size unit vector - \npointing wherever the noise happened to point. When normalized data jumps \nabout during still moments, that is why: check the length first with \nt.length and gate on it. Only an exactly zero vector comes back as zeros.\n\nRELATED:\nt.length gives the length that is divided out here.\nt.cosine_similarity compares two directions without normalizing first."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.rand 8"
+        },
+        "5": {
+            "init": "comment click: eight random values",
+            "name": "comment",
+            "id": 422,
+            "position_x": 406,
+            "position_y": 310,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click: eight random values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click: eight random values"
+        },
+        "6": {
+            "name": "t.length",
+            "id": 459,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "float",
+            "id": 496,
+            "position_x": 250,
+            "position_y": 215,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment its length before",
+            "name": "comment",
+            "id": 533,
+            "position_x": 406,
+            "position_y": 265,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "its length before",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "its length before"
+        },
+        "9": {
+            "name": "t.normalize",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 138,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            }
+        },
+        "10": {
+            "init": "comment dim 0: one vector",
+            "name": "comment",
+            "id": 607,
+            "position_x": 406,
+            "position_y": 370,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "dim 0: one vector",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "dim 0: one vector"
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 460,
+            "width": 208,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment same direction, smaller values",
+            "name": "comment",
+            "id": 681,
+            "position_x": 406,
+            "position_y": 645,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "same direction, smaller values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "same direction, smaller values"
+        },
+        "13": {
+            "name": "t.length",
+            "id": 718,
+            "position_x": 250,
+            "position_y": 460,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "float",
+            "id": 755,
+            "position_x": 250,
+            "position_y": 555,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment its length after: always 1",
+            "name": "comment",
+            "id": 792,
+            "position_x": 406,
+            "position_y": 605,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "its length after: always 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "its length after: always 1"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
+            "position_x": 24,
+            "position_y": 640,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "normalized tensor out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "normalized tensor out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

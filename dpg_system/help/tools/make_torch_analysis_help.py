@@ -9,79 +9,70 @@ HM = lambda n=8, lo=0.0, hi=1.0, fmt='%.2f': {
     'min y': lo, 'max y': hi, 'update_mode': 'heat_map', 'number format': fmt}
 
 # --------------------------------------------------------------------- t.max
-body = """These find the extremes of a tensor, and the order its values are in.
+body = """These find the extremes of a tensor: how big the largest or smallest 
+value is, and where it is.
 
 THE NODES:
 
-t.max      the largest value - and where it is
+t.max      the largest value - and, along an axis, where it is
 t.min      the smallest, likewise
 t.argmax   only where the largest is
-t.argsort  the order that would sort the tensor
 
-t.max GIVES YOU BOTH, WHICH IS THE POINT:
-When a dim is set it has two outlets: the largest VALUE along that axis, and 
-the INDEX it was found at. Those answer different questions - "how big was the 
-peak" and "which joint was it" - and having both from one node means they 
-cannot disagree, which they can if you compute the value one way and the 
-position another.
+WITHOUT AN AXIS, ONE ANSWER:
+Plain t.max or t.min looks at the whole tensor and sends the single largest 
+or smallest value. Plain t.argmax sends where the largest is, counting 
+through the tensor as if it were one long row - for a table, read it row by 
+row.
 
-t.argmax is the same index without the value, for when you only want to know 
-which.
+WITH AN AXIS, ONE ANSWER PER ROW OR COLUMN, AND TWO OUTLETS:
+Give an axis as the argument - t.max 0 - and a 'dim' inlet appears, and 
+t.max and t.min grow a second outlet. One sends the extreme VALUE along that 
+axis, the other the INDEX it was found at. Those answer different questions 
+- "how big was the peak" and "which joint was it" - and getting both from 
+one node means they cannot disagree. The index is sent first.
+
+On a table with dim 1 you get the extreme of each ROW; with dim 0, of each 
+COLUMN.
+
+t.argmax is the same index without the value, for when you only want to 
+know which. There is no t.argmin.
 
 WHY AN INDEX IS OFTEN THE BETTER ANSWER:
-For a per-joint measurement, the largest value tells you the intensity and the 
-index tells you WHERE the body is working. The second is usually the more 
-informative: that something is straining hard matters less than which part of 
-it is.
-
-t.argsort GIVES AN ORDER, NOT SORTED VALUES:
-It returns the indices that WOULD sort the tensor. That is more useful than the 
-sorted values, because you can apply the same order to something else - rank 
-joints by speed, then reorder their names, or their colours, or a second 
-measurement, by that ranking.
-
-Take the first few of what it returns and you have "the three fastest joints" 
-as indices you can then look up anywhere.
-
-'stable' decides what happens to equal values: with it on, ties keep their 
-original relative order, which matters when the ranking drives something that 
-would otherwise flicker between two joints that are momentarily equal.
+For a per-joint measurement, the largest value tells you the intensity and 
+the index tells you WHERE the body is working. The second is usually the more 
+informative: that something is straining hard matters less than which part 
+of it is.
 
 SYNTAX:
-t.max
-t.argsort
+t.max <dim>
+t.min <dim>
+t.argmax <dim>
 
 EXAMPLE:
-t.argmax
+t.max 0
 
 INPUTS and PARAMETERS:
 
 tensor in:
 The tensor. Receiving it triggers the node.
 
-dim:
-Which axis to work along. Without it the whole tensor is reduced to one answer; 
-with it you get one per row or column.
-
-descending (t.argsort):
-Largest first.
-
-stable (t.argsort):
-Keep equal values in their original order.
+dim (only with an argument):
+Which axis to work along.
 
 OUTPUTS: 
 
-values and indices (t.max, t.min):
-The extreme value, and where it was.
+max tensor / min tensor:
+The extreme value - one number, or one per row or column.
+
+max indices / min indices (only with an argument):
+Where along the axis each extreme was found.
 
 max index (t.argmax):
 Just the position.
 
-output (t.argsort):
-The ordering, as indices.
-
 RELATED:
-t.take_along_dim turns those indices back into values - including values from a 
+t.argsort gives the whole ranking, not just the top.
+t.take_along_dim turns indices back into values - including values from a 
 DIFFERENT tensor, which is how you answer "at the moment each joint was 
 fastest, what was its angle"."""
 
@@ -90,23 +81,108 @@ demo = [
     {'key': 'rnd', 'init': 't.rand 8', 'pos': (30, 120), 'w': 180, 'h': 180},
     {'key': 'hm', 'init': 'heat_map', 'pos': (250, 120), 'w': 208, 'h': 148,
      'props': HM(8)},
-    {'key': 'c0', 'comment': True, 'text': 'eight values', 'pos': (30, 310)},
-    {'key': 'am', 'init': 't.argmax', 'pos': (30, 350), 'w': 180, 'h': 100},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 465), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c1', 'comment': True, 'text': 'WHERE the largest is, not what',
+    {'key': 'c0', 'comment': True, 'text': 'click: eight values', 'pos': (30, 310)},
+    {'key': 'mx', 'init': 't.max 0', 'pos': (30, 350), 'w': 180, 'h': 100},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 465), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'i1', 'init': 'int', 'pos': (170, 465), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c1', 'comment': True, 'text': 't.max 0: the largest, and where',
      'pos': (30, 515)},
-    {'key': 'as', 'init': 't.argsort', 'pos': (280, 350), 'w': 200, 'h': 140},
-    {'key': 'hm2', 'init': 'heat_map', 'pos': (280, 505), 'w': 208, 'h': 148,
-     'props': HM(8, 0.0, 8.0, '%.0f')},
-    {'key': 'c2', 'comment': True, 'text': 'the order that would sort it -\napply it to something else',
-     'pos': (280, 665)},
+    {'key': 'mn', 'init': 't.min', 'pos': (320, 350), 'w': 140, 'h': 70},
+    {'key': 'f2', 'init': 'float', 'pos': (320, 465), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c2', 'comment': True, 'text': 'plain t.min: just the value',
+     'pos': (320, 515)},
+    {'key': 'am', 'init': 't.argmax', 'pos': (30, 560), 'w': 180, 'h': 70},
+    {'key': 'i2', 'init': 'int', 'pos': (30, 645), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c3', 'comment': True, 'text': 'WHERE the largest is, not what',
+     'pos': (30, 695)},
 ]
 links = [('btn', '', 'rnd', '###input'),
          ('rnd', 'random tensor', 'hm', 'y'),
-         ('rnd', 'random tensor', 'am', 'tensor in'), ('am', 'max index', 'i1', ''),
-         ('rnd', 'random tensor', 'as', 'tensor in'), ('as', 'output', 'hm2', 'y')]
-print(build('t.max', 't.max and t.argsort - extremes and order', body, demo, links,
-            demo_width=500, text_width=800, text_height=720))
+         ('rnd', 'random tensor', 'mx', 'tensor in'),
+         ('mx', 'max tensor', 'f1', ''), ('mx', 'max indices', 'i1', ''),
+         ('rnd', 'random tensor', 'mn', 'tensor in'), ('mn', 'min tensor', 'f2', ''),
+         ('rnd', 'random tensor', 'am', 'tensor in'), ('am', 'max index', 'i2', '')]
+print(build('t.max', 't.max, t.min, t.argmax - the extremes, and where', body, demo, links,
+            demo_width=500, text_width=800, text_height=760))
+
+# ------------------------------------------------------------------ t.argsort
+body = """t.argsort gives the order that would sort a tensor - as indices, not 
+as sorted values.
+
+Entry 0 of the result is the index of the smallest value, entry 1 the index 
+of the next smallest, and so on. Tick 'descending' and it is largest first.
+
+AN ORDER IS MORE USEFUL THAN SORTED VALUES:
+You can apply the same order to something else - rank joints by speed, then 
+reorder their names, or their colours, or a second measurement, by that 
+ranking. Take the first few entries and you have "the three fastest joints" 
+as indices you can then look up anywhere. The demo applies the order back to 
+the values themselves with t.take_along_dim, which gives them sorted.
+
+TIES:
+'stable' decides what happens to equal values: with it on, ties keep their 
+original relative order. That matters when the ranking drives something that 
+would otherwise flicker between two joints that are momentarily equal.
+
+WHICH AXIS:
+With no argument it sorts along the LAST axis - each row of a table 
+separately. Give an axis as the argument - t.argsort 0 - and a 'dim' inlet 
+appears so it can be changed.
+
+SYNTAX:
+t.argsort <dim>
+
+EXAMPLE:
+t.argsort
+
+INPUTS and PARAMETERS:
+
+tensor in:
+The tensor. Receiving it triggers the node.
+
+dim (only with an argument):
+Which axis to sort along.
+
+descending:
+Largest first.
+
+stable:
+Keep equal values in their original order.
+
+OUTPUTS: 
+
+output:
+The ordering, as indices, the same shape as the input.
+
+RELATED:
+t.take_along_dim turns the indices back into values, from this tensor or 
+another.
+t.argmax is the first entry of a descending argsort, on its own."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'rnd', 'init': 't.rand 8', 'pos': (30, 120), 'w': 180, 'h': 180},
+    {'key': 'hm', 'init': 'heat_map', 'pos': (250, 120), 'w': 208, 'h': 148,
+     'props': HM(8)},
+    {'key': 'c0', 'comment': True, 'text': 'click: eight values', 'pos': (30, 310)},
+    {'key': 'as', 'init': 't.argsort', 'pos': (30, 350), 'w': 200, 'h': 140},
+    {'key': 'hm2', 'init': 'heat_map', 'pos': (30, 505), 'w': 208, 'h': 148,
+     'props': HM(8, 0.0, 8.0, '%.0f')},
+    {'key': 'c1', 'comment': True, 'text': 'the order: where the smallest is, first',
+     'pos': (30, 665)},
+    {'key': 'td', 'init': 't.take_along_dim', 'pos': (270, 350), 'w': 200, 'h': 110},
+    {'key': 'hm3', 'init': 'heat_map', 'pos': (270, 505), 'w': 208, 'h': 148,
+     'props': HM(8)},
+    {'key': 'c2', 'comment': True, 'text': 'the values, taken in that order',
+     'pos': (270, 665)},
+]
+links = [('btn', '', 'rnd', '###input'),
+         ('rnd', 'random tensor', 'hm', 'y'),
+         ('rnd', 'random tensor', 'as', 'tensor in'), ('as', 'output', 'hm2', 'y'),
+         ('as', 'output', 'td', 'indices in'),
+         ('rnd', 'random tensor', 'td', 'tensor in'), ('td', 'output', 'hm3', 'y')]
+print(build('t.argsort', 't.argsort - the order that would sort it', body, demo, links,
+            demo_width=500, text_width=790, text_height=700))
 
 # -------------------------------------------------------------------- t.histc
 body = """These describe how a tensor's values are DISTRIBUTED, rather than what they are.
