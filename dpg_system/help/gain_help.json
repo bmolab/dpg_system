@@ -93,35 +93,10 @@
             "text": "gain scales whatever passes through it by the position of its slider.\n\nIt looks like a slider, but it does not send its own value. A number, NumPy \narray or PyTorch tensor arriving at the inlet comes out multiplied by where the \nslider sits - signal in, scaled signal out. It is a volume control for data.\n\nBecause only arriving data is sent on, moving the slider by itself sends \nnothing. The new setting shows in the next value that passes through - for a \nstream, that is the next frame.\n\nSYNTAX:\ngain\ngain <max>\n\nEXAMPLE:\ngain 2.0\n\nThe slider runs from 0 to max, which is 1.0 unless given. With a max above 1 \nthe node amplifies as well as attenuates.\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to scale: numbers, NumPy arrays and PyTorch tensors. \nAnything else - text, a bang - is ignored.\n\n(the slider):\nThe multiplier.\n\nmax:\nThe top of the slider's range.\n\nOUTPUTS: \n\nout:\nThe input multiplied by the slider position.\n\nRELATED:\nslider sends its own value rather than scaling another. \n* multiplies by a number you send it, rather than one you drag."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,11 +136,11 @@
             },
             "init": "signal 3.0 sin"
         },
-        "6": {
+        "4": {
             "name": "gain",
             "id": 459,
             "position_x": 30,
-            "position_y": 230,
+            "position_y": 150,
             "width": 208,
             "height": 56,
             "visibility": "show_all",
@@ -185,11 +160,11 @@
             },
             "init": "gain 1.0"
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 496,
             "position_x": 30,
-            "position_y": 315,
+            "position_y": 235,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -248,12 +223,12 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "init": "comment drag the gain: the wave grows and shrinks",
             "name": "comment",
             "id": 533,
             "position_x": 264,
-            "position_y": 500,
+            "position_y": 420,
             "width": 260,
             "height": 30,
             "visibility": "show_all",
@@ -273,11 +248,11 @@
             },
             "comment": "drag the gain: the wave grows and shrinks"
         },
-        "9": {
+        "7": {
             "name": "close",
             "id": 570,
             "position_x": 24,
-            "position_y": 523,
+            "position_y": 443,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -294,26 +269,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -323,7 +278,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "3": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,

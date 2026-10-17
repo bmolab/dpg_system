@@ -93,35 +93,10 @@
             "text": "These nodes hold every value in an array inside limits.\n\nAnything below the minimum comes out as the minimum, anything above the maximum \nas the maximum, and everything in between passes untouched. \nIt is the array version of the clamp node.\n\nTHE NODES:\n\nnp.clip   limit at both ends\nnp.max    limit at the bottom only - the result is never less than the value \n          you set\nnp.min    limit at the top only - never more\n\nThe names read backwards until you see where they come from: np.max means \n\"take the maximum of the data and this number\", which is exactly a lower \nbound. np.min is the upper bound for the same reason.\n\nUse these to keep a signal in range before it drives something that would \nmisbehave outside it, to keep colour components inside 0 to 1, or to floor a \nvalue at zero so nothing downstream sees a negative.\n\nSYNTAX:\nnp.clip <min> <max>\n\nEXAMPLE:\nnp.clip 0.0 1.0\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array. Receiving it triggers the node. Single numbers work too.\n\nmin / max:\nThe limits.\n\nOUTPUTS: \n\nout array:\nThe limited array, in the same shape as the input.\n\nRELATED:\nclamp does the same for single values and small lists, with the limits on \ninlets so they can be driven from the patch. \nnp.where lets you do something other than flattening at the limit - replace \nout-of-range values with zero, or with a different array altogether."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,11 +136,11 @@
             },
             "init": "signal 3.0 sin"
         },
-        "6": {
+        "4": {
             "name": "np.clip",
             "id": 459,
             "position_x": 30,
-            "position_y": 232,
+            "position_y": 152,
             "width": 111,
             "height": 70,
             "visibility": "show_all",
@@ -185,11 +160,11 @@
             },
             "init": "np.clip -0.4 0.4"
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 496,
             "position_x": 30,
-            "position_y": 350,
+            "position_y": 270,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -248,12 +223,12 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 533,
             "annotation": true,
             "position_x": 264,
-            "position_y": 535,
+            "position_y": 455,
             "width": 237,
             "height": 40,
             "visibility": "show_all",
@@ -288,11 +263,11 @@
             },
             "text": "the peaks are flattened off\ndrag min and max to see it change"
         },
-        "9": {
+        "7": {
             "name": "close",
             "id": 570,
             "position_x": 24,
-            "position_y": 558,
+            "position_y": 478,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -309,26 +284,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -338,7 +293,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "3": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,

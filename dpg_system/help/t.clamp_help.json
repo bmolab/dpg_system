@@ -93,35 +93,10 @@
             "text": "These hold a tensor's values inside limits.\n\nTHE NODES:\n\nt.clamp     limit at both ends\nt.maximum   element by element, the larger of two tensors\nt.minimum   element by element, the smaller\n\nt.clamp takes a single min and max and applies them everywhere. \nt.maximum and t.minimum compare against another TENSOR, so the limit can differ \nat every position - a per-element floor or ceiling rather than one number. \nThat is the difference, and it is why both exist.\n\nUsed with a single number, t.maximum is a lower bound and t.minimum an upper \none - which reads backwards until you see where the names come from. \nt.maximum means \"the maximum of the data and this\", and that is exactly a floor.\n\nWHY YOU WANT THIS BEFORE A DIVISION:\nClamping a denominator away from zero is the usual way to keep a division from \nproducing infinity, and doing it with t.maximum against a very small number is \ncheaper and better behaved than testing for zero and branching.\n\nSYNTAX:\nt.clamp <min> <max>\n\nEXAMPLE:\nt.clamp 0.0 1.0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nmin / max (t.clamp):\nThe limits.\n\ntensor b in (t.maximum, t.minimum):\nThe tensor to compare against - or a single number applied everywhere.\n\nOUTPUTS: \n\noutput:\nThe limited tensor, in the same shape.\n\nRELATED:\nnp.clip does the same for NumPy arrays, and clamp for ordinary numbers.\n\nA NOTE ON GRADIENTS:\nWhere a value is being held at a limit, the gradient through it is zero - the \noutput stops responding to the input entirely. If you are training something \nand it has stopped learning, a clamp saturating is worth checking for."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,11 +136,11 @@
             },
             "init": "signal 3.0 sin"
         },
-        "6": {
+        "4": {
             "name": "t.clamp",
             "id": 459,
             "position_x": 30,
-            "position_y": 250,
+            "position_y": 170,
             "width": 111,
             "height": 70,
             "visibility": "show_all",
@@ -185,11 +160,11 @@
             },
             "init": "t.clamp -0.4 0.4"
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 496,
             "position_x": 30,
-            "position_y": 380,
+            "position_y": 300,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -248,12 +223,12 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 533,
             "annotation": true,
             "position_x": 264,
-            "position_y": 645,
+            "position_y": 565,
             "width": 231,
             "height": 40,
             "visibility": "show_all",
@@ -288,11 +263,11 @@
             },
             "text": "the peaks are held at the limits\ndrag min and max to move them"
         },
-        "9": {
+        "7": {
             "name": "close",
             "id": 570,
             "position_x": 24,
-            "position_y": 588,
+            "position_y": 508,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -309,26 +284,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -338,7 +293,7 @@
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "3": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,

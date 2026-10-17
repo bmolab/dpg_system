@@ -95,50 +95,6 @@
             "text": "^ raises every value that arrives at its left inlet to the power of the operand.\npow is the same node under another name.\n\n3 arriving at \"^ 2\" sends out 9.0 (3 squared); 2 arriving at \"^ 3\" sends out 8.0.\nA power of 0.5 is a square root: 9 through \"^ 0.5\" gives 3.0.\n\nIts main use is SHAPING a range from 0 to 1. 0 and 1 stay put, but everything\nbetween them bends: above 1 values sag toward 0, below 1 they bulge toward 1.\n\"^ 2.0\" on a fader gives finer control at the quiet end, which is why it is the\nusual way to make a volume control feel even. In the demo, a 0 to 1 sine wave is\nraised to a power - drag the operand either side of 1 and watch the shape change.\n\nArrays and tensors are handled element by element, keeping their shape. A single-number\noperand applies to every element; an array operand of the same shape pairs element with\nelement.\n\nSYNTAX:\n^ <operand>      or      pow <operand>\n\nEXAMPLES:\n^ 2.0     a fader curve with finer control near 0\n^ 0.5     square root\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to raise. Receiving data here triggers the calculation.\n\noperand:\nThe power. \nSetting it does not send anything - it waits for the next value at \"in\".\nIt is always a smooth floating point slider, whether or not you write a \ndecimal point, so you can drag between whole-number powers.\n\nOUTPUTS:\n\nresult:\nThe input raised to the operand. For a single number this is always a float.\n\nNO REAL ANSWER:\nA negative number raised to a fractional power, or 0 raised to a negative one,\nhas no real-number result. For a single number the node reports an error and sends\nnothing; arrays and tensors give nan (or inf) in those elements. To shape a signal\nthat crosses zero, use abs first, raise that, and restore the sign afterwards.\n\nSEE ALSO:\nsqrt, exp, log2, log10    the single-input math functions"
         },
         "3": {
-            "name": "load_bang",
-            "id": 1490,
-            "sid": 4,
-            "position_x": 28,
-            "position_y": 103,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "trigger",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "4": {
-            "init": "t 1",
-            "name": "t",
-            "id": 1497,
-            "sid": 5,
-            "position_x": 135,
-            "position_y": 104,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "trigger 0",
-                    "value": "1",
-                    "value_type": "string"
-                }
-            }
-        },
-        "5": {
             "name": "signal",
             "id": 1507,
             "sid": 6,
@@ -182,7 +138,7 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "init": "^ 2.0",
             "name": "^",
             "id": 1529,
@@ -202,7 +158,7 @@
                 }
             }
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 1539,
             "sid": 8,
@@ -266,7 +222,7 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 1590,
             "sid": 9,
@@ -306,7 +262,7 @@
             },
             "text": "a sine wave from 0 to 1, raised to a power\nabove 1 the peaks sharpen, below 1 they swell"
         },
-        "9": {
+        "7": {
             "name": "int",
             "id": 1607,
             "sid": 10,
@@ -365,7 +321,7 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "init": "^ 2",
             "name": "^",
             "id": 1643,
@@ -385,7 +341,7 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "name": "int",
             "id": 1653,
             "sid": 12,
@@ -444,7 +400,7 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment drag this number",
             "name": "comment",
             "id": 1686,
@@ -470,7 +426,7 @@
             },
             "comment": "drag this number"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 1697,
             "sid": 14,
@@ -489,7 +445,7 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "name": "float",
             "id": 1714,
             "sid": 15,
@@ -548,7 +504,7 @@
                 }
             }
         },
-        "15": {
+        "13": {
             "init": "comment operand",
             "name": "comment",
             "id": 1756,
@@ -574,7 +530,7 @@
             },
             "comment": "operand"
         },
-        "16": {
+        "14": {
             "init": "np.rand 2 2",
             "name": "np.rand",
             "id": 1783,
@@ -619,7 +575,7 @@
                 }
             }
         },
-        "17": {
+        "15": {
             "init": "np.rand 2 2",
             "name": "np.rand",
             "id": 1805,
@@ -664,7 +620,7 @@
                 }
             }
         },
-        "18": {
+        "16": {
             "name": "heat_map",
             "id": 2002,
             "sid": 28,
@@ -718,7 +674,7 @@
                 }
             }
         },
-        "19": {
+        "17": {
             "name": "heat_map",
             "id": 2078,
             "sid": 30,
@@ -772,7 +728,7 @@
                 }
             }
         },
-        "20": {
+        "18": {
             "name": "heat_map",
             "id": 2116,
             "sid": 31,
@@ -826,7 +782,7 @@
                 }
             }
         },
-        "21": {
+        "19": {
             "name": "load_bang",
             "id": 2162,
             "sid": 33,
@@ -845,7 +801,7 @@
                 }
             }
         },
-        "22": {
+        "20": {
             "init": "comment you can perform operations on numpy arrays and torch tensors as well",
             "name": "comment",
             "id": 2198,
@@ -871,7 +827,7 @@
             },
             "comment": "you can perform operations on numpy arrays and torch tensors as well"
         },
-        "23": {
+        "21": {
             "name": "^",
             "id": 2217,
             "sid": 39,
@@ -890,7 +846,7 @@
                 }
             }
         },
-        "24": {
+        "22": {
             "init": "t bang bang",
             "name": "t",
             "id": 2300,
@@ -923,26 +879,6 @@
     },
     "links": {
         "0": {
-            "source_node": 1490,
-            "source_node_name": "load_bang",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 1497,
-            "dest_node_name": "t",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 1497,
-            "source_node_name": "t",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 1507,
-            "dest_node_name": "signal",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 1507,
             "source_node_name": "signal",
             "source_output_index": 0,
@@ -952,7 +888,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "1": {
             "source_node": 1529,
             "source_node_name": "^",
             "source_output_index": 0,
@@ -962,7 +898,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "2": {
             "source_node": 1607,
             "source_node_name": "int",
             "source_output_index": 0,
@@ -972,7 +908,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
+        "3": {
             "source_node": 1643,
             "source_node_name": "^",
             "source_output_index": 0,
@@ -982,7 +918,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "6": {
+        "4": {
             "source_node": 1714,
             "source_node_name": "float",
             "source_output_index": 0,
@@ -992,7 +928,7 @@
             "dest_input_index": 1,
             "dest_input_name": "###operand"
         },
-        "7": {
+        "5": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -1002,7 +938,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "8": {
+        "6": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -1012,7 +948,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "9": {
+        "7": {
             "source_node": 1805,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -1022,7 +958,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "10": {
+        "8": {
             "source_node": 1805,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -1032,7 +968,7 @@
             "dest_input_index": 1,
             "dest_input_name": "###operand"
         },
-        "11": {
+        "9": {
             "source_node": 2217,
             "source_node_name": "^",
             "source_output_index": 0,
@@ -1042,7 +978,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "12": {
+        "10": {
             "source_node": 2162,
             "source_node_name": "load_bang",
             "source_output_index": 0,
@@ -1052,7 +988,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "13": {
+        "11": {
             "source_node": 2300,
             "source_node_name": "t",
             "source_output_index": 1,
@@ -1062,7 +998,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "14": {
+        "12": {
             "source_node": 2300,
             "source_node_name": "t",
             "source_output_index": 0,

@@ -95,50 +95,6 @@
             "text": "inverse divides 1 by each value: the reciprocal.\n\n4 comes out as 0.25, 0.25 as 4, 2 as 0.5, -2 as -0.5.\nSmall inputs give large outputs and large inputs small ones. In the demo the sine\nwave runs from 0.5 to 2.5: where it is low, its inverse shoots up to 2; where it is\nhigh, the inverse sags to 0.4. In the NumPy example bright cells turn dark and dark\nones bright.\n\nUse it to convert between a rate and a time: a frequency of 4 per second is a period\nof 0.25 seconds, and back again. Or when something should grow as another shrinks.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\ninverse cell by cell (right).\n\nSYNTAX:\ninverse\n\nEXAMPLES:\ninverse    a period in seconds from a frequency in Hz\ninverse    a zoom factor from a size\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\nOUTPUTS:\n\nresult:\nOne divided by the input.\n\nZERO:\n1 divided by 0 has no answer. A single number of 0 gives inf (infinity), and so\ndoes a 0 in an array, rather than stopping the patch. Keep inputs away from zero -\nthe demo adds 0.5 to the wave.\n\nSEE ALSO:\n!/      divide the operand by the input - \"!/ 1\" is inverse\n/       divide by an operand"
         },
         "3": {
-            "name": "load_bang",
-            "id": 1490,
-            "sid": 4,
-            "position_x": 28,
-            "position_y": 103,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "trigger",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "4": {
-            "init": "t 1",
-            "name": "t",
-            "id": 1497,
-            "sid": 5,
-            "position_x": 135,
-            "position_y": 104,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "trigger 0",
-                    "value": "1",
-                    "value_type": "string"
-                }
-            }
-        },
-        "5": {
             "name": "signal",
             "id": 1507,
             "sid": 6,
@@ -182,7 +138,7 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "init": "inverse",
             "name": "inverse",
             "id": 1529,
@@ -196,7 +152,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 1539,
             "sid": 8,
@@ -260,7 +216,7 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 1590,
             "sid": 9,
@@ -300,7 +256,7 @@
             },
             "text": "one over a sine wave from 0.5 to 2.5:\nsharp peaks where the input is small"
         },
-        "9": {
+        "7": {
             "name": "float",
             "id": 1607,
             "sid": 10,
@@ -359,7 +315,7 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "init": "inverse",
             "name": "inverse",
             "id": 1643,
@@ -373,7 +329,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "9": {
             "name": "float",
             "id": 1653,
             "sid": 12,
@@ -432,7 +388,7 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment drag this number",
             "name": "comment",
             "id": 1686,
@@ -458,7 +414,7 @@
             },
             "comment": "drag this number"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 1697,
             "sid": 14,
@@ -477,7 +433,7 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "init": "np.rand 2 2",
             "name": "np.rand",
             "id": 1783,
@@ -522,7 +478,7 @@
                 }
             }
         },
-        "15": {
+        "13": {
             "name": "heat_map",
             "id": 2002,
             "sid": 28,
@@ -576,7 +532,7 @@
                 }
             }
         },
-        "16": {
+        "14": {
             "name": "heat_map",
             "id": 2116,
             "sid": 31,
@@ -630,7 +586,7 @@
                 }
             }
         },
-        "17": {
+        "15": {
             "name": "load_bang",
             "id": 2162,
             "sid": 33,
@@ -649,7 +605,7 @@
                 }
             }
         },
-        "18": {
+        "16": {
             "init": "comment arrays and tensors go through cell by cell: the input on the left, the result on the right",
             "name": "comment",
             "id": 2198,
@@ -675,7 +631,7 @@
             },
             "comment": "arrays and tensors go through cell by cell: the input on the left, the result on the right"
         },
-        "19": {
+        "17": {
             "name": "inverse",
             "id": 2217,
             "sid": 39,
@@ -688,7 +644,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "20": {
+        "18": {
             "init": "+ 0.5",
             "name": "+",
             "id": 2301,
@@ -711,26 +667,6 @@
     },
     "links": {
         "0": {
-            "source_node": 1490,
-            "source_node_name": "load_bang",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 1497,
-            "dest_node_name": "t",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 1497,
-            "source_node_name": "t",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 1507,
-            "dest_node_name": "signal",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 1507,
             "source_node_name": "signal",
             "source_output_index": 0,
@@ -740,7 +676,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "1": {
             "source_node": 1529,
             "source_node_name": "inverse",
             "source_output_index": 0,
@@ -750,7 +686,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "2": {
             "source_node": 1607,
             "source_node_name": "float",
             "source_output_index": 0,
@@ -760,7 +696,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
+        "3": {
             "source_node": 1643,
             "source_node_name": "inverse",
             "source_output_index": 0,
@@ -770,7 +706,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "6": {
+        "4": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -780,7 +716,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "7": {
+        "5": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -790,7 +726,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "8": {
+        "6": {
             "source_node": 2217,
             "source_node_name": "inverse",
             "source_output_index": 0,
@@ -800,7 +736,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "9": {
+        "7": {
             "source_node": 2162,
             "source_node_name": "load_bang",
             "source_output_index": 0,
@@ -810,7 +746,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "10": {
+        "8": {
             "source_node": 2301,
             "source_node_name": "+",
             "source_output_index": 0,

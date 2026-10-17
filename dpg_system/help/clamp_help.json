@@ -411,48 +411,6 @@
             }
         },
         "11": {
-            "name": "load_bang",
-            "id": 2900,
-            "position_x": 33,
-            "position_y": 50,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "trigger",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "12": {
-            "init": "t 1",
-            "name": "t",
-            "id": 3032,
-            "position_x": 133,
-            "position_y": 54,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "trigger 0",
-                    "value": "1",
-                    "value_type": "string"
-                }
-            }
-        },
-        "13": {
             "init": "comment click the top button to send",
             "name": "comment",
             "id": 3088,
@@ -477,7 +435,7 @@
             },
             "comment": "click the top button to send"
         },
-        "14": {
+        "12": {
             "init": "comment click the top button to send",
             "name": "comment",
             "id": 3099,
@@ -553,26 +511,6 @@
             "dest_node_name": "clamp",
             "dest_input_index": 0,
             "dest_input_name": "in"
-        },
-        "5": {
-            "source_node": 2900,
-            "source_node_name": "load_bang",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 3032,
-            "dest_node_name": "t",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "6": {
-            "source_node": 3032,
-            "source_node_name": "t",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 776,
-            "dest_node_name": "signal",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
         }
     }
 }

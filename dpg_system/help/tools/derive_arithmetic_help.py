@@ -587,7 +587,7 @@ def derive(template, op):
         s = op['single']
         drop = SIGNAL_DEMO | NUMPY_DEMO
         for i in drop:
-            del nodes[i]
+            nodes.pop(i, None)     # the template may have no load_bang / t 1
         links = [l for l in links if l['source_node'] not in drop and l['dest_node'] not in drop]
         set_op(nodes[INT_OP], op['label'], s['init'], s['operand'])
         for nid, x, y in ((INT_IN, 29, 160), (INT_OP, 183, 156), (INT_OUT, 330, 163),

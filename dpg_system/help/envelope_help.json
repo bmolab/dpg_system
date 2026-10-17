@@ -93,35 +93,10 @@
             "text": "envelope is a curve you draw with the mouse and then read values from.\n\nDrag a point to move it. Right-click on empty space to add one, or near an \nexisting point to remove it. Shift and left-drag a segment to bend it into a \ncurve rather than a straight line.\n\nOnce drawn, there are two ways to get values out. Send an x position and it \nreports the height of the curve there - the curve acting as a lookup table, \na mapping from one range to another that you shaped by hand instead of \ncalculating. Or bang \"trigger\" and a playhead sweeps across the whole curve \nover the duration you set, sending values as it goes - the curve acting as an \nenvelope in the usual sense, a shape unfolding in time.\n\nThe first use is the more interesting one in a patch. Any relationship you can \ndescribe better by drawing than by writing - a response curve, a fade law, \na mapping from effort to brightness - can be drawn here and read continuously.\n\nSYNTAX:\nenvelope\n\nINPUTS and PARAMETERS:\n\nx:\nA position along the curve. The height there is reported immediately. \nThis is the lookup use.\n\ntrigger:\nStarts a sweep from the beginning of the curve to the end, taking \"duration\" \nto do it and sending values as it travels.\n\nduration:\nHow long a triggered sweep takes, in seconds.\n\nx max / y min / y max:\nThe ranges the curve spans, which set what the values coming out actually mean.\n\nwidth / height:\nThe size of the editor.\n\nOUTPUTS: \n\nvalue out:\nThe height of the curve - at the x you asked for, or at the playhead during \na sweep.\n\npoints out:\nThe control points themselves, so a curve can be stored, sent elsewhere, \nor restored later."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,12 +136,12 @@
             },
             "init": "signal 4.0 saw"
         },
-        "6": {
+        "4": {
             "init": "comment a ramp sweeping across the curve",
             "name": "comment",
             "id": 459,
             "position_x": 344,
-            "position_y": 215,
+            "position_y": 135,
             "width": 205,
             "height": 30,
             "visibility": "show_all",
@@ -186,11 +161,11 @@
             },
             "comment": "a ramp sweeping across the curve"
         },
-        "7": {
+        "5": {
             "name": "envelope",
             "id": 496,
             "position_x": 30,
-            "position_y": 255,
+            "position_y": 175,
             "width": 288,
             "height": 292,
             "visibility": "show_all",
@@ -224,12 +199,12 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 533,
             "annotation": true,
             "position_x": 344,
-            "position_y": 530,
+            "position_y": 450,
             "width": 274,
             "height": 40,
             "visibility": "show_all",
@@ -264,11 +239,11 @@
             },
             "text": "drag the points; right-click to add one\nshift-drag a segment to bend it"
         },
-        "9": {
+        "7": {
             "name": "plot",
             "id": 570,
             "position_x": 30,
-            "position_y": 600,
+            "position_y": 520,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -327,12 +302,12 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "init": "comment the shape you drew, read out over time",
             "name": "comment",
             "id": 607,
             "position_x": 344,
-            "position_y": 785,
+            "position_y": 705,
             "width": 242,
             "height": 30,
             "visibility": "show_all",
@@ -352,11 +327,11 @@
             },
             "comment": "the shape you drew, read out over time"
         },
-        "11": {
+        "9": {
             "name": "close",
             "id": 644,
             "position_x": 24,
-            "position_y": 808,
+            "position_y": 728,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -373,26 +348,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -402,7 +357,7 @@
             "dest_input_index": 0,
             "dest_input_name": "x"
         },
-        "3": {
+        "1": {
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,

@@ -2,22 +2,22 @@
     "height": 982,
     "width": 1470,
     "position": [
-        100,
-        100
+        513,
+        67
     ],
-    "id": 829,
+    "id": 2451,
     "name": "kalman_filter_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/kalman_filter_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 237,
+            "id": 2479,
+            "sid": 1,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
+            "visibility": "hidden",
+            "draggable": false,
             "protected": true,
             "presentation_state": "hidden",
             "properties": {
@@ -31,7 +31,8 @@
         "1": {
             "init": "comment kalman_filter - predict, then correct",
             "name": "comment",
-            "id": 274,
+            "id": 2497,
+            "sid": 2,
             "position_x": 24,
             "position_y": -4,
             "width": 463,
@@ -43,19 +44,20 @@
                 "0": {
                     "name": "text",
                     "value": "kalman_filter - predict, then correct",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "48",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "kalman_filter - predict, then correct"
         },
         "2": {
             "name": "text_block",
-            "id": 311,
+            "id": 2508,
+            "sid": 3,
             "position_x": 602,
             "position_y": 45,
             "width": 828,
@@ -67,7 +69,7 @@
                 "0": {
                     "name": "block",
                     "value": "The kalman_filter node estimates where a signal really is, given that your \nmeasurements of it are noisy.\n\nIt is not an averaging filter. It carries a model of the thing being measured - \nhere a value with a velocity and an acceleration - and on every frame it does \ntwo things: it PREDICTS where that model says the value should be now, then \nCORRECTS that prediction using the measurement that just arrived.\n\nHow much it trusts the measurement against its own prediction is the whole \nquestion, and it works that out for itself from two numbers you supply: how \nunpredictable you think the underlying thing is, and how noisy you think your \nmeasurements are. Say the measurements are bad and it leans on its model, \nproducing a smooth, confident, slightly stubborn estimate. Say they are good \nand it follows them closely.\n\nBecause it predicts before it corrects, it does not lag the way an averaging \nfilter does. On a signal that really does move smoothly, it can track with \nalmost no delay while still rejecting a lot of noise - which no amount of \ntuning will get you from the filter node.\n\nSYNTAX:\nkalman_filter\n\nEXAMPLE:\nkalman_filter\n\nINPUTS and PARAMETERS:\n\nin:\nThe measurement. Receiving data here triggers the node. A single number.\n\nprocess noise:\nHow much the underlying value is expected to wander on its own, as a 3 by 3 \nmatrix. Larger values say \"this thing genuinely moves unpredictably\", \nand the filter becomes more willing to believe the measurements.\n\nmeasurement noise:\nHow noisy each reading is, as a single number. \nLarger values say \"do not trust any one reading\", and the filter leans harder \non its own prediction - smoother, but slower to accept a real change.\n\nThese two are a ratio, not two independent settings. What matters is how big one \nis relative to the other; scaling both changes nothing.\n\nOUTPUTS: \n\nout:\nThe estimated value.\n\nkalman gain:\nHow much weight the filter is currently giving the measurement over its own \nprediction. Near zero it is ignoring your data and running on the model; \nlarger and it is following the measurements. \nWatch this while tuning - it tells you which of the two numbers above is \nactually in charge.\n\nWHEN THIS IS THE WRONG NODE:\nThe model assumes the value moves smoothly, with a velocity and acceleration \nthat change gradually. For a signal that genuinely jumps - a switch, a step, a \ncategory - the model is wrong and the filter will fight the data. \nReach for physics_filter when you want plausible motion, one_euro_filter when \nyou want responsive smoothing without a model, and this when your signal really \nis a smoothly moving quantity that you are measuring badly.",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "lock",
@@ -87,41 +89,18 @@
                 "4": {
                     "name": "text_size",
                     "value": "30",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "text": "The kalman_filter node estimates where a signal really is, given that your \nmeasurements of it are noisy.\n\nIt is not an averaging filter. It carries a model of the thing being measured - \nhere a value with a velocity and an acceleration - and on every frame it does \ntwo things: it PREDICTS where that model says the value should be now, then \nCORRECTS that prediction using the measurement that just arrived.\n\nHow much it trusts the measurement against its own prediction is the whole \nquestion, and it works that out for itself from two numbers you supply: how \nunpredictable you think the underlying thing is, and how noisy you think your \nmeasurements are. Say the measurements are bad and it leans on its model, \nproducing a smooth, confident, slightly stubborn estimate. Say they are good \nand it follows them closely.\n\nBecause it predicts before it corrects, it does not lag the way an averaging \nfilter does. On a signal that really does move smoothly, it can track with \nalmost no delay while still rejecting a lot of noise - which no amount of \ntuning will get you from the filter node.\n\nSYNTAX:\nkalman_filter\n\nEXAMPLE:\nkalman_filter\n\nINPUTS and PARAMETERS:\n\nin:\nThe measurement. Receiving data here triggers the node. A single number.\n\nprocess noise:\nHow much the underlying value is expected to wander on its own, as a 3 by 3 \nmatrix. Larger values say \"this thing genuinely moves unpredictably\", \nand the filter becomes more willing to believe the measurements.\n\nmeasurement noise:\nHow noisy each reading is, as a single number. \nLarger values say \"do not trust any one reading\", and the filter leans harder \non its own prediction - smoother, but slower to accept a real change.\n\nThese two are a ratio, not two independent settings. What matters is how big one \nis relative to the other; scaling both changes nothing.\n\nOUTPUTS: \n\nout:\nThe estimated value.\n\nkalman gain:\nHow much weight the filter is currently giving the measurement over its own \nprediction. Near zero it is ignoring your data and running on the model; \nlarger and it is following the measurements. \nWatch this while tuning - it tells you which of the two numbers above is \nactually in charge.\n\nWHEN THIS IS THE WRONG NODE:\nThe model assumes the value moves smoothly, with a velocity and acceleration \nthat change gradually. For a signal that genuinely jumps - a switch, a step, a \ncategory - the model is wrong and the filter will fight the data. \nReach for physics_filter when you want plausible motion, one_euro_filter when \nyou want responsive smoothing without a model, and this when your signal really \nis a smoothly moving quantity that you are measuring badly."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
+            "init": "signal 3.0 sin",
             "name": "signal",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 132,
+            "id": 2525,
+            "sid": 4,
+            "position_x": 29,
+            "position_y": 71,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -141,11 +120,11 @@
                 "2": {
                     "name": "shape",
                     "value": "sin",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "3": {
                     "name": "range",
-                    "value": 0.7,
+                    "value": 0.699999988079071,
                     "value_type": "float"
                 },
                 "4": {
@@ -158,74 +137,40 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            },
-            "init": "signal 3.0 sin"
-        },
-        "6": {
-            "name": "toggle",
-            "id": 459,
-            "position_x": 200,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": true,
-                    "value_type": "bool"
-                }
             }
         },
-        "7": {
-            "name": "metro",
-            "id": 496,
-            "position_x": 200,
-            "position_y": 112,
-            "width": 129,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "on",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "1": {
-                    "name": "period",
-                    "value": 16.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "units",
-                    "value": "milliseconds",
-                    "value_type": "str"
-                }
-            },
-            "init": "metro 16"
-        },
-        "8": {
+        "4": {
+            "init": "random.gauss 0.0 0.2",
             "name": "random.gauss",
-            "id": 533,
-            "position_x": 200,
-            "position_y": 192,
+            "id": 2584,
+            "sid": 7,
+            "position_x": 90,
+            "position_y": 174,
             "width": 117,
             "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "random.gauss 0.0 0.2"
+            "properties": {
+                "0": {
+                    "name": "mean",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "dev",
+                    "value": 0.20000000298023224,
+                    "value_type": "float"
+                }
+            }
         },
-        "9": {
+        "5": {
+            "init": "+ 0.0",
             "name": "+",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 232,
+            "id": 2597,
+            "sid": 8,
+            "position_x": 240,
+            "position_y": 141,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -234,18 +179,18 @@
             "properties": {
                 "0": {
                     "name": "operand",
-                    "value": 0.0,
+                    "value": 0.2530752122402191,
                     "value_type": "float"
                 }
-            },
-            "init": "+ 0.0"
+            }
         },
-        "10": {
-            "init": "comment a smooth thing, measured badly",
+        "6": {
+            "init": "comment a smooth signal measured badly",
             "name": "comment",
-            "id": 607,
-            "position_x": 355,
-            "position_y": 312,
+            "id": 2607,
+            "sid": 9,
+            "position_x": 369,
+            "position_y": 67,
             "width": 193,
             "height": 30,
             "visibility": "show_all",
@@ -254,22 +199,23 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "a smooth thing, measured badly",
-                    "value_type": "str"
+                    "value": "a smooth signal measured badly",
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
-            "comment": "a smooth thing, measured badly"
+            "comment": "a smooth signal measured badly"
         },
-        "11": {
+        "7": {
             "name": "plot",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 350,
+            "id": 2618,
+            "sid": 10,
+            "position_x": 358,
+            "position_y": 107,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -279,7 +225,7 @@
                 "0": {
                     "name": "color",
                     "value": "none",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "width",
@@ -294,12 +240,12 @@
                 "3": {
                     "name": "style",
                     "value": "line",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "4": {
                     "name": "update style",
                     "value": "input is stream of samples",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "5": {
                     "name": "sample count",
@@ -328,23 +274,24 @@
                 }
             }
         },
-        "12": {
+        "8": {
             "name": "kalman_filter",
-            "id": 681,
-            "position_x": 30,
-            "position_y": 550,
+            "id": 2664,
+            "sid": 11,
+            "position_x": 170,
+            "position_y": 385,
             "width": 113,
             "height": 84,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
+            "presentation_state": "show_all"
         },
-        "13": {
+        "9": {
             "name": "plot",
-            "id": 718,
-            "position_x": 30,
-            "position_y": 670,
+            "id": 2679,
+            "sid": 12,
+            "position_x": 360,
+            "position_y": 379,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -354,7 +301,7 @@
                 "0": {
                     "name": "color",
                     "value": "none",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "width",
@@ -369,12 +316,12 @@
                 "3": {
                     "name": "style",
                     "value": "line",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "4": {
                     "name": "update style",
                     "value": "input is stream of samples",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "5": {
                     "name": "sample count",
@@ -403,12 +350,13 @@
                 }
             }
         },
-        "14": {
+        "10": {
             "init": "comment the estimate, with very little lag",
             "name": "comment",
-            "id": 755,
+            "id": 2725,
+            "sid": 13,
             "position_x": 355,
-            "position_y": 855,
+            "position_y": 344,
             "width": 217,
             "height": 30,
             "visibility": "show_all",
@@ -418,21 +366,22 @@
                 "0": {
                     "name": "text",
                     "value": "the estimate, with very little lag",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "the estimate, with very little lag"
         },
-        "15": {
+        "11": {
             "name": "close",
-            "id": 792,
-            "position_x": 24,
-            "position_y": 878,
+            "id": 2736,
+            "sid": 14,
+            "position_x": 28,
+            "position_y": 737,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -445,98 +394,277 @@
                     "value_type": "NoneType"
                 }
             }
+        },
+        "12": {
+            "name": "tick",
+            "id": 2759,
+            "sid": 16,
+            "position_x": 30,
+            "position_y": 196,
+            "width": 33,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "13": {
+            "name": "float",
+            "id": 2767,
+            "sid": 17,
+            "position_x": 36,
+            "position_y": 489,
+            "width": 90,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.8999999761581421,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "14": {
+            "name": "float",
+            "id": 2801,
+            "sid": 18,
+            "position_x": 35,
+            "position_y": 369,
+            "width": 90,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.03999999910593033,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "15": {
+            "init": "comment higher makes smoother",
+            "name": "comment",
+            "id": 2877,
+            "sid": 21,
+            "position_x": 24,
+            "position_y": 527,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "higher makes smoother",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "higher makes smoother"
+        },
+        "16": {
+            "init": "comment closer to zero make smoother",
+            "name": "comment",
+            "id": 2896,
+            "sid": 23,
+            "position_x": 21,
+            "position_y": 334,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "closer to zero make smoother",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "closer to zero make smoother"
         }
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
+            "source_node": 2525,
+            "source_node_name": "signal",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
+            "source_output_name": "",
+            "dest_node": 2597,
+            "dest_node_name": "+",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "in"
         },
         "1": {
-            "source_node": 385,
-            "source_node_name": "",
+            "source_node": 2584,
+            "source_node_name": "random.gauss",
             "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
+            "source_output_name": "out",
+            "dest_node": 2597,
+            "dest_node_name": "+",
+            "dest_input_index": 1,
+            "dest_input_name": "###operand"
         },
         "2": {
-            "source_node": 459,
-            "source_node_name": "",
+            "source_node": 2597,
+            "source_node_name": "+",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 496,
-            "dest_node_name": "",
+            "source_output_name": "result",
+            "dest_node": 2618,
+            "dest_node_name": "plot",
             "dest_input_index": 0,
-            "dest_input_name": "on"
+            "dest_input_name": "y"
         },
         "3": {
-            "source_node": 496,
-            "source_node_name": "",
+            "source_node": 2597,
+            "source_node_name": "+",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 2664,
+            "dest_node_name": "kalman_filter",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 2664,
+            "source_node_name": "kalman_filter",
+            "source_output_index": 1,
+            "source_output_name": "out",
+            "dest_node": 2679,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 2759,
+            "source_node_name": "tick",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 533,
-            "dest_node_name": "",
+            "dest_node": 2584,
+            "dest_node_name": "random.gauss",
             "dest_input_index": 0,
             "dest_input_name": "trigger"
         },
-        "4": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "5": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "operand"
-        },
         "6": {
-            "source_node": 570,
-            "source_node_name": "",
+            "source_node": 2767,
+            "source_node_name": "float",
             "source_output_index": 0,
-            "source_output_name": "result",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
+            "source_output_name": "float out",
+            "dest_node": 2664,
+            "dest_node_name": "kalman_filter",
+            "dest_input_index": 2,
+            "dest_input_name": "measurement noise"
         },
         "7": {
-            "source_node": 570,
-            "source_node_name": "",
+            "source_node": 2801,
+            "source_node_name": "float",
             "source_output_index": 0,
-            "source_output_name": "result",
-            "dest_node": 681,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "8": {
-            "source_node": 681,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 718,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
+            "source_output_name": "float out",
+            "dest_node": 2664,
+            "dest_node_name": "kalman_filter",
+            "dest_input_index": 1,
+            "dest_input_name": "process noise"
         }
     }
 }

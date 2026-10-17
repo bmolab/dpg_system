@@ -93,35 +93,10 @@
             "text": "These nodes each apply one mathematical function to whatever arrives at their inlet.\n\nThey take no operand - the function is the whole node. \nAll of them accept single numbers, lists, NumPy arrays and PyTorch tensors, \nand an array goes through element by element, keeping its shape.\n\nTHE NODES:\n\nabs       distance from zero, discarding the sign\nsqrt      square root\nexp       e raised to the power of the input\nlog2      logarithm base 2\nlog10     logarithm base 10\ninverse   one divided by the input\nnorm      divide a vector by its own length, giving a unit vector\nround     round to the nearest whole number\nfloor     round down, towards negative\nceil      round up, towards positive\ntrunc     drop the fractional part, rounding towards zero\n\nThe four rounding nodes also exist under NumPy names - np.round, np.floor, \nnp.ceil and np.trunc - which behave identically.\n\nNote that floor, ceil and trunc differ only for negative numbers. \nGiven -2.5: floor gives -3, ceil gives -2, and trunc gives -2.\n\nSYNTAX:\n<function>\n\nEXAMPLE:\nsqrt\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\ndecimals:\nAn option that appears on the round node only. \nIt sets how many decimal places to keep. The default, 0, rounds to whole numbers.\n\nOUTPUTS: \n\nresult:\nThe result, in the same shape as the input.\n\nSTAYING ALIVE ON BAD INPUT:\nThese nodes are built not to interrupt a running patch. \nlog2 and log10 of zero or a negative number return negative infinity for single \nnumbers, and for arrays they take the logarithm of the absolute value. \ninverse of zero returns infinity. \nnorm of a single number returns 1.0, since one number has no direction."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -160,11 +135,11 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "name": "abs",
             "id": 459,
             "position_x": 30,
-            "position_y": 232,
+            "position_y": 152,
             "width": 45,
             "height": 42,
             "visibility": "show_all",
@@ -172,11 +147,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 496,
             "position_x": 200,
-            "position_y": 200,
+            "position_y": 120,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -235,12 +210,12 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "init": "comment the sine folded onto the positive side",
             "name": "comment",
             "id": 533,
             "position_x": 434,
-            "position_y": 292,
+            "position_y": 212,
             "width": 242,
             "height": 30,
             "visibility": "show_all",
@@ -260,11 +235,11 @@
             },
             "comment": "the sine folded onto the positive side"
         },
-        "9": {
+        "7": {
             "name": "signal",
             "id": 570,
             "position_x": 30,
-            "position_y": 345,
+            "position_y": 265,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -303,11 +278,11 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "name": "floor",
             "id": 607,
             "position_x": 30,
-            "position_y": 445,
+            "position_y": 365,
             "width": 45,
             "height": 42,
             "visibility": "show_all",
@@ -315,11 +290,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "9": {
             "name": "plot",
             "id": 644,
             "position_x": 200,
-            "position_y": 413,
+            "position_y": 333,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -378,12 +353,12 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment a ramp turned into a staircase",
             "name": "comment",
             "id": 681,
             "position_x": 434,
-            "position_y": 505,
+            "position_y": 425,
             "width": 193,
             "height": 30,
             "visibility": "show_all",
@@ -403,11 +378,11 @@
             },
             "comment": "a ramp turned into a staircase"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 718,
             "position_x": 24,
-            "position_y": 621,
+            "position_y": 541,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -424,36 +399,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "3": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -463,7 +408,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "4": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
@@ -473,7 +418,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "5": {
+        "2": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
@@ -483,7 +428,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "6": {
+        "3": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,

@@ -95,50 +95,6 @@
             "text": "sin gives the sine of an angle: how far up a point on a circle of radius 1 is, after\nturning that angle from the right-hand side.\n\n0 degrees comes out as 0, 30 as 0.5, 90 as 1, 180 as 0, 270 as -1, 360 as 0 again.\nEvery value is between -1 and 1. In the demo an angle ramps steadily round the circle\nfrom 0 to 360 degrees, and sin turns it into a smooth wave - one wave for each turn.\n\nUse it to turn a steady rotation into smooth back-and-forth movement, or to find the\nvertical part of a direction: a thing moving at speed s in direction a moves up by\ns x sin(a). sin and cos together turn an angle into a position on a circle.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\nsin cell by cell (right).\n\nSYNTAX:\nsin\n\nEXAMPLES:\nsin        a smooth wave from a steadily turning angle\nsin then * 100     the height of a point on a circle of radius 100\n\nINPUTS and PARAMETERS:\n\nin:\nThe angle, in degrees or radians. Receiving data here triggers the calculation.\n\ndegrees:\nA checkbox on the node, checked by default. Checked, angles are in degrees (a full\nturn is 360); unchecked, in radians (a full turn is 2 x pi, about 6.283).\n\nOUTPUTS:\n\nout:\nThe sine of the angle, between -1 and 1.\n\nDEGREES, NOT RADIANS:\nMost programming languages work in radians. These nodes default to degrees, because\nmost angles in a patch - from sensors, rotations and interfaces - arrive in degrees.\nUncheck \"degrees\" when the angle comes from something that speaks radians.\n\nSEE ALSO:\ncos     the same wave a quarter turn earlier\nasin    the reverse: the angle from a sine\nsignal  makes sine waves directly, at a frequency"
         },
         "3": {
-            "name": "load_bang",
-            "id": 1490,
-            "sid": 4,
-            "position_x": 28,
-            "position_y": 103,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "trigger",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "4": {
-            "init": "t 1",
-            "name": "t",
-            "id": 1497,
-            "sid": 5,
-            "position_x": 135,
-            "position_y": 104,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "trigger 0",
-                    "value": "1",
-                    "value_type": "string"
-                }
-            }
-        },
-        "5": {
             "name": "signal",
             "id": 1507,
             "sid": 6,
@@ -182,7 +138,7 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "init": "sin",
             "name": "sin",
             "id": 1529,
@@ -202,7 +158,7 @@
                 }
             }
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 1539,
             "sid": 8,
@@ -266,7 +222,7 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 1590,
             "sid": 9,
@@ -306,7 +262,7 @@
             },
             "text": "an angle ramping from 0 to 360 degrees, through sin:\none full wave for each turn"
         },
-        "9": {
+        "7": {
             "name": "float",
             "id": 1607,
             "sid": 10,
@@ -365,7 +321,7 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "init": "sin",
             "name": "sin",
             "id": 1643,
@@ -385,7 +341,7 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "name": "float",
             "id": 1653,
             "sid": 12,
@@ -444,7 +400,7 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment drag this number",
             "name": "comment",
             "id": 1686,
@@ -470,7 +426,7 @@
             },
             "comment": "drag this number"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 1697,
             "sid": 14,
@@ -489,7 +445,7 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "init": "np.rand 2 2",
             "name": "np.rand",
             "id": 1783,
@@ -534,7 +490,7 @@
                 }
             }
         },
-        "15": {
+        "13": {
             "name": "heat_map",
             "id": 2002,
             "sid": 28,
@@ -588,7 +544,7 @@
                 }
             }
         },
-        "16": {
+        "14": {
             "name": "heat_map",
             "id": 2116,
             "sid": 31,
@@ -642,7 +598,7 @@
                 }
             }
         },
-        "17": {
+        "15": {
             "name": "load_bang",
             "id": 2162,
             "sid": 33,
@@ -661,7 +617,7 @@
                 }
             }
         },
-        "18": {
+        "16": {
             "init": "comment arrays and tensors go through cell by cell: the input on the left, the result on the right",
             "name": "comment",
             "id": 2198,
@@ -687,7 +643,7 @@
             },
             "comment": "arrays and tensors go through cell by cell: the input on the left, the result on the right"
         },
-        "19": {
+        "17": {
             "name": "sin",
             "id": 2217,
             "sid": 39,
@@ -709,26 +665,6 @@
     },
     "links": {
         "0": {
-            "source_node": 1490,
-            "source_node_name": "load_bang",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 1497,
-            "dest_node_name": "t",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 1497,
-            "source_node_name": "t",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 1507,
-            "dest_node_name": "signal",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 1507,
             "source_node_name": "signal",
             "source_output_index": 0,
@@ -738,7 +674,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "1": {
             "source_node": 1529,
             "source_node_name": "sin",
             "source_output_index": 0,
@@ -748,7 +684,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "2": {
             "source_node": 1607,
             "source_node_name": "float",
             "source_output_index": 0,
@@ -758,7 +694,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
+        "3": {
             "source_node": 1643,
             "source_node_name": "sin",
             "source_output_index": 0,
@@ -768,7 +704,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "6": {
+        "4": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -778,7 +714,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "7": {
+        "5": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -788,7 +724,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "8": {
+        "6": {
             "source_node": 2217,
             "source_node_name": "sin",
             "source_output_index": 0,
@@ -798,7 +734,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "9": {
+        "7": {
             "source_node": 2162,
             "source_node_name": "load_bang",
             "source_output_index": 0,

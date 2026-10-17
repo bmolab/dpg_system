@@ -93,35 +93,10 @@
             "text": "The diff node reports how much the input CHANGED since the last value, \nrather than what it is.\n\nEach time a value arrives, the node subtracts the previous one and sends the \ndifference. A steady input gives zero. A rising input gives a positive number, \na falling one a negative number, and the size tells you how fast.\n\nThis turns a position into a movement, a count into a rate, an angle into a \nturning speed. It is the counterpart of accumulate, which goes the other way.\n\nIt works on single numbers, NumPy arrays and PyTorch tensors, \ndifferencing element by element.\n\nSYNTAX:\ndiff\n\nEXAMPLE:\ndiff\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to difference. Receiving data here triggers the node.\n\nabsolute:\nWhen checked, the sign is discarded and you get the SIZE of the change \nregardless of direction. Useful when you care that something moved, \nnot which way. Unchecked by default.\n\nreset:\nA button that forgets the previous value. \nThe next value to arrive is treated as a fresh start.\n\nOUTPUTS: \n\nout:\nThe change since the previous value.\n\nTWO THINGS TO WATCH:\nThe result is a change PER VALUE RECEIVED, not per second. If your source does \nnot arrive at a steady rate, the numbers do not mean a speed. \n\nDifferencing amplifies noise - it is the opposite of smoothing, and small \njitter in the input becomes large jitter in the output. It is common to put a \nfilter node after diff, or to use diff_filter, which does both at once.\n\nIf you are differencing an ANGLE, put continuous_rotation before this node, \nor the wrap from 359 to 0 will read as an enormous jump backwards."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 76,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,11 +136,11 @@
             },
             "init": "signal 3.0 sin"
         },
-        "6": {
+        "4": {
             "name": "plot",
             "id": 459,
             "position_x": 200,
-            "position_y": 108,
+            "position_y": 52,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -224,12 +199,12 @@
                 }
             }
         },
-        "7": {
+        "5": {
             "init": "comment position",
             "name": "comment",
             "id": 496,
             "position_x": 434,
-            "position_y": 288,
+            "position_y": 232,
             "width": 58,
             "height": 30,
             "visibility": "show_all",
@@ -249,11 +224,11 @@
             },
             "comment": "position"
         },
-        "8": {
+        "6": {
             "name": "diff",
             "id": 533,
             "position_x": 30,
-            "position_y": 235,
+            "position_y": 179,
             "width": 88,
             "height": 70,
             "visibility": "show_all",
@@ -261,11 +236,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "7": {
             "name": "plot",
             "id": 570,
             "position_x": 200,
-            "position_y": 325,
+            "position_y": 269,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -324,12 +299,12 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "name": "text_block",
             "id": 607,
             "annotation": true,
             "position_x": 434,
-            "position_y": 345,
+            "position_y": 289,
             "width": 292,
             "height": 40,
             "visibility": "show_all",
@@ -364,11 +339,11 @@
             },
             "text": "change: fastest where the wave is steepest\nzero at the peaks, where it turns around"
         },
-        "11": {
+        "9": {
             "name": "close",
             "id": 644,
             "position_x": 24,
-            "position_y": 533,
+            "position_y": 477,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -385,26 +360,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -414,7 +369,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "3": {
+        "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -424,7 +379,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "4": {
+        "2": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,

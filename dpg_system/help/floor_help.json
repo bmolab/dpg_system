@@ -95,50 +95,6 @@
             "text": "floor rounds each value DOWN to the whole number at or below it - towards negative.\n\n2.7 comes out as 2, 2.0 as 2, -2.5 as -3 (down, not towards zero).\nIn the demo a sine wave from -3 to 3 becomes a staircase that always sits at or\nbelow the wave.\n\nUse it to find which whole slot a value falls in: the bar of a beat counter, the\ncell of a grid from a position, the frame of an animation from a time. Unlike round,\na slot runs from its whole number up to just below the next.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\nfloor cell by cell (right).\n\nnp.floor is the same node under its NumPy name, and behaves identically.\n\nSYNTAX:\nfloor\n\nEXAMPLES:\n* 8 then floor     which of 8 slots a 0 to 1 control is in\nfloor      the whole part of a positive number\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\nOUTPUTS:\n\nresult:\nThe input rounded down. A single number comes out as a whole number.\n\nTHE FOUR ROUNDING NODES:\nThey differ in which way a fraction goes. Given -2.5 and 2.7:\nround   -2   3     to the nearest whole number\nfloor   -3   2     down, towards negative\nceil    -2   3     up, towards positive\ntrunc   -2   2     towards zero - the fraction is simply dropped\nFor positive numbers trunc is the same as floor; for negative numbers it is the\nsame as ceil.\n\nSEE ALSO:\nceil    round up\ntrunc   round towards zero\nround   round to the nearest\n//      divide and round down in one step"
         },
         "3": {
-            "name": "load_bang",
-            "id": 1490,
-            "sid": 4,
-            "position_x": 28,
-            "position_y": 103,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "trigger",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "4": {
-            "init": "t 1",
-            "name": "t",
-            "id": 1497,
-            "sid": 5,
-            "position_x": 135,
-            "position_y": 104,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "trigger 0",
-                    "value": "1",
-                    "value_type": "string"
-                }
-            }
-        },
-        "5": {
             "name": "signal",
             "id": 1507,
             "sid": 6,
@@ -182,7 +138,7 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "init": "floor",
             "name": "floor",
             "id": 1529,
@@ -196,7 +152,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 1539,
             "sid": 8,
@@ -260,7 +216,7 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 1590,
             "sid": 9,
@@ -300,7 +256,7 @@
             },
             "text": "the same sine wave rounded DOWN:\nevery step at or below the wave"
         },
-        "9": {
+        "7": {
             "name": "float",
             "id": 1607,
             "sid": 10,
@@ -359,7 +315,7 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "init": "floor",
             "name": "floor",
             "id": 1643,
@@ -373,7 +329,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "9": {
             "name": "float",
             "id": 1653,
             "sid": 12,
@@ -432,7 +388,7 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment drag this number",
             "name": "comment",
             "id": 1686,
@@ -458,7 +414,7 @@
             },
             "comment": "drag this number"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 1697,
             "sid": 14,
@@ -477,7 +433,7 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "init": "np.rand 2 2",
             "name": "np.rand",
             "id": 1783,
@@ -522,7 +478,7 @@
                 }
             }
         },
-        "15": {
+        "13": {
             "name": "heat_map",
             "id": 2002,
             "sid": 28,
@@ -576,7 +532,7 @@
                 }
             }
         },
-        "16": {
+        "14": {
             "name": "heat_map",
             "id": 2116,
             "sid": 31,
@@ -630,7 +586,7 @@
                 }
             }
         },
-        "17": {
+        "15": {
             "name": "load_bang",
             "id": 2162,
             "sid": 33,
@@ -649,7 +605,7 @@
                 }
             }
         },
-        "18": {
+        "16": {
             "init": "comment arrays and tensors go through cell by cell: the input on the left, the result on the right",
             "name": "comment",
             "id": 2198,
@@ -675,7 +631,7 @@
             },
             "comment": "arrays and tensors go through cell by cell: the input on the left, the result on the right"
         },
-        "19": {
+        "17": {
             "name": "floor",
             "id": 2217,
             "sid": 39,
@@ -691,26 +647,6 @@
     },
     "links": {
         "0": {
-            "source_node": 1490,
-            "source_node_name": "load_bang",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 1497,
-            "dest_node_name": "t",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 1497,
-            "source_node_name": "t",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 1507,
-            "dest_node_name": "signal",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 1507,
             "source_node_name": "signal",
             "source_output_index": 0,
@@ -720,7 +656,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "1": {
             "source_node": 1529,
             "source_node_name": "floor",
             "source_output_index": 0,
@@ -730,7 +666,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "2": {
             "source_node": 1607,
             "source_node_name": "float",
             "source_output_index": 0,
@@ -740,7 +676,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
+        "3": {
             "source_node": 1643,
             "source_node_name": "floor",
             "source_output_index": 0,
@@ -750,7 +686,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "6": {
+        "4": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -760,7 +696,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "7": {
+        "5": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -770,7 +706,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "8": {
+        "6": {
             "source_node": 2217,
             "source_node_name": "floor",
             "source_output_index": 0,
@@ -780,7 +716,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "9": {
+        "7": {
             "source_node": 2162,
             "source_node_name": "load_bang",
             "source_output_index": 0,

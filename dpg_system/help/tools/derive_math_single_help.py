@@ -430,7 +430,7 @@ def set_function(node, op, decimals=False):
 
 def drop(nodes, links, ids):
     for i in ids:
-        del nodes[i]
+        nodes.pop(i, None)     # the template may have no load_bang / t 1
     return [l for l in links if l['source_node'] not in ids and l['dest_node'] not in ids]
 
 

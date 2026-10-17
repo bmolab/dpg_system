@@ -93,35 +93,10 @@
             "text": "The crossfade node blends smoothly between two inputs.\n\nAt a mix of 0 you get input A alone. At 1 you get input B alone. \nAnywhere in between you get a proportional blend of the two: \nthe result is A times (1 minus mix), plus B times mix.\n\nlerp is the same node under a different name - short for linear interpolation - \nfor when you are thinking of it as moving between two values rather than \nfading between two sources.\n\nIt works on single numbers, lists, NumPy arrays and PyTorch tensors, \nand A and B do not have to be the same kind of thing: B is converted to match A. \nBlending two arrays blends them element by element.\n\nThe mix itself can be an array too. Feed an array of mix values the same shape \nas your data and each element gets its own blend - a gradient, a mask, or \na per-joint weighting.\n\nSYNTAX:\ncrossfade <mix: float>\nlerp <mix: float>\n\nEXAMPLE:\ncrossfade 0.5\n\nINPUTS and PARAMETERS:\n\nA:\nThe first input, heard alone when mix is 0. \nReceiving data here triggers the blend.\n\nB:\nThe second input, heard alone when mix is 1. \nThis inlet stores its value; it does not trigger output on its own.\n\nmix:\nThe blend position, from 0.0 to 1.0. It defaults to 0.5, an even mix. \nThe slider moves in steps of 0.01. Values outside 0 to 1 are not clipped, \nso you can push past either end to extrapolate beyond A or B.\n\nOUTPUTS: \n\nout:\nThe blended result, in the same shape as input A."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -160,11 +135,11 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "name": "signal",
             "id": 459,
             "position_x": 185,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -203,12 +178,12 @@
                 }
             }
         },
-        "7": {
+        "5": {
             "init": "comment A: a sine",
             "name": "comment",
             "id": 496,
             "position_x": 340,
-            "position_y": 215,
+            "position_y": 135,
             "width": 64,
             "height": 30,
             "visibility": "show_all",
@@ -228,12 +203,12 @@
             },
             "comment": "A: a sine"
         },
-        "8": {
+        "6": {
             "init": "comment B: a square",
             "name": "comment",
             "id": 533,
             "position_x": 340,
-            "position_y": 255,
+            "position_y": 175,
             "width": 76,
             "height": 30,
             "visibility": "show_all",
@@ -253,11 +228,11 @@
             },
             "comment": "B: a square"
         },
-        "9": {
+        "7": {
             "name": "crossfade",
             "id": 570,
             "position_x": 30,
-            "position_y": 255,
+            "position_y": 175,
             "width": 111,
             "height": 70,
             "visibility": "show_all",
@@ -272,12 +247,12 @@
             },
             "init": "crossfade 0.5"
         },
-        "10": {
+        "8": {
             "init": "comment drag mix from 0 to 1",
             "name": "comment",
             "id": 607,
             "position_x": 340,
-            "position_y": 285,
+            "position_y": 205,
             "width": 131,
             "height": 30,
             "visibility": "show_all",
@@ -297,11 +272,11 @@
             },
             "comment": "drag mix from 0 to 1"
         },
-        "11": {
+        "9": {
             "name": "plot",
             "id": 644,
             "position_x": 30,
-            "position_y": 375,
+            "position_y": 295,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -360,11 +335,11 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "name": "close",
             "id": 681,
             "position_x": 24,
-            "position_y": 583,
+            "position_y": 503,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -381,36 +356,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "3": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -420,7 +365,7 @@
             "dest_input_index": 0,
             "dest_input_name": "A"
         },
-        "4": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
@@ -430,7 +375,7 @@
             "dest_input_index": 0,
             "dest_input_name": "B"
         },
-        "5": {
+        "2": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,

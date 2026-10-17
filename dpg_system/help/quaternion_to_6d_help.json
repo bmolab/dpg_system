@@ -93,35 +93,10 @@
             "text": "The 6D representation: rotations in a form that does not jump.\n\nWHY IT EXISTS:\nEvery compact way of writing a rotation is discontinuous somewhere. \nEuler angles jump at gimbal lock. Quaternions have the double-cover problem - \nq and minus q are the SAME rotation, so a smooth motion can flip sign and \nproduce an enormous apparent change for no movement at all. Axis-angle wraps \nat a full turn.\n\nThose discontinuities are harmless when you are just applying a rotation. \nThey are ruinous when something has to LEARN or PREDICT one: a network trying \nto output a rotation cannot represent a jump smoothly, so it hedges near the \ndiscontinuity and produces wrong answers in that whole region.\n\nThe 6D form has no discontinuity. It is the first two columns of the rotation \nmatrix - six numbers - and the third column is recovered by taking their cross \nproduct. Any six numbers can be turned back into a valid rotation, so nothing \ncan be out of range and every path between two rotations is smooth.\n\nTHE NODES:\n\nquaternion_to_6d  from a quaternion\nmatrix_to_6d      from a rotation matrix\n6d_to_matrix      back to a matrix\n6d_to_axis_angle  back to an axis and angle\n6d_to_rotvec      back to a rotation vector\n\nWHEN TO USE IT:\nWhenever a rotation is the output or the target of something learned, and \nwhenever you are interpolating or filtering rotations and want no surprises. \nFor storing, applying and composing rotations, quaternions remain better - \nthey are smaller and compose directly.\n\nSYNTAX:\nquaternion_to_6d\n6d_to_matrix\n\nEXAMPLE:\nquaternion_to_6d\n\nINPUTS and PARAMETERS:\n\nquaternion / rotation matrix / 6d rotation:\nThe rotation. Receiving it triggers the conversion.\n\nOUTPUTS: \n\nThe rotation in the target form.\n\nTHE RECOVERY IS A NORMALISATION:\nGoing back from 6D does not simply reshape the numbers. The first column is \nnormalised, the second is made perpendicular to it and normalised, and the \nthird is their cross product. That is why arbitrary values still give a valid \nrotation - and it means the six numbers you get back after a round trip may not \nbe the six you put in, while describing the identical rotation."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,11 +136,11 @@
             },
             "init": "signal 5.0 saw"
         },
-        "6": {
+        "4": {
             "name": "pack",
             "id": 459,
             "position_x": 30,
-            "position_y": 232,
+            "position_y": 152,
             "width": 33,
             "height": 70,
             "visibility": "show_all",
@@ -174,11 +149,11 @@
             "properties": {},
             "init": "pack 3"
         },
-        "7": {
+        "5": {
             "name": "euler_to_quaternion",
             "id": 496,
             "position_x": 30,
-            "position_y": 350,
+            "position_y": 270,
             "width": 125,
             "height": 70,
             "visibility": "show_all",
@@ -192,11 +167,11 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "quaternion_to_6d",
             "id": 533,
             "position_x": 30,
-            "position_y": 490,
+            "position_y": 410,
             "width": 107,
             "height": 42,
             "visibility": "show_all",
@@ -204,11 +179,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "7": {
             "name": "heat_map",
             "id": 570,
             "position_x": 30,
-            "position_y": 595,
+            "position_y": 515,
             "width": 208,
             "height": 150,
             "visibility": "show_all",
@@ -257,12 +232,12 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "name": "text_block",
             "id": 607,
             "annotation": true,
             "position_x": 534,
-            "position_y": 755,
+            "position_y": 675,
             "width": 212,
             "height": 40,
             "visibility": "show_all",
@@ -297,11 +272,11 @@
             },
             "text": "six numbers, moving smoothly\nno jump anywhere in the sweep"
         },
-        "11": {
+        "9": {
             "name": "6d_to_matrix",
             "id": 644,
             "position_x": 300,
-            "position_y": 490,
+            "position_y": 410,
             "width": 101,
             "height": 42,
             "visibility": "show_all",
@@ -309,11 +284,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "12": {
+        "10": {
             "name": "heat_map",
             "id": 681,
             "position_x": 300,
-            "position_y": 595,
+            "position_y": 515,
             "width": 208,
             "height": 150,
             "visibility": "show_all",
@@ -362,12 +337,12 @@
                 }
             }
         },
-        "13": {
+        "11": {
             "init": "comment and back to a full matrix",
             "name": "comment",
             "id": 718,
             "position_x": 534,
-            "position_y": 805,
+            "position_y": 725,
             "width": 162,
             "height": 30,
             "visibility": "show_all",
@@ -387,11 +362,11 @@
             },
             "comment": "and back to a full matrix"
         },
-        "14": {
+        "12": {
             "name": "close",
             "id": 755,
             "position_x": 24,
-            "position_y": 775,
+            "position_y": 695,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -408,26 +383,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -437,7 +392,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in 1"
         },
-        "3": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
@@ -447,7 +402,7 @@
             "dest_input_index": 0,
             "dest_input_name": "xyz rotation"
         },
-        "4": {
+        "2": {
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
@@ -457,7 +412,7 @@
             "dest_input_index": 0,
             "dest_input_name": "quaternion"
         },
-        "5": {
+        "3": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
@@ -467,7 +422,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "6": {
+        "4": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
@@ -477,7 +432,7 @@
             "dest_input_index": 0,
             "dest_input_name": "6d rotation"
         },
-        "7": {
+        "5": {
             "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,

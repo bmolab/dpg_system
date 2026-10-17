@@ -93,35 +93,10 @@
             "text": "These are activation curves whose shape you can adjust.\n\nThe plain activations have one shape each. These take a parameter or two, \nwhich usually controls where the curve bends or how steeply - so the same node \ncovers a family of shapes rather than one.\n\nTHE NODES:\n\nt.nn.leaky_relu  relu, but with a gentle slope below zero instead of flat. \n                 'negative slope' sets how gentle - 0 is exactly relu\nt.nn.elu         relu above zero, an exponential curve below it that levels \n                 off at minus 'alpha' rather than at zero\nt.nn.celu        elu with the curve scaled so it stays continuous everywhere\nt.nn.hardshrink  zero within plus or minus 'lambda', unchanged outside it\nt.nn.softshrink  the same dead zone, but the surviving values are pulled \n                 towards zero by lambda rather than passed at full size\nt.nn.hardtanh    flat below 'minimum' and above 'maximum', straight between\nt.nn.rrelu       leaky_relu with a slope picked at random per element, between \n                 'lower' and 'upper'\nt.nn.softplus    a smooth approximation of relu, with no corner at all. \n                 'beta' sets how sharp the bend is\nt.nn.Threshold   below 'threshold', substitute 'replacement'; above, pass through\n\nWHY A LEAKY relu EXISTS:\nrelu's output is exactly zero for every negative input, and so is its gradient - \nso an element that has gone negative stops learning entirely, and stays \nnegative. A small slope below zero keeps a little signal alive. \nWhether it helps is arguable; that it is a response to a real failure is not.\n\nhardshrink VERSUS softshrink:\nBoth silence a band around zero. hardshrink passes what survives untouched, \nso the output JUMPS from zero to lambda the moment a value crosses. softshrink \nsubtracts lambda from what survives, so it starts from zero and grows smoothly. \nThat is the same trade the noise_gate node's \"squeeze\" option offers, and for \nthe same reason - the smooth one costs a little amplitude and removes the step.\n\nSYNTAX:\nt.nn.leaky_relu <slope>\nt.nn.hardtanh <minimum> <maximum>\n\nEXAMPLE:\nt.nn.hardtanh -1.0 1.0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nnegative slope / alpha / lambda:\nThe single parameter, named for what it means in that node.\n\nminimum / maximum (t.nn.hardtanh):\nThe two limits.\n\nlower / upper (t.nn.rrelu):\nThe range the random slope is drawn from.\n\nbeta / threshold (t.nn.softplus):\nHow sharp the bend is, and above what value the node stops bothering with the \nexponential and passes through linearly.\n\nthreshold / replacement (t.nn.Threshold):\nThe level to test against, and what to substitute below it. \nNote that this substitutes rather than clamping - the replacement need not be \nrelated to the threshold at all.\n\nOUTPUTS: \n\noutput:\nThe bent tensor, in the same shape.\n\nA NOTE ON rrelu:\nIts slope is random per element and redrawn each time, so the same input does \nnot give the same output twice. That is intended - it is a regularizer - but it \nmakes the node unsuitable as a plain shaping curve."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,11 +136,11 @@
             },
             "init": "signal 4.0 saw"
         },
-        "6": {
+        "4": {
             "name": "t.nn.leaky_relu",
             "id": 459,
             "position_x": 30,
-            "position_y": 232,
+            "position_y": 152,
             "width": 179,
             "height": 56,
             "visibility": "show_all",
@@ -173,11 +148,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 496,
             "position_x": 30,
-            "position_y": 360,
+            "position_y": 280,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -236,12 +211,12 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 533,
             "annotation": true,
             "position_x": 514,
-            "position_y": 545,
+            "position_y": 465,
             "width": 231,
             "height": 40,
             "visibility": "show_all",
@@ -276,11 +251,11 @@
             },
             "text": "drag negative slope up from zero\nat 0 it is exactly relu"
         },
-        "9": {
+        "7": {
             "name": "t.nn.hardtanh",
             "id": 570,
             "position_x": 280,
-            "position_y": 232,
+            "position_y": 152,
             "width": 136,
             "height": 70,
             "visibility": "show_all",
@@ -300,11 +275,11 @@
             },
             "init": "t.nn.hardtanh -1.0 1.0"
         },
-        "10": {
+        "8": {
             "name": "plot",
             "id": 607,
             "position_x": 280,
-            "position_y": 390,
+            "position_y": 310,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -363,12 +338,12 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "init": "comment flat outside the two limits",
             "name": "comment",
             "id": 644,
             "position_x": 514,
-            "position_y": 595,
+            "position_y": 515,
             "width": 174,
             "height": 30,
             "visibility": "show_all",
@@ -388,11 +363,11 @@
             },
             "comment": "flat outside the two limits"
         },
-        "12": {
+        "10": {
             "name": "close",
             "id": 681,
             "position_x": 24,
-            "position_y": 598,
+            "position_y": 518,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -409,26 +384,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -438,7 +393,7 @@
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "3": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
@@ -448,7 +403,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -458,7 +413,7 @@
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "5": {
+        "3": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,

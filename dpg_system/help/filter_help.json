@@ -2,22 +2,22 @@
     "height": 942,
     "width": 1485,
     "position": [
-        100,
-        100
+        513,
+        97
     ],
-    "id": 829,
+    "id": 1340,
     "name": "filter_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/filter_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 237,
+            "id": 1368,
+            "sid": 1,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
+            "visibility": "hidden",
+            "draggable": false,
             "protected": true,
             "presentation_state": "hidden",
             "properties": {
@@ -31,7 +31,8 @@
         "1": {
             "init": "comment filter - smooth a jittery stream",
             "name": "comment",
-            "id": 274,
+            "id": 1386,
+            "sid": 2,
             "position_x": 24,
             "position_y": -4,
             "width": 402,
@@ -43,19 +44,20 @@
                 "0": {
                     "name": "text",
                     "value": "filter - smooth a jittery stream",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "48",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "filter - smooth a jittery stream"
         },
         "2": {
             "name": "text_block",
-            "id": 311,
+            "id": 1397,
+            "sid": 3,
             "position_x": 637,
             "position_y": 45,
             "width": 808,
@@ -67,7 +69,7 @@
                 "0": {
                     "name": "block",
                     "value": "The filter node smooths a jittery stream by letting it change only gradually.\n\nEach time a value arrives, the node moves its own held value part of the way \ntowards it, rather than jumping straight there. The degree decides how far: \nat 0 it goes all the way, at 0.99 it barely budges. What comes out is a version \nof the input with the sudden movements worn off.\n\nsmooth is the same node under a friendlier name.\n\nThis is the cheapest useful filter there is - one multiply and one add per value - \nand it is usually the right first thing to reach for on a noisy sensor. \nIts cost is lag: the smoother you make it, the further behind the real signal \nit runs. That trade is the whole story of this node.\n\nIt works on single numbers, NumPy arrays and PyTorch tensors. \nArrays are smoothed element by element, each with its own history, \nand the node resizes itself if the array shape changes.\n\nSYNTAX:\nfilter <degree: float>\nsmooth <degree: float>\n\nEXAMPLE:\nfilter 0.9\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be smoothed. Receiving data here triggers the node.\n\ndegree:\nHow much of the old value to keep, from 0.0 to 1.0. The default is 0.9. \n\n  0.0    no smoothing at all - the input passes straight through\n  0.5    light smoothing, barely any lag\n  0.9    noticeable smoothing, noticeable lag\n  0.99   heavy smoothing; slow drifts survive, everything else is flattened\n\nValues outside 0 to 1 are clamped, so the filter cannot be made to run away.\n\nOUTPUTS: \n\nout:\nThe smoothed value.\n\nCHOOSING A DEGREE:\nThere is no correct value - it depends on how fast the thing you care about \nmoves, and how fast the noise moves. If the two are similar, no setting of this \nnode will separate them, and you need a filter that knows something more about \nthe signal. See one_euro_filter, which varies its own smoothing with speed, \nand band_pass, which selects by frequency.",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "lock",
@@ -87,41 +89,18 @@
                 "4": {
                     "name": "text_size",
                     "value": "30",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "text": "The filter node smooths a jittery stream by letting it change only gradually.\n\nEach time a value arrives, the node moves its own held value part of the way \ntowards it, rather than jumping straight there. The degree decides how far: \nat 0 it goes all the way, at 0.99 it barely budges. What comes out is a version \nof the input with the sudden movements worn off.\n\nsmooth is the same node under a friendlier name.\n\nThis is the cheapest useful filter there is - one multiply and one add per value - \nand it is usually the right first thing to reach for on a noisy sensor. \nIts cost is lag: the smoother you make it, the further behind the real signal \nit runs. That trade is the whole story of this node.\n\nIt works on single numbers, NumPy arrays and PyTorch tensors. \nArrays are smoothed element by element, each with its own history, \nand the node resizes itself if the array shape changes.\n\nSYNTAX:\nfilter <degree: float>\nsmooth <degree: float>\n\nEXAMPLE:\nfilter 0.9\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be smoothed. Receiving data here triggers the node.\n\ndegree:\nHow much of the old value to keep, from 0.0 to 1.0. The default is 0.9. \n\n  0.0    no smoothing at all - the input passes straight through\n  0.5    light smoothing, barely any lag\n  0.9    noticeable smoothing, noticeable lag\n  0.99   heavy smoothing; slow drifts survive, everything else is flattened\n\nValues outside 0 to 1 are clamped, so the filter cannot be made to run away.\n\nOUTPUTS: \n\nout:\nThe smoothed value.\n\nCHOOSING A DEGREE:\nThere is no correct value - it depends on how fast the thing you care about \nmoves, and how fast the noise moves. If the two are similar, no setting of this \nnode will separate them, and you need a filter that knows something more about \nthe signal. See one_euro_filter, which varies its own smoothing with speed, \nand band_pass, which selects by frequency."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
+            "init": "signal 4.0 sin",
             "name": "signal",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 132,
+            "id": 1414,
+            "sid": 4,
+            "position_x": 28,
+            "position_y": 75,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -141,11 +120,11 @@
                 "2": {
                     "name": "shape",
                     "value": "sin",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "3": {
                     "name": "range",
-                    "value": 0.7,
+                    "value": 0.699999988079071,
                     "value_type": "float"
                 },
                 "4": {
@@ -158,74 +137,40 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            },
-            "init": "signal 4.0 sin"
-        },
-        "6": {
-            "name": "toggle",
-            "id": 459,
-            "position_x": 185,
-            "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": true,
-                    "value_type": "bool"
-                }
             }
         },
-        "7": {
-            "name": "metro",
-            "id": 496,
-            "position_x": 185,
-            "position_y": 110,
-            "width": 129,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "on",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "1": {
-                    "name": "period",
-                    "value": 16.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "units",
-                    "value": "milliseconds",
-                    "value_type": "str"
-                }
-            },
-            "init": "metro 16"
-        },
-        "8": {
+        "4": {
+            "init": "random.gauss 0.0 0.25",
             "name": "random.gauss",
-            "id": 533,
-            "position_x": 185,
-            "position_y": 190,
+            "id": 1482,
+            "sid": 7,
+            "position_x": 84,
+            "position_y": 193,
             "width": 117,
             "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "random.gauss 0.0 0.25"
+            "properties": {
+                "0": {
+                    "name": "mean",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "dev",
+                    "value": 0.25,
+                    "value_type": "float"
+                }
+            }
         },
-        "9": {
+        "5": {
+            "init": "+ 0.0",
             "name": "+",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 232,
+            "id": 1495,
+            "sid": 8,
+            "position_x": 254,
+            "position_y": 137,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -234,18 +179,18 @@
             "properties": {
                 "0": {
                     "name": "operand",
-                    "value": 0.0,
+                    "value": -0.11743190884590149,
                     "value_type": "float"
                 }
-            },
-            "init": "+ 0.0"
+            }
         },
-        "10": {
+        "6": {
             "init": "comment a clean wave plus noise",
             "name": "comment",
-            "id": 607,
-            "position_x": 340,
-            "position_y": 310,
+            "id": 1505,
+            "sid": 9,
+            "position_x": 419,
+            "position_y": 59,
             "width": 150,
             "height": 30,
             "visibility": "show_all",
@@ -255,21 +200,22 @@
                 "0": {
                     "name": "text",
                     "value": "a clean wave plus noise",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "a clean wave plus noise"
         },
-        "11": {
+        "7": {
             "name": "plot",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 348,
+            "id": 1516,
+            "sid": 10,
+            "position_x": 392,
+            "position_y": 94,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -279,7 +225,7 @@
                 "0": {
                     "name": "color",
                     "value": "none",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "width",
@@ -294,12 +240,12 @@
                 "3": {
                     "name": "style",
                     "value": "line",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "4": {
                     "name": "update style",
                     "value": "input is stream of samples",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "5": {
                     "name": "sample count",
@@ -328,11 +274,13 @@
                 }
             }
         },
-        "12": {
+        "8": {
+            "init": "filter 0.9",
             "name": "filter",
-            "id": 681,
-            "position_x": 30,
-            "position_y": 545,
+            "id": 1567,
+            "sid": 11,
+            "position_x": 44,
+            "position_y": 388,
             "width": 129,
             "height": 56,
             "visibility": "show_all",
@@ -341,17 +289,17 @@
             "properties": {
                 "0": {
                     "name": "degree",
-                    "value": 0.9,
+                    "value": 0.7200000286102295,
                     "value_type": "float"
                 }
-            },
-            "init": "filter 0.9"
+            }
         },
-        "13": {
+        "9": {
             "name": "plot",
-            "id": 718,
-            "position_x": 30,
-            "position_y": 630,
+            "id": 1577,
+            "sid": 12,
+            "position_x": 392,
+            "position_y": 362,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -361,7 +309,7 @@
                 "0": {
                     "name": "color",
                     "value": "none",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "width",
@@ -376,12 +324,12 @@
                 "3": {
                     "name": "style",
                     "value": "line",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "4": {
                     "name": "update style",
                     "value": "input is stream of samples",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "5": {
                     "name": "sample count",
@@ -410,13 +358,14 @@
                 }
             }
         },
-        "14": {
-            "init": "comment drag degree: watch noise fall and lag grow",
+        "10": {
+            "init": "comment drag degree: as it approaches 1.0, watch noise fall and lag grow",
             "name": "comment",
-            "id": 755,
-            "position_x": 340,
-            "position_y": 565,
-            "width": 267,
+            "id": 1623,
+            "sid": 13,
+            "position_x": 64,
+            "position_y": 318,
+            "width": 402,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -424,20 +373,21 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "drag degree: watch noise fall and lag grow",
-                    "value_type": "str"
+                    "value": "drag degree: as it approaches 1.0, watch noise fall and lag grow",
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
-            "comment": "drag degree: watch noise fall and lag grow"
+            "comment": "drag degree: as it approaches 1.0, watch noise fall and lag grow"
         },
-        "15": {
+        "11": {
             "name": "close",
-            "id": 792,
+            "id": 1634,
+            "sid": 14,
             "position_x": 24,
             "position_y": 838,
             "width": 88,
@@ -452,98 +402,113 @@
                     "value_type": "NoneType"
                 }
             }
+        },
+        "12": {
+            "name": "tick",
+            "id": 1654,
+            "sid": 16,
+            "position_x": 28,
+            "position_y": 196,
+            "width": 33,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "13": {
+            "init": "comment when degree is 1.0 the output is frozen",
+            "name": "comment",
+            "id": 1795,
+            "sid": 18,
+            "position_x": 66,
+            "position_y": 337,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "when degree is 1.0 the output is frozen",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "when degree is 1.0 the output is frozen"
         }
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
+            "source_node": 1414,
+            "source_node_name": "signal",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
+            "source_output_name": "",
+            "dest_node": 1495,
+            "dest_node_name": "+",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "in"
         },
         "1": {
-            "source_node": 385,
-            "source_node_name": "",
+            "source_node": 1482,
+            "source_node_name": "random.gauss",
             "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
+            "source_output_name": "out",
+            "dest_node": 1495,
+            "dest_node_name": "+",
+            "dest_input_index": 1,
+            "dest_input_name": "###operand"
         },
         "2": {
-            "source_node": 459,
-            "source_node_name": "",
+            "source_node": 1495,
+            "source_node_name": "+",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 496,
-            "dest_node_name": "",
+            "source_output_name": "result",
+            "dest_node": 1516,
+            "dest_node_name": "plot",
             "dest_input_index": 0,
-            "dest_input_name": "on"
+            "dest_input_name": "y"
         },
         "3": {
-            "source_node": 496,
-            "source_node_name": "",
+            "source_node": 1495,
+            "source_node_name": "+",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 533,
-            "dest_node_name": "",
+            "source_output_name": "result",
+            "dest_node": 1567,
+            "dest_node_name": "filter",
             "dest_input_index": 0,
-            "dest_input_name": "trigger"
+            "dest_input_name": "in"
         },
         "4": {
-            "source_node": 422,
-            "source_node_name": "",
+            "source_node": 1567,
+            "source_node_name": "filter",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 570,
-            "dest_node_name": "",
+            "source_output_name": "out",
+            "dest_node": 1577,
+            "dest_node_name": "plot",
             "dest_input_index": 0,
-            "dest_input_name": "in"
+            "dest_input_name": "y"
         },
         "5": {
-            "source_node": 533,
-            "source_node_name": "",
+            "source_node": 1654,
+            "source_node_name": "tick",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 570,
-            "dest_node_name": "",
+            "source_output_name": "",
+            "dest_node": 1482,
+            "dest_node_name": "random.gauss",
             "dest_input_index": 0,
-            "dest_input_name": "operand"
-        },
-        "6": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "result",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "7": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "result",
-            "dest_node": 681,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "8": {
-            "source_node": 681,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 718,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
+            "dest_input_name": "trigger"
         }
     }
 }

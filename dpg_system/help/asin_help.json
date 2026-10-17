@@ -95,50 +95,6 @@
             "text": "asin is the reverse of sin: given a sine, between -1 and 1, it gives back the angle.\n\n0.5 comes out as 30 degrees, 1 as 90, 0 as 0, -1 as -90.\nThe answer is always between -90 and 90 degrees. Many angles share a sine - 30 and\n150 both have a sine of 0.5 - and asin always picks the one in that range.\n\nIn the demo a sine wave goes through asin. Undoing the sine straightens its curves,\nso the plot shows the angle itself rising and falling at a steady rate - a triangle\nwave between -90 and 90.\n\nUse it to recover an angle from a height: how far a tilt sensor's reading of\ngravity along one axis (as a fraction of 1 g) says it is tipped.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\nasin cell by cell (right).\n\nSYNTAX:\nasin\n\nEXAMPLES:\nasin       tilt in degrees from an accelerometer axis reading, in g\nasin       turn a sine wave into a triangle wave\n\nINPUTS and PARAMETERS:\n\nin:\nThe ratio. Receiving data here triggers the calculation.\n\ndegrees:\nA checkbox on the node, checked by default. Checked, angles are in degrees (a full\nturn is 360); unchecked, in radians (a full turn is 2 x pi, about 6.283).\n\nOUTPUTS:\n\nout:\nThe angle, between -90 and 90 degrees (or -pi/2 and pi/2 radians).\n\nOUT OF RANGE:\nOnly values from -1 to 1 have an arcsine. Rather than stop the patch, anything beyond\nis treated as -1 or 1, so 1.5 gives the same answer as 1.\n\nDEGREES, NOT RADIANS:\nMost programming languages work in radians. These nodes default to degrees, because\nmost angles in a patch - from sensors, rotations and interfaces - arrive in degrees.\nUncheck \"degrees\" when the angle comes from something that speaks radians.\n\nSEE ALSO:\nsin     the forward direction: the sine of an angle\nacos    the angle from a cosine\natan    the angle from a slope, and any input is valid"
         },
         "3": {
-            "name": "load_bang",
-            "id": 1490,
-            "sid": 4,
-            "position_x": 28,
-            "position_y": 103,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "trigger",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "4": {
-            "init": "t 1",
-            "name": "t",
-            "id": 1497,
-            "sid": 5,
-            "position_x": 135,
-            "position_y": 104,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "trigger 0",
-                    "value": "1",
-                    "value_type": "string"
-                }
-            }
-        },
-        "5": {
             "name": "signal",
             "id": 1507,
             "sid": 6,
@@ -182,7 +138,7 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "init": "asin",
             "name": "asin",
             "id": 1529,
@@ -202,7 +158,7 @@
                 }
             }
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 1539,
             "sid": 8,
@@ -266,7 +222,7 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 1590,
             "sid": 9,
@@ -306,7 +262,7 @@
             },
             "text": "a sine wave (-1 to 1) through asin:\nthe angle back again - a straight-sided triangle"
         },
-        "9": {
+        "7": {
             "name": "float",
             "id": 1607,
             "sid": 10,
@@ -365,7 +321,7 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "init": "asin",
             "name": "asin",
             "id": 1643,
@@ -385,7 +341,7 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "name": "float",
             "id": 1653,
             "sid": 12,
@@ -444,7 +400,7 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment drag this number",
             "name": "comment",
             "id": 1686,
@@ -470,7 +426,7 @@
             },
             "comment": "drag this number"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 1697,
             "sid": 14,
@@ -489,7 +445,7 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "init": "np.rand 2 2",
             "name": "np.rand",
             "id": 1783,
@@ -534,7 +490,7 @@
                 }
             }
         },
-        "15": {
+        "13": {
             "name": "heat_map",
             "id": 2002,
             "sid": 28,
@@ -588,7 +544,7 @@
                 }
             }
         },
-        "16": {
+        "14": {
             "name": "heat_map",
             "id": 2116,
             "sid": 31,
@@ -642,7 +598,7 @@
                 }
             }
         },
-        "17": {
+        "15": {
             "name": "load_bang",
             "id": 2162,
             "sid": 33,
@@ -661,7 +617,7 @@
                 }
             }
         },
-        "18": {
+        "16": {
             "init": "comment arrays and tensors go through cell by cell: the input on the left, the result on the right",
             "name": "comment",
             "id": 2198,
@@ -687,7 +643,7 @@
             },
             "comment": "arrays and tensors go through cell by cell: the input on the left, the result on the right"
         },
-        "19": {
+        "17": {
             "name": "asin",
             "id": 2217,
             "sid": 39,
@@ -709,26 +665,6 @@
     },
     "links": {
         "0": {
-            "source_node": 1490,
-            "source_node_name": "load_bang",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 1497,
-            "dest_node_name": "t",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 1497,
-            "source_node_name": "t",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 1507,
-            "dest_node_name": "signal",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 1507,
             "source_node_name": "signal",
             "source_output_index": 0,
@@ -738,7 +674,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "1": {
             "source_node": 1529,
             "source_node_name": "asin",
             "source_output_index": 0,
@@ -748,7 +684,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "2": {
             "source_node": 1607,
             "source_node_name": "float",
             "source_output_index": 0,
@@ -758,7 +694,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
+        "3": {
             "source_node": 1643,
             "source_node_name": "asin",
             "source_output_index": 0,
@@ -768,7 +704,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "6": {
+        "4": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -778,7 +714,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "7": {
+        "5": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -788,7 +724,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "8": {
+        "6": {
             "source_node": 2217,
             "source_node_name": "asin",
             "source_output_index": 0,
@@ -798,7 +734,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "9": {
+        "7": {
             "source_node": 2162,
             "source_node_name": "load_bang",
             "source_output_index": 0,

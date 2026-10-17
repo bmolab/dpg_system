@@ -95,50 +95,6 @@
             "text": "sqrt gives the square root of each value: the number that, multiplied by itself,\ngives the input.\n\n16 comes out as 4, 2 as 1.414, 0.25 as 0.5. Between 0 and 1 the square root is\nLARGER than the input, so in the demo the sine wave's humps swell out towards 1,\nand the NumPy example's cells all get brighter.\n\nUse it to undo a square: a distance from squared distances, a level from a power.\nIt is also a gentle curve for controls - a 0 to 1 slider through sqrt rises quickly\nthen levels off.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\nsqrt cell by cell (right).\n\nSYNTAX:\nsqrt\n\nEXAMPLES:\nsqrt       a distance from the sum of squares of x and y\nsqrt       a fast-rising curve for a 0 to 1 control\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\nOUTPUTS:\n\nresult:\nThe square root of the input, with the input's sign.\n\nNEGATIVE NUMBERS:\nA negative number has no ordinary square root. Rather than stop the patch, sqrt\nkeeps the sign: -16 gives -4. That is why the sine wave in the demo still dips below\nzero. If you need true square roots only, put abs before sqrt.\n\nSEE ALSO:\n^       raise to a power (\"^ 0.5\" is also a square root)\nabs     absolute value\nexp     e to the power of the input"
         },
         "3": {
-            "name": "load_bang",
-            "id": 1490,
-            "sid": 4,
-            "position_x": 28,
-            "position_y": 103,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "trigger",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "4": {
-            "init": "t 1",
-            "name": "t",
-            "id": 1497,
-            "sid": 5,
-            "position_x": 135,
-            "position_y": 104,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "trigger 0",
-                    "value": "1",
-                    "value_type": "string"
-                }
-            }
-        },
-        "5": {
             "name": "signal",
             "id": 1507,
             "sid": 6,
@@ -182,7 +138,7 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "init": "sqrt",
             "name": "sqrt",
             "id": 1529,
@@ -196,7 +152,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 1539,
             "sid": 8,
@@ -260,7 +216,7 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 1590,
             "sid": 9,
@@ -300,7 +256,7 @@
             },
             "text": "a sine wave through sqrt:\nfuller, squarer humps - the sign is kept"
         },
-        "9": {
+        "7": {
             "name": "float",
             "id": 1607,
             "sid": 10,
@@ -359,7 +315,7 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "init": "sqrt",
             "name": "sqrt",
             "id": 1643,
@@ -373,7 +329,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "9": {
             "name": "float",
             "id": 1653,
             "sid": 12,
@@ -432,7 +388,7 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment drag this number",
             "name": "comment",
             "id": 1686,
@@ -458,7 +414,7 @@
             },
             "comment": "drag this number"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 1697,
             "sid": 14,
@@ -477,7 +433,7 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "init": "np.rand 2 2",
             "name": "np.rand",
             "id": 1783,
@@ -522,7 +478,7 @@
                 }
             }
         },
-        "15": {
+        "13": {
             "name": "heat_map",
             "id": 2002,
             "sid": 28,
@@ -576,7 +532,7 @@
                 }
             }
         },
-        "16": {
+        "14": {
             "name": "heat_map",
             "id": 2116,
             "sid": 31,
@@ -630,7 +586,7 @@
                 }
             }
         },
-        "17": {
+        "15": {
             "name": "load_bang",
             "id": 2162,
             "sid": 33,
@@ -649,7 +605,7 @@
                 }
             }
         },
-        "18": {
+        "16": {
             "init": "comment arrays and tensors go through cell by cell: the input on the left, the result on the right",
             "name": "comment",
             "id": 2198,
@@ -675,7 +631,7 @@
             },
             "comment": "arrays and tensors go through cell by cell: the input on the left, the result on the right"
         },
-        "19": {
+        "17": {
             "name": "sqrt",
             "id": 2217,
             "sid": 39,
@@ -691,26 +647,6 @@
     },
     "links": {
         "0": {
-            "source_node": 1490,
-            "source_node_name": "load_bang",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 1497,
-            "dest_node_name": "t",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 1497,
-            "source_node_name": "t",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 1507,
-            "dest_node_name": "signal",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 1507,
             "source_node_name": "signal",
             "source_output_index": 0,
@@ -720,7 +656,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "1": {
             "source_node": 1529,
             "source_node_name": "sqrt",
             "source_output_index": 0,
@@ -730,7 +666,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "2": {
             "source_node": 1607,
             "source_node_name": "float",
             "source_output_index": 0,
@@ -740,7 +676,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
+        "3": {
             "source_node": 1643,
             "source_node_name": "sqrt",
             "source_output_index": 0,
@@ -750,7 +686,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "6": {
+        "4": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -760,7 +696,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "7": {
+        "5": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -770,7 +706,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "8": {
+        "6": {
             "source_node": 2217,
             "source_node_name": "sqrt",
             "source_output_index": 0,
@@ -780,7 +716,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "9": {
+        "7": {
             "source_node": 2162,
             "source_node_name": "load_bang",
             "source_output_index": 0,

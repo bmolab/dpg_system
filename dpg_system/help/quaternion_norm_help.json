@@ -93,35 +93,10 @@
             "text": "quaternion_norm scales quaternions back to unit length, without changing the \nrotation they describe.\n\nWHY DRIFT HAPPENS:\nOnly unit-length quaternions represent rotations. Composing many of them, or \ninterpolating, or simply accumulating floating point error over a long run, \nlets the length wander away from 1. Anything that uses a quaternion directly \nas a rotation then scales as well as rotates, so things slowly grow or shrink.\n\nThe symptom is a body that gradually inflates or deflates over minutes rather \nthan anything obviously wrong. Normalising in the chain costs nothing and \nremoves the possibility.\n\nWHAT IT ACCEPTS:\nA single quaternion (four numbers), or a whole pose as a table of quaternions, \none row of four per joint - as a list, a numpy array or a torch tensor. Each \nrow is divided by its own length. The order of the four numbers does not \nmatter, so scalar-first and scalar-last quaternions both come out right.\n\nAnything else - a flat list holding a whole pose end to end, or a batch of \nposes with more than two dimensions - passes nothing at all. A quaternion of \nall zeros has no direction to keep and comes out as not-a-number.\n\nSYNTAX:\nquaternion_norm\n\nEXAMPLE:\nquaternion_norm\n\nINPUTS and PARAMETERS:\n\nquaternions:\nOne quaternion, or a table of them with four numbers per row.\n\nOUTPUTS:\n\nnormalized:\nThe same quaternions at unit length, in the same shape. A list comes back as a \nnumpy array; a torch tensor stays a tensor.\n\nRELATED:\nquaternion_diff and quaternion_relative normalise their own results. \ntracker_align, which also works on a suit's root orientation, has its own \nhelp page."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -161,11 +136,11 @@
             },
             "init": "signal 4.0 saw"
         },
-        "6": {
+        "4": {
             "name": "pack",
             "id": 459,
             "position_x": 30,
-            "position_y": 232,
+            "position_y": 152,
             "width": 33,
             "height": 70,
             "visibility": "show_all",
@@ -174,11 +149,11 @@
             "properties": {},
             "init": "pack 3"
         },
-        "7": {
+        "5": {
             "name": "euler_to_quaternion",
             "id": 496,
             "position_x": 30,
-            "position_y": 350,
+            "position_y": 270,
             "width": 125,
             "height": 70,
             "visibility": "show_all",
@@ -192,11 +167,11 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "*",
             "id": 533,
             "position_x": 30,
-            "position_y": 490,
+            "position_y": 410,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -211,12 +186,12 @@
             },
             "init": "* 1.02"
         },
-        "9": {
+        "7": {
             "init": "comment scaled slightly: no longer unit length",
             "name": "comment",
             "id": 570,
             "position_x": 198,
-            "position_y": 570,
+            "position_y": 490,
             "width": 242,
             "height": 30,
             "visibility": "show_all",
@@ -236,11 +211,11 @@
             },
             "comment": "scaled slightly: no longer unit length"
         },
-        "10": {
+        "8": {
             "name": "quaternion_norm",
             "id": 607,
             "position_x": 30,
-            "position_y": 610,
+            "position_y": 530,
             "width": 101,
             "height": 42,
             "visibility": "show_all",
@@ -248,11 +223,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "9": {
             "name": "list",
             "id": 644,
             "position_x": 30,
-            "position_y": 715,
+            "position_y": 635,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -271,12 +246,12 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment back to length 1, same rotation",
             "name": "comment",
             "id": 681,
             "position_x": 198,
-            "position_y": 765,
+            "position_y": 685,
             "width": 199,
             "height": 30,
             "visibility": "show_all",
@@ -296,11 +271,11 @@
             },
             "comment": "back to length 1, same rotation"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 718,
             "position_x": 24,
-            "position_y": 787,
+            "position_y": 707,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -317,26 +292,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -346,7 +301,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in 1"
         },
-        "3": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
@@ -356,7 +311,7 @@
             "dest_input_index": 0,
             "dest_input_name": "xyz rotation"
         },
-        "4": {
+        "2": {
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
@@ -366,7 +321,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
+        "3": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
@@ -376,7 +331,7 @@
             "dest_input_index": 0,
             "dest_input_name": "quaternions"
         },
-        "6": {
+        "4": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,

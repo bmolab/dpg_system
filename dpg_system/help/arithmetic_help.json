@@ -95,50 +95,6 @@
             "text": "The arithmetic nodes each perform one calculation on the value arriving at the left inlet, \nusing a second value - the operand - held in the right inlet.\n\nThey all work the same way. The left inlet takes the data and triggers the calculation; \nthe right inlet holds the other number, which you can type, drag, or send from elsewhere. \nThe operand keeps its value between calculations, so you set it once and it stays put.\n\nAll of them accept single numbers, lists, NumPy arrays and PyTorch tensors. \nWhen the input and the operand are different kinds of thing, the operand is converted \nto match the input, so feeding an array into a node with a single number as its operand \napplies that number to every element.\n\nYou give the starting operand as an argument when you create the node. \nWhether you write it with a decimal point matters: \"* 2\" gives you an integer operand \nand a stepped slider, \"* 2.0\" gives you a floating point one.\n\nTHE NODES:\n\n+     add                    -     subtract\n*     multiply               /     divide\n//    divide, discarding any remainder\n%     modulo - the remainder after division\n^     raise to a power       pow   the same as ^\nmin   the smaller of the two values\nmax   the larger of the two values\nmod   the same as %\n!-    reverse subtract - operand minus input, rather than input minus operand\n!/    reverse divide - operand divided by input\nperm  permutations: the number of ordered ways to pick operand items from input items\ncombination   the number of unordered ways to make that same pick\n\nSYNTAX:\n<operator> <operand: int or float>\n\nEXAMPLE:\n* 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\noperand:\nThe second value in the calculation. \nSetting it does not itself produce output - the node waits for the next value at \"in\".\n\nOUTPUTS: \n\nresult:\nThe result of the calculation, in the same shape as the input.\n\nA NOTE ON DIVISION:\nDividing by zero does not raise an error and does not stop your patch. \nA single number is divided by 0.00000001 instead, giving a very large number; \narrays and tensors give inf. Likewise \"%\" and \"mod\" return 0 \nwhen the operand is zero. The idea is that a live patch should keep running."
         },
         "3": {
-            "name": "load_bang",
-            "id": 1490,
-            "sid": 4,
-            "position_x": 28,
-            "position_y": 103,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "trigger",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "4": {
-            "init": "t 1",
-            "name": "t",
-            "id": 1497,
-            "sid": 5,
-            "position_x": 135,
-            "position_y": 104,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "trigger 0",
-                    "value": "1",
-                    "value_type": "string"
-                }
-            }
-        },
-        "5": {
             "name": "signal",
             "id": 1507,
             "sid": 6,
@@ -182,7 +138,7 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "init": "* 0.5",
             "name": "*",
             "id": 1529,
@@ -202,7 +158,7 @@
                 }
             }
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 1539,
             "sid": 8,
@@ -266,7 +222,7 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 1590,
             "sid": 9,
@@ -306,7 +262,7 @@
             },
             "text": "a sine wave, halved\ndrag the operand and watch it change"
         },
-        "9": {
+        "7": {
             "name": "int",
             "id": 1607,
             "sid": 10,
@@ -365,7 +321,7 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "init": "+ 100",
             "name": "+",
             "id": 1643,
@@ -385,7 +341,7 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "name": "int",
             "id": 1653,
             "sid": 12,
@@ -444,7 +400,7 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment drag this number",
             "name": "comment",
             "id": 1686,
@@ -470,7 +426,7 @@
             },
             "comment": "drag this number"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 1697,
             "sid": 14,
@@ -489,7 +445,7 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "name": "float",
             "id": 1714,
             "sid": 15,
@@ -548,7 +504,7 @@
                 }
             }
         },
-        "15": {
+        "13": {
             "init": "comment operand",
             "name": "comment",
             "id": 1756,
@@ -574,7 +530,7 @@
             },
             "comment": "operand"
         },
-        "16": {
+        "14": {
             "init": "np.rand 2 2",
             "name": "np.rand",
             "id": 1783,
@@ -619,7 +575,7 @@
                 }
             }
         },
-        "17": {
+        "15": {
             "init": "np.rand 2 2",
             "name": "np.rand",
             "id": 1805,
@@ -664,7 +620,7 @@
                 }
             }
         },
-        "18": {
+        "16": {
             "name": "heat_map",
             "id": 2002,
             "sid": 28,
@@ -718,7 +674,7 @@
                 }
             }
         },
-        "19": {
+        "17": {
             "name": "heat_map",
             "id": 2078,
             "sid": 30,
@@ -772,7 +728,7 @@
                 }
             }
         },
-        "20": {
+        "18": {
             "name": "heat_map",
             "id": 2116,
             "sid": 31,
@@ -826,7 +782,7 @@
                 }
             }
         },
-        "21": {
+        "19": {
             "name": "load_bang",
             "id": 2162,
             "sid": 33,
@@ -845,7 +801,7 @@
                 }
             }
         },
-        "22": {
+        "20": {
             "init": "comment you can perform operations on numpy arrays and torch tensors as well",
             "name": "comment",
             "id": 2198,
@@ -871,7 +827,7 @@
             },
             "comment": "you can perform operations on numpy arrays and torch tensors as well"
         },
-        "23": {
+        "21": {
             "name": "*",
             "id": 2217,
             "sid": 39,
@@ -890,7 +846,7 @@
                 }
             }
         },
-        "24": {
+        "22": {
             "init": "t bang bang",
             "name": "t",
             "id": 2300,
@@ -923,26 +879,6 @@
     },
     "links": {
         "0": {
-            "source_node": 1490,
-            "source_node_name": "load_bang",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 1497,
-            "dest_node_name": "t",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 1497,
-            "source_node_name": "t",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 1507,
-            "dest_node_name": "signal",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 1507,
             "source_node_name": "signal",
             "source_output_index": 0,
@@ -952,7 +888,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "1": {
             "source_node": 1529,
             "source_node_name": "*",
             "source_output_index": 0,
@@ -962,7 +898,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "2": {
             "source_node": 1607,
             "source_node_name": "int",
             "source_output_index": 0,
@@ -972,7 +908,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
+        "3": {
             "source_node": 1643,
             "source_node_name": "+",
             "source_output_index": 0,
@@ -982,7 +918,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "6": {
+        "4": {
             "source_node": 1714,
             "source_node_name": "float",
             "source_output_index": 0,
@@ -992,7 +928,7 @@
             "dest_input_index": 1,
             "dest_input_name": "###operand"
         },
-        "7": {
+        "5": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -1002,7 +938,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "8": {
+        "6": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -1012,7 +948,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "9": {
+        "7": {
             "source_node": 1805,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -1022,7 +958,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "10": {
+        "8": {
             "source_node": 1805,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -1032,7 +968,7 @@
             "dest_input_index": 1,
             "dest_input_name": "###operand"
         },
-        "11": {
+        "9": {
             "source_node": 2217,
             "source_node_name": "*",
             "source_output_index": 0,
@@ -1042,7 +978,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "12": {
+        "10": {
             "source_node": 2162,
             "source_node_name": "load_bang",
             "source_output_index": 0,
@@ -1052,7 +988,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "13": {
+        "11": {
             "source_node": 2300,
             "source_node_name": "t",
             "source_output_index": 1,
@@ -1062,7 +998,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "14": {
+        "12": {
             "source_node": 2300,
             "source_node_name": "t",
             "source_output_index": 0,

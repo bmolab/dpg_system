@@ -93,35 +93,10 @@
             "text": "The sample_hold node either passes a value through or freezes the last one it saw.\n\nIt works like a camera shutter on a stream of data. \nWhile it is in \"sample\" mode, every value that arrives is stored and sent straight out. \nThe moment you switch it to \"hold\" mode, it stops looking at the input \nand keeps sending the last value it captured, over and over, for as long as data keeps arriving.\n\nNote that the node only sends something when a value arrives at its input. \nHolding does not stop the output \u2014 it stops the output from changing. \n\nYou use this node to freeze a reading at an interesting moment, to latch a sensor value \nso that a later part of the patch can keep working with it, or to hold a control steady \nwhile you adjust something else.\n\nSYNTAX:\nsample_hold\n\nEXAMPLE:\nsample_hold\n\nINPUTS and PARAMETERS:\n\nsample/hold:\nThe mode switch. \nWhen checked, the node samples: incoming values pass through and are remembered. \nWhen unchecked, the node holds: incoming values are ignored and the stored value is sent instead.\n\ninput:\nThe data to be sampled. \nReceiving data here triggers the node. It accepts any kind of data - \nnumbers, lists, strings, NumPy arrays or PyTorch tensors.\n\nOUTPUTS: \n\nout:\nThe sampled value. \nIn sample mode this is whatever just arrived. \nIn hold mode this is the value that was stored when the mode last changed. \nBefore anything has been sampled, the stored value is 0."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -155,12 +130,12 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "init": "comment a slow sine wave",
             "name": "comment",
             "id": 459,
             "position_x": 484,
-            "position_y": 215,
+            "position_y": 135,
             "width": 107,
             "height": 30,
             "visibility": "show_all",
@@ -180,11 +155,11 @@
             },
             "comment": "a slow sine wave"
         },
-        "7": {
+        "5": {
             "name": "toggle",
             "id": 496,
             "position_x": 30,
-            "position_y": 262,
+            "position_y": 182,
             "width": 45,
             "height": 42,
             "visibility": "show_all",
@@ -198,12 +173,12 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "init": "comment uncheck to freeze the value",
             "name": "comment",
             "id": 533,
             "position_x": 484,
-            "position_y": 268,
+            "position_y": 188,
             "width": 174,
             "height": 30,
             "visibility": "show_all",
@@ -223,11 +198,11 @@
             },
             "comment": "uncheck to freeze the value"
         },
-        "9": {
+        "7": {
             "name": "sample_hold",
             "id": 570,
             "position_x": 30,
-            "position_y": 318,
+            "position_y": 238,
             "width": 92,
             "height": 56,
             "visibility": "show_all",
@@ -241,11 +216,11 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "name": "plot",
             "id": 607,
             "position_x": 250,
-            "position_y": 300,
+            "position_y": 220,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -304,11 +279,11 @@
                 }
             }
         },
-        "11": {
+        "9": {
             "name": "close",
             "id": 644,
             "position_x": 24,
-            "position_y": 508,
+            "position_y": 428,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -325,26 +300,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -354,7 +309,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "3": {
+        "1": {
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
@@ -364,7 +319,7 @@
             "dest_input_index": 0,
             "dest_input_name": "sample/hold"
         },
-        "4": {
+        "2": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,

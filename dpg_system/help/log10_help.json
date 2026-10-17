@@ -95,50 +95,6 @@
             "text": "log10 asks: 10 to the power of what gives this value? It is the logarithm base 10.\n\n1000 comes out as 3, 100 as 2, 1 as 0, 0.1 as -1. It counts the digits, roughly:\neach factor of TEN in the input adds 1 to the output. In the demo the sine wave runs\nfrom 0.1 to 10.1; log10 spreads the stretch from 0.1 to 1 over as much of the plot as\nthe stretch from 1 to 10.\n\nUse it to tame a value that spans many sizes - a sound level, a distance, a count -\ninto an even scale. Decibels are 20 times the log10 of an amplitude ratio.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\nlog10 cell by cell (right).\n\nSYNTAX:\nlog10\n\nEXAMPLES:\nlog10 then * 20     decibels from an amplitude ratio\nlog10      how many digits a count has\n\nINPUTS and PARAMETERS:\n\nin:\nThe data to be operated on. Receiving data here triggers the calculation.\n\nOUTPUTS:\n\nresult:\nThe base 10 logarithm of the input.\n\nZERO AND NEGATIVE NUMBERS:\nThese have no logarithm. A single number of zero or less gives -inf (negative\ninfinity) rather than stopping the patch. Lists, arrays and tensors take the\nlogarithm of the absolute value instead, so -100 gives 2 and only 0 gives -inf.\nThe demo adds 0.1 to the wave so it never reaches zero.\n\nSEE ALSO:\nlog2    logarithm base 2\nexp     e to the power of the input\n^       raise to a power"
         },
         "3": {
-            "name": "load_bang",
-            "id": 1490,
-            "sid": 4,
-            "position_x": 28,
-            "position_y": 103,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "trigger",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "4": {
-            "init": "t 1",
-            "name": "t",
-            "id": 1497,
-            "sid": 5,
-            "position_x": 135,
-            "position_y": 104,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "trigger 0",
-                    "value": "1",
-                    "value_type": "string"
-                }
-            }
-        },
-        "5": {
             "name": "signal",
             "id": 1507,
             "sid": 6,
@@ -182,7 +138,7 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "init": "log10",
             "name": "log10",
             "id": 1529,
@@ -196,7 +152,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "7": {
+        "5": {
             "name": "plot",
             "id": 1539,
             "sid": 8,
@@ -260,7 +216,7 @@
                 }
             }
         },
-        "8": {
+        "6": {
             "name": "text_block",
             "id": 1590,
             "sid": 9,
@@ -300,7 +256,7 @@
             },
             "text": "log10 of a sine wave from 0.1 to 10.1:\n-1 to 1, the small values spread out"
         },
-        "9": {
+        "7": {
             "name": "float",
             "id": 1607,
             "sid": 10,
@@ -359,7 +315,7 @@
                 }
             }
         },
-        "10": {
+        "8": {
             "init": "log10",
             "name": "log10",
             "id": 1643,
@@ -373,7 +329,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "9": {
             "name": "float",
             "id": 1653,
             "sid": 12,
@@ -432,7 +388,7 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "init": "comment drag this number",
             "name": "comment",
             "id": 1686,
@@ -458,7 +414,7 @@
             },
             "comment": "drag this number"
         },
-        "13": {
+        "11": {
             "name": "close",
             "id": 1697,
             "sid": 14,
@@ -477,7 +433,7 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "init": "np.rand 2 2",
             "name": "np.rand",
             "id": 1783,
@@ -522,7 +478,7 @@
                 }
             }
         },
-        "15": {
+        "13": {
             "name": "heat_map",
             "id": 2002,
             "sid": 28,
@@ -576,7 +532,7 @@
                 }
             }
         },
-        "16": {
+        "14": {
             "name": "heat_map",
             "id": 2116,
             "sid": 31,
@@ -630,7 +586,7 @@
                 }
             }
         },
-        "17": {
+        "15": {
             "name": "load_bang",
             "id": 2162,
             "sid": 33,
@@ -649,7 +605,7 @@
                 }
             }
         },
-        "18": {
+        "16": {
             "init": "comment arrays and tensors go through cell by cell: the input on the left, the result on the right",
             "name": "comment",
             "id": 2198,
@@ -675,7 +631,7 @@
             },
             "comment": "arrays and tensors go through cell by cell: the input on the left, the result on the right"
         },
-        "19": {
+        "17": {
             "name": "log10",
             "id": 2217,
             "sid": 39,
@@ -688,7 +644,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "20": {
+        "18": {
             "init": "+ 0.1",
             "name": "+",
             "id": 2301,
@@ -711,26 +667,6 @@
     },
     "links": {
         "0": {
-            "source_node": 1490,
-            "source_node_name": "load_bang",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 1497,
-            "dest_node_name": "t",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 1497,
-            "source_node_name": "t",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 1507,
-            "dest_node_name": "signal",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 1507,
             "source_node_name": "signal",
             "source_output_index": 0,
@@ -740,7 +676,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "1": {
             "source_node": 1529,
             "source_node_name": "log10",
             "source_output_index": 0,
@@ -750,7 +686,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "4": {
+        "2": {
             "source_node": 1607,
             "source_node_name": "float",
             "source_output_index": 0,
@@ -760,7 +696,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
+        "3": {
             "source_node": 1643,
             "source_node_name": "log10",
             "source_output_index": 0,
@@ -770,7 +706,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "6": {
+        "4": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -780,7 +716,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "7": {
+        "5": {
             "source_node": 1783,
             "source_node_name": "np.rand",
             "source_output_index": 0,
@@ -790,7 +726,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "8": {
+        "6": {
             "source_node": 2217,
             "source_node_name": "log10",
             "source_output_index": 0,
@@ -800,7 +736,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "9": {
+        "7": {
             "source_node": 2162,
             "source_node_name": "load_bang",
             "source_output_index": 0,
@@ -810,7 +746,7 @@
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "10": {
+        "8": {
             "source_node": 2301,
             "source_node_name": "+",
             "source_output_index": 0,

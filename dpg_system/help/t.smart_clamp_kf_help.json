@@ -93,31 +93,6 @@
             "text": "These are Kalman filters that try to tell a glitch from a fast movement.\n\nAn ordinary smoothing filter cannot. Both look like a large sudden change, and\nany setting that removes the glitch also removes the movement. These four\nattack that problem from different directions, and which is right depends on\nwhat your bad frames actually look like.\n\nTHE NODES:\n\nt.smart_clamp_kf        limits how far one frame may correct the estimate\nt.smart_clamp_quat_kf   the same, for quaternions\nt.persistence_quat_kf   holds its estimate through brief disagreement\nt.hybrid_quat_kf        blends between a damping and a responsive mode\nt.jerk_aware_quat_kf    classifies motion by the coherence of its jerk\n\nSMART CLAMPING LIMITS THE CORRECTION, NOT THE SIGNAL:\nA Kalman filter works by correcting its prediction toward the measurement. \nSmart clamping caps the MAGNITUDE of that correction per frame - so a \none-frame glitch cannot teleport the filter's state however wrong the reading \nis, while a genuinely fast movement, which arrives as many consecutive large \ncorrections, still tracks because each one is individually plausible.\n\nThat is the useful asymmetry: a glitch is one big step, real motion is a run of \nthem.\n\nJERK-AWARE USES COHERENCE, WHICH IS THE SHARPEST TEST:\nIt looks at angular jerk over time and asks whether the change is COHERENT. \nA real movement accelerates, sustains and decelerates - its jerk has structure. \nA sensor spike does not; it is one frame unrelated to its neighbours.\n\nWhen it decides a frame is a spike, it does not simply hold - it extrapolates \nfrom the last good pose using SMOOTHED velocity. Using the single-frame velocity \nwould carry the noise into the extrapolation, which is the mistake this avoids.\n\nHYBRID BLENDS RATHER THAN SWITCHES:\nIt runs a damping mode and a responsive mode and blends between them \ncontinuously. Its 'alphas' outlet reports the blend, which is worth watching: \nit tells you what the filter thinks is happening, and a blend that is pinned at \none end means the transition ranges are set wrong.\n\nBlending rather than switching matters. A filter that flips between two modes \nproduces a discontinuity at every flip, which is a new artefact in place of the \nold one.\n\nTHESE FILTER EVERY JOINT AT ONCE:\nAll of these are vectorised over parallel streams. A tensor of shape\n[joints, components] is one time-step for the whole body, and the filter keeps\nindependent state for every stream. That is why they are torch nodes rather\nthan one filter per joint: twenty-two filters running as one operation.\n\nSend a whole pose, get a whole filtered pose back.\n\nWHY QUATERNIONS NEED THEIR OWN FILTERS:\nYou cannot filter a quaternion by smoothing its four numbers separately. They\nare not independent - a valid rotation has unit length - so the average of two\nquaternions is not a rotation at all, and the result has to be renormalised\ninto something that is not the rotation you wanted. The double-cover problem\nmakes it worse: q and -q are the same rotation, so a sign flip looks like an\nenormous jump to anything treating the components as numbers.\n\nThe quaternion versions of these filters work in the rotation's own terms\ninstead, so the result is always a valid rotation and a sign flip is not an\nevent.\n\nSYNTAX:\nt.smart_clamp_kf\nt.jerk_aware_quat_kf\n\nEXAMPLE:\nt.smart_clamp_quat_kf\n\nINPUTS and PARAMETERS:\n\ninput:\nThe stream. A tensor of parallel streams, or a pose.\n\ndt:\nThe time between frames, in seconds. Get this right - every rate the filter\nreasons about is derived from it.\n\nresponsiveness / smoothness:\nThe basic trade. As always, more of one is less of the other.\n\njerk_threshold / accel_limit (t.jerk_aware_quat_kf):\nWhat counts as an implausible change.\n\nDamp Smoothness / Damp Responsiveness / Resp Smoothness (t.hybrid_quat_kf):\nThe two modes it blends between.\n\nreset:\nClear the filter's state and start again.\n\nOUTPUTS: \n\nfiltered:\nThe result, in the same shape as the input.\n\nalphas:\nWhat the filter is doing - the blend between modes. Watch this while tuning.\n\nTUNE AGAINST REAL BAD FRAMES:\nNone of these can be set sensibly against clean data, because their whole\npurpose only engages when something goes wrong. Record a take containing the\nfailure you are trying to remove, and tune against that - with the alphas\noutlet plotted, so you can see the filter engaging rather than guessing."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
@@ -161,7 +136,7 @@
             },
             "init": "signal 3.0 sin"
         },
-        "6": {
+        "4": {
             "name": "toggle",
             "id": 459,
             "position_x": 200,
@@ -179,7 +154,7 @@
                 }
             }
         },
-        "7": {
+        "5": {
             "name": "metro",
             "id": 496,
             "position_x": 200,
@@ -208,7 +183,7 @@
             },
             "init": "metro 16"
         },
-        "8": {
+        "6": {
             "name": "random.gauss",
             "id": 533,
             "position_x": 200,
@@ -221,7 +196,7 @@
             "properties": {},
             "init": "random.gauss 0.0 0.3"
         },
-        "9": {
+        "7": {
             "name": "+",
             "id": 570,
             "position_x": 30,
@@ -240,7 +215,7 @@
             },
             "init": "+ 0.0"
         },
-        "10": {
+        "8": {
             "init": "comment a clean wave with occasional spikes",
             "name": "comment",
             "id": 607,
@@ -265,7 +240,7 @@
             },
             "comment": "a clean wave with occasional spikes"
         },
-        "11": {
+        "9": {
             "name": "plot",
             "id": 644,
             "position_x": 30,
@@ -328,7 +303,7 @@
                 }
             }
         },
-        "12": {
+        "10": {
             "name": "t.smart_clamp_kf",
             "id": 681,
             "position_x": 30,
@@ -340,7 +315,7 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
+        "11": {
             "name": "plot",
             "id": 718,
             "position_x": 30,
@@ -403,7 +378,7 @@
                 }
             }
         },
-        "14": {
+        "12": {
             "name": "text_block",
             "id": 755,
             "annotation": true,
@@ -443,7 +418,7 @@
             },
             "text": "the spike cannot move it far in one frame\nbut a run of large steps still tracks"
         },
-        "15": {
+        "13": {
             "name": "close",
             "id": 792,
             "position_x": 24,
@@ -464,26 +439,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
@@ -493,7 +448,7 @@
             "dest_input_index": 0,
             "dest_input_name": "on"
         },
-        "3": {
+        "1": {
             "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
@@ -503,7 +458,7 @@
             "dest_input_index": 0,
             "dest_input_name": "trigger"
         },
-        "4": {
+        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -513,7 +468,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
+        "3": {
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
@@ -523,7 +478,7 @@
             "dest_input_index": 0,
             "dest_input_name": "operand"
         },
-        "6": {
+        "4": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
@@ -533,7 +488,7 @@
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "7": {
+        "5": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
@@ -543,7 +498,7 @@
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "8": {
+        "6": {
             "source_node": 681,
             "source_node_name": "",
             "source_output_index": 0,

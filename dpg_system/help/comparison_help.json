@@ -93,35 +93,10 @@
             "text": "The comparison nodes test the incoming value against an operand and report \nwhether the test is true or false.\n\nThe left inlet takes the value and triggers the test; the right inlet holds the \nvalue to compare against. The result comes out as true or false - or, if you \nprefer, as a 1/0 number.\n\nFeeding in a NumPy array or a PyTorch tensor compares every element, \nand you get back an array of results the same shape as the input. \nThat makes these nodes useful as masks, not just as switches.\n\nTHE NODES:\n\n>     greater than\n>=    greater than or equal to\n<     less than\n<=    less than or equal to\n==    equal to\n!=    not equal to\n\nSYNTAX:\n<operator> <operand: int or float>\n\nEXAMPLE:\n> 0.5\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to be tested. Receiving data here triggers the comparison.\n\noperand:\nThe value to compare against. \nIf you supply the operand as an argument when creating the node, this inlet \nappears as a draggable number you can adjust by hand. \nIf you do not, it is a plain inlet expecting the operand from elsewhere.\n\noutput_type:\nChooses what the answer looks like. \n\"bool\" gives true or false, \"int\" gives 1 or 0, and \"float\" gives 1.0 or 0.0. \nUse int or float when you want to feed the result into arithmetic or a plot.\n\nOUTPUTS: \n\nresult:\nThe outcome of the test, in the type chosen by output_type. \nFor array input, an array of outcomes of the same shape.\n\nRELATED:\nFor a node that passes the value through when the test succeeds, rather than \nreporting true or false, see the change / increasing / decreasing / pass family."
         },
         "3": {
-            "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
-            "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t",
-            "id": 385,
-            "position_x": 150,
-            "position_y": 66,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "5": {
             "name": "signal",
             "id": 422,
             "position_x": 30,
-            "position_y": 132,
+            "position_y": 52,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -160,11 +135,11 @@
                 }
             }
         },
-        "6": {
+        "4": {
             "name": ">",
             "id": 459,
             "position_x": 30,
-            "position_y": 235,
+            "position_y": 155,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -179,12 +154,12 @@
             },
             "init": "> 0.0"
         },
-        "7": {
+        "5": {
             "init": "comment output_type set to int, so it plots",
             "name": "comment",
             "id": 496,
             "position_x": 449,
-            "position_y": 315,
+            "position_y": 235,
             "width": 224,
             "height": 30,
             "visibility": "show_all",
@@ -204,11 +179,11 @@
             },
             "comment": "output_type set to int, so it plots"
         },
-        "8": {
+        "6": {
             "name": "plot",
             "id": 533,
             "position_x": 215,
-            "position_y": 205,
+            "position_y": 125,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -267,12 +242,12 @@
                 }
             }
         },
-        "9": {
+        "7": {
             "name": "text_block",
             "id": 570,
             "annotation": true,
             "position_x": 449,
-            "position_y": 345,
+            "position_y": 265,
             "width": 268,
             "height": 40,
             "visibility": "show_all",
@@ -307,11 +282,11 @@
             },
             "text": "a sine wave becomes a square wave\ndrag the operand to move the threshold"
         },
-        "10": {
+        "8": {
             "name": "close",
             "id": 607,
             "position_x": 24,
-            "position_y": 413,
+            "position_y": 333,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -328,26 +303,6 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "on"
-        },
-        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
@@ -357,7 +312,7 @@
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
+        "1": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
