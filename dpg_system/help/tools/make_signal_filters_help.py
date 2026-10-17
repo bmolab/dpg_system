@@ -1,4 +1,4 @@
-"""band_pass, spectrum, adaptive_filter, physics_filter (multi_filter, one_euro_filter and kalman_filter are hand-made)."""
+"""diff_filter, band_pass, spectrum, adaptive_filter, kinetic_filter (multi_filter, one_euro_filter and kalman_filter are hand-made)."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
@@ -6,6 +6,127 @@ from help_common import SIG, PLOT, INT, FLT, starter
 
 # multi_filter_help.json is laid out by hand now (David's version) and is no longer
 # generated here; regenerating it would overwrite that layout.
+
+# ---------------------------------------------------------------- diff_filter
+def MULTI_PLOT(miny=-1.0, maxy=1.0):
+    """A plot that draws each element of a list as its own line."""
+    return dict(PLOT(miny, maxy), **{'width': 300, 'update style': 'input is multi-channel sample'})
+
+
+body = """diff_filter tells you how much a signal is MOVING at a chosen timescale - and
+settles back to zero whenever the signal holds still.
+
+Inside, it smooths the signal the way the filter node does, at two degrees: a
+quick one and a slow one. It sends the GAP between them. While the signal holds
+steady, both have caught up and the gap is zero. When the signal moves, the quick
+filter follows at once and the slow one lags, so the gap opens - then closes again
+as the slow one catches up. Rising movement gives a positive gap, falling movement
+a negative one.
+
+The top demo shows exactly this. A square wave jumps between -0.7 and 0.7.
+"multi_filter 0 0.8 0.97" draws the wave itself (a degree of 0 is no smoothing),
+a quick smoothing and a slow one. "diff_filter 0.8 0.97" sends the gap between
+the quick and slow lines: a spike at each jump, dying away while the wave holds.
+
+So it is a smoothed "how fast is this changing", with jitter taken out. It ignores
+WHERE the signal is and reports only how it moves, which makes it good for onsets:
+a hand starting to move, a sound starting to swell, a step in a sensor reading.
+A slow drift barely registers.
+
+BANDS IN TIME:
+Give it more than two degrees and it sends one gap for each neighbouring pair, so
+N degrees give N - 1 values. Each catches movement between those two timescales:
+anything quicker than the quick filter can follow is smoothed away, and anything
+slower than the slow filter's lag leaves almost no gap.
+
+In the lower demo, a quick wobble rides on a slow swell. "diff_filter 0.3 0.85
+0.99" pulls them apart: its first value (the 0.3 to 0.85 gap) mostly follows the
+wobble, its second (0.85 to 0.99) mostly the swell. The split is soft, not a
+brick wall - each band lets a little of the other through.
+
+As a rough guide, at 60 values a second a degree d responds over about 1 / (1 - d)
+values: 0.8 over 5 (a twelfth of a second), 0.97 over 33 (half a second), 0.99 over
+100 (nearly two seconds).
+
+SYNTAX:
+diff_filter <degree> <degree> ...
+
+EXAMPLES:
+diff_filter 0.8 0.97          one value: movement over a tenth to half a second
+diff_filter 0.3 0.85 0.99     two values: quick movement, then slow movement
+
+INPUTS and PARAMETERS:
+
+in:
+A single number. Receiving data here triggers the node. diff_filter spreads one
+signal over several filters; it does not filter each element of an array.
+
+filter 0, filter 1, ...:
+One inlet per degree, from 0.0 to 1.0, as on the filter node: higher is smoother
+and slower. Give them from quickest to slowest, so that each gap is quick minus
+slow and rising movement comes out positive.
+
+MESSAGES:
+
+set <value> <value> ...
+Sets the filters' internal values, one per filter.
+
+clear
+Sets every filter back to zero.
+
+OUTPUTS:
+
+out:
+A NumPy array with one value fewer than there are degrees: each filter minus the
+next, slower one.
+
+STARTING UP:
+Every filter starts at zero, so a signal that begins far from zero looks, for a
+moment, as if it had just jumped there - a large first gap. Send set with the
+starting value for each filter to begin without it.
+
+diff_filter_bank is the same node under another name.
+
+SEE ALSO:
+multi_filter    the smoothed values themselves
+filter          one smoothing
+diff            the plain change from one value to the next, unsmoothed
+band_pass       a sharper split by speed"""
+
+demo = [
+    {'key': 'sq', 'init': 'signal 4.0 square', 'pos': (30, 62), 'w': 129, 'h': 70,
+     'props': SIG('square', 4.0, 0.7)},
+    {'key': 'mf', 'init': 'multi_filter 0.0 0.8 0.97', 'pos': (30, 160), 'w': 160, 'h': 84,
+     'props': {'filter 0': 0.0, 'filter 1': 0.8, 'filter 2': 0.97}},
+    {'key': 'p1', 'init': 'plot', 'pos': (240, 62), 'w': 308, 'h': 178, 'props': MULTI_PLOT()},
+    {'key': 'c1', 'comment': True, 'text': 'the wave, a quick smoothing and a slow one',
+     'pos': (240, 250)},
+    {'key': 'df', 'init': 'diff_filter 0.8 0.97', 'pos': (30, 300), 'w': 160, 'h': 70,
+     'props': {'filter 0': 0.8, 'filter 1': 0.97}},
+    {'key': 'p2', 'init': 'plot', 'pos': (240, 300), 'w': 308, 'h': 178, 'props': MULTI_PLOT()},
+    {'key': 'c2', 'comment': True, 'text': 'the gap between them: a spike at each jump, then zero',
+     'pos': (240, 488)},
+
+    {'key': 'wob', 'init': 'signal 0.4 sin', 'pos': (30, 560), 'w': 129, 'h': 70,
+     'props': SIG('sin', 0.4, 0.3)},
+    {'key': 'swl', 'init': 'signal 8.0 sin', 'pos': (30, 650), 'w': 129, 'h': 70,
+     'props': SIG('sin', 8.0, 1.0)},
+    {'key': 'add', 'init': '+ 0.0', 'pos': (190, 600), 'w': 88, 'h': 56, 'props': {'operand': 0.0}},
+    {'key': 'p3', 'init': 'plot', 'pos': (310, 560), 'w': 208, 'h': 178, 'props': PLOT(-1.5, 1.5)},
+    {'key': 'c3', 'comment': True, 'text': 'a quick wobble riding on a slow swell', 'pos': (310, 748)},
+    {'key': 'df2', 'init': 'diff_filter 0.3 0.85 0.99', 'pos': (30, 800), 'w': 160, 'h': 84,
+     'props': {'filter 0': 0.3, 'filter 1': 0.85, 'filter 2': 0.99}},
+    {'key': 'p4', 'init': 'plot', 'pos': (240, 800), 'w': 308, 'h': 178, 'props': MULTI_PLOT(-1.2, 1.2)},
+    {'key': 'c4', 'comment': True, 'text': 'first value: mostly the wobble\nsecond value: mostly the swell',
+     'pos': (240, 988)},
+]
+links = [('sq', '', 'mf', 'in'), ('mf', 'out', 'p1', 'y'),
+         ('sq', '', 'df', 'in'), ('df', 'out', 'p2', 'y'),
+         ('wob', '', 'add', 'in'), ('swl', '', 'add', 'operand'),
+         ('add', 'result', 'p3', 'y'), ('add', 'result', 'df2', 'in'), ('df2', 'out', 'p4', 'y')]
+print(build('diff_filter', 'diff_filter - how much is it moving, at this timescale', body,
+            demo, links, demo_width=580, text_width=820, text_height=1100))
+
 
 # ------------------------------------------------------------------ band_pass
 body = """band_pass selects part of a signal by how FAST it wiggles, rather than by how big it is.
@@ -413,79 +534,46 @@ print(build('adaptive_filter', 'adaptive_filter - smooth when still, quick when 
 # one_euro_filter_help.json is laid out by hand now (David's version) and is no longer
 # generated here; regenerating it would overwrite that layout.
 
-# -------------------------------------------------------------- physics_filter
-body = """These filters smooth a signal by refusing to let it move in ways a physical object could not.
+# -------------------------------------------------------------- kinetic_filter
+body = """kinetic_filter smooths a signal by refusing to let it move in ways a physical 
+object could not.
 
-Instead of averaging, they carry a position, a velocity and an acceleration, and 
-move that towards the incoming value under limits you set. A spike in the input 
+Instead of averaging, it carries a position, a velocity and an acceleration, and 
+moves them towards the incoming value under limits you set. A spike in the input 
 does not get averaged away - it simply cannot be followed, because reaching it 
-would need an impossible acceleration.
+would need an impossible change of acceleration.
 
-That gives a very different character from a plain filter. Smooth output with no 
-constant lag: the result tracks the input exactly while the input behaves 
-plausibly, and falls behind only when the input does something abrupt. 
-For anything driving a physical or apparently-physical thing - a motor, a camera 
-move, a rendered object - it usually looks right where an averaging filter looks 
-soggy.
+It hands you all three - position, velocity and acceleration - so you get the 
+derivatives of the smoothed motion as well as the smoothed value.
 
-THE NODES:
-
-physics_filter   a spring-damper chase with velocity, acceleration and jerk limits
-kinetic_filter   a simpler limiter, reporting position, velocity and acceleration 
-                 separately
-
-physics_filter is the one to reach for. kinetic_filter is useful when you want 
-the derivatives as well as the smoothed value - it hands you all three.
+There is no damping. The output chases the target as hard as the limits allow, 
+so it overshoots a sudden step and swings back before it settles. For plain 
+responsive smoothing, one_euro_filter is usually the better choice.
 
 SYNTAX:
-physics_filter
 kinetic_filter
 
-INPUTS and PARAMETERS - physics_filter:
-
-input:
-The target to chase. Receiving data here triggers the node. 
-Accepts single numbers, lists, NumPy arrays and PyTorch tensors.
-
-max_vel / max_accel / max_jerk:
-The limits, in units per second, per second squared, and per second cubed. 
-Velocity caps how fast the output can travel, acceleration caps how fast it can 
-change speed, and jerk caps how abruptly it can change acceleration - 
-that last one is what removes the visible corners from the motion.
-
-freq:
-How stiff the spring is, in Hz. Higher chases harder and arrives sooner.
-
-zeta:
-The damping. Below 1 the output overshoots and springs back; at 1 it arrives 
-without overshoot; above 1 it eases in slowly. Default 2.5 - firmly damped, 
-no bounce.
-
-dt:
-Time between samples, in seconds. Default 1/60. The limits above are all 
-per-second, so this has to be right for them to mean what they say.
-
-INPUTS and PARAMETERS - kinetic_filter:
+INPUTS:
 
 in:
-The target. Receiving data here triggers the node.
+The target. Receiving data here triggers the node. Takes single numbers.
+
+reset:
+A button that returns position, velocity and acceleration to zero.
 
 max delta accel:
 The largest change in acceleration allowed per step - the jerk limit, 
 and the main smoothing control.
 
 max accel / max velocity:
-Ceilings on acceleration and speed.
+Ceilings on acceleration and speed, per step.
 
-reset:
-A button that returns position, velocity and acceleration to zero.
+All the limits are per step, not per second, so the same settings behave 
+differently at different input rates.
 
 OUTPUTS: 
 
-out (physics_filter):
-The smoothed value.
-
-position out / velocity out / accel out (kinetic_filter):
+accel out / velocity out / position out:
 The smoothed value and its first two derivatives. 
 The velocity outlet is a much cleaner speed estimate than putting diff after a 
 filter, because it is part of the model rather than a difference of noisy 
@@ -494,8 +582,8 @@ samples.
 TUNING:
 Start loose - limits high enough that nothing is constrained - and bring them 
 down until the jitter goes. The first limit that changes anything is the one 
-doing the work. If the output lags badly, that limit is too tight; if it still 
-jitters, it is not tight enough."""
+doing the work. If the output lags or swings badly, that limit is too tight; 
+if it still jitters, it is not tight enough."""
 
 demo = starter() + [
     {'key': 'sig', 'init': 'signal 5.0 square', 'pos': (30, 132), 'w': 129, 'h': 78,
@@ -503,18 +591,17 @@ demo = starter() + [
     {'key': 'c0', 'comment': True, 'text': 'an abrupt step', 'pos': (30, 215)},
     {'key': 'p0', 'init': 'plot', 'pos': (30, 250), 'w': 208, 'h': 176,
      'props': PLOT(-1.2, 1.2)},
-    {'key': 'pf', 'init': 'physics_filter', 'pos': (30, 450), 'w': 190, 'h': 180,
-     'props': {'max_vel': 500.0, 'max_accel': 50.0, 'max_jerk': 500.0,
-               'freq': 5.0, 'zeta': 2.5, 'dt': 0.0166}},
+    {'key': 'kf', 'init': 'kinetic_filter', 'pos': (30, 450), 'w': 190, 'h': 150,
+     'props': {'max delta accel': 0.001, 'max accel': 0.1, 'max velocity': 1.0}},
     {'key': 'p1', 'init': 'plot', 'pos': (30, 650), 'w': 208, 'h': 176,
      'props': PLOT(-1.2, 1.2)},
-    {'key': 'c1', 'comment': True, 'text': 'it accelerates, travels, and settles\ndrop zeta below 1 to make it overshoot',
+    {'key': 'c1', 'comment': True, 'text': 'it accelerates, travels, overshoots\nand swings back',
      'pos': (30, 835)},
 ]
 links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
          ('sig', '', 'p0', 'y'),
-         ('sig', '', 'pf', 'input'), ('pf', 'out', 'p1', 'y')]
-print(build('physics_filter', 'physics_filter - smooth by obeying physics', body,
+         ('sig', '', 'kf', 'in'), ('kf', 'position out', 'p1', 'y')]
+print(build('kinetic_filter', 'kinetic_filter - smooth by obeying physics', body,
             demo, links, demo_width=430, text_width=820, text_height=780))
 
 # kalman_filter_help.json is laid out by hand now (David's version) and is no longer

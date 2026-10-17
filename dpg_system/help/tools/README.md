@@ -317,6 +317,8 @@ a per-frame trigger use `tick`, not `metro 16`.
 `filter`, `one_euro_filter`, `kalman_filter` and `multi_filter` are David's
 hand layouts and are no longer generated (make_filter_help.py,
 make_signal_filters_help.py). Their small overlaps are deliberate.
+`diff_filter` has its own generated page (make_signal_filters_help.py); its
+material was taken out of the multi_filter page.
 
 ## bugs these tools found
 

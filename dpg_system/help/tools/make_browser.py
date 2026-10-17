@@ -95,8 +95,8 @@ TREE = {
     'nodes_signal': ('Signals and filters', 'Streams of values: making them, smoothing them, reacting to them.', [
         ('Sources and streams', ['signal', 'random', 'stream', 'sample_hold', 'register']),
         ('Events and ranges', ['togedge', 'trigger', 'diff', 'ranger', 'noise_gate']),
-        ('Filters', ['filter', 'multi_filter', 'band_pass', 'adaptive_filter', 'one_euro_filter',
-                     'kalman_filter', 'physics_filter']),
+        ('Filters', ['filter', 'multi_filter', 'diff_filter', 'band_pass', 'adaptive_filter', 'one_euro_filter',
+                     'kalman_filter', 'kinetic_filter']),
         ('History and analysis', ['buffer', 'spectrum', 'cwt', 'confusion']),
     ]),
     'nodes_text': ('Text and language', 'Characters, words and sentences.', [
@@ -252,7 +252,7 @@ LABELS = {
     'wind~': 'blown models', 'word_trigger': 'word triggers',
     # three names, but too long spelled out
     'replace': 'replace (any, dict, int)',
-    'shape_sequencer': 'shape / function sequencer', 'multi_filter': 'multi / diff filters',
+    'shape_sequencer': 'shape / function sequencer',
     'adaptive_filter': 'adaptive filters', 'spacy_vector': 'spacy vectors / similarity',
     'weighted_prompt': 'weighted / ambient prompts', 'sampler_engine': 'sampler engine / voices',
     'effort_fader': 'effort / muscle faders', 'shadow': 'shadow suit',
