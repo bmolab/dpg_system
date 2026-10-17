@@ -668,9 +668,10 @@ Sharpness of the resonances, 0.5 and up. Default 8.
 A signal patched to shift or q is added to the knob's value.
 
 formants:
-A readout: the vowel nearest the vowel KNOB, then the three formant 
-frequencies the bank is actually using. With a signal driving the vowel the 
-frequencies move but the letter stays where the knob is.
+A readout: the vowel the bank is nearest to, then the three formant 
+frequencies it is actually using. Both are read from the running bank, so 
+with a signal driving the vowel the letter follows it, and 'shift' moves the 
+frequencies but not the letter. Empty until the bank has had a signal.
 
 bypass:
 Ticked, the input passes through untouched.

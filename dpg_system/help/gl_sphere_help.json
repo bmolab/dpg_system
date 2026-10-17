@@ -1,11 +1,11 @@
 {
-    "height": 1376,
+    "height": 1096,
     "width": 1567,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "gl_sphere_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_sphere_help.json",
     "nodes": {
@@ -105,22 +105,10 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
+            "name": "gl_cylinder",
             "id": 385,
             "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "gl_cylinder",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 516,
+            "position_y": 236,
             "width": 160,
             "height": 126,
             "visibility": "show_all",
@@ -128,12 +116,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "6": {
+        "5": {
             "init": "comment set top radius to 0 for a cone",
             "name": "comment",
-            "id": 459,
+            "id": 422,
             "position_x": 465,
-            "position_y": 771,
+            "position_y": 491,
             "width": 193,
             "height": 30,
             "visibility": "show_all",
@@ -153,11 +141,11 @@
             },
             "comment": "set top radius to 0 for a cone"
         },
-        "7": {
+        "6": {
             "name": "gl_translate",
-            "id": 496,
+            "id": 459,
             "position_x": 30,
-            "position_y": 811,
+            "position_y": 531,
             "width": 99,
             "height": 98,
             "visibility": "show_all",
@@ -165,11 +153,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
+        "7": {
             "name": "gl_partial_disk",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
-            "position_y": 991,
+            "position_y": 711,
             "width": 166,
             "height": 140,
             "visibility": "show_all",
@@ -177,12 +165,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "8": {
             "init": "comment drag sweep angle: a value as an arc",
             "name": "comment",
-            "id": 570,
+            "id": 533,
             "position_x": 465,
-            "position_y": 1286,
+            "position_y": 1006,
             "width": 224,
             "height": 30,
             "visibility": "show_all",
@@ -202,11 +190,11 @@
             },
             "comment": "drag sweep angle: a value as an arc"
         },
-        "10": {
+        "9": {
             "name": "gl_nested_spheres",
-            "id": 607,
+            "id": 570,
             "position_x": 310,
-            "position_y": 811,
+            "position_y": 531,
             "width": 129,
             "height": 196,
             "visibility": "show_all",
@@ -214,12 +202,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
+        "10": {
             "init": "comment a sphere at each size in the list",
             "name": "comment",
-            "id": 644,
+            "id": 607,
             "position_x": 465,
-            "position_y": 1046,
+            "position_y": 766,
             "width": 211,
             "height": 30,
             "visibility": "show_all",
@@ -239,11 +227,11 @@
             },
             "comment": "a sphere at each size in the list"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 1161,
+            "position_y": 881,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -274,27 +262,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 422,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "2": {
-            "source_node": 422,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
             "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
-        },
-        "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"

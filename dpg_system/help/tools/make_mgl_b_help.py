@@ -237,11 +237,10 @@ will do: obj, stl, ply, glb, off and more. A file holding several meshes is
 merged into one. The console says how many corners and faces it loaded.
 
 A file that will not load is reported once in the console, and tried again
-when 'file_path' changes or 'generate_uv' is clicked.
-
-One fault to know about: if a file has loaded and 'file_path' is then
-changed to one that will not load (or emptied), the node raises an error
-every frame and nothing chained after it is drawn. Give it a good file again.
+when 'file_path' changes or 'generate_uv' is clicked. Until a file loads the
+node draws nothing - changing 'file_path' to a bad path (or emptying it)
+drops the model it had - but it still passes the chain on, so whatever
+follows it is drawn as usual.
 
 SIZE AND PLACE:
 'center' (on by default) moves the mesh's centre of mass to the origin when

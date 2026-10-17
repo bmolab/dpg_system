@@ -4440,6 +4440,9 @@ class MGLModelNode(MGLShapeNode):
         self.vao = None # Force recreation
         self.vbo = None
         self.ibo = None
+        # render_geometry sets the program again once a model loads; until then
+        # draw() sees no program and draws nothing (the chain still passes on)
+        self.prog = None
 
     def create_geometry(self):
         # draw() retries whenever there is no geometry; a load that failed is

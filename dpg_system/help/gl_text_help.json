@@ -1,11 +1,11 @@
 {
-    "height": 1616,
-    "width": 1454,
+    "height": 1336,
+    "width": 1386,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "gl_text_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_text_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 606,
+            "position_x": 538,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -105,22 +105,10 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
+            "name": "load_action",
             "id": 385,
             "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "load_action",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 516,
+            "position_y": 236,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -129,11 +117,11 @@
             "properties": {},
             "init": "load_action fixed on the window"
         },
-        "6": {
+        "5": {
             "name": "gl_text",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
-            "position_y": 626,
+            "position_y": 346,
             "width": 154,
             "height": 126,
             "visibility": "show_all",
@@ -147,12 +135,12 @@
                 }
             }
         },
-        "7": {
+        "6": {
             "name": "text_block",
-            "id": 496,
+            "id": 459,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 901,
+            "position_x": 210,
+            "position_y": 621,
             "width": 298,
             "height": 40,
             "visibility": "show_all",
@@ -187,11 +175,11 @@
             },
             "text": "straight after the context: no transform is\nin force, so it stays put on the window"
         },
-        "8": {
+        "7": {
             "name": "gl_translate",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
-            "position_y": 951,
+            "position_y": 671,
             "width": 99,
             "height": 98,
             "visibility": "show_all",
@@ -216,11 +204,11 @@
             },
             "init": "gl_translate 0 -0.5 0"
         },
-        "9": {
+        "8": {
             "name": "load_action",
-            "id": 570,
+            "id": 533,
             "position_x": 30,
-            "position_y": 1131,
+            "position_y": 851,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -229,11 +217,11 @@
             "properties": {},
             "init": "load_action moved by the translate"
         },
-        "10": {
+        "9": {
             "name": "gl_text",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
-            "position_y": 1241,
+            "position_y": 961,
             "width": 154,
             "height": 126,
             "visibility": "show_all",
@@ -247,12 +235,12 @@
                 }
             }
         },
-        "11": {
+        "10": {
             "name": "text_block",
-            "id": 644,
+            "id": 607,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 1516,
+            "position_x": 210,
+            "position_y": 1236,
             "width": 268,
             "height": 40,
             "visibility": "show_all",
@@ -287,11 +275,11 @@
             },
             "text": "after a transform: it moves, and would\nturn, with everything else downstream"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 1397,
+            "position_y": 1117,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -312,7 +300,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl_chain",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
@@ -321,28 +309,28 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 459,
+            "source_output_name": "out",
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
+            "dest_input_name": "text"
         },
         "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 459,
+            "source_output_name": "gl chain out",
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "text"
+            "dest_input_name": "gl chain in"
         },
         "3": {
-            "source_node": 459,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 533,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
@@ -351,18 +339,8 @@
             "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
-        },
-        "5": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 607,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text"

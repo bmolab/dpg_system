@@ -1137,20 +1137,25 @@ class GLEnableNode(GLNode):
         self.hold_state = False
         if len(GLEnableNode.state_dict) == 0:
             self.create_state_dict()
-        state_arg = ''
-        state_code = gl.GL_LIGHTING
-
-        if len(args) > 0:
-            state_arg = args[0]
-            if state_arg in self.state_dict:
-                self.state_code = GLEnableNode.state_dict[state_arg]
+        # the flag named in the args, else the combo's default, is in force from the start
+        self.arg_flag = None
+        flag = 'GL_LIGHTING'
+        if len(args) > 0 and args[0] in self.state_dict:
+            self.arg_flag = args[0]
+            flag = self.arg_flag
+        self.state_code = GLEnableNode.state_dict[flag]
         self.state_input = self.add_input('enabled', widget_type='checkbox', default_value=False)
-        self.flag_input = self.add_input('flag', widget_type='combo', default_value='GL_LIGHTING', widget_width=120, callback=self.flag_changed)
+        self.flag_input = self.add_input('flag', widget_type='combo', default_value=flag, widget_width=120, callback=self.flag_changed)
         keys = list(self.state_dict.keys())
         self.flag_input.widget.combo_items = keys
 
     def flag_changed(self):
         flag = self.flag_input()
+        # patches saved before the combo showed the arg flag stored 'GL_LIGHTING'
+        # there regardless, and that saved value never overrode the arg
+        if self.in_loading_process and self.arg_flag is not None and flag == 'GL_LIGHTING':
+            self.flag_input.set(self.arg_flag)
+            return
         if flag in self.state_dict:
             self.state_code = self.state_dict[flag]
 
@@ -1300,13 +1305,20 @@ class GLMaterialNode(GLNode):
         self.diffuse_input = self.add_input('diffuse')
         self.specular_input = self.add_input('specular')
         self.emission_input = self.add_input('emission')
-        self.shininess_input = self.add_input('shininess', widget_type='drag_float', default_value=self.material.shininess)
+        self.shininess_input = self.add_input('shininess', widget_type='drag_float', default_value=self.material.shininess, callback=self.shininess_changed)
         self.alpha_input = self.add_input('alpha', widget_type='drag_float', default_value=1.0, callback=self.set_alpha)
 
         self.preset_menu = self.add_property('presets', widget_type='combo', callback=self.preset_selected)
         presets = list(self.presets.keys())
         self.preset_menu.widget.combo_items = presets
         # self.gl_output = self.add_output('gl chain out')
+
+    def shininess_changed(self):
+        # runs for the number box, a value down a cord, and a restored value
+        shininess = any_to_float(self.shininess_input())
+        if shininess < 0:
+            shininess = 0
+        self.material.shininess = shininess
 
     def set_alpha(self):
         alpha = self.alpha_input()
@@ -1324,6 +1336,7 @@ class GLMaterialNode(GLNode):
             self.material.specular = p.specular
             self.material.emission = p.emission
             self.material.shininess = p.shininess
+            self.shininess_input.set(p.shininess)
 
     def remember_state(self):
         self.hold_material.ambient = gl.glGetMaterialfv(gl.GL_FRONT, gl.GL_AMBIENT)
@@ -1400,13 +1413,6 @@ class GLMaterialNode(GLNode):
             elif t in [float, np.double]:
                 self.material.emission = [emission, emission, emission, 1.0]
 
-        if self.shininess_input.fresh_input:
-            shininess = self.shininess_input()
-            t = type(shininess)
-            shininess = any_to_float(shininess)
-            if shininess < 0:
-                shininess = 0
-            self.material.shininess = shininess
         super().execute()
 
     def draw(self):
@@ -2738,17 +2744,23 @@ class GLLightNode(GLNode):
         self.quadratic_attenuation_input = None
 
         super().__init__(label, data, args)
-        self.light_id = GL_LIGHT0
-        if args is not None and len(args) > 1:
-            id = int(args[1])
-            self.set_id(id)
 
     def initialize(self, args):
         super().initialize(args)
         self.light = GLLight()
+        # a new gl_light is on and lit from the upper left, viewer's side, so
+        # placing one never switches a light off (saved patches store both)
+        self.light.enabled = True
+        self.light.position = [-1.0, 1.0, 1.0, 0.0]
+
+        light_number = 0
+        if args is not None and len(args) > 0:
+            light_number = min(max(any_to_int(args[0]), 0), 7)
+        self.light_id = gl.GL_LIGHT0
+        self.set_id(light_number)
 
         self.enabled_input = self.add_input('enabled', widget_type='checkbox', default_value=self.light.enabled, callback=self.enable_changed)
-        self.id_input = self.add_input('id', widget_type='input_int', default_value=0, callback=self.id_changed)
+        self.id_input = self.add_input('id', widget_type='input_int', default_value=light_number, callback=self.id_changed)
         self.ambient_input = self.add_input('ambient', callback=self.ambient_changed)
         self.diffuse_input = self.add_input('diffuse', callback=self.diffuse_changed)
         self.specular_input = self.add_input('specular', callback=self.specular_changed)
@@ -2887,10 +2899,8 @@ class GLLightNode(GLNode):
         if self.light.light_model_active:
             if self.light.global_ambient_active:
                 gl.glLightModelfv(gl.GL_LIGHT_MODEL_AMBIENT, self.light.global_ambient)
-            if self.light.local_viewer:
-                gl.glLightModeli(gl.GL_LIGHT_MODEL_LOCAL_VIEWER, self.light.local_viewer)
-            if self.light.two_sided:
-                gl.glLightModeli(gl.GL_LIGHT_MODEL_TWO_SIDE, self.light.two_sided)
+            gl.glLightModeli(gl.GL_LIGHT_MODEL_LOCAL_VIEWER, int(self.light.local_viewer))
+            gl.glLightModeli(gl.GL_LIGHT_MODEL_TWO_SIDE, int(self.light.two_sided))
 
         if self.light.enabled:
             gl.glEnable(self.light_id)

@@ -1,11 +1,11 @@
 {
-    "height": 1518,
-    "width": 1405,
+    "height": 1238,
+    "width": 1337,
     "position": [
         100,
         100
     ],
-    "id": 829,
+    "id": 792,
     "name": "gl_orientation_disks_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_orientation_disks_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 557,
+            "position_x": 489,
             "position_y": 45,
             "width": 808,
             "height": 1116,
@@ -105,22 +105,10 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
+            "name": "load_bang",
             "id": 385,
             "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "load_bang",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 540,
+            "position_y": 260,
             "width": 88,
             "height": 42,
             "visibility": "show_all",
@@ -128,11 +116,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "6": {
+        "5": {
             "name": "np.rand",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
-            "position_y": 610,
+            "position_y": 330,
             "width": 123,
             "height": 98,
             "visibility": "show_all",
@@ -152,12 +140,12 @@
             },
             "init": "np.rand 3 3"
         },
-        "7": {
+        "6": {
             "name": "text_block",
-            "id": 496,
+            "id": 459,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 610,
+            "position_x": 210,
+            "position_y": 330,
             "width": 218,
             "height": 40,
             "visibility": "show_all",
@@ -192,11 +180,11 @@
             },
             "text": "three random rotation vectors,\none row per disk"
         },
-        "8": {
+        "7": {
             "name": "gl_orientation_disks",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
-            "position_y": 780,
+            "position_y": 500,
             "width": 154,
             "height": 182,
             "visibility": "show_all",
@@ -205,12 +193,12 @@
             "properties": {},
             "init": "gl_orientation_disks 3 0.25"
         },
-        "9": {
+        "8": {
             "name": "text_block",
-            "id": 570,
+            "id": 533,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 780,
+            "position_x": 210,
+            "position_y": 500,
             "width": 249,
             "height": 40,
             "visibility": "show_all",
@@ -245,11 +233,11 @@
             },
             "text": "each disk faces along its axis,\nits radius is the angle times scale"
         },
-        "10": {
+        "9": {
             "name": "gl_translate",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
-            "position_y": 1090,
+            "position_y": 810,
             "width": 99,
             "height": 98,
             "visibility": "show_all",
@@ -274,11 +262,11 @@
             },
             "init": "gl_translate 0.5 0 0"
         },
-        "11": {
+        "10": {
             "name": "message",
-            "id": 644,
+            "id": 607,
             "position_x": 30,
-            "position_y": 1230,
+            "position_y": 950,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -297,12 +285,12 @@
                 }
             }
         },
-        "12": {
+        "11": {
             "init": "comment a quaternion, w x y z",
             "name": "comment",
-            "id": 681,
-            "position_x": 278,
-            "position_y": 1230,
+            "id": 644,
+            "position_x": 210,
+            "position_y": 950,
             "width": 138,
             "height": 30,
             "visibility": "show_all",
@@ -322,11 +310,11 @@
             },
             "comment": "a quaternion, w x y z"
         },
-        "13": {
+        "12": {
             "name": "gl_rotation_disk",
-            "id": 718,
+            "id": 681,
             "position_x": 30,
-            "position_y": 1300,
+            "position_y": 1020,
             "width": 123,
             "height": 84,
             "visibility": "show_all",
@@ -334,12 +322,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "14": {
+        "13": {
             "name": "text_block",
-            "id": 755,
+            "id": 718,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 1300,
+            "position_x": 210,
+            "position_y": 1020,
             "width": 188,
             "height": 40,
             "visibility": "show_all",
@@ -374,11 +362,11 @@
             },
             "text": "red, blue and green disks\nsized by x, y and z"
         },
-        "15": {
+        "14": {
             "name": "close",
-            "id": 792,
+            "id": 755,
             "position_x": 24,
-            "position_y": 1414,
+            "position_y": 1134,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -399,77 +387,67 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl_chain",
-            "dest_node": 385,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 533,
+            "source_output_name": "gl_chain",
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "2": {
-            "source_node": 385,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 607,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "3": {
-            "source_node": 607,
+            "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 718,
+            "source_output_name": "out",
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
+            "dest_input_name": ""
         },
         "4": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "5": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "random array",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "axis-angle"
         },
-        "6": {
-            "source_node": 422,
+        "5": {
+            "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "7": {
-            "source_node": 644,
+        "6": {
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 718,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "quaternion in"

@@ -1,11 +1,11 @@
 {
-    "height": 1328,
-    "width": 1448,
+    "height": 1121,
+    "width": 1411,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 681,
     "name": "gl_line_array_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_line_array_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 600,
+            "position_x": 563,
             "position_y": 45,
             "width": 808,
             "height": 1016,
@@ -105,22 +105,10 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
+            "name": "load_bang",
             "id": 385,
             "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "load_bang",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 540,
+            "position_y": 260,
             "width": 88,
             "height": 42,
             "visibility": "show_all",
@@ -128,11 +116,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "6": {
+        "5": {
             "name": "np.rand",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
-            "position_y": 610,
+            "position_y": 330,
             "width": 123,
             "height": 112,
             "visibility": "show_all",
@@ -152,12 +140,12 @@
             },
             "init": "np.rand 30 4 3"
         },
-        "7": {
+        "6": {
             "init": "comment 30 points on each of 4 lines",
             "name": "comment",
-            "id": 496,
-            "position_x": 278,
-            "position_y": 610,
+            "id": 459,
+            "position_x": 241,
+            "position_y": 330,
             "width": 181,
             "height": 30,
             "visibility": "show_all",
@@ -177,11 +165,11 @@
             },
             "comment": "30 points on each of 4 lines"
         },
-        "8": {
+        "7": {
             "name": "gl_line_array",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
-            "position_y": 800,
+            "position_y": 520,
             "width": 185,
             "height": 220,
             "visibility": "show_all",
@@ -189,12 +177,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "8": {
             "name": "text_block",
-            "id": 570,
+            "id": 533,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 800,
+            "position_x": 241,
+            "position_y": 520,
             "width": 231,
             "height": 40,
             "visibility": "show_all",
@@ -229,11 +217,11 @@
             },
             "text": "alpha_fade: each line fades from\nits first point to its last"
         },
-        "10": {
+        "9": {
             "name": "gl_vertex_buffer",
-            "id": 607,
+            "id": 570,
             "position_x": 30,
-            "position_y": 1110,
+            "position_y": 830,
             "width": 148,
             "height": 84,
             "visibility": "show_all",
@@ -252,12 +240,12 @@
                 }
             }
         },
-        "11": {
+        "10": {
             "name": "text_block",
-            "id": 644,
+            "id": 607,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 1110,
+            "position_x": 241,
+            "position_y": 830,
             "width": 292,
             "height": 40,
             "visibility": "show_all",
@@ -292,11 +280,11 @@
             },
             "text": "on its own branch of the chain:\n64 random points until vertex_data arrives"
         },
-        "12": {
+        "11": {
             "name": "close",
-            "id": 681,
+            "id": 644,
             "position_x": 24,
-            "position_y": 1224,
+            "position_y": 944,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -317,17 +305,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl_chain",
-            "dest_node": 385,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 533,
+            "source_output_name": "gl_chain",
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
@@ -336,28 +324,18 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 607,
+            "source_output_name": "out",
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
+            "dest_input_name": ""
         },
         "3": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "4": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "random array",
-            "dest_node": 533,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "array"

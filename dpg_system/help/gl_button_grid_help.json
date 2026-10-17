@@ -1,11 +1,11 @@
 {
-    "height": 1190,
-    "width": 1393,
+    "height": 910,
+    "width": 1325,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 644,
     "name": "gl_button_grid_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_button_grid_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 545,
+            "position_x": 477,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -105,22 +105,10 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
+            "name": "metro",
             "id": 385,
             "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "metro",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 516,
+            "position_y": 236,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -145,11 +133,11 @@
             },
             "init": "metro 500"
         },
-        "6": {
+        "5": {
             "name": "counter",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
-            "position_y": 606,
+            "position_y": 326,
             "width": 123,
             "height": 84,
             "visibility": "show_all",
@@ -169,11 +157,11 @@
             },
             "init": "counter 16 1"
         },
-        "7": {
+        "6": {
             "name": "int",
-            "id": 496,
+            "id": 459,
             "position_x": 30,
-            "position_y": 705,
+            "position_y": 425,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -197,12 +185,12 @@
                 }
             }
         },
-        "8": {
+        "7": {
             "init": "comment counts 0 to 15, then wraps",
             "name": "comment",
-            "id": 533,
-            "position_x": 278,
-            "position_y": 755,
+            "id": 496,
+            "position_x": 210,
+            "position_y": 475,
             "width": 168,
             "height": 30,
             "visibility": "show_all",
@@ -222,11 +210,11 @@
             },
             "comment": "counts 0 to 15, then wraps"
         },
-        "9": {
+        "8": {
             "name": "gl_button_grid",
-            "id": 570,
+            "id": 533,
             "position_x": 30,
-            "position_y": 795,
+            "position_y": 515,
             "width": 154,
             "height": 140,
             "visibility": "show_all",
@@ -234,12 +222,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "9": {
             "name": "text_block",
-            "id": 607,
+            "id": 570,
             "annotation": true,
-            "position_x": 278,
-            "position_y": 1090,
+            "position_x": 210,
+            "position_y": 810,
             "width": 237,
             "height": 40,
             "visibility": "show_all",
@@ -274,11 +262,11 @@
             },
             "text": "the counted square lights up red,\nbottom left to top right"
         },
-        "11": {
+        "10": {
             "name": "close",
-            "id": 644,
+            "id": 607,
             "position_x": 24,
-            "position_y": 965,
+            "position_y": 685,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -299,7 +287,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl_chain",
-            "dest_node": 385,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
@@ -308,38 +296,28 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 570,
+            "source_output_name": "",
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
+            "dest_input_name": "input"
         },
         "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
+            "source_output_name": "count out",
             "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "input"
+            "dest_input_name": ""
         },
         "3": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "count out",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "4": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "int out",
-            "dest_node": 570,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "selection"

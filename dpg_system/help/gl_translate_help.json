@@ -1,11 +1,11 @@
 {
-    "height": 1456,
+    "height": 1176,
     "width": 1571,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 718,
     "name": "gl_translate_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_translate_help.json",
     "nodes": {
@@ -105,22 +105,10 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
+            "name": "gl_translate",
             "id": 385,
             "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "gl_translate",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 516,
+            "position_y": 236,
             "width": 99,
             "height": 98,
             "visibility": "show_all",
@@ -128,11 +116,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "6": {
+        "5": {
             "name": "gl_sphere",
-            "id": 459,
+            "id": 422,
             "position_x": 30,
-            "position_y": 696,
+            "position_y": 416,
             "width": 129,
             "height": 98,
             "visibility": "show_all",
@@ -140,12 +128,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "7": {
+        "6": {
             "init": "comment moved by the first translate",
             "name": "comment",
-            "id": 496,
+            "id": 459,
             "position_x": 435,
-            "position_y": 911,
+            "position_y": 631,
             "width": 181,
             "height": 30,
             "visibility": "show_all",
@@ -165,11 +153,11 @@
             },
             "comment": "moved by the first translate"
         },
-        "8": {
+        "7": {
             "name": "gl_translate",
-            "id": 533,
+            "id": 496,
             "position_x": 30,
-            "position_y": 951,
+            "position_y": 671,
             "width": 99,
             "height": 98,
             "visibility": "show_all",
@@ -177,11 +165,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "8": {
             "name": "gl_cylinder",
-            "id": 570,
+            "id": 533,
             "position_x": 30,
-            "position_y": 1131,
+            "position_y": 851,
             "width": 160,
             "height": 126,
             "visibility": "show_all",
@@ -189,12 +177,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "9": {
             "init": "comment by BOTH: they accumulate down the chain",
             "name": "comment",
-            "id": 607,
+            "id": 570,
             "position_x": 435,
-            "position_y": 1366,
+            "position_y": 1086,
             "width": 248,
             "height": 30,
             "visibility": "show_all",
@@ -214,11 +202,11 @@
             },
             "comment": "by BOTH: they accumulate down the chain"
         },
-        "11": {
+        "10": {
             "name": "gl_align",
-            "id": 644,
+            "id": 607,
             "position_x": 310,
-            "position_y": 951,
+            "position_y": 671,
             "width": 99,
             "height": 84,
             "visibility": "show_all",
@@ -226,12 +214,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "12": {
+        "11": {
             "init": "comment points what follows along a direction",
             "name": "comment",
-            "id": 681,
+            "id": 644,
             "position_x": 435,
-            "position_y": 1126,
+            "position_y": 846,
             "width": 236,
             "height": 30,
             "visibility": "show_all",
@@ -251,11 +239,11 @@
             },
             "comment": "points what follows along a direction"
         },
-        "13": {
+        "12": {
             "name": "close",
-            "id": 718,
+            "id": 681,
             "position_x": 24,
-            "position_y": 1287,
+            "position_y": 1007,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -296,27 +284,17 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 459,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "3": {
-            "source_node": 459,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
             "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
-        },
-        "4": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"

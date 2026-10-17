@@ -28,6 +28,7 @@ from dpg_system.synth_core import (
     SigUnit, VcoUnit, VcfUnit, VcaUnit, AdsrUnit, LfoUnit, ClockUnit, RampUnit,
     AdditiveUnit, DelayUnit, FoldUnit, CrushUnit,
     ShaperUnit, FormantUnit, VocoderUnit, OneEuroUnit, FORMANT_VOWELS,
+    _VOWEL_FORMANTS,
     MixUnit, MultUnit, PanUnit, AudioOutUnit, SpaceUnit, CleanUnit, VuUnit,
     SnapshotUnit, ScalerUnit,
     CaptureUnit, StreamUnit, RecordUnit, SamplerOscUnit, SamplerBuffer, PhasorUnit, VstUnit,
@@ -2369,15 +2370,44 @@ class FormantNode(SynthNode):
         self.add_switch()
         self.finish_synth_node()
         self._shown = ''
+        self._heard = None
+
+    # The vowels as F2/F1 and F3/F1 log ratios, which 'shift' cannot move.
+    # The morph is linear in logs, so each step between two vowels is a
+    # straight segment here and the position can be read back exactly.
+    _vowel_ratios = None
+
+    @classmethod
+    def _ratios(cls):
+        if cls._vowel_ratios is None:
+            logs = np.log([[_VOWEL_FORMANTS[v][b] for b in range(3)]
+                           for v in FORMANT_VOWELS])
+            cls._vowel_ratios = logs[:, 1:] - logs[:, :1]
+        return cls._vowel_ratios
 
     def synth_frame_task(self):
         # What the bank is actually resonating at, which is the one thing you
-        # cannot infer from the vowel knob once shift is in play.
-        position = any_to_float(self.unit.vowel_in.base)
-        span = len(FORMANT_VOWELS) - 1
-        index = int(round(min(1.0, max(0.0, position)) * span))
+        # cannot infer from the vowel knob once shift is in play -- or once
+        # a signal is patched to 'vowel'. The letter is read back from the
+        # same frequencies, so the two always agree.
+        frequencies = tuple(self.unit.frequencies[:3])
+        if frequencies == self._heard:
+            return
+        self._heard = frequencies
+        if min(frequencies) <= 0.0:
+            return
+        logs = np.log(frequencies)
+        point = logs[1:] - logs[0]
+        ratios = FormantNode._ratios()
+        starts = ratios[:-1]
+        steps = ratios[1:] - starts
+        along = np.clip(((point - starts) * steps).sum(axis=1)
+                        / (steps * steps).sum(axis=1), 0.0, 1.0)
+        misses = ((starts + steps * along[:, None] - point) ** 2).sum(axis=1)
+        segment = int(np.argmin(misses))
+        index = int(math.floor(segment + along[segment] + 0.5))
         text = (FORMANT_VOWELS[index] + '  '
-                + ' '.join(str(int(f)) for f in self.unit.frequencies[:3]))
+                + ' '.join(str(int(f)) for f in frequencies))
         if text != self._shown:
             self._shown = text
             self.vowel_display.set(text)

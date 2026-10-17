@@ -14,13 +14,14 @@ relatives live in this world, and because the fixed-function pipeline they use
 is sometimes simpler to reason about when all you want is a few shapes.
 """
 
+# The context lights the scene itself (lights 0 and 1), so these pages chain
+# straight from it; a gl_light here would only take over one of those lights.
 def chain(x=30, y=62):
     return [
         {'key': 'ctx', 'init': 'gl_context', 'pos': (x, y), 'w': 240, 'h': 120},
-        {'key': 'lgt', 'init': 'gl_light', 'pos': (x, y + 140), 'w': 240, 'h': 240},
     ]
 
-CHAIN_LINKS = [('ctx', 'gl_chain', 'lgt', 'gl chain in')]
+CHAIN_LINKS = []
 
 # ------------------------------------------------------------------ gl_context
 body = """gl_context is the root of a scene in the older GL system.
@@ -59,13 +60,18 @@ is how you draw something at a flat known colour among lit objects.
 
 Because it obeys the same save-and-restore rule as everything else, the change 
 lasts only for the rest of that branch.
+
+Name the flag after the node (gl_enable GL_DEPTH_TEST) or pick it from 'flag'; 
+without one it is GL_LIGHTING. 'enabled' starts unticked, so a gl_enable 
+switches its flag OFF for the rest of the branch until you tick it.
 """ + OLDER + """
 SYNTAX:
 gl_context
-gl_enable
+gl_enable <flag>
 
 EXAMPLE:
 gl_context
+gl_enable GL_DEPTH_TEST
 
 INPUTS and PARAMETERS:
 
@@ -73,7 +79,7 @@ commands (gl_context):
 Messages to the context.
 
 enabled / flag (gl_enable):
-Which GL state, and whether on.
+Which GL state, and whether on. GL_LIGHTING and off by default.
 
 OUTPUTS: 
 
@@ -88,15 +94,15 @@ mgl_context is the current equivalent, and its help patch explains the same
 chain idea. gl_body draws a skeleton in this chain."""
 
 demo = chain() + [
-    {'key': 'rot', 'init': 'gl_rotate', 'pos': (30, 516), 'w': 240, 'h': 160},
-    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 696), 'w': 240, 'h': 200},
+    {'key': 'rot', 'init': 'gl_rotate', 'pos': (30, 236), 'w': 240, 'h': 160},
+    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 416), 'w': 240, 'h': 200},
     {'key': 'c0', 'comment': True, 'text': 'the rotate applies to everything after it',
-     'pos': (30, 911)},
-    {'key': 'en', 'init': 'gl_enable', 'pos': (310, 516), 'w': 240, 'h': 120},
+     'pos': (30, 631)},
+    {'key': 'en', 'init': 'gl_enable', 'pos': (310, 236), 'w': 240, 'h': 120},
     {'key': 'c1', 'comment': True, 'text': 'a flag, for the rest of this branch',
-     'pos': (310, 651)},
+     'pos': (310, 371)},
 ]
-links = CHAIN_LINKS + [('lgt', 'gl chain out', 'rot', 'gl chain in'),
+links = CHAIN_LINKS + [('ctx', 'gl_chain', 'rot', 'gl chain in'),
                        ('rot', 'gl chain out', 'sph', 'gl chain in')]
 print(build('gl_context', 'gl_context - the older scene chain', body, demo, links,
             demo_width=580, text_width=810, text_height=740))
@@ -164,19 +170,19 @@ gl chain out:
 The chain, with the transform in force downstream."""
 
 demo = chain() + [
-    {'key': 'tr1', 'init': 'gl_translate', 'pos': (30, 516), 'w': 240, 'h': 160},
-    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 696), 'w': 240, 'h': 200},
-    {'key': 'c0', 'comment': True, 'text': 'moved by the first translate', 'pos': (30, 911)},
-    {'key': 'tr2', 'init': 'gl_translate', 'pos': (30, 951), 'w': 240, 'h': 160},
-    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 1131), 'w': 240, 'h': 220},
+    {'key': 'tr1', 'init': 'gl_translate', 'pos': (30, 236), 'w': 240, 'h': 160},
+    {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 416), 'w': 240, 'h': 200},
+    {'key': 'c0', 'comment': True, 'text': 'moved by the first translate', 'pos': (30, 631)},
+    {'key': 'tr2', 'init': 'gl_translate', 'pos': (30, 671), 'w': 240, 'h': 160},
+    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 851), 'w': 240, 'h': 220},
     {'key': 'c1', 'comment': True, 'text': 'by BOTH: they accumulate down the chain',
-     'pos': (30, 1366)},
-    {'key': 'al', 'init': 'gl_align', 'pos': (310, 951), 'w': 240, 'h': 160},
+     'pos': (30, 1086)},
+    {'key': 'al', 'init': 'gl_align', 'pos': (310, 671), 'w': 240, 'h': 160},
     {'key': 'c2', 'comment': True, 'text': 'points what follows along a direction',
-     'pos': (310, 1126)},
+     'pos': (310, 846)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'tr1', 'gl chain in'),
+    ('ctx', 'gl_chain', 'tr1', 'gl chain in'),
     ('tr1', 'gl chain out', 'sph', 'gl chain in'),
     ('sph', 'gl chain out', 'tr2', 'gl chain in'),
     ('tr2', 'gl chain out', 'cyl', 'gl chain in')]
@@ -205,16 +211,16 @@ lights near the top of the chain anyway, so the first frame is right and the
 position is easy to reason about.
 """ + GL_LIGHTING_NOTE + """
 A gl_light takes over the light of the same number, the context's included.
-'enabled' starts UNTICKED, and an unticked gl_light switches its light OFF -
-so a fresh gl_light with id 0 turns out the context's light 0. Tick 'enabled'
-and give it a position.
+A new gl_light is on, numbered 0, and lit from the upper left on the
+viewer's side - so placing one replaces the context's light 0 with a
+similar light rather than putting it out. Untick 'enabled' to switch its
+light off; that is also how to turn out one of the context's own lights.
 
 POSITION:
 With 'positional' off (the default) the light is a direction, like the sun:
 'position' is the direction the light comes FROM, and every surface is lit
-from that same direction. The default position is 0 0 0, which is no
-direction at all, so a light left there adds only its ambient. Send it
-something like -1 1 1 (from the upper left, on the viewer's side).
+from that same direction. The default position is -1 1 1: from the upper
+left, on the viewer's side.
 
 With 'positional' on (send it 1) the light is a point at 'position'. It
 fades with distance only if you set the attenuation; by default it does not.
@@ -239,17 +245,18 @@ THE LIGHTING MODEL:
 These affect lighting as a whole, not this light, and are only applied while
 'light_model_active' is ticked. 'global ambient enabled' with
 'global_ambient' sets the scene-wide ambient glow. 'local_viewer' and
-'two_sided' switch those OpenGL modes on; unticking them does not switch them
-off again. (The context already turns two_sided on.)
+'two_sided' switch those OpenGL modes on when ticked and off when not. (The
+context turns two_sided on, so a gl_light with 'light_model_active' ticked
+and 'two_sided' unticked turns it off.)
 """ + OLDER + """
 SYNTAX:
-gl_light
+gl_light <id>
 
-Set the light's number with the 'id' inlet - a number typed after the name
-is not used.
+The number after the name is the light, 0 to 7, and shows in 'id'. Without
+one it is light 0.
 
 EXAMPLE:
-gl_light
+gl_light 1
 
 INPUTS and PARAMETERS:
 
@@ -257,7 +264,8 @@ gl chain in:
 The chain. This triggers the node.
 
 enabled:
-Whether this light is on. Off by default, which switches the light off.
+Whether this light is on. On by default; unticked, it switches the light
+off.
 
 id:
 Which light, 0 to 7. Changing it leaves the previous light as it was
@@ -268,7 +276,7 @@ Red green blue, or red green blue alpha, 0 to 1. Defaults: 0.2 grey,
 0.8 grey, black.
 
 position:
-x y z: a direction, or a place with 'positional' on.
+x y z: a direction, or a place with 'positional' on. -1 1 1 by default.
 
 positional:
 Send 1 for a point light, 0 for a directional one.
@@ -312,7 +320,7 @@ demo = [
      'props': {'text in': '0.2 0.4 1', 'font size': '24'}},
     {'key': 'c2', 'comment': True, 'text': 'from the upper right, blue',
      'pos': (330, 800)},
-    {'key': 'l2', 'init': 'gl_light', 'pos': (30, 680), 'w': 240, 'h': 400,
+    {'key': 'l2', 'init': 'gl_light 1', 'pos': (30, 680), 'w': 240, 'h': 400,
      'props': {'enabled': True, 'id': 1}},
     {'key': 'sph', 'init': 'gl_sphere', 'pos': (30, 1120), 'w': 240, 'h': 200,
      'props': {'size': 0.25}},
@@ -392,9 +400,8 @@ Each as red green blue alpha, red green blue (alpha 1), or one number for a
 grey, 0 to 1.
 
 shininess:
-How tight the highlight is, 0 to 128. 0 by default. Only a value sent to the
-inlet takes effect: dragging the number box does nothing, and neither does a
-value saved in the patch - send it from a float or a message instead.
+How tight the highlight is, 0 to 128. 0 by default. Drag it, send it, or
+save it in the patch; choosing a preset sets it too.
 
 alpha:
 Transparency, 0 to 1, applied to all four components. 1 by default.
@@ -618,19 +625,19 @@ gl chain out:
 The chain, continuing - shapes change no state for what follows."""
 
 demo = chain() + [
-    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 516), 'w': 240, 'h': 240},
+    {'key': 'cyl', 'init': 'gl_cylinder', 'pos': (30, 236), 'w': 240, 'h': 240},
     {'key': 'c0', 'comment': True, 'text': 'set top radius to 0 for a cone',
-     'pos': (30, 771)},
-    {'key': 'tr', 'init': 'gl_translate', 'pos': (30, 811), 'w': 240, 'h': 160},
-    {'key': 'pd', 'init': 'gl_partial_disk', 'pos': (30, 991), 'w': 240, 'h': 280},
+     'pos': (30, 491)},
+    {'key': 'tr', 'init': 'gl_translate', 'pos': (30, 531), 'w': 240, 'h': 160},
+    {'key': 'pd', 'init': 'gl_partial_disk', 'pos': (30, 711), 'w': 240, 'h': 280},
     {'key': 'c1', 'comment': True, 'text': 'drag sweep angle: a value as an arc',
-     'pos': (30, 1286)},
-    {'key': 'ns', 'init': 'gl_nested_spheres', 'pos': (310, 811), 'w': 240, 'h': 220},
+     'pos': (30, 1006)},
+    {'key': 'ns', 'init': 'gl_nested_spheres', 'pos': (310, 531), 'w': 240, 'h': 220},
     {'key': 'c2', 'comment': True, 'text': 'a sphere at each size in the list',
-     'pos': (310, 1046)},
+     'pos': (310, 766)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'cyl', 'gl chain in'),
+    ('ctx', 'gl_chain', 'cyl', 'gl chain in'),
     ('cyl', 'gl chain out', 'tr', 'gl chain in'),
     ('tr', 'gl chain out', 'pd', 'gl chain in')]
 print(build('gl_sphere', 'gl shapes - the built-in geometry', body, demo, links,
@@ -741,24 +748,24 @@ gl_orientation_disks and gl_rotation_disk, which used to share this page,
 draw orientations."""
 
 demo = chain() + [
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 540), 'w': 88, 'h': 42},
-    {'key': 'nr', 'init': 'np.rand 30 4 3', 'pos': (30, 610), 'w': 140, 'h': 160,
+    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 260), 'w': 88, 'h': 42},
+    {'key': 'nr', 'init': 'np.rand 30 4 3', 'pos': (30, 330), 'w': 140, 'h': 160,
      'props': {'min': -0.3, 'max': 0.3}},
     {'key': 'c0', 'comment': True, 'text': '30 points on each of 4 lines',
-     'pos': (30, 610)},
-    {'key': 'la', 'init': 'gl_line_array', 'pos': (30, 800), 'w': 220, 'h': 280},
+     'pos': (30, 330)},
+    {'key': 'la', 'init': 'gl_line_array', 'pos': (30, 520), 'w': 220, 'h': 280},
     {'key': 'c1', 'comment': True,
      'text': 'alpha_fade: each line fades from\nits first point to its last',
-     'pos': (30, 800)},
-    {'key': 'vb', 'init': 'gl_vertex_buffer', 'pos': (30, 1110), 'w': 200, 'h': 120,
+     'pos': (30, 520)},
+    {'key': 'vb', 'init': 'gl_vertex_buffer', 'pos': (30, 830), 'w': 200, 'h': 120,
      'props': {'draw_mode': 'GL_POINTS', 'size': 4.0}},
     {'key': 'c2', 'comment': True,
      'text': 'on its own branch of the chain:\n64 random points until vertex_data arrives',
-     'pos': (30, 1110)},
+     'pos': (30, 830)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'la', 'gl chain in'),
-    ('lgt', 'gl chain out', 'vb', 'gl chain in'),
+    ('ctx', 'gl_chain', 'la', 'gl chain in'),
+    ('ctx', 'gl_chain', 'vb', 'gl chain in'),
     ('lb', 'out', 'nr', ''),
     ('nr', 'random array', 'la', 'array')]
 print(build('gl_line_array', 'gl_line_array - drawing data as lines and points', body,
@@ -866,28 +873,28 @@ gl_axis_angle_rotate turn the chain by such rotations instead of showing
 them. gl_line_array, which used to share this page, draws motion trails."""
 
 demo = chain() + [
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 540), 'w': 88, 'h': 42},
-    {'key': 'nr', 'init': 'np.rand 3 3', 'pos': (30, 610), 'w': 140, 'h': 140,
+    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 260), 'w': 88, 'h': 42},
+    {'key': 'nr', 'init': 'np.rand 3 3', 'pos': (30, 330), 'w': 140, 'h': 140,
      'props': {'min': -1.5, 'max': 1.5}},
     {'key': 'c0', 'comment': True, 'text': 'three random rotation vectors,\none row per disk',
-     'pos': (30, 610)},
-    {'key': 'od', 'init': 'gl_orientation_disks 3 0.25', 'pos': (30, 780), 'w': 220, 'h': 280},
+     'pos': (30, 330)},
+    {'key': 'od', 'init': 'gl_orientation_disks 3 0.25', 'pos': (30, 500), 'w': 220, 'h': 280},
     {'key': 'c1', 'comment': True,
      'text': 'each disk faces along its axis,\nits radius is the angle times scale',
-     'pos': (30, 780)},
-    {'key': 'tr', 'init': 'gl_translate 0.5 0 0', 'pos': (30, 1090), 'w': 160, 'h': 110,
+     'pos': (30, 500)},
+    {'key': 'tr', 'init': 'gl_translate 0.5 0 0', 'pos': (30, 810), 'w': 160, 'h': 110,
      'props': {'x': 0.5, 'y': 0.0, 'z': 0.0}},
-    {'key': 'm1', 'init': 'message', 'pos': (30, 1230), 'w': 200, 'h': 42,
+    {'key': 'm1', 'init': 'message', 'pos': (30, 950), 'w': 200, 'h': 42,
      'props': {'text in': '0.85 0.3 0.25 0.35', 'font size': '24'}},
-    {'key': 'c2', 'comment': True, 'text': 'a quaternion, w x y z', 'pos': (30, 1230)},
-    {'key': 'rd', 'init': 'gl_rotation_disk', 'pos': (30, 1300), 'w': 200, 'h': 180},
+    {'key': 'c2', 'comment': True, 'text': 'a quaternion, w x y z', 'pos': (30, 950)},
+    {'key': 'rd', 'init': 'gl_rotation_disk', 'pos': (30, 1020), 'w': 200, 'h': 180},
     {'key': 'c3', 'comment': True,
      'text': 'red, blue and green disks\nsized by x, y and z',
-     'pos': (30, 1300)},
+     'pos': (30, 1020)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'od', 'gl chain in'),
-    ('lgt', 'gl chain out', 'tr', 'gl chain in'),
+    ('ctx', 'gl_chain', 'od', 'gl chain in'),
+    ('ctx', 'gl_chain', 'tr', 'gl chain in'),
     ('tr', 'gl chain out', 'rd', 'gl chain in'),
     ('lb', 'out', 'nr', ''),
     ('nr', 'random array', 'od', 'axis-angle'),
@@ -987,26 +994,26 @@ mgl_text is the newer equivalent. gl_button_grid, which used to share this
 page, draws a grid of highlighted squares in the same way."""
 
 demo = chain() + [
-    {'key': 'la1', 'init': 'load_action fixed on the window', 'pos': (30, 516),
+    {'key': 'la1', 'init': 'load_action fixed on the window', 'pos': (30, 236),
      'w': 300, 'h': 90},
     # 'font' saved at its exact default: restore_properties skips a no-op, so
     # font_changed never fires. (mgl_text's font callback opens a native file
     # dialog; gl_text's only reloads the font, but keep the restore a no-op.)
-    {'key': 'tx', 'init': 'gl_text', 'pos': (30, 626), 'w': 260, 'h': 260,
+    {'key': 'tx', 'init': 'gl_text', 'pos': (30, 346), 'w': 260, 'h': 260,
      'props': {'font': 'Inconsolata-g.otf'}},
     {'key': 'c0', 'comment': True, 'text': 'straight after the context: no transform is\nin force, so it stays put on the window',
-     'pos': (30, 901)},
-    {'key': 'tr', 'init': 'gl_translate 0 -0.5 0', 'pos': (30, 951), 'w': 240, 'h': 160,
+     'pos': (30, 621)},
+    {'key': 'tr', 'init': 'gl_translate 0 -0.5 0', 'pos': (30, 671), 'w': 240, 'h': 160,
      'props': {'x': 0.0, 'y': -0.5, 'z': 0.0}},
-    {'key': 'la2', 'init': 'load_action moved by the translate', 'pos': (30, 1131),
+    {'key': 'la2', 'init': 'load_action moved by the translate', 'pos': (30, 851),
      'w': 300, 'h': 90},
-    {'key': 'tx2', 'init': 'gl_text', 'pos': (30, 1241), 'w': 260, 'h': 260,
+    {'key': 'tx2', 'init': 'gl_text', 'pos': (30, 961), 'w': 260, 'h': 260,
      'props': {'font': 'Inconsolata-g.otf'}},
     {'key': 'c2', 'comment': True, 'text': 'after a transform: it moves, and would\nturn, with everything else downstream',
-     'pos': (30, 1516)},
+     'pos': (30, 1236)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'tx', 'gl chain in'),
+    ('ctx', 'gl_chain', 'tx', 'gl chain in'),
     ('la1', 'out', 'tx', 'text'),
     ('tx', 'gl chain out', 'tr', 'gl chain in'),
     ('tr', 'gl chain out', 'tx2', 'gl chain in'),
@@ -1084,18 +1091,18 @@ gl_text, which used to share this page, draws text in the scene in the same
 way, and suits a label beside the grid."""
 
 demo = chain() + [
-    {'key': 'met', 'init': 'metro 500', 'pos': (30, 516), 'w': 129, 'h': 70,
+    {'key': 'met', 'init': 'metro 500', 'pos': (30, 236), 'w': 129, 'h': 70,
      'props': {'on': True, 'period': 500.0, 'units': 'milliseconds'}},
-    {'key': 'cnt', 'init': 'counter 16 1', 'pos': (30, 606), 'w': 123, 'h': 84,
+    {'key': 'cnt', 'init': 'counter 16 1', 'pos': (30, 326), 'w': 123, 'h': 84,
      'props': {'count': 16, 'step': 1}},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 705), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c0', 'comment': True, 'text': 'counts 0 to 15, then wraps', 'pos': (30, 755)},
-    {'key': 'bg', 'init': 'gl_button_grid', 'pos': (30, 795), 'w': 260, 'h': 280},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 425), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c0', 'comment': True, 'text': 'counts 0 to 15, then wraps', 'pos': (30, 475)},
+    {'key': 'bg', 'init': 'gl_button_grid', 'pos': (30, 515), 'w': 260, 'h': 280},
     {'key': 'c1', 'comment': True, 'text': 'the counted square lights up red,\nbottom left to top right',
-     'pos': (30, 1090)},
+     'pos': (30, 810)},
 ]
 links = CHAIN_LINKS + [
-    ('lgt', 'gl chain out', 'bg', 'gl chain in'),
+    ('ctx', 'gl_chain', 'bg', 'gl chain in'),
     ('met', '', 'cnt', 'input'),
     ('cnt', 'count out', 'i1', ''),
     ('i1', 'int out', 'bg', 'selection')]

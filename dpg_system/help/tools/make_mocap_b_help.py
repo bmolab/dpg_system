@@ -645,7 +645,9 @@ Set every dial to zero. The fit is kept.
 export armfix:
 Apply the current fit and dials to every frame of the take file and write it
 next to it with _armfix added to the name; every other array in the file is
-copied unchanged. Needs 'take file' to be filled in.
+copied unchanged. Needs 'take file' to be filled in: without one it says so
+in the console and writes nothing - a fit npz holds only the correction, not
+a take to correct.
 
 OUTPUT:
 

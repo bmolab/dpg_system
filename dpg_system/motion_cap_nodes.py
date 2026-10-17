@@ -4190,7 +4190,12 @@ class ShadowArmCorrectNode(MoCapNode):
 
     def do_export(self):
         """Apply the current fit + dials to the whole take file and save _armfix.npz."""
-        path = self.take_path() or self.fit_path()
+        path = self.take_path()
+        if not path:
+            # a fit npz holds only the corrections (cl/cr/hy), never quats, so it cannot stand in
+            print("shadow_arm_correct: export needs a 'take file' (the Shadow take npz to correct); "
+                  "'load fit npz' only supplies the correction")
+            return
         try:
             d = np.load(path, allow_pickle=True)
             Q = d['quats'].astype(np.float64)
