@@ -278,6 +278,12 @@ out. Logs and inverse put a `+` offset before the function so the sine never
 reaches zero; `norm` has no sine demo (a single number always gives 1.0) and
 uses a message list `3 4` instead. math_single_help.json stays the overview.
 
+`derive_trig_help.py` does `sin`, `cos`, `tan`, `asin`, `acos`, `atan` by
+importing `derive()` from the math_single script: an angle ramp (saw, 0 to 360)
+for the forward functions, a sine wave for the reverse ones. Trig nodes send
+from `out` (not `result`) and save their `degrees` checkbox, which the op's
+`out` and `props` keys carry. trig_help.json stays the overview.
+
 ## bugs these tools found
 
 Writing the patches surfaced twelve real bugs, all now fixed and covered by

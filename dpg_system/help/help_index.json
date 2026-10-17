@@ -341,8 +341,17 @@
   "accumulate": [
     "accumulate"
   ],
+  "acos": [
+    "acos"
+  ],
   "add": [
     "+"
+  ],
+  "asin": [
+    "asin"
+  ],
+  "atan": [
+    "atan"
   ],
   "ceil": [
     "ceil",
@@ -359,6 +368,9 @@
   ],
   "continuous_rotation": [
     "continuous_rotation"
+  ],
+  "cos": [
+    "cos"
   ],
   "crossfade": [
     "crossfade",
@@ -437,18 +449,16 @@
     "round",
     "np.round"
   ],
+  "sin": [
+    "sin"
+  ],
   "sqrt": [
     "sqrt"
   ],
   "subtract": [
     "-"
   ],
-  "trig": [
-    "acos",
-    "asin",
-    "atan",
-    "cos",
-    "sin",
+  "tan": [
     "tan"
   ],
   "trunc": [

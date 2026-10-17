@@ -1,0 +1,812 @@
+{
+    "height": 916,
+    "width": 1471,
+    "position": [
+        351,
+        81
+    ],
+    "id": 1416,
+    "name": "acos_help",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 1444,
+            "sid": 1,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "hidden",
+            "draggable": false,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment acos (arccosine)",
+            "name": "comment",
+            "id": 1462,
+            "sid": 2,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 205,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "acos (arccosine)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "string"
+                }
+            },
+            "comment": "acos (arccosine)"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 1473,
+            "sid": 3,
+            "position_x": 729,
+            "position_y": 45,
+            "width": 702,
+            "height": 811,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "acos is the reverse of cos: given a cosine, between -1 and 1, it gives back the angle.\n\n0.5 comes out as 60 degrees, 1 as 0, 0 as 90, -1 as 180.\nThe answer is always between 0 and 180 degrees - as an angle between two directions\nalways is, which is what acos is most often used for.\n\nIn the demo a sine wave goes through acos: at -1 the angle is 180, at 1 it is 0, and\nthe curves straighten into a steady swing between them.\n\nUse it for the angle between two directions: take the dot product of two unit\nvectors (norm each first), and acos of it is the angle between them - 0 when they\npoint the same way, 90 at right angles, 180 when opposite.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\nacos cell by cell (right).\n\nSYNTAX:\nacos\n\nEXAMPLES:\nacos       the angle between two unit vectors, from their dot product\nacos       how far apart two directions are, 0 to 180 degrees\n\nINPUTS and PARAMETERS:\n\nin:\nThe ratio. Receiving data here triggers the calculation.\n\ndegrees:\nA checkbox on the node, checked by default. Checked, angles are in degrees (a full\nturn is 360); unchecked, in radians (a full turn is 2 x pi, about 6.283).\n\nOUTPUTS:\n\nout:\nThe angle, between 0 and 180 degrees (or 0 and pi radians).\n\nOUT OF RANGE:\nOnly values from -1 to 1 have an arccosine. Rather than stop the patch, anything beyond\nis treated as -1 or 1, so 1.5 gives the same answer as 1. This matters for acos in\nparticular: a dot product of two unit vectors can come out as 1.0000001 through\nrounding, and it should still give 0 degrees, not fail.\n\nDEGREES, NOT RADIANS:\nMost programming languages work in radians. These nodes default to degrees, because\nmost angles in a patch - from sensors, rotations and interfaces - arrive in degrees.\nUncheck \"degrees\" when the angle comes from something that speaks radians.\n\nSEE ALSO:\ncos     the forward direction: the cosine of an angle\nasin    the angle from a sine\nnorm    make vectors unit length before a dot product",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 694,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 795,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "string"
+                }
+            },
+            "text": "acos is the reverse of cos: given a cosine, between -1 and 1, it gives back the angle.\n\n0.5 comes out as 60 degrees, 1 as 0, 0 as 90, -1 as 180.\nThe answer is always between 0 and 180 degrees - as an angle between two directions\nalways is, which is what acos is most often used for.\n\nIn the demo a sine wave goes through acos: at -1 the angle is 180, at 1 it is 0, and\nthe curves straighten into a steady swing between them.\n\nUse it for the angle between two directions: take the dot product of two unit\nvectors (norm each first), and acos of it is the angle between them - 0 when they\npoint the same way, 90 at right angles, 180 when opposite.\n\nLists, NumPy arrays and PyTorch tensors go through element by element, keeping their\nshape. In the NumPy example at the bottom left, a random array (left) goes through\nacos cell by cell (right).\n\nSYNTAX:\nacos\n\nEXAMPLES:\nacos       the angle between two unit vectors, from their dot product\nacos       how far apart two directions are, 0 to 180 degrees\n\nINPUTS and PARAMETERS:\n\nin:\nThe ratio. Receiving data here triggers the calculation.\n\ndegrees:\nA checkbox on the node, checked by default. Checked, angles are in degrees (a full\nturn is 360); unchecked, in radians (a full turn is 2 x pi, about 6.283).\n\nOUTPUTS:\n\nout:\nThe angle, between 0 and 180 degrees (or 0 and pi radians).\n\nOUT OF RANGE:\nOnly values from -1 to 1 have an arccosine. Rather than stop the patch, anything beyond\nis treated as -1 or 1, so 1.5 gives the same answer as 1. This matters for acos in\nparticular: a dot product of two unit vectors can come out as 1.0000001 through\nrounding, and it should still give 0 degrees, not fail.\n\nDEGREES, NOT RADIANS:\nMost programming languages work in radians. These nodes default to degrees, because\nmost angles in a patch - from sensors, rotations and interfaces - arrive in degrees.\nUncheck \"degrees\" when the angle comes from something that speaks radians.\n\nSEE ALSO:\ncos     the forward direction: the cosine of an angle\nasin    the angle from a sine\nnorm    make vectors unit length before a dot product"
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 1490,
+            "sid": 4,
+            "position_x": 28,
+            "position_y": 103,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "4": {
+            "init": "t 1",
+            "name": "t",
+            "id": 1497,
+            "sid": 5,
+            "position_x": 135,
+            "position_y": 104,
+            "width": 22,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "trigger 0",
+                    "value": "1",
+                    "value_type": "string"
+                }
+            }
+        },
+        "5": {
+            "name": "signal",
+            "id": 1507,
+            "sid": 6,
+            "position_x": 176,
+            "position_y": 101,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "6": {
+            "init": "acos",
+            "name": "acos",
+            "id": 1529,
+            "sid": 7,
+            "position_x": 333,
+            "position_y": 152,
+            "width": 68,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "7": {
+            "name": "plot",
+            "id": 1539,
+            "sid": 8,
+            "position_x": 452,
+            "position_y": 110,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -10.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 190.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "name": "text_block",
+            "id": 1590,
+            "sid": 9,
+            "position_x": 246,
+            "position_y": 49,
+            "width": 311,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a sine wave (-1 to 1) through acos:\nan angle swinging from 180 down to 0 and back",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 303,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "text": "a sine wave (-1 to 1) through acos:\nan angle swinging from 180 down to 0 and back"
+        },
+        "9": {
+            "name": "float",
+            "id": 1607,
+            "sid": 10,
+            "position_x": 29,
+            "position_y": 301,
+            "width": 90,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.01,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "init": "acos",
+            "name": "acos",
+            "id": 1643,
+            "sid": 11,
+            "position_x": 190,
+            "position_y": 297,
+            "width": 68,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "11": {
+            "name": "float",
+            "id": 1653,
+            "sid": 12,
+            "position_x": 310,
+            "position_y": 304,
+            "width": 90,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 59.99999999999999,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.01,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "12": {
+            "init": "comment drag this number",
+            "name": "comment",
+            "id": 1686,
+            "sid": 13,
+            "position_x": 42,
+            "position_y": 260,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag this number",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "drag this number"
+        },
+        "13": {
+            "name": "close",
+            "id": 1697,
+            "sid": 14,
+            "position_x": 24,
+            "position_y": 600,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "14": {
+            "init": "np.rand 2 2",
+            "name": "np.rand",
+            "id": 1783,
+            "sid": 20,
+            "position_x": 25,
+            "position_y": 462,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                }
+            }
+        },
+        "15": {
+            "name": "heat_map",
+            "id": 2002,
+            "sid": 28,
+            "position_x": 170,
+            "position_y": 440,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "16": {
+            "name": "heat_map",
+            "id": 2116,
+            "sid": 31,
+            "position_x": 485,
+            "position_y": 440,
+            "width": 187,
+            "height": 136,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 179,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 86,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 180.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "string"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                }
+            }
+        },
+        "17": {
+            "name": "load_bang",
+            "id": 2162,
+            "sid": 33,
+            "position_x": 25,
+            "position_y": 409,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "18": {
+            "init": "comment arrays and tensors go through cell by cell: the input on the left, the result on the right",
+            "name": "comment",
+            "id": 2198,
+            "sid": 37,
+            "position_x": 61,
+            "position_y": 366,
+            "width": 561,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "arrays and tensors go through cell by cell: the input on the left, the result on the right",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "arrays and tensors go through cell by cell: the input on the left, the result on the right"
+        },
+        "19": {
+            "name": "acos",
+            "id": 2217,
+            "sid": 39,
+            "position_x": 375,
+            "position_y": 486,
+            "width": 68,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 1490,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1497,
+            "dest_node_name": "t",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 1497,
+            "source_node_name": "t",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 1507,
+            "dest_node_name": "signal",
+            "dest_input_index": 0,
+            "dest_input_name": "on"
+        },
+        "2": {
+            "source_node": 1507,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 1529,
+            "dest_node_name": "acos",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 1529,
+            "source_node_name": "acos",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1539,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 1607,
+            "source_node_name": "float",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 1643,
+            "dest_node_name": "acos",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "5": {
+            "source_node": 1643,
+            "source_node_name": "acos",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1653,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2002,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 1783,
+            "source_node_name": "np.rand",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 2217,
+            "dest_node_name": "acos",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 2217,
+            "source_node_name": "acos",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 2116,
+            "dest_node_name": "heat_map",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "9": {
+            "source_node": 2162,
+            "source_node_name": "load_bang",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 1783,
+            "dest_node_name": "np.rand",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

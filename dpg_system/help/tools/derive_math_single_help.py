@@ -44,10 +44,10 @@ of roundings from drifting upward); it is not the "always round .5 up" taught at
 NP_NAME = """{np} is the same node under its NumPy name, and behaves identically."""
 
 
-def page(intro, syntax, examples, inputs, result_text, notes, see_also):
+def page(intro, syntax, examples, inputs, result_text, notes, see_also, out='result'):
     parts = [intro.strip(), 'SYNTAX:\n' + syntax, 'EXAMPLES:\n' + examples.strip('\n'),
              'INPUTS and PARAMETERS:\n\nin:\n' + EVERY_INPUT + ''.join('\n\n' + i for i in inputs),
-             'OUTPUTS:\n\nresult:\n' + result_text]
+             'OUTPUTS:\n\n' + out + ':\n' + result_text]
     parts += [n.strip() for n in notes]
     parts.append('SEE ALSO:\n' + see_also.strip('\n'))
     return '\n\n'.join(parts)
@@ -417,10 +417,13 @@ def message(node_id, sid, x, y, text):
 
 
 def set_function(node, op, decimals=False):
-    """A single-input node saves nothing but round's decimals option."""
+    """A single-input node saves only its own settings: round's decimals, trig's degrees."""
     node['name'] = op['label']
     node['init'] = op['label']
     node['properties'] = {}
+    for name, value in op.get('props', {}).items():
+        node['properties'][str(len(node['properties']))] = {
+            'name': name, 'value': value, 'value_type': type(value).__name__}
     if decimals and 'decimals' in op:
         node['properties']['0'] = {'name': 'decimals', 'value': op['decimals'], 'value_type': 'int'}
 
@@ -460,6 +463,9 @@ def derive(template, op):
         set_function(sop, op)
         set_prop(nodes[SIGNAL], 'range', sig['range'])
         set_prop(nodes[SIGNAL], 'bipolar', sig['bipolar'])
+        for name in ('shape', 'period'):
+            if name in sig:
+                set_prop(nodes[SIGNAL], name, sig[name])
         set_prop(nodes[PLOT], 'min y', sig['y'][0])
         set_prop(nodes[PLOT], 'max y', sig['y'][1])
         set_block(nodes[SIG_NOTE], sig['note'], '24')
@@ -530,6 +536,8 @@ def derive(template, op):
         for end in ('source', 'dest'):
             if l[end + '_node'] in (SIG_OP, INT_OP, NP_OP):
                 l[end + '_node_name'] = label
+                if end == 'source':
+                    l['source_output_name'] = op.get('out', 'result')
 
     d['nodes'] = {str(i): n for i, n in enumerate(nodes.values())}
     d['links'] = {str(i): l for i, l in enumerate(links)}

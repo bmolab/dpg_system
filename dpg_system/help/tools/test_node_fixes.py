@@ -95,6 +95,13 @@ for _label, _in, _want in (('abs', [-3, 4], [3.0, 4.0]), ('norm', [3, 4], [0.6, 
                            ('floor', [-2.5, 2.5], [-3.0, 2.0]), ('sqrt', (16, -4), [4.0, -2.0])):
     check(f'{_label} <- {_in!r}', feed(make(_label), _in), _want)
 
+print("\nOpSingleTrigNode: a list goes through element by element")
+# math.sin of a list raised TypeError, so a list into any trig node sent nothing.
+for _label, _in, _want in (('sin', [30, 90], [0.5, 1.0]), ('acos', [0.5, -1], [60.0, 180.0]),
+                           ('atan', (1,), [45.0])):
+    _got = feed(make(_label), _in)
+    check(f'{_label} <- {_in!r}', _got is not None and np.allclose(_got, _want) and type(_got) is list, True)
+
 # ---------------------------------------------------------------------------
 print("\nparse_args: '>=' is a word, not a name=value setting")
 # '>='.split('=') is ['>', ''], and reading the empty value's first character

@@ -674,6 +674,11 @@ class OpSingleTrigNode(Node):
             t = type(input_value)
             if t in [int, bool, np.int64, np.bool_]:
                 input_value = float(input_value)
+            elif t in (list, tuple):
+                # a list goes through element by element, as an array does
+                # (math.sin of a list raised)
+                self.output.send(self.op(np.array(any_to_float_list(input_value), dtype=float)).tolist())
+                return
             output_value = self.op(input_value)
             self.output.send(output_value)
 
