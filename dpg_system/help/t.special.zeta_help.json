@@ -1,0 +1,309 @@
+{
+    "height": 681,
+    "width": 1582,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "t.special.zeta_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.special.zeta_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.special.zeta - the Hurwitz zeta function",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.special.zeta - the Hurwitz zeta function",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.special.zeta - the Hurwitz zeta function"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 734,
+            "position_y": 45,
+            "width": 808,
+            "height": 576,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "The Hurwitz zeta function.\n\nWHAT IT COMPUTES:\nzeta(x, q) is the sum, over k = 0, 1, 2, ..., of 1 divided by (k plus q) raised\nto the power x. With q = 1 it is the ordinary Riemann zeta function: zeta(2, 1)\nis pi squared over 6, about 1.645.\n\nThe sum only settles to a finite value when x is greater than 1. At x = 1 the\nresult is infinity, and below 1 it is not-a-number. q should be positive.\n\nWHERE IT TURNS UP:\nIt is the normalising constant of discrete power laws - Zipf-like\ndistributions, where the k-th most common thing occurs in proportion to 1 over\nk to the x - and it appears in the derivatives of the gamma function\n(t.special.polygamma is built from it).\n\nSYNTAX:\nt.special.zeta\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the power. Receiving it does the work.\n\ntensor 2 or number in:\nq, the offset. Either input may be a single number rather than a tensor,\napplied everywhere. This one is only stored when it arrives, so send it\nBEFORE x.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 560,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "The Hurwitz zeta function.\n\nWHAT IT COMPUTES:\nzeta(x, q) is the sum, over k = 0, 1, 2, ..., of 1 divided by (k plus q) raised\nto the power x. With q = 1 it is the ordinary Riemann zeta function: zeta(2, 1)\nis pi squared over 6, about 1.645.\n\nThe sum only settles to a finite value when x is greater than 1. At x = 1 the\nresult is infinity, and below 1 it is not-a-number. q should be positive.\n\nWHERE IT TURNS UP:\nIt is the normalising constant of discrete power laws - Zipf-like\ndistributions, where the k-th most common thing occurs in proportion to 1 over\nk to the x - and it appears in the derivatives of the gamma function\n(t.special.polygamma is built from it).\n\nSYNTAX:\nt.special.zeta\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the power. Receiving it does the work.\n\ntensor 2 or number in:\nq, the offset. Either input may be a single number rather than a tensor,\napplied everywhere. This one is only stored when it arrives, so send it\nBEFORE x.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 300,
+            "position_y": 118,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1.0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "init": "comment q = 1: the Riemann zeta",
+            "name": "comment",
+            "id": 422,
+            "position_x": 456,
+            "position_y": 168,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "q = 1: the Riemann zeta",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "q = 1: the Riemann zeta"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 118,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "2.0 3.0 4.0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "t.special.zeta",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 225,
+            "width": 138,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "list",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment 1.645 (pi squared over 6), 1.202, 1.082",
+            "name": "comment",
+            "id": 570,
+            "position_x": 456,
+            "position_y": 380,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "1.645 (pi squared over 6), 1.202, 1.082",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "1.645 (pi squared over 6), 1.202, 1.082"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 402,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2 or number in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1 or number in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

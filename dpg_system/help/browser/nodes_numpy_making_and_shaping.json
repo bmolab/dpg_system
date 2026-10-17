@@ -1,11 +1,11 @@
 {
-    "height": 484,
+    "height": 640,
     "width": 773,
     "position": [
         100,
         100
     ],
-    "id": 1092,
+    "id": 1314,
     "name": "nodes_numpy_making_and_shaping",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_making_and_shaping.json",
     "nodes": {
@@ -412,7 +412,7 @@
             "presentation_state": "show_all"
         },
         "13": {
-            "init": "help_link np_util np utilities",
+            "init": "help_link np.astype np.astype",
             "name": "help_link",
             "position_x": 24,
             "position_y": 374,
@@ -420,7 +420,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "np utilities",
+                    "name": "np.astype",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -445,12 +445,12 @@
             "annotation": true,
             "position_x": 164,
             "position_y": 378,
-            "width": 298,
-            "height": 40,
+            "width": 212,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "types, editing, loading\n(np.add_alpha, np.astype, np.edit, np.load)",
+                    "value": "change an array's number type",
                     "value_type": "str"
                 },
                 "1": {
@@ -460,12 +460,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 290,
+                    "value": 204,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -474,8 +474,215 @@
                     "value_type": "str"
                 }
             },
-            "text": "types, editing, loading\n(np.add_alpha, np.astype, np.edit, np.load)",
+            "text": "change an array's number type",
             "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link np.add_alpha np.add_alpha",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 426,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.add_alpha",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 430,
+            "width": 218,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "brightness as a fourth channel",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "brightness as a fourth channel",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link np.edit np.edit",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 478,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.edit",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 482,
+            "width": 268,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "overwrite chosen positions in an array",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "overwrite chosen positions in an array",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link np.load np.load",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 530,
+            "width": 126,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.load",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 164,
+            "position_y": 534,
+            "width": 138,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "read an .npz file",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "read an .npz file",
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

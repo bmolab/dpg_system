@@ -93,31 +93,39 @@ print(build('combine', 'combine, join, split - assembling and taking apart', bod
             demo, links, demo_width=580, text_width=790, text_height=640))
 
 # --------------------------------------------------------------- string_replace
-body = """These substitute or clean up parts of a string.
+body = """These find a piece of text and put another in its place.
 
 THE NODES:
 
-string_replace  find a piece of text anywhere and put another in its place
-word_replace    the same, but only where the match is a WHOLE word
-unescape_text   turn HTML escapes back into the characters they stand for
-printable       drop anything that is not a printable character
+string_replace  replace the text wherever it appears, even inside a word
+word_replace    replace it only where it is a WHOLE word
 
 word_replace VERSUS string_replace:
-string_replace matches anywhere, so replacing "cat" also hits "concatenate". 
-word_replace matches only whole words, so it does not. Which you want depends on 
-whether you are editing text or editing markup - for anything language-shaped, 
-whole words is almost always right, and the substring version's surprises are 
-the classic source of mangled output.
+string_replace matches anywhere, so replacing "cat" also hits "concatenate".
+word_replace matches only whole words, so it does not. For anything
+language-shaped, whole words is almost always what you want, and the
+everywhere version's surprises are the classic source of mangled output.
 
-unescape_text AND printable ARE FOR TEXT THAT ARRIVED FROM SOMEWHERE ELSE:
-Text off a network, out of a web page, or from a speech service arrives with 
-things in it that are not really part of the text - HTML escapes like &amp;, 
-control characters, byte-order marks, invisible formatting. 
+Both are case-sensitive: "cat" does not touch "Cat".
 
-unescape_text handles the escapes; printable removes what cannot be shown. 
-Running both on anything incoming costs nothing and saves the class of problem 
-where a string looks correct and behaves oddly - a comparison that fails, a 
-width that is wrong, a word that will not match.
+'find' IS A PATTERN, NOT PLAIN TEXT:
+It is read as a regular expression, so some characters have special meanings.
+A full stop matches any character, "colou?r" matches both "color" and "colour",
+and "cat|dog" matches either word. To find one of . * + ? ( ) [ ] | \\ ^ $
+literally, put a backslash in front of it. An unmatched bracket is an error,
+and the node then sends nothing.
+
+LISTS:
+string_replace given a list replaces within each item that is text and leaves
+numbers alone; a list goes out. word_replace turns a list of words into one
+string, joined with spaces, before it starts; a string goes out.
+
+A STRING THAT STARTS WITH 'find' OR 'replace':
+Text arriving at 'string in' whose first word is 'find' or 'replace' is taken
+as a setting, not as text: "replace dog" sets the replace field to "dog" and
+nothing is sent. Handy from a message box, a surprise in running text.
+
+If 'find' is empty the input is passed on unchanged.
 
 SYNTAX:
 string_replace <find> <replace>
@@ -131,42 +139,159 @@ INPUTS and PARAMETERS:
 string in:
 The text. Receiving it triggers the node.
 
-find / replace:
-What to look for and what to put in its place.
+find:
+What to look for.
 
-OUTPUTS: 
+replace:
+What to put in its place. Leave it empty to delete what was found.
 
-string out / printable characters out / unescaped string out:
+OUTPUTS:
+
+string out:
 The result.
 
 RELATED:
-replace and int_replace do the same job on lists and numbers rather than 
-within a string - see the replace help patch. 
+unescape_text and printable clean up text that arrived from somewhere else.
+replace and int_replace do the same job on lists and numbers rather than
+within a string - see the replace help patch.
 dict_replace holds many substitutions at once."""
 
 demo = [
-    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
-    {'key': 'm1', 'init': 'message', 'pos': (30, 118), 'w': 320, 'h': 42,
-     'props': {'text in': 'the cat concatenated', 'font size': '24'}},
-    {'key': 'sr', 'init': 'string_replace cat dog', 'pos': (30, 180), 'w': 220, 'h': 110},
-    {'key': 's1', 'init': 'string', 'pos': (30, 305), 'w': 320, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c0', 'comment': True, 'text': 'matches anywhere: concatenated changes too',
-     'pos': (30, 355)},
-    {'key': 'wr', 'init': 'word_replace cat dog', 'pos': (30, 395), 'w': 220, 'h': 110},
-    {'key': 's2', 'init': 'string', 'pos': (30, 520), 'w': 320, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c1', 'comment': True, 'text': 'whole words only: it does not', 'pos': (30, 570)},
-    {'key': 'pt', 'init': 'printable', 'pos': (400, 395), 'w': 200, 'h': 90},
-    {'key': 'c2', 'comment': True, 'text': 'run this on anything incoming',
-     'pos': (400, 495)},
+    {'key': 's0', 'init': 'string', 'pos': (30, 62), 'w': 320, 'h': 42,
+     'props': {'text in': 'the cat concatenated', 'font size': '24', 'width': 280}},
+    {'key': 'c0', 'comment': True, 'text': 'click to send it', 'pos': (30, 112)},
+    {'key': 'sr', 'init': 'string_replace cat dog', 'pos': (30, 150), 'w': 220, 'h': 110},
+    {'key': 's1', 'init': 'string', 'pos': (30, 275), 'w': 320, 'h': 42,
+     'props': {'text in': '', 'font size': '24', 'width': 280}},
+    {'key': 'c1', 'comment': True, 'text': 'matches anywhere: concatenated changes too',
+     'pos': (30, 325)},
+    {'key': 'wr', 'init': 'word_replace cat dog', 'pos': (30, 365), 'w': 220, 'h': 110},
+    {'key': 's2', 'init': 'string', 'pos': (30, 490), 'w': 320, 'h': 42,
+     'props': {'text in': '', 'font size': '24', 'width': 280}},
+    {'key': 'c2', 'comment': True, 'text': 'whole words only: it does not', 'pos': (30, 540)},
 ]
-links = [('btn', '', 'm1', ''),
-         ('m1', 'message out', 'sr', 'string in'), ('sr', 'string out', 's1', ''),
-         ('m1', 'message out', 'wr', 'string in'), ('wr', 'string out', 's2', ''),
-         ('m1', 'message out', 'pt', 'characters in')]
-print(build('string_replace', 'string_replace - substituting and cleaning up', body,
-            demo, links, demo_width=630, text_width=790, text_height=640))
+links = [('s0', 'string out', 'sr', 'string in'), ('sr', 'string out', 's1', ''),
+         ('s0', 'string out', 'wr', 'string in'), ('wr', 'string out', 's2', '')]
+print(build('string_replace', 'string_replace - find and put something else in its place', body,
+            demo, links, demo_width=400, text_width=790, text_height=640))
+
+# ---------------------------------------------------------------- unescape_text
+body = """unescape_text turns HTML escapes back into the characters they stand for.
+
+Text out of a web page, a feed or some network services arrives with
+characters written as codes: "&amp;" for an ampersand, "&lt;" and "&gt;" for
+angle brackets, "&quot;" for a double quote, "&eacute;" for an accented e,
+"&#8212;" or "&#x2014;" for a long dash. Until they are turned back, the string
+looks wrong when shown and fails to match words it should match.
+
+Every named and numbered escape HTML knows is handled. Anything else is left
+as it is.
+
+ONE TO WATCH:
+"&nbsp;" becomes a non-breaking space. It looks like a space but is not one,
+so splitting on spaces will not split there - and printable, which keeps only
+plain characters, removes it entirely, joining the words on either side.
+
+WHAT IT TAKES:
+Anything; it is turned into a string first. A list of words is joined with
+spaces, and line breaks are removed.
+
+SYNTAX:
+unescape_text
+
+INPUTS:
+
+escaped string in:
+The text. Receiving it triggers the node.
+
+OUTPUTS:
+
+unescaped string out:
+The same text with the escapes replaced.
+
+RELATED:
+printable removes characters rather than translating them.
+string_replace for any other substitution."""
+
+demo = [
+    {'key': 's0', 'init': 'string', 'pos': (30, 62), 'w': 440, 'h': 42,
+     'props': {'text in': 'fish &amp; chips &lt;b&gt; caf&eacute; &#8212; &quot;hi&quot;',
+               'font size': '24', 'width': 400}},
+    {'key': 'c0', 'comment': True, 'text': 'click to send it', 'pos': (30, 112)},
+    {'key': 'ue', 'init': 'unescape_text', 'pos': (30, 150), 'w': 200, 'h': 80},
+    {'key': 's1', 'init': 'string', 'pos': (30, 245), 'w': 440, 'h': 42,
+     'props': {'text in': '', 'font size': '24', 'width': 400}},
+    {'key': 'c1', 'comment': True, 'text': 'each code becomes the character it names',
+     'pos': (30, 295)},
+]
+links = [('s0', 'string out', 'ue', 'escaped string in'),
+         ('ue', 'unescaped string out', 's1', '')]
+print(build('unescape_text', 'unescape_text - HTML escapes back to characters', body,
+            demo, links, demo_width=500, text_width=790, text_height=560))
+
+# -------------------------------------------------------------------- printable
+body = """printable keeps only plain characters and drops everything else.
+
+"Plain" here means the basic English keyboard set: the letters a to z and A to
+Z, the digits, ordinary punctuation, spaces, tabs and carriage returns.
+Everything outside that set is removed - other control characters and
+invisible formatting, but also every
+accented letter, curly quotes, long dashes, symbols, emoji and every
+non-Latin script.
+
+WHAT IT IS FOR:
+Text that arrived from somewhere else - off a network, out of a file, from a
+speech service - and has things in it that are not really part of the text.
+Those are the strings that look correct and behave oddly: a comparison that
+fails, a width that is wrong, a word that will not match.
+
+WHAT IT COSTS:
+It does not translate anything, it deletes. "café" becomes "caf", a curly
+quoted word loses its quotes, and text in another language can vanish
+completely. Use it where plain English is what you expect; anywhere else it
+destroys the text.
+
+A non-breaking space is removed too, not turned into a space, so the words on
+either side run together.
+
+WHAT IT TAKES:
+Anything; it is turned into a string first. A list of words is joined with
+spaces, a float is written with three decimals, and line breaks are removed. If nothing
+is left, nothing is sent.
+
+SYNTAX:
+printable
+
+INPUTS:
+
+characters in:
+The text. Receiving it triggers the node.
+
+OUTPUTS:
+
+printable characters out:
+What survives.
+
+RELATED:
+unescape_text turns HTML codes into characters - run it first, since printable
+would leave the codes behind as plain text.
+string_replace to take out particular characters while keeping others."""
+
+demo = [
+    {'key': 's0', 'init': 'string', 'pos': (30, 62), 'w': 380, 'h': 42,
+     'props': {'text in': 'café “quoted” — plain text',
+               'font size': '24', 'width': 340}},
+    {'key': 'c0', 'comment': True, 'text': 'click to send it', 'pos': (30, 112)},
+    {'key': 'pt', 'init': 'printable', 'pos': (30, 150), 'w': 200, 'h': 80},
+    {'key': 's1', 'init': 'string', 'pos': (30, 245), 'w': 380, 'h': 42,
+     'props': {'text in': '', 'font size': '24', 'width': 340}},
+    {'key': 'c1', 'comment': True, 'text': 'the accent, the curly quotes and the dash\nare gone - deleted, not translated',
+     'pos': (30, 295)},
+]
+links = [('s0', 'string out', 'pt', 'characters in'),
+         ('pt', 'printable characters out', 's1', '')]
+print(build('printable', 'printable - keep only plain characters', body,
+            demo, links, demo_width=440, text_width=790, text_height=640))
 
 # ----------------------------------------------------------------- word_trigger
 body = """These watch text going past and react to particular words.

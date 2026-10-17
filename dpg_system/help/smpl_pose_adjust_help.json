@@ -1,11 +1,11 @@
 {
-    "height": 1408,
-    "width": 1754,
+    "height": 1072,
+    "width": 1450,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 570,
     "name": "smpl_pose_adjust_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/smpl_pose_adjust_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment smpl corrections - frames, yaw and the floor",
+            "init": "comment smpl_pose_adjust - per-joint corrections",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 549,
+            "width": 500,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "smpl corrections - frames, yaw and the floor",
+                    "value": "smpl_pose_adjust - per-joint corrections",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,12 +51,12 @@
                     "value_type": "str"
                 }
             },
-            "comment": "smpl corrections - frames, yaw and the floor"
+            "comment": "smpl_pose_adjust - per-joint corrections"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 896,
+            "position_x": 592,
             "position_y": 45,
             "width": 818,
             "height": 796,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These correct an SMPL pose that is right in shape but wrong in detail.\n\nTHE NODES:\n\nsmpl_pose_adjust      per-joint corrections\nsmpl_mag_yaw_correct  magnetometer yaw errors, per joint\nfloor_zero            put the feet on the floor\n\nWHICH FRAME A CORRECTION IS IN:\nsmpl_pose_adjust applies a per-joint axis-angle adjustment, and the frame it \napplies in decides whether the correction holds as the body moves.\n\nBy default the pelvis is post-multiplied - body-local - and every other joint \nis pre-multiplied, so the correction sits in the PARENT bone's frame. \nThe 'child frame' checkbox switches the others to post-multiply, putting the \ncorrection in the joint's OWN frame.\n\nA sensor mounted on the child side of a joint produces an error in the child's \nframe, and correcting it in the parent's will drift as the joint bends. \nIf a correction looks right in one posture and wrong in another, this is the \nsetting.\n\nsmpl_mag_yaw_correct HAS THE SAME TWO CORRECTIONS AS ITS SUIT COUNTERPART:\n'Global yaw' is pre-multiplied in the world frame and addresses ongoing \nmagnetometer drift. 'Local yaw' is post-multiplied in the joint's body frame \nand addresses a residual calibration offset baked into the T-pose.\n\n'sync' keeps the two equal, which is correct when a hard-iron bias produces the \nsame error in both - and wrong when it does not, so it is a convenience rather \nthan a default to leave on.\n\nfloor_zero IS A ONE-TIME CALIBRATION:\nOn 'calibrate' it runs a single forward-kinematics pass on the current pose, \nfinds the lowest foot relative to the root, and stores a CONSTANT vertical \noffset that puts that foot on the floor.\n\nConstant is the point. The offset is applied to every subsequent translation, \nso real vertical motion - jumps, crouches - is preserved exactly. A node that \nkept re-zeroing would flatten precisely the movement you care about.\n\nSYNTAX:\nsmpl_pose_adjust\nfloor_zero\n\nEXAMPLE:\nfloor_zero\n\nINPUTS and PARAMETERS:\n\npose in / pose:\nThe pose.\n\ntrans / config (floor_zero):\nThe root translation, and the body config it needs to run the kinematics.\n\nchild frame (smpl_pose_adjust):\nWhich frame the correction is applied in.\n\nsymmetric / sync local/global (smpl_mag_yaw_correct):\nMirror left to right, and tie the two corrections together.\n\nreset:\nClear the corrections.\n\nOUTPUTS: \n\npose out / trans:\nThe corrected pose or translation.\n\noffset / measured sole height (floor_zero):\nWhat was applied, and what it measured - worth checking, because an \nimplausible sole height means the pose or the betas are wrong rather than the \nfloor.\n\nRELATED:\nmag_yaw_correct does the same magnetic correction on the suit side, per sensor, \nbefore the pose becomes SMPL at all. Correcting there is better when you can, \nbecause it fixes the measurement rather than its consequences.",
+                    "value": "smpl_pose_adjust adds a fixed rotation to chosen joints of an SMPL pose - for a\npose that is right in shape but wrong in detail, such as a sensor that sits a\nlittle off on one limb.\n\nWHAT IT TAKES:\nAn SMPL pose in AXIS-ANGLE form: three numbers per joint, at least 22 joints,\nflat or one row per joint. Joints past the 22nd (the hands) pass through\nuntouched. A pose in quaternions produces no output at all - from\nshadow_to_smpl, set 'output_format' to axis_angle.\n\nTHE CORRECTIONS:\nThere is one row of three numbers per body joint, named pelvis, left_hip, and\nso on to right_wrist. Each row is a rotation in axis-angle form: the direction\nof the three numbers is the axis, and their length is the angle in radians.\nAll zeros means no correction. A corrected joint carries everything below it\nwith it, as a real joint would.\n\nWHICH FRAME A CORRECTION IS IN:\nThe frame the rotation is applied in decides whether the correction holds as\nthe body moves.\n\nThe pelvis correction is always in the body's own frame. Every other joint's\ncorrection is, by default, in its PARENT bone's frame. The 'child frame'\ncheckbox switches them to the joint's OWN frame.\n\nA sensor mounted on the child side of a joint produces an error in the child's\nframe, and correcting it in the parent's will drift as the joint bends. If a\ncorrection looks right in one posture and wrong in another, this is the\nsetting.\n\nSYNTAX:\nsmpl_pose_adjust\n\nEXAMPLE:\nsmpl_pose_adjust\n\nINPUTS:\n\npose in:\nThe axis-angle pose.\n\nchild frame:\nOff: corrections in the parent bone's frame. On: in the joint's own frame.\n\nreset:\nSet every correction back to zero.\n\npelvis ... right_wrist:\nThe correction for each joint, as above. The values are saved with the patch\nand with presets.\n\nOUTPUT:\n\npose out:\nThe corrected pose, one row per joint. Joints without a\ncorrection come out exactly as they went in.\n\nRELATED:\nsmpl_mag_yaw_correct corrects magnetometer heading errors joint by joint.\nfloor_zero puts the feet on the floor.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These correct an SMPL pose that is right in shape but wrong in detail.\n\nTHE NODES:\n\nsmpl_pose_adjust      per-joint corrections\nsmpl_mag_yaw_correct  magnetometer yaw errors, per joint\nfloor_zero            put the feet on the floor\n\nWHICH FRAME A CORRECTION IS IN:\nsmpl_pose_adjust applies a per-joint axis-angle adjustment, and the frame it \napplies in decides whether the correction holds as the body moves.\n\nBy default the pelvis is post-multiplied - body-local - and every other joint \nis pre-multiplied, so the correction sits in the PARENT bone's frame. \nThe 'child frame' checkbox switches the others to post-multiply, putting the \ncorrection in the joint's OWN frame.\n\nA sensor mounted on the child side of a joint produces an error in the child's \nframe, and correcting it in the parent's will drift as the joint bends. \nIf a correction looks right in one posture and wrong in another, this is the \nsetting.\n\nsmpl_mag_yaw_correct HAS THE SAME TWO CORRECTIONS AS ITS SUIT COUNTERPART:\n'Global yaw' is pre-multiplied in the world frame and addresses ongoing \nmagnetometer drift. 'Local yaw' is post-multiplied in the joint's body frame \nand addresses a residual calibration offset baked into the T-pose.\n\n'sync' keeps the two equal, which is correct when a hard-iron bias produces the \nsame error in both - and wrong when it does not, so it is a convenience rather \nthan a default to leave on.\n\nfloor_zero IS A ONE-TIME CALIBRATION:\nOn 'calibrate' it runs a single forward-kinematics pass on the current pose, \nfinds the lowest foot relative to the root, and stores a CONSTANT vertical \noffset that puts that foot on the floor.\n\nConstant is the point. The offset is applied to every subsequent translation, \nso real vertical motion - jumps, crouches - is preserved exactly. A node that \nkept re-zeroing would flatten precisely the movement you care about.\n\nSYNTAX:\nsmpl_pose_adjust\nfloor_zero\n\nEXAMPLE:\nfloor_zero\n\nINPUTS and PARAMETERS:\n\npose in / pose:\nThe pose.\n\ntrans / config (floor_zero):\nThe root translation, and the body config it needs to run the kinematics.\n\nchild frame (smpl_pose_adjust):\nWhich frame the correction is applied in.\n\nsymmetric / sync local/global (smpl_mag_yaw_correct):\nMirror left to right, and tie the two corrections together.\n\nreset:\nClear the corrections.\n\nOUTPUTS: \n\npose out / trans:\nThe corrected pose or translation.\n\noffset / measured sole height (floor_zero):\nWhat was applied, and what it measured - worth checking, because an \nimplausible sole height means the pose or the betas are wrong rather than the \nfloor.\n\nRELATED:\nmag_yaw_correct does the same magnetic correction on the suit side, per sensor, \nbefore the pose becomes SMPL at all. Correcting there is better when you can, \nbecause it fixes the measurement rather than its consequences."
+            "text": "smpl_pose_adjust adds a fixed rotation to chosen joints of an SMPL pose - for a\npose that is right in shape but wrong in detail, such as a sensor that sits a\nlittle off on one limb.\n\nWHAT IT TAKES:\nAn SMPL pose in AXIS-ANGLE form: three numbers per joint, at least 22 joints,\nflat or one row per joint. Joints past the 22nd (the hands) pass through\nuntouched. A pose in quaternions produces no output at all - from\nshadow_to_smpl, set 'output_format' to axis_angle.\n\nTHE CORRECTIONS:\nThere is one row of three numbers per body joint, named pelvis, left_hip, and\nso on to right_wrist. Each row is a rotation in axis-angle form: the direction\nof the three numbers is the axis, and their length is the angle in radians.\nAll zeros means no correction. A corrected joint carries everything below it\nwith it, as a real joint would.\n\nWHICH FRAME A CORRECTION IS IN:\nThe frame the rotation is applied in decides whether the correction holds as\nthe body moves.\n\nThe pelvis correction is always in the body's own frame. Every other joint's\ncorrection is, by default, in its PARENT bone's frame. The 'child frame'\ncheckbox switches them to the joint's OWN frame.\n\nA sensor mounted on the child side of a joint produces an error in the child's\nframe, and correcting it in the parent's will drift as the joint bends. If a\ncorrection looks right in one posture and wrong in another, this is the\nsetting.\n\nSYNTAX:\nsmpl_pose_adjust\n\nEXAMPLE:\nsmpl_pose_adjust\n\nINPUTS:\n\npose in:\nThe axis-angle pose.\n\nchild frame:\nOff: corrections in the parent bone's frame. On: in the joint's own frame.\n\nreset:\nSet every correction back to zero.\n\npelvis ... right_wrist:\nThe correction for each joint, as above. The values are saved with the patch\nand with presets.\n\nOUTPUT:\n\npose out:\nThe corrected pose, one row per joint. Joints without a\ncorrection come out exactly as they went in.\n\nRELATED:\nsmpl_mag_yaw_correct corrects magnetometer heading errors joint by joint.\nfloor_zero puts the feet on the floor."
         },
         "3": {
             "name": "shadow",
@@ -105,20 +105,8 @@
             "properties": {}
         },
         "4": {
-            "name": "smpl_beta_editor",
-            "id": 385,
-            "position_x": 350,
-            "position_y": 62,
-            "width": 229,
-            "height": 322,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
             "name": "shadow_to_smpl",
-            "id": 422,
+            "id": 385,
             "position_x": 30,
             "position_y": 400,
             "width": 179,
@@ -126,7 +114,53 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "output_format",
+                    "value": "axis_angle",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 294,
+            "position_y": 400,
+            "width": 188,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "output_format axis_angle:\nquaternions are ignored",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "output_format axis_angle:\nquaternions are ignored"
         },
         "6": {
             "name": "smpl_pose_adjust",
@@ -141,49 +175,12 @@
             "properties": {}
         },
         "7": {
-            "init": "comment child frame: which frame it applies in",
-            "name": "comment",
-            "id": 496,
-            "position_x": 605,
-            "position_y": 775,
-            "width": 242,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "child frame: which frame it applies in",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "child frame: which frame it applies in"
-        },
-        "8": {
-            "name": "smpl_mag_yaw_correct",
-            "id": 533,
-            "position_x": 350,
-            "position_y": 560,
-            "width": 168,
-            "height": 714,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
             "name": "text_block",
-            "id": 570,
+            "id": 496,
             "annotation": true,
-            "position_x": 605,
-            "position_y": 815,
-            "width": 261,
+            "position_x": 294,
+            "position_y": 560,
+            "width": 268,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -191,7 +188,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "global = drift in the room;\nlocal = calibration baked into T-pose",
+                    "value": "one rotation per joint, in radians\nchild frame: which frame it applies in",
                     "value_type": "str"
                 },
                 "1": {
@@ -201,7 +198,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 253,
+                    "value": 260,
                     "value_type": "int"
                 },
                 "3": {
@@ -215,50 +212,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "global = drift in the room;\nlocal = calibration baked into T-pose"
+            "text": "one rotation per joint, in radians\nchild frame: which frame it applies in"
         },
-        "10": {
-            "name": "floor_zero",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 958,
-            "width": 136,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "11": {
-            "init": "comment a CONSTANT offset, so jumps survive",
-            "name": "comment",
-            "id": 644,
-            "position_x": 605,
-            "position_y": 1133,
-            "width": 224,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a CONSTANT offset, so jumps survive",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a CONSTANT offset, so jumps survive"
-        },
-        "12": {
+        "8": {
             "name": "close",
-            "id": 681,
+            "id": 533,
             "position_x": 24,
-            "position_y": 1304,
+            "position_y": 968,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -279,7 +239,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "body 1 quaternions",
-            "dest_node": 422,
+            "dest_node": 385,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "pose"
@@ -289,7 +249,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "body 1 positions",
-            "dest_node": 422,
+            "dest_node": 385,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "positions"
@@ -298,61 +258,11 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "config",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "config"
-        },
-        "3": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
             "source_output_name": "pose",
             "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "pose in"
-        },
-        "4": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "pose",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "pose in"
-        },
-        "5": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "trans",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "trans"
-        },
-        "6": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "pose",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "pose"
-        },
-        "7": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "config",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "config"
         }
     }
 }

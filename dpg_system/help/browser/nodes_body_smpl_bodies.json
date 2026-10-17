@@ -1,11 +1,11 @@
 {
-    "height": 424,
+    "height": 528,
     "width": 804,
     "position": [
         100,
         100
     ],
-    "id": 1018,
+    "id": 1166,
     "name": "nodes_body_smpl_bodies",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_body_smpl_bodies.json",
     "nodes": {
@@ -274,7 +274,7 @@
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link smpl_pose_adjust smpl corrections",
+            "init": "help_link smpl_pose_adjust smpl_pose_adjust",
             "name": "help_link",
             "position_x": 24,
             "position_y": 262,
@@ -282,7 +282,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "smpl corrections",
+                    "name": "smpl_pose_adjust",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -307,12 +307,12 @@
             "annotation": true,
             "position_x": 244,
             "position_y": 266,
-            "width": 354,
-            "height": 40,
+            "width": 163,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "frames, yaw and the floor\n(floor_zero, smpl_mag_yaw_correct, smpl_pose_adjust)",
+                    "value": "per-joint corrections",
                     "value_type": "str"
                 },
                 "1": {
@@ -322,12 +322,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 346,
+                    "value": 155,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -336,14 +336,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "frames, yaw and the floor\n(floor_zero, smpl_mag_yaw_correct, smpl_pose_adjust)",
+            "text": "per-joint corrections",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
-            "init": "help_link smpl_pose_to_joints smpl pose / quats to joints",
+            "init": "help_link smpl_mag_yaw_correct smpl_mag_yaw_correct",
             "name": "help_link",
             "position_x": 24,
             "position_y": 314,
@@ -351,7 +351,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "smpl pose / quats to joints",
+                    "name": "smpl_mag_yaw_correct",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -376,6 +376,144 @@
             "annotation": true,
             "position_x": 244,
             "position_y": 318,
+            "width": 175,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "heading, joint by joint",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 167,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "heading, joint by joint",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link floor_zero floor_zero",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 366,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "floor_zero",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 370,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "put the feet on the floor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "put the feet on the floor",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link smpl_pose_to_joints smpl pose / quats to joints",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 418,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl pose / quats to joints",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 422,
             "width": 298,
             "height": 40,
             "properties": {
@@ -406,7 +544,7 @@
                 }
             },
             "text": "one outlet per joint\n(smpl_pose_to_joints, smpl_quats_to_joints)",
-            "id": 981,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

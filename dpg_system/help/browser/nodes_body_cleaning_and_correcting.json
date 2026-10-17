@@ -1,11 +1,11 @@
 {
-    "height": 520,
+    "height": 572,
     "width": 643,
     "position": [
         100,
         100
     ],
-    "id": 1166,
+    "id": 1240,
     "name": "nodes_body_cleaning_and_correcting",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_body_cleaning_and_correcting.json",
     "nodes": {
@@ -205,7 +205,7 @@
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link cadence_filter cadence_filter / check_burst",
+            "init": "help_link cadence_filter cadence_filter",
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
@@ -213,7 +213,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "cadence_filter / check_burst",
+                    "name": "cadence_filter",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -238,12 +238,12 @@
             "annotation": true,
             "position_x": 268,
             "position_y": 206,
-            "width": 212,
-            "height": 40,
+            "width": 188,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "artefacts, not movement\n(cadence_filter, check_burst)",
+                    "value": "remove a recording rhythm",
                     "value_type": "str"
                 },
                 "1": {
@@ -253,12 +253,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 204,
+                    "value": 180,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -267,14 +267,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "artefacts, not movement\n(cadence_filter, check_burst)",
+            "text": "remove a recording rhythm",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link sensor_to_root sensor_to_root / root inference",
+            "init": "help_link check_burst check_burst",
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
@@ -282,7 +282,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "sensor_to_root / root inference",
+                    "name": "check_burst",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -307,6 +307,75 @@
             "annotation": true,
             "position_x": 268,
             "position_y": 258,
+            "width": 169,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "flag implausible jumps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 161,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "flag implausible jumps",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link sensor_to_root sensor_to_root / root inference",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 230,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "sensor_to_root / root inference",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 268,
+            "position_y": 310,
             "width": 280,
             "height": 40,
             "properties": {
@@ -337,16 +406,16 @@
                 }
             },
             "text": "where the body actually is\n(sensor_to_root, tracker_root_inference)",
-            "id": 907,
+            "id": 981,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "11": {
+        "13": {
             "init": "help_link tracker_align tracker_align",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 306,
+            "position_y": 358,
             "width": 230,
             "height": 44,
             "properties": {
@@ -366,16 +435,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 944,
+            "id": 1018,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "14": {
             "name": "text_block",
             "annotation": true,
             "position_x": 268,
-            "position_y": 310,
+            "position_y": 362,
             "width": 261,
             "height": 28,
             "properties": {
@@ -406,16 +475,16 @@
                 }
             },
             "text": "putting a tracker in the suit's world",
-            "id": 981,
+            "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "15": {
             "init": "help_link noise_review noise_review",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 358,
+            "position_y": 410,
             "width": 230,
             "height": 44,
             "properties": {
@@ -435,16 +504,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1018,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "16": {
             "name": "text_block",
             "annotation": true,
             "position_x": 268,
-            "position_y": 362,
+            "position_y": 414,
             "width": 200,
             "height": 28,
             "properties": {
@@ -475,16 +544,16 @@
                 }
             },
             "text": "looking at what was flagged",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "17": {
             "init": "help_link json_npz_frame_picker json_npz_frame_picker",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 410,
+            "position_y": 462,
             "width": 230,
             "height": 44,
             "properties": {
@@ -504,16 +573,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1092,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "18": {
             "name": "text_block",
             "annotation": true,
             "position_x": 268,
-            "position_y": 414,
+            "position_y": 466,
             "width": 181,
             "height": 28,
             "properties": {
@@ -544,7 +613,7 @@
                 }
             },
             "text": "reviewing flagged frames",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

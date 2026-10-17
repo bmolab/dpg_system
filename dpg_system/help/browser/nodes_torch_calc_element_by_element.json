@@ -1,11 +1,11 @@
 {
-    "height": 468,
+    "height": 520,
     "width": 606,
     "position": [
         100,
         100
     ],
-    "id": 1092,
+    "id": 1166,
     "name": "nodes_torch_calc_element_by_element",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_calc_element_by_element.json",
     "nodes": {
@@ -274,7 +274,7 @@
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link t.gcd t.gcd / t.copysign / t.lcm",
+            "init": "help_link t.gcd t.gcd / t.lcm",
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
@@ -282,7 +282,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.gcd / t.copysign / t.lcm",
+                    "name": "t.gcd / t.lcm",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -307,12 +307,12 @@
             "annotation": true,
             "position_x": 268,
             "position_y": 258,
-            "width": 194,
+            "width": 175,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "whole numbers and signs\n(t.copysign, t.gcd, t.lcm)",
+                    "value": "whole numbers in common\n(t.gcd, t.lcm)",
                     "value_type": "str"
                 },
                 "1": {
@@ -322,7 +322,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 186,
+                    "value": 167,
                     "value_type": "int"
                 },
                 "3": {
@@ -336,14 +336,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "whole numbers and signs\n(t.copysign, t.gcd, t.lcm)",
+            "text": "whole numbers in common\n(t.gcd, t.lcm)",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
-            "init": "help_link t.complex t.complex / t.imag / t.real",
+            "init": "help_link t.copysign t.copysign",
             "name": "help_link",
             "position_x": 24,
             "position_y": 306,
@@ -351,7 +351,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.complex / t.imag / t.real",
+                    "name": "t.copysign",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -376,6 +376,75 @@
             "annotation": true,
             "position_x": 268,
             "position_y": 310,
+            "width": 231,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "size from one, sign from another",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "size from one, sign from another",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link t.complex t.complex / t.imag / t.real",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 230,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.complex / t.imag / t.real",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 214,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 268,
+            "position_y": 362,
             "width": 212,
             "height": 40,
             "properties": {
@@ -406,16 +475,16 @@
                 }
             },
             "text": "two numbers travelling as one\n(t.complex, t.imag, t.real)",
-            "id": 981,
+            "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "15": {
             "init": "help_link t.comparison t comparisons",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 358,
+            "position_y": 410,
             "width": 230,
             "height": 44,
             "properties": {
@@ -435,16 +504,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1018,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "16": {
             "name": "text_block",
             "annotation": true,
             "position_x": 268,
-            "position_y": 362,
+            "position_y": 414,
             "width": 255,
             "height": 40,
             "properties": {
@@ -475,7 +544,7 @@
                 }
             },
             "text": "a tensor of answers, not one\n(t.eq, t.ge, t.gt, t.le, t.lt, t.ne)",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

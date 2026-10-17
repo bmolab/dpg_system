@@ -397,89 +397,201 @@ print(build('t.special.gammainc', 't.special gamma - factorials, continued', bod
             demo, links, demo_width=520, text_width=810, text_height=720))
 
 # ------------------------------------------------------------- t.special.xlogy
-body = """Four functions that each exist to survive a case where the obvious calculation 
-falls over.
+body = """x times a logarithm, made safe for x = 0.
 
 THE NODES:
 
 t.special.xlogy    x times the log of y, defined as 0 when x is 0
 t.special.xlog1py  x times the log of (1 plus y), same protection
-t.special.logits   the inverse of the sigmoid, with a safety margin
-t.special.zeta     the Hurwitz zeta function
 
 xlogy IS NOT JUST A MULTIPLY:
-Written out directly, x times log(y) gives not-a-number when x is 0 and y is 0, 
-because log(0) is minus infinity and 0 times infinity is undefined. But the 
-limit is 0, and 0 is the answer you want. This node returns it.
+Written out directly, x times log(y) gives not-a-number when x is 0 and y is 0,
+because log(0) is minus infinity and 0 times infinity is undefined. But the
+limit is 0, and 0 is the answer you want. This node returns it: whenever x is 0
+the result is 0, whatever y is (unless y is itself not-a-number).
 
-That matters because x times log(y) is the shape of every entropy and 
-cross-entropy calculation - a probability multiplied by its own log - and zero 
-probabilities are entirely normal there. Doing it by hand produces NaN that then 
+That matters because x times log(y) is the shape of every entropy and
+cross-entropy calculation - a probability multiplied by its own log - and zero
+probabilities are entirely normal there. Doing it by hand produces NaN that then
 poisons every subsequent sum. Using this node does not.
 
-xlog1py does the same for log(1 plus y), which is the accurate way to take a 
-logarithm near 1 - the same reason log1p exists.
-
-logits UNDOES A SIGMOID:
-Given a probability between 0 and 1, it returns the unbounded score that a 
-sigmoid would have turned into that probability. The trouble is at the ends: 
-the answer at exactly 0 or 1 is infinite. 'eps' pulls the input a hair away 
-from both ends first, so a probability of exactly 1 returns a large number 
-rather than an infinity.
-
-zeta:
-The Hurwitz zeta function, a generalisation of the Riemann zeta. It appears in 
-the normalisation of some heavy-tailed distributions and in the derivatives of 
-the gamma function.
+xlog1py:
+The same, with log(1 plus y) in place of log(y). Taking log(1 plus y) directly
+loses accuracy when y is very small, because adding 1 first throws away y's
+digits; this computes it without that loss - the same reason log1p exists. Here
+the protected case is y = -1, where log(1 plus y) is minus infinity.
 
 SYNTAX:
 t.special.xlogy
-t.special.logits
-
-EXAMPLE:
-t.special.xlogy
+t.special.xlog1py
 
 INPUTS and PARAMETERS:
 
-tensor 1 or number in / tensor 2 or number in:
-The two arguments. Either may be a single number rather than a tensor, applied 
-everywhere.
+tensor 1 or number in:
+x, the multiplier. Receiving it does the work.
 
-tensor in / eps (logits):
-The probabilities, and how far from 0 and 1 to hold them.
+tensor 2 or number in:
+y, the value whose logarithm is taken. Either input may be a single number
+rather than a tensor, applied everywhere. This one is only stored when it
+arrives, so send it BEFORE x - the example connects it first for that reason.
 
-OUTPUTS: 
+OUTPUTS:
 
 tensor out:
 The result, element by element.
 
-WHY THESE ARE WORTH KNOWING ABOUT:
-None of them computes anything you could not write yourself. What they do is 
-handle the edge case correctly and without a branch. When a calculation over a 
-tensor produces NaN somewhere in the middle and you cannot see where, a zero 
-going through a logarithm is the first thing to suspect, and one of these is 
-usually the fix."""
+WHEN TO SUSPECT YOU NEED THIS:
+When a calculation over a tensor produces NaN somewhere in the middle and you
+cannot see where, a zero going through a logarithm is the first thing to
+suspect.
+
+RELATED:
+t.special.logits - the inverse of the sigmoid, the other log near the edges."""
 
 demo = [
     {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
     {'key': 'm1', 'init': 'message', 'pos': (30, 118), 'w': 260, 'h': 42,
      'props': {'text in': '0.0 0.25 0.5 0.75', 'font size': '24'}},
-    {'key': 'c0', 'comment': True, 'text': 'note the zero at the start', 'pos': (30, 168)},
-    {'key': 'xl', 'init': 't.special.xlogy', 'pos': (30, 205), 'w': 240, 'h': 90},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 310), 'w': 320, 'h': 42,
+    {'key': 'c0', 'comment': True, 'text': 'the same list goes to x and y -\nnote the zero at the start', 'pos': (30, 168)},
+    {'key': 'xl', 'init': 't.special.xlogy', 'pos': (30, 225), 'w': 240, 'h': 90},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 330), 'w': 320, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c1', 'comment': True, 'text': 'x times log y, with 0 log 0 giving 0\ndoing it by hand would give NaN there',
-     'pos': (30, 360)},
-    {'key': 'lg', 'init': 't.special.logits', 'pos': (30, 435), 'w': 220, 'h': 90},
-    {'key': 'l2', 'init': 'list', 'pos': (30, 540), 'w': 320, 'h': 42,
+    {'key': 'c1', 'comment': True, 'text': 'x times log x, with 0 log 0 giving 0\ndoing it by hand would give NaN there',
+     'pos': (30, 380)},
+    {'key': 'x1', 'init': 't.special.xlog1py', 'pos': (30, 450), 'w': 240, 'h': 90},
+    {'key': 'l2', 'init': 'list', 'pos': (30, 555), 'w': 320, 'h': 42,
      'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c3', 'comment': True, 'text': 'a sigmoid undone; eps keeps the ends finite',
-     'pos': (30, 590)},
+    {'key': 'c2', 'comment': True, 'text': 'x times log (1 plus x)',
+     'pos': (30, 605)},
 ]
 links = [('btn', '', 'm1', ''),
          ('m1', 'message out', 'xl', 'tensor 2 or number in'),
          ('m1', 'message out', 'xl', 'tensor 1 or number in'),
          ('xl', 'tensor out', 'l1', ''),
-         ('m1', 'message out', 'lg', 'tensor in'), ('lg', 'tensor out', 'l2', '')]
-print(build('t.special.xlogy', 't.special.xlogy - surviving the edge cases', body,
-            demo, links, demo_width=480, text_width=800, text_height=700))
+         ('m1', 'message out', 'x1', 'tensor 2 or number in'),
+         ('m1', 'message out', 'x1', 'tensor 1 or number in'),
+         ('x1', 'tensor out', 'l2', '')]
+print(build('t.special.xlogy', 't.special.xlogy - x log y without the NaN', body,
+            demo, links, demo_width=480, text_width=800, text_height=660))
+
+# ------------------------------------------------------------ t.special.logits
+body = """The inverse of the sigmoid: turns a probability back into a score.
+
+WHAT IT GIVES YOU:
+Given a probability between 0 and 1, it returns the unbounded score that a
+sigmoid would have turned into that probability - the log of p over (1 minus p).
+0.5 becomes 0, values above 0.5 become positive, values below become negative,
+and the ends stretch out without limit.
+
+That is useful whenever you want to add, average or smooth probabilities: do it
+on the logits, where 0.99 and 0.999 are properly far apart, then put the result
+back through a sigmoid.
+
+THE ENDS ARE INFINITE - eps IS THE SAFETY MARGIN:
+At exactly 0 the answer is minus infinity, and at exactly 1 it is plus infinity.
+'eps' clamps the input to between eps and 1 minus eps first, so the ends come
+out as large finite numbers instead.
+
+THE DEFAULT eps IS TOO SMALL FOR THE TOP END:
+eps starts at 0.00000001. Tensors here are ordinary 32-bit floats, and in those
+1 minus 0.00000001 rounds back to exactly 1 - so a probability of 1 still comes
+out as infinity. The bottom end is protected (0 gives about -18.4). To keep both
+ends finite, set eps to 0.000001 or larger; the example shows both settings.
+
+SYNTAX:
+t.special.logits
+
+INPUTS and PARAMETERS:
+
+tensor in:
+The probabilities, 0 to 1. Receiving them does the work. Values outside 0..1
+are clamped by eps too, so they come out at the ends rather than as errors.
+
+eps:
+How far from 0 and 1 to hold the input. Default 0.00000001.
+
+OUTPUTS:
+
+tensor out:
+The scores, element by element.
+
+RELATED:
+t.special.expit (and t.nn.sigmoid) go the other way, score to probability."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'm1', 'init': 'message', 'pos': (30, 118), 'w': 300, 'h': 42,
+     'props': {'text in': '0.0 0.25 0.5 0.75 1.0', 'font size': '24'}},
+    {'key': 'lg', 'init': 't.special.logits', 'pos': (30, 205), 'w': 220, 'h': 90},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 310), 'w': 360, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'default eps: the 1.0 still comes out as inf',
+     'pos': (30, 360)},
+    {'key': 'lg2', 'init': 't.special.logits', 'pos': (30, 420), 'w': 220, 'h': 90,
+     'props': {'eps': 0.000001}},
+    {'key': 'l2', 'init': 'list', 'pos': (30, 525), 'w': 360, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'eps 0.000001: both ends finite',
+     'pos': (30, 575)},
+]
+links = [('btn', '', 'm1', ''),
+         ('m1', 'message out', 'lg', 'tensor in'), ('lg', 'tensor out', 'l1', ''),
+         ('m1', 'message out', 'lg2', 'tensor in'), ('lg2', 'tensor out', 'l2', '')]
+print(build('t.special.logits', 't.special.logits - probability back to score', body,
+            demo, links, demo_width=480, text_width=800, text_height=660))
+
+# ------------------------------------------------------------- t.special.zeta
+body = """The Hurwitz zeta function.
+
+WHAT IT COMPUTES:
+zeta(x, q) is the sum, over k = 0, 1, 2, ..., of 1 divided by (k plus q) raised
+to the power x. With q = 1 it is the ordinary Riemann zeta function: zeta(2, 1)
+is pi squared over 6, about 1.645.
+
+The sum only settles to a finite value when x is greater than 1. At x = 1 the
+result is infinity, and below 1 it is not-a-number. q should be positive.
+
+WHERE IT TURNS UP:
+It is the normalising constant of discrete power laws - Zipf-like
+distributions, where the k-th most common thing occurs in proportion to 1 over
+k to the x - and it appears in the derivatives of the gamma function
+(t.special.polygamma is built from it).
+
+SYNTAX:
+t.special.zeta
+
+INPUTS and PARAMETERS:
+
+tensor 1 or number in:
+x, the power. Receiving it does the work.
+
+tensor 2 or number in:
+q, the offset. Either input may be a single number rather than a tensor,
+applied everywhere. This one is only stored when it arrives, so send it
+BEFORE x.
+
+OUTPUTS:
+
+tensor out:
+The result, element by element."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'mq', 'init': 'message', 'pos': (300, 118), 'w': 120, 'h': 42,
+     'props': {'text in': '1.0', 'font size': '24'}},
+    {'key': 'c0', 'comment': True, 'text': 'q = 1: the Riemann zeta', 'pos': (300, 168)},
+    {'key': 'mx', 'init': 'message', 'pos': (30, 118), 'w': 220, 'h': 42,
+     'props': {'text in': '2.0 3.0 4.0', 'font size': '24'}},
+    {'key': 'zt', 'init': 't.special.zeta', 'pos': (30, 225), 'w': 240, 'h': 90},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 330), 'w': 320, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': '1.645 (pi squared over 6), 1.202, 1.082',
+     'pos': (30, 380)},
+]
+links = [('btn', '', 'mq', ''), ('btn', '', 'mx', ''),
+         ('mq', 'message out', 'zt', 'tensor 2 or number in'),
+         ('mx', 'message out', 'zt', 'tensor 1 or number in'),
+         ('zt', 'tensor out', 'l1', '')]
+print(build('t.special.zeta', 't.special.zeta - the Hurwitz zeta function', body,
+            demo, links, demo_width=480, text_width=800, text_height=560))
+

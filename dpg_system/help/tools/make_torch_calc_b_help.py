@@ -89,49 +89,118 @@ print(build('t.complex', 't.complex - two numbers travelling as one', body, demo
             links, demo_width=500, text_width=790, text_height=640))
 
 # ---------------------------------------------------------------------- t.gcd
-body = """Three nodes that work on whole numbers and on signs.
+body = """Two number-theory nodes for whole-number tensors, element by element.
 
 THE NODES:
 
-t.gcd        the greatest common divisor of two tensors, element by element
-t.lcm        the least common multiple
-t.copysign   take the size from one tensor and the sign from another
+t.gcd   the greatest common divisor - the largest number that divides both
+t.lcm   the least common multiple - the smallest number both divide into
 
-t.gcd and t.lcm want INTEGER tensors - they are number theory, not arithmetic, 
-and a float tensor is the wrong kind of thing to ask them about. Their use in a 
-patch is rhythmic more often than mathematical: the lowest common multiple of 
-two cycle lengths is how long it takes before they line up again, which is the 
-length of the combined pattern.
+Their use in a patch is rhythmic more often than mathematical: the least common
+multiple of two cycle lengths is how long it takes before they line up again,
+which is the length of the combined pattern. The greatest common divisor is the
+largest step that lands on the beats of both.
 
-t.copysign IS THE USEFUL ODD ONE:
-It gives you the magnitude of one tensor with the sign of another. That is how 
-you apply a symmetric curve to a signal that swings both ways: take the 
-absolute value, put it through the curve, then copy the original sign back. 
-Without that last step a curve applied to a bipolar signal folds its negative 
-half the wrong way.
+THEY WANT INTEGER TENSORS - AND THE FIRST INLET WILL NOT MAKE ONE:
+These are number theory, not arithmetic, and a float tensor is the wrong kind of
+thing to ask them about. The two inlets are treated differently:
 
-It also handles negative zero correctly, which matters more than it sounds when 
-the sign is carrying information about a direction that has momentarily 
-stopped.
+'tensor b in' converts whatever arrives - a list, a number, a tensor - to whole
+numbers for you.
+
+'tensor a in' does not. A list or a number arriving there becomes a FLOAT
+tensor, and the node then fails with an error in the console and sends nothing.
+Put a t.to int64 in front of it, as the example does, unless what arrives is
+already an integer tensor.
+
+A zero is allowed: the gcd of a number and 0 is the number itself, and the lcm
+of anything with 0 is 0.
 
 SYNTAX:
 t.gcd
-t.copysign
+t.lcm
 
-EXAMPLE:
+INPUTS and PARAMETERS:
+
+tensor a in:
+The first tensor, which must already be integers. Receiving it does the work.
+
+tensor b in:
+The second tensor, or a single number applied everywhere. It is only stored
+when it arrives, so send it BEFORE tensor a.
+
+OUTPUTS:
+
+gcd tensor out / lcm tensor out:
+The result, element by element, as whole numbers."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'mb', 'init': 'message', 'pos': (300, 118), 'w': 220, 'h': 42,
+     'props': {'text in': '8 12 21 0', 'font size': '24'}},
+    {'key': 'ma', 'init': 'message', 'pos': (30, 118), 'w': 220, 'h': 42,
+     'props': {'text in': '12 18 7 9', 'font size': '24'}},
+    {'key': 'c0', 'comment': True, 'text': 'b goes first: it is only stored', 'pos': (300, 168)},
+    {'key': 'to', 'init': 't.to int64', 'pos': (30, 205), 'w': 200, 'h': 120},
+    {'key': 'c1', 'comment': True, 'text': 'a list into tensor a would\nbecome floats - make it whole numbers',
+     'pos': (30, 335)},
+    {'key': 'gc', 'init': 't.gcd', 'pos': (30, 400), 'w': 200, 'h': 80},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 495), 'w': 220, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'gcd: 4 6 7 9', 'pos': (30, 545)},
+    {'key': 'lc', 'init': 't.lcm', 'pos': (300, 400), 'w': 200, 'h': 80},
+    {'key': 'l2', 'init': 'list', 'pos': (300, 495), 'w': 220, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': 'lcm: 24 36 21 0', 'pos': (300, 545)},
+]
+links = [('btn', '', 'mb', ''), ('btn', '', 'ma', ''),
+         ('mb', 'message out', 'gc', 'tensor b in'),
+         ('mb', 'message out', 'lc', 'tensor b in'),
+         ('ma', 'message out', 'to', 'in'),
+         ('to', 'tensor out', 'gc', 'tensor a in'),
+         ('to', 'tensor out', 'lc', 'tensor a in'),
+         ('gc', 'gcd tensor out', 'l1', ''), ('lc', 'lcm tensor out', 'l2', '')]
+print(build('t.gcd', 't.gcd and t.lcm - whole numbers in common', body,
+            demo, links, demo_width=560, text_width=790, text_height=620))
+
+# ----------------------------------------------------------------- t.copysign
+body = """Takes the size from one tensor and the sign from another.
+
+WHAT IT IS FOR:
+Applying a symmetric curve to a signal that swings both ways. Take the absolute
+value, put it through the curve, then copy the original sign back. Without that
+last step a curve applied to a bipolar signal folds its negative half the wrong
+way - everything comes out positive.
+
+The example does the first and last steps with nothing in between, so you can
+see that the original values come back exactly.
+
+NEGATIVE ZERO COUNTS AS NEGATIVE:
+The sign is read from the sign bit, so a sign value of -0.0 makes the result
+negative. That matters more than it sounds when the sign is carrying information
+about a direction that has momentarily stopped.
+
+SEND THE SIGN FIRST:
+'sign tensor' is only stored when it arrives; 'tensor in' is what makes the
+node work, and it uses whatever sign tensor it last received. If both come from
+the same source, connect the sign cord first so it gets there first -
+otherwise every result carries the signs from the time before.
+
+SYNTAX:
 t.copysign
 
 INPUTS and PARAMETERS:
 
-tensor a in / tensor b in:
-The two tensors. Receiving the first triggers the node.
+tensor in:
+Where the size comes from. Receiving it does the work.
 
-tensor in / sign tensor (t.copysign):
-Where the magnitude comes from, and where the sign comes from.
+sign tensor:
+Where the sign comes from - a tensor of the same shape, or a single number
+applied everywhere.
 
-OUTPUTS: 
+OUTPUTS:
 
-out / tensor with copied sign:
+tensor with copied sign:
 The result, in the same shape."""
 
 demo = [
@@ -150,14 +219,15 @@ demo = [
     {'key': 'c2', 'comment': True, 'text': 'and the original signs put back',
      'pos': (30, 745)},
 ]
+# the sign cord is connected before the abs cord, so the signs arrive first
 links = [('btn', '', 'rnd', '###input'),
          ('rnd', 'random tensor', 'hm', 'y'),
+         ('rnd', 'random tensor', 'cp', 'sign tensor'),
          ('rnd', 'random tensor', 'ab', 'in'),
          ('ab', 'result', 'cp', 'tensor in'),
-         ('rnd', 'random tensor', 'cp', 'sign tensor'),
          ('cp', 'tensor with copied sign', 'hm2', 'y')]
-print(build('t.gcd', 't.gcd, t.lcm, t.copysign - whole numbers and signs', body,
-            demo, links, demo_width=480, text_width=790, text_height=620))
+print(build('t.copysign', 't.copysign - size from one, sign from another', body,
+            demo, links, demo_width=480, text_width=790, text_height=600))
 
 # ------------------------------------------------------------------ t.distance
 body = """These measure how big something is, or how alike two things are.

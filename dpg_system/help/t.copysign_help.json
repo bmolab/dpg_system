@@ -1,0 +1,417 @@
+{
+    "height": 869,
+    "width": 1551,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "t.copysign_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.copysign_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.copysign - size from one, sign from another",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 561,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.copysign - size from one, sign from another",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.copysign - size from one, sign from another"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 713,
+            "position_y": 45,
+            "width": 798,
+            "height": 616,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Takes the size from one tensor and the sign from another.\n\nWHAT IT IS FOR:\nApplying a symmetric curve to a signal that swings both ways. Take the absolute\nvalue, put it through the curve, then copy the original sign back. Without that\nlast step a curve applied to a bipolar signal folds its negative half the wrong\nway - everything comes out positive.\n\nThe example does the first and last steps with nothing in between, so you can\nsee that the original values come back exactly.\n\nNEGATIVE ZERO COUNTS AS NEGATIVE:\nThe sign is read from the sign bit, so a sign value of -0.0 makes the result\nnegative. That matters more than it sounds when the sign is carrying information\nabout a direction that has momentarily stopped.\n\nSEND THE SIGN FIRST:\n'sign tensor' is only stored when it arrives; 'tensor in' is what makes the\nnode work, and it uses whatever sign tensor it last received. If both come from\nthe same source, connect the sign cord first so it gets there first -\notherwise every result carries the signs from the time before.\n\nSYNTAX:\nt.copysign\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhere the size comes from. Receiving it does the work.\n\nsign tensor:\nWhere the sign comes from - a tensor of the same shape, or a single number\napplied everywhere.\n\nOUTPUTS:\n\ntensor with copied sign:\nThe result, in the same shape.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 600,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Takes the size from one tensor and the sign from another.\n\nWHAT IT IS FOR:\nApplying a symmetric curve to a signal that swings both ways. Take the absolute\nvalue, put it through the curve, then copy the original sign back. Without that\nlast step a curve applied to a bipolar signal folds its negative half the wrong\nway - everything comes out positive.\n\nThe example does the first and last steps with nothing in between, so you can\nsee that the original values come back exactly.\n\nNEGATIVE ZERO COUNTS AS NEGATIVE:\nThe sign is read from the sign bit, so a sign value of -0.0 makes the result\nnegative. That matters more than it sounds when the sign is carrying information\nabout a direction that has momentarily stopped.\n\nSEND THE SIGN FIRST:\n'sign tensor' is only stored when it arrives; 'tensor in' is what makes the\nnode work, and it uses whatever sign tensor it last received. If both come from\nthe same source, connect the sign cord first so it gets there first -\notherwise every result carries the signs from the time before.\n\nSYNTAX:\nt.copysign\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhere the size comes from. Receiving it does the work.\n\nsign tensor:\nWhere the sign comes from - a tensor of the same shape, or a single number\napplied everywhere.\n\nOUTPUTS:\n\ntensor with copied sign:\nThe result, in the same shape."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.rand 8"
+        },
+        "5": {
+            "name": "heat_map",
+            "id": 422,
+            "position_x": 250,
+            "position_y": 120,
+            "width": 208,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment values with mixed signs",
+            "name": "comment",
+            "id": 459,
+            "position_x": 484,
+            "position_y": 310,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "values with mixed signs",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "values with mixed signs"
+        },
+        "7": {
+            "name": "abs",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment sign discarded, magnitude kept",
+            "name": "comment",
+            "id": 533,
+            "position_x": 484,
+            "position_y": 430,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sign discarded, magnitude kept",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sign discarded, magnitude kept"
+        },
+        "9": {
+            "name": "t.copysign",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 475,
+            "width": 150,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 585,
+            "width": 208,
+            "height": 150,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment and the original signs put back",
+            "name": "comment",
+            "id": 644,
+            "position_x": 484,
+            "position_y": 745,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and the original signs put back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and the original signs put back"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 765,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "sign tensor"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor with copied sign",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

@@ -1,0 +1,335 @@
+{
+    "height": 656,
+    "width": 1303,
+    "position": [
+        100,
+        100
+    ],
+    "id": 644,
+    "name": "np.add_alpha_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.add_alpha_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.add_alpha - brightness as a fourth channel",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 561,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.add_alpha - brightness as a fourth channel",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.add_alpha - brightness as a fourth channel"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 465,
+            "position_y": 45,
+            "width": 798,
+            "height": 536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np.add_alpha adds a fourth channel to a three-channel image, made from its brightness.\n\nThe new channel is the AVERAGE of each pixel's three channels. So it is not a\nplain \"fully opaque\" alpha: used as opacity, bright pixels come out solid and\ndark ones transparent, and black disappears altogether. That is what you want\nfor laying light material - text, glows, a camera image of a lit figure on\nblack - over something else, so that the black background drops out.\n\nIf you want a fully opaque alpha instead, this is not the node; build the\nchannel yourself.\n\nWHAT IT ACCEPTS:\nAn image as an array of height x width x channels. Anything that is not three\ndimensional is ignored. It does not check the channel count, so an image that\nalready has four channels gets a fifth.\n\nAN INTEGER IMAGE COMES OUT AS FLOAT:\nAveraging produces fractions. A float image keeps its type and its range. But\na uint8 image (0 to 255) comes out as 64-bit float, still with values from 0\nto 255 - put np.astype uint8 after it if the next node expects bytes.\n\nSYNTAX:\nnp.add_alpha\n\nEXAMPLE:\nnp.add_alpha\n\nINPUTS and PARAMETERS:\n\ninput:\nThe image. Receiving it triggers the node.\n\nOUTPUTS:\n\nimage with alpha:\nThe image with the brightness channel added as its last channel.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "np.add_alpha adds a fourth channel to a three-channel image, made from its brightness.\n\nThe new channel is the AVERAGE of each pixel's three channels. So it is not a\nplain \"fully opaque\" alpha: used as opacity, bright pixels come out solid and\ndark ones transparent, and black disappears altogether. That is what you want\nfor laying light material - text, glows, a camera image of a lit figure on\nblack - over something else, so that the black background drops out.\n\nIf you want a fully opaque alpha instead, this is not the node; build the\nchannel yourself.\n\nWHAT IT ACCEPTS:\nAn image as an array of height x width x channels. Anything that is not three\ndimensional is ignored. It does not check the channel count, so an image that\nalready has four channels gets a fifth.\n\nAN INTEGER IMAGE COMES OUT AS FLOAT:\nAveraging produces fractions. A float image keeps its type and its range. But\na uint8 image (0 to 255) comes out as 64-bit float, still with values from 0\nto 255 - put np.astype uint8 after it if the next node expects bytes.\n\nSYNTAX:\nnp.add_alpha\n\nEXAMPLE:\nnp.add_alpha\n\nINPUTS and PARAMETERS:\n\ninput:\nThe image. Receiving it triggers the node.\n\nOUTPUTS:\n\nimage with alpha:\nThe image with the brightness channel added as its last channel."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "np.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 123,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 1 2 3"
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 186,
+            "position_y": 285,
+            "width": 249,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click: a tiny image, one row of two\npixels, three channels each",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click: a tiny image, one row of two\npixels, three channels each"
+        },
+        "6": {
+            "name": "list",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 330,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "np.add_alpha",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 107,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "list",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 186,
+            "position_y": 530,
+            "width": 237,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "each pixel gains a fourth number:\nthe average of its three",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "each pixel gains a fourth number:\nthe average of its three"
+        },
+        "10": {
+            "name": "close",
+            "id": 607,
+            "position_x": 24,
+            "position_y": 552,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "image with alpha",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

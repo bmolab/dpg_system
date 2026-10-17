@@ -427,90 +427,237 @@ print(build('mag_offset', 'mag_offset - measuring and correcting the field', bod
             demo, links, demo_width=600, text_width=820, text_height=820))
 
 # ------------------------------------------------------------- cadence_filter
-body = """These deal with artefacts in the data rather than with the movement in it.
+body = """cadence_filter removes a rhythm that the recording put into the data, not the
+movement.
 
-THE NODES:
+WHAT CADENCE IS:
+A sensor running at one rate and delivered at another leaves a pattern in the
+data that repeats every few frames. Shadow files recorded at 100 Hz and saved at
+60 are an example: from one saved frame to the next, the movement advances by
+two sensor frames, then two, then one, over and over - a cycle three frames
+long. A sensor running at about 33 Hz and upsampled to 100 Hz leaves the same
+kind of three-frame cycle.
 
-cadence_filter  remove the stepping left by upsampling
-check_burst     find frames where the data jumps implausibly
+That pattern is not movement, but every measure built on frame-to-frame change
+reads it as movement, at a fixed frequency, all the time. It inflates jerk,
+it triggers glitch detectors, and it is the reason a still performer can look
+busy.
 
-cadence_filter AND WHAT CADENCE IS:
-A sensor running at one rate and delivered at another leaves a pattern in the 
-data: some frames repeat, others do not, in a regular cycle. Shadow files show 
-a 2,2,1 pattern from a 100 Hz stream being delivered at 60 - two frames the 
-same, two the same, one different, over and over.
+HOW IT REMOVES IT:
+Each number that arrives is averaged with the ones before it - a causal moving
+average over 'window' frames. A pattern that repeats every N frames averages to
+nothing over a window of N frames, so the default window of 3 removes a
+three-frame cadence exactly.
 
-That pattern is not movement, but every derivative-based measure reads it as 
-movement, at a fixed frequency, all the time. It inflates jerk, it triggers 
-glitch detectors, and it is the reason a still performer can look busy.
+Causal means it uses only past frames, so it works on a live stream. The price
+is a fixed lag: half a window less half a frame, which is one frame at a window
+of 3.
 
-A causal moving average removes it. A window of 3 removes the 33.3 Hz cadence 
-that comes from ~33 Hz sensors upsampled to 100. The filter is causal - it uses 
-only past frames - so it works on a live stream and adds a fixed small lag 
-rather than needing the future.
-
-check_burst FINDS THE IMPLAUSIBLE:
-It compares each frame against the previous ones and reports where the change 
-is too large to be real movement. That is how you find dropped frames, tracking 
-failures and the teleports that show up in some recorded datasets.
-
-Its several thresholds exist because there is no single number that separates a 
-glitch from fast motion. 'threshold 1' and 'threshold 2 previous' look at the 
-change and the change before it - a genuine movement builds, a glitch does not. 
-'jerk threshold pct' works on the proportion rather than the absolute size, 
-which is what makes it usable across joints that move at very different speeds.
+WHAT IT AVERAGES:
+Every number on its own, with no knowledge of what the numbers are. That is
+right for positions, and close enough for rotations that change little from
+frame to frame. It is not right across a jump in representation: a quaternion
+that flips sign, or an axis-angle that wraps round, inside the window blends two
+descriptions of the same rotation into a wrong one for a frame or two. The
+quaternions it produces are not renormalized.
 
 SYNTAX:
 cadence_filter
-check_burst
 
 EXAMPLE:
 cadence_filter
 
-INPUTS and PARAMETERS:
+INPUTS:
 
-pose in / trans in (cadence_filter):
-The pose and the translation. Both are filtered; the window applies to each.
+pose in:
+Any array of numbers - a pose, a list, a single value. Each arrival is filtered
+and sent from 'pose out'.
 
-diff array / previous frame array / previous diff array (check_burst):
-The current change, the previous frame and the previous change.
+trans in:
+The same, kept separately, sent from 'trans out'. The two inlets have their
+own histories, so they can run on different streams.
 
-threshold 1 / threshold 2 previous / threshold low:
-The levels a change has to exceed to count.
+PROPERTIES:
 
-jerk threshold pct:
-The proportional threshold.
+enable:
+Off, or a window below 2, passes the data through unchanged.
 
-OUTPUTS: 
+window:
+How many frames are averaged. Set it to the length of the cadence cycle.
+
+OUTPUTS:
 
 pose out / trans out:
-The filtered data.
+The filtered data, the same shape as it came in.
 
-file_dict (check_burst):
-What was found, and where.
+The history starts out filled with the first frame, so there is no ramp up
+from zero. Changing the window, or the size of what arrives, starts it again.
 
-A WORD ON FILTERING TRANSLATION SEPARATELY:
-The translation channel comes from a body-mounted sensor that projects from the 
-body and has mass, so it flops in vigorous movement - especially vertical 
-movement - in ways the joint rotations do not. It wants its own, heavier 
-filtering, and it should never be gate-opened on the assumption that a large 
-change means real motion."""
+A WORD ON TRANSLATION:
+The translation channel comes from a body-mounted sensor that projects from the
+body and has mass, so it flops in vigorous movement - especially vertical
+movement - in ways the joint rotations do not. It wants its own, heavier
+filtering after this, and it should never be gate-opened on the assumption that
+a large change means real motion.
+
+RELATED:
+check_burst flags frames where the data jumps implausibly.
+quaternion_diff_and_axis measures how much each joint turns per frame -
+the measure the cadence shows up in."""
 
 demo = [
-    {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 280, 'h': 320},
-    {'key': 'cf', 'init': 'cadence_filter', 'pos': (30, 400), 'w': 260, 'h': 160},
-    {'key': 'c0', 'comment': True, 'text': 'a window of 3 removes the 33 Hz cadence\ncausal, so it works on a live stream',
-     'pos': (30, 575)},
-    {'key': 'qd', 'init': 'quaternion_diff_and_axis', 'pos': (30, 650), 'w': 280, 'h': 180},
-    {'key': 'p1', 'init': 'plot', 'pos': (30, 845), 'w': 208, 'h': 176,
-     'props': PLOT(0.0, 0.5)},
-    {'key': 'c2', 'comment': True, 'text': 'compare with and without the filter:\nthe cadence shows up as constant motion',
-     'pos': (30, 1030)},
+    {'key': 'sg', 'init': 'signal 3.0 sin', 'pos': (30, 62), 'w': 129, 'h': 70,
+     'props': SIG('sin', 3.0)},
+    {'key': 'tk', 'init': 'tick', 'pos': (200, 62), 'w': 60, 'h': 46},
+    {'key': 'ct', 'init': 'counter 3', 'pos': (200, 120), 'w': 140, 'h': 100},
+    {'key': 'ml', 'init': '* 0.3', 'pos': (200, 235), 'w': 88, 'h': 56,
+     'props': {'operand': 0.3}},
+    {'key': 'c0', 'comment': True, 'text': 'a step that repeats every 3 frames',
+     'pos': (360, 120)},
+    {'key': 'ad', 'init': '+ 0.0', 'pos': (30, 310), 'w': 88, 'h': 56,
+     'props': {'operand': 0.0}},
+    {'key': 'p0', 'init': 'plot', 'pos': (30, 385), 'w': 208, 'h': 176,
+     'props': PLOT(-1.2, 1.8)},
+    {'key': 'c1', 'comment': True, 'text': 'a slow movement with the cadence on it',
+     'pos': (30, 570)},
+    {'key': 'cf', 'init': 'cadence_filter', 'pos': (300, 310), 'w': 200, 'h': 140},
+    {'key': 'fl', 'init': 'float', 'pos': (300, 470), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'p1', 'init': 'plot', 'pos': (300, 530), 'w': 208, 'h': 176,
+     'props': PLOT(-1.2, 1.8)},
+    {'key': 'c2', 'comment': True, 'text': 'window 3: the movement, without the cadence\nset window to 1 to compare',
+     'pos': (300, 715)},
 ]
-links = [('sh', 'body 1 quaternions', 'cf', 'pose in'),
-         ('cf', 'pose out', 'qd', 'quaternions in'),
-         ('qd', 'magnitudes', 'p1', 'y')]
-print(build('cadence_filter', 'cadence_filter - artefacts, not movement', body,
+links = [('tk', '', 'ct', 'input'),
+         ('ct', 'count out', 'ml', 'in'),
+         ('ml', 'result', 'ad', 'operand'),
+         ('sg', '', 'ad', 'in'),
+         ('ad', 'result', 'p0', 'y'),
+         ('ad', 'result', 'cf', 'pose in'),
+         ('cf', 'pose out', 'fl', ''),
+         ('fl', 'float out', 'p1', 'y')]
+print(build('cadence_filter', 'cadence_filter - remove a recording rhythm', body,
+            demo, links, demo_width=620, text_width=810, text_height=740))
+
+# ---------------------------------------------------------------- check_burst
+body = """check_burst flags frames where the data jumps in a way real movement does not,
+and keeps a list of them per file.
+
+It was made for scanning recorded datasets for glitches - dropped frames,
+tracking failures, and the joints that teleport in some AMASS takes - by playing
+each file through it frame by frame.
+
+WHAT IT IS GIVEN:
+Three arrays, one value per joint, and the frame number and file name to file
+the result under. Typically the arrays come from quaternion_diff_and_axis and
+its own previous outputs:
+
+diff array            how much each joint's motion changed this frame
+previous frame array  how fast each joint was moving on the previous frame
+previous diff array   how much it changed on the previous frame
+
+The values are expected to be sizes - zero or positive - one per joint, in the
+same order in all three.
+
+WHEN A FRAME IS FLAGGED:
+First the overall change has to be big: the length of 'diff array', taken as
+one vector, must exceed 'threshold 1'. Then either of two things marks it as
+a glitch rather than a fast movement:
+
+The joint with the biggest change was almost still on the previous frame -
+below 'threshold 2 previous'. Real movement builds; a glitch starts from
+nowhere.
+
+Or, from frame 2 on, any joint's change differs from its previous change by
+more than 'threshold low' AND by more than 'jerk threshold pct' times the
+average of the two.
+Being relative, this test works across joints that move at very different
+speeds. Despite the name it is a fraction: 0.5 means half.
+
+Each flagged frame is printed to the console and added to the list for that
+file.
+
+SYNTAX:
+check_burst
+
+EXAMPLE:
+check_burst
+
+INPUTS:
+
+diff array:
+This frame's change per joint. Arriving here runs the test, so send the other
+inputs first.
+
+previous frame array / previous diff array:
+The previous frame's speed and change per joint.
+
+frame:
+The frame number. Frame 0 is skipped, since it has no previous frame.
+Connect this: without a frame number the second test fails with an error.
+
+file:
+The name the events are filed under.
+
+threshold 1 / threshold 2 previous / threshold low / jerk threshold pct:
+The tests above.
+
+save burst files / save path:
+Write everything found so far to a JSON file. The default path is a folder on
+the lab's Linux machine, so set your own first.
+
+OUTPUT:
+
+file_dict:
+Everything found so far, sent on every frame: for each file name, a list of
+events, each with the frame number, the arrays, and which joints jumped and by
+how much. The list only grows; create the node again to start empty.
+
+RELATED:
+cadence_filter takes out the regular stepping that would otherwise read as
+jerk on every frame.
+json_random_event_window reads the saved file back and steps through the
+events it found."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click: send one frame', 'pos': (140, 62)},
+    {'key': 'rp', 'init': 'repeat_in_order 5', 'pos': (30, 120), 'w': 220, 'h': 110},
+    {'key': 'mf', 'init': 'message', 'pos': (150, 120), 'w': 80, 'h': 42,
+     'props': {'text in': '12', 'font size': '24'}},
+    {'key': 'mi', 'init': 'int', 'pos': (30, 250), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'mn', 'init': 'string', 'pos': (190, 250), 'w': 140, 'h': 42,
+     'props': {'text in': 'take_A', 'font size': '24'}},
+    {'key': 'mp', 'init': 'message', 'pos': (30, 305), 'w': 220, 'h': 42,
+     'props': {'text in': '0.0 0.3 0.2', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'previous speeds: joint 0 was still',
+     'pos': (270, 305)},
+    {'key': 'mq', 'init': 'message', 'pos': (30, 360), 'w': 220, 'h': 42,
+     'props': {'text in': '0.55 0.05 0.0', 'font size': '24'}},
+    {'key': 'c2', 'comment': True, 'text': 'previous changes', 'pos': (270, 360)},
+    {'key': 'md', 'init': 'message', 'pos': (30, 415), 'w': 220, 'h': 42,
+     'props': {'text in': '0.6 0.05 0.0', 'font size': '24'}},
+    {'key': 'c3', 'comment': True, 'text': 'this frame: joint 0 jumps', 'pos': (270, 415)},
+    {'key': 'cb', 'init': 'check_burst', 'pos': (30, 480), 'w': 260, 'h': 300},
+    {'key': 'dk', 'init': 'dict_keys', 'pos': (30, 685), 'w': 140, 'h': 60},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 745), 'w': 200, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c4', 'comment': True,
+     'text': 'take_A appears: the frame was flagged\nmake the previous speeds 0.5 0.3 0.2\nand click again: joint 0 was already\nmoving, so no new event is printed',
+     'pos': (30, 800)},
+]
+links = [('btn', '', 'rp', ''),
+         ('rp', 'first', 'mf', ''), ('rp', 'second', 'mn', ''),
+         ('rp', 'third', 'mp', ''), ('rp', 'fourth', 'mq', ''),
+         ('rp', 'fifth', 'md', ''),
+         ('mf', 'message out', 'mi', ''),
+         ('mi', 'int out', 'cb', 'frame'),
+         ('mn', 'string out', 'cb', 'file'),
+         ('mp', 'message out', 'cb', 'previous frame array'),
+         ('mq', 'message out', 'cb', 'previous diff array'),
+         ('md', 'message out', 'cb', 'diff array'),
+         ('cb', 'file_dict', 'dk', 'dict in'),
+         ('dk', 'keys out', 'l1', '')]
+print(build('check_burst', 'check_burst - flag implausible jumps', body,
             demo, links, demo_width=620, text_width=810, text_height=740))
 
 # ------------------------------------------------------------- sensor_to_root

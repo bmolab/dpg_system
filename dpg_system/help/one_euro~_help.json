@@ -1,0 +1,374 @@
+{
+    "height": 1237,
+    "width": 1729,
+    "position": [
+        100,
+        100
+    ],
+    "id": 755,
+    "name": "one_euro~_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/one_euro~_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment one_euro~ - smoothing that keeps up",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "one_euro~ - smoothing that keeps up",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "one_euro~ - smoothing that keeps up"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 881,
+            "position_y": 45,
+            "width": 808,
+            "height": 776,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one_euro~ smooths a signal, and gets out of the way when it moves.\n\nsmooth~ is the same node.\n\nIT CHOOSES PER SAMPLE:\nAny fixed smoothing has to choose between passing jitter and lagging behind a\ngesture, because those are the same setting. This one does not choose once.\nAt rest the cutoff drops to 'min cutoff' and the signal settles hard; as the\nsignal moves, the cutoff opens in proportion to how fast it is moving, so a\nfast gesture arrives on time. It was designed for interactive motion data\n(Casiez and Roussel, 2012), which is what effort data is.\n\nIt is what you put between effort data and anything that will be heard -\nbecause control data that steps is audible as zippering, and control data\nthat lags feels dead. After ramp~ it rounds the corners between one frame's\nmove and the next.\n\nSETTING IT:\nSet the two controls in order. Hold still and lower 'min cutoff' until the\nresting signal stops shivering. Then move, and raise 'beta' until the movement\nstops feeling dragged. Setting beta first tends to end with both too high.\n\nHow fast the signal moves is measured in its own units per second, so the\nright beta depends on the range of the signal: a value that sweeps 0 to 1 in\nhalf a second is moving at 2.\n\nSYNTAX:\none_euro~ [min cutoff] [beta]\n\nEXAMPLE:\none_euro~ 1 1\n\nINPUTS:\n\nleft in / right in:\nThe signal. With nothing patched to 'right in', the right outlet carries the\nsmoothed left signal.\n\nmin cutoff:\nThe cutoff when nothing is moving, in Hz. Lower is calmer and slower to set\noff. Default 1.\n\nbeta:\nHow much movement opens the filter up. Default 1.\n\nA signal patched to either of these is read once per audio block.\n\nbypass:\nTicked, the signal passes through untouched.\n\nOPTIONS:\n\nspeed cutoff:\nHow heavily the speed measurement itself is smoothed, in Hz. Default 1. It is\nsmoothed so that noise cannot open the filter and let more of itself through.\n\nreset:\nForget the history; the next sample starts it again.\n\nOUTPUTS:\n\nleft out / right out:\nThe smoothed signal.\n\nRELATED:\none_euro_filter is the same filter for ordinary per-frame data rather than ~\nsignals. Use it on a stream of values or lists; use one_euro~ once the data is\na signal.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "one_euro~ smooths a signal, and gets out of the way when it moves.\n\nsmooth~ is the same node.\n\nIT CHOOSES PER SAMPLE:\nAny fixed smoothing has to choose between passing jitter and lagging behind a\ngesture, because those are the same setting. This one does not choose once.\nAt rest the cutoff drops to 'min cutoff' and the signal settles hard; as the\nsignal moves, the cutoff opens in proportion to how fast it is moving, so a\nfast gesture arrives on time. It was designed for interactive motion data\n(Casiez and Roussel, 2012), which is what effort data is.\n\nIt is what you put between effort data and anything that will be heard -\nbecause control data that steps is audible as zippering, and control data\nthat lags feels dead. After ramp~ it rounds the corners between one frame's\nmove and the next.\n\nSETTING IT:\nSet the two controls in order. Hold still and lower 'min cutoff' until the\nresting signal stops shivering. Then move, and raise 'beta' until the movement\nstops feeling dragged. Setting beta first tends to end with both too high.\n\nHow fast the signal moves is measured in its own units per second, so the\nright beta depends on the range of the signal: a value that sweeps 0 to 1 in\nhalf a second is moving at 2.\n\nSYNTAX:\none_euro~ [min cutoff] [beta]\n\nEXAMPLE:\none_euro~ 1 1\n\nINPUTS:\n\nleft in / right in:\nThe signal. With nothing patched to 'right in', the right outlet carries the\nsmoothed left signal.\n\nmin cutoff:\nThe cutoff when nothing is moving, in Hz. Lower is calmer and slower to set\noff. Default 1.\n\nbeta:\nHow much movement opens the filter up. Default 1.\n\nA signal patched to either of these is read once per audio block.\n\nbypass:\nTicked, the signal passes through untouched.\n\nOPTIONS:\n\nspeed cutoff:\nHow heavily the speed measurement itself is smoothed, in Hz. Default 1. It is\nsmoothed so that noise cannot open the filter and let more of itself through.\n\nreset:\nForget the history; the next sample starts it again.\n\nOUTPUTS:\n\nleft out / right out:\nThe smoothed signal.\n\nRELATED:\none_euro_filter is the same filter for ordinary per-frame data rather than ~\nsignals. Use it on a stream of values or lists; use one_euro~ once the data is\na signal."
+        },
+        "3": {
+            "name": "slider",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "slider 0.0"
+        },
+        "4": {
+            "init": "comment drag it: a control value, in steps",
+            "name": "comment",
+            "id": 385,
+            "position_x": 634,
+            "position_y": 62,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag it: a control value, in steps",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag it: a control value, in steps"
+        },
+        "5": {
+            "name": "sig~",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 135,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "glide",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "name": "one_euro~",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 300,
+            "width": 151,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment still at rest, quick when you move",
+            "name": "comment",
+            "id": 496,
+            "position_x": 634,
+            "position_y": 495,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "still at rest, quick when you move",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "still at rest, quick when you move"
+        },
+        "8": {
+            "name": "scope~",
+            "id": 533,
+            "position_x": 300,
+            "position_y": 300,
+            "width": 308,
+            "height": 248,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "vco~",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 545,
+            "width": 199,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "vco~ 220"
+        },
+        "10": {
+            "init": "comment the smoothed value as pitch",
+            "name": "comment",
+            "id": 607,
+            "position_x": 634,
+            "position_y": 755,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the smoothed value as pitch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the smoothed value as pitch"
+        },
+        "11": {
+            "name": "fader_out~",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 795,
+            "width": 70,
+            "height": 308,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "fader",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "fader_out~ 1 2"
+        },
+        "12": {
+            "init": "comment raise the fader to hear it",
+            "name": "comment",
+            "id": 681,
+            "position_x": 634,
+            "position_y": 1030,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise the fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise the fader to hear it"
+        },
+        "13": {
+            "name": "close",
+            "id": 718,
+            "position_x": 24,
+            "position_y": 1133,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "value"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "signal",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pitch"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "left"
+        }
+    }
+}

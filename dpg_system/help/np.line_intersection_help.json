@@ -1,0 +1,659 @@
+{
+    "height": 976,
+    "width": 1700,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "np.line_intersection_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.line_intersection_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.line_intersection - where two lines cross",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 549,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.line_intersection - where two lines cross",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.line_intersection - where two lines cross"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 798,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np.line_intersection finds where two lines cross, in two dimensions.\n\nEach line is given by two points. The node works out where the two infinite\nlines through them meet, then checks whether that crossing counts - whether it\nfalls on the second segment, and whether it lies ahead along the first line -\nand tells you separately.\n\nIt is the core of a pointing test. Line 1 is a ray: from the shoulder through\nthe hand, say. Line 2 is a target: the edge of a screen or a wall. The\ncrossing is where the pointing lands, and the fraction says how far along the\ntarget that is.\n\nTWO DIMENSIONS ONLY:\nEvery point is an x y pair. Points with a third number are refused with an\nerror; to point in 3D, project onto a plane first (take the x and z of each\npoint for a floor plan, for example).\n\nONLY \"line 1 start\" TRIGGERS:\nThe other three inlets just store their points. Send them first, then line 1\nstart; for a moving pointer, make the moving end line 1 start.\n\nWHEN IS THE CROSSING VALID:\n\"direction matters\" (on by default): the crossing must be closer to line 1's\nend than to its start - so line 1 behaves like a ray fired from its start\nthrough its end, and a crossing behind the start does not count.\n\n\"intersect line 2 segment\" (on by default): the crossing must lie between line\n2's two points, not out on the line's extension beyond them.\n\nParallel lines never meet: the point comes out as inf inf and, with either\ncheck on, the crossing is reported as not valid. Turn both checks off and a\nparallel pair reports valid, with that infinite point.\n\nSYNTAX:\nnp.line_intersection\n\nEXAMPLE:\nnp.line_intersection\n\nINPUTS and PARAMETERS:\n\nline 1 start:\nA point, as x y. Receiving it triggers the calculation.\n\nline 1 end / line 2 start / line 2 end:\nThe other three points. They are stored until line 1 start arrives.\n\ndirection matters:\nOnly count a crossing ahead of line 1 (nearer its end than its start).\n\nintersect line 2 segment:\nOnly count a crossing between line 2's two points.\n\nOUTPUTS:\n\nintersection is valid:\ntrue if the crossing passes the checks that are on, false if not.\n\npoint of intersection:\nWhere the lines cross, as x y. It is sent even when the crossing is not\nvalid, so check the valid outlet before using it.\n\nfraction of segment 2:\nHow far the crossing is from line 2 start, as a fraction of line 2's length:\n0 at the start, 1 at the end. It is a distance, never negative, so a crossing\na little way BEFORE line 2 start gives the same small number as one the same\ndistance after it - another reason to read the valid outlet.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "np.line_intersection finds where two lines cross, in two dimensions.\n\nEach line is given by two points. The node works out where the two infinite\nlines through them meet, then checks whether that crossing counts - whether it\nfalls on the second segment, and whether it lies ahead along the first line -\nand tells you separately.\n\nIt is the core of a pointing test. Line 1 is a ray: from the shoulder through\nthe hand, say. Line 2 is a target: the edge of a screen or a wall. The\ncrossing is where the pointing lands, and the fraction says how far along the\ntarget that is.\n\nTWO DIMENSIONS ONLY:\nEvery point is an x y pair. Points with a third number are refused with an\nerror; to point in 3D, project onto a plane first (take the x and z of each\npoint for a floor plan, for example).\n\nONLY \"line 1 start\" TRIGGERS:\nThe other three inlets just store their points. Send them first, then line 1\nstart; for a moving pointer, make the moving end line 1 start.\n\nWHEN IS THE CROSSING VALID:\n\"direction matters\" (on by default): the crossing must be closer to line 1's\nend than to its start - so line 1 behaves like a ray fired from its start\nthrough its end, and a crossing behind the start does not count.\n\n\"intersect line 2 segment\" (on by default): the crossing must lie between line\n2's two points, not out on the line's extension beyond them.\n\nParallel lines never meet: the point comes out as inf inf and, with either\ncheck on, the crossing is reported as not valid. Turn both checks off and a\nparallel pair reports valid, with that infinite point.\n\nSYNTAX:\nnp.line_intersection\n\nEXAMPLE:\nnp.line_intersection\n\nINPUTS and PARAMETERS:\n\nline 1 start:\nA point, as x y. Receiving it triggers the calculation.\n\nline 1 end / line 2 start / line 2 end:\nThe other three points. They are stored until line 1 start arrives.\n\ndirection matters:\nOnly count a crossing ahead of line 1 (nearer its end than its start).\n\nintersect line 2 segment:\nOnly count a crossing between line 2's two points.\n\nOUTPUTS:\n\nintersection is valid:\ntrue if the crossing passes the checks that are on, false if not.\n\npoint of intersection:\nWhere the lines cross, as x y. It is sent even when the crossing is not\nvalid, so check the valid outlet before using it.\n\nfraction of segment 2:\nHow far the crossing is from line 2 start, as a fraction of line 2's length:\n0 at the start, 1 at the end. It is a distance, never negative, so a crossing\na little way BEFORE line 2 start gives the same small number as one the same\ndistance after it - another reason to read the valid outlet."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 0.5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 120,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "-1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 330,
+            "position_y": 120,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 564,
+            "position_y": 175,
+            "width": 268,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "line 1 ends at 0 0.5; line 2 runs from\n-1 1 to 1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "line 1 ends at 0 0.5; line 2 runs from\n-1 1 to 1 1"
+        },
+        "8": {
+            "name": "signal",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 230,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 6.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 6.0 sin"
+        },
+        "9": {
+            "name": "pack",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 325,
+            "width": 33,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 2"
+        },
+        "10": {
+            "name": "text_block",
+            "id": 607,
+            "annotation": true,
+            "position_x": 564,
+            "position_y": 415,
+            "width": 212,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "line 1 starts at x 0, sliding\nfrom -2 to 2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "line 1 starts at x 0, sliding\nfrom -2 to 2"
+        },
+        "11": {
+            "name": "np.line_intersection",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 172,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "toggle",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 690,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 564,
+            "position_y": 745,
+            "width": 249,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "valid only while the crossing lands\nbetween -1 and 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "valid only while the crossing lands\nbetween -1 and 1"
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 800,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment where line 1 meets y = 1",
+            "name": "comment",
+            "id": 792,
+            "position_x": 564,
+            "position_y": 850,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "where line 1 meets y = 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "where line 1 meets y = 1"
+        },
+        "16": {
+            "name": "plot",
+            "id": 829,
+            "position_x": 330,
+            "position_y": 470,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.6,
+                    "value_type": "float"
+                }
+            }
+        },
+        "17": {
+            "name": "text_block",
+            "id": 866,
+            "annotation": true,
+            "position_x": 564,
+            "position_y": 660,
+            "width": 268,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "fraction along line 2: above 1 when it\nmisses past the end",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "fraction along line 2: above 1 when it\nmisses past the end"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 872,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "line 1 end"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "line 2 start"
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "line 2 end"
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "7": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "line 1 start"
+        },
+        "8": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "intersection is valid",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "9": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "point of intersection",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "10": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "fraction of segment 2",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

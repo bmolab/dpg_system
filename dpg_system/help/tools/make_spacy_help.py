@@ -143,133 +143,198 @@ links = [('m1', 'message out', 'sim', 'phrase in'),
 print(build('spacy_vector', 'spacy vectors - meaning as a measurable quantity', body,
             demo, links, demo_width=780, text_width=800, text_height=760))
 
+# ---------------------------------------------------------------------- lemma
+body = """lemma gives back the dictionary form of every word in a phrase.
+
+'geese' becomes 'goose', 'were' becomes 'be', 'running' becomes 'run', 'better'
+becomes 'well'. It is not chopping off endings - it knows the irregular forms,
+because it has parsed the sentence and knows which word is doing what.
+
+WHAT IT IS FOR:
+Matching. Counting words, comparing phrases or looking for a term all work
+better on lemmas, because 'run', 'running' and 'ran' stop being three different
+things. Put it in front of a word count or a word_trigger and the results get
+noticeably steadier.
+
+WHAT COMES OUT:
+A LIST, one lemma per word, in the order the words arrived. Punctuation is
+kept as items of its own, so 'ran,' gives 'run' and ','. Capitals mostly go:
+'The Mice' becomes 'the mouse'. A list going into it is joined back into one
+phrase first, so a message node works as a source.
+
+SYNTAX:
+lemma
+
+INPUTS:
+
+text in:
+A word, phrase or sentence. Receiving it triggers the node.
+
+OUTPUTS:
+
+lemmas out:
+A list, one dictionary form per word.
+""" + MODEL + """
+RELATED:
+rephrase also works from the grammar of a phrase.
+spacy_similarity works on meaning rather than grammar."""
+
+demo = [
+    {'key': 's1', 'init': 'string', 'pos': (30, 62), 'w': 380, 'h': 42,
+     'props': {'text in': 'the geese were running quickly', 'font size': '24', 'width': 340}},
+    {'key': 's2', 'init': 'string', 'pos': (30, 115), 'w': 380, 'h': 42,
+     'props': {'text in': 'The Mice ran, and she was better.', 'font size': '24', 'width': 340}},
+    {'key': 'c0', 'comment': True, 'text': 'click either to send it', 'pos': (30, 165)},
+    {'key': 'lm', 'init': 'lemma', 'pos': (30, 200), 'w': 180, 'h': 80},
+    {'key': 'l1', 'init': 'list', 'pos': (30, 295), 'w': 380, 'h': 42,
+     'props': {'text in': '', 'font size': '24'}},
+    {'key': 'c1', 'comment': True, 'text': 'geese -> goose, were -> be, running -> run\nit knows the irregular forms - it has\nparsed the sentence, not chopped endings',
+     'pos': (30, 345)},
+]
+links = [('s1', 'string out', 'lm', 'text in'), ('s2', 'string out', 'lm', 'text in'),
+         ('lm', 'lemmas out', 'l1', '')]
+print(build('lemma', 'lemma - every word in its dictionary form', body,
+            demo, links, demo_width=440, text_width=800, text_height=560))
+
 # ------------------------------------------------------------------- rephrase
-body = """Two nodes that use the grammar of a sentence rather than its vectors.
+body = """rephrase builds a phrase out of fragments, using the grammar of each.
 
-THE NODES:
+IT IS NOT WHAT ITS NAME SUGGESTS:
+It does not simplify a sentence. It ACCUMULATES. Each fragment you send is
+compared with the phrase built so far, part by part:
 
-lemma     every word reduced to its dictionary form
-rephrase  fragments accumulated into a growing phrase
-
-lemma IS THE SMALL USEFUL ONE:
-It gives back the dictionary form of every word: 'geese' becomes 'goose', 'were'
-becomes 'be', 'running' becomes 'run'. It is not chopping off endings - it knows
-the irregular forms, because it has parsed the sentence and knows which word is
-doing what.
-
-The use is matching. Counting words, comparing phrases or looking for a term all
-work better on lemmas, because 'run', 'running' and 'ran' stop being three
-different things. Put it in front of spacy_similarity or a word count and the
-results get noticeably steadier.
-
-It outputs a LIST, one lemma per word, punctuation included.
-
-rephrase IS NOT WHAT ITS NAME SUGGESTS:
-It does not simplify a sentence. It ACCUMULATES: each fragment you send it is
-folded into the phrase built so far, using the grammar of both to decide where
-the new material belongs.
+- if the phrase already has a part of the same kind - a noun phrase, a
+  phrase starting with a preposition, a verb, an adjective - and the two are
+  close enough in meaning, the new fragment REPLACES that part
+- otherwise the fragment is added on the end, after a comma
 
 Send it these, one at a time:
 
-    a woman             -> a woman
-    in a red coat       -> a woman, in a red coat
-    she is walking      -> a woman , in a red walking coat
-    through the park    -> a woman , in a red walking coat, through the park
+    a woman          -> a woman
+    in a red coat    -> a woman, in a red coat
+    she is walking   -> a woman , in a red walking coat
+    a tall man       -> a tall man in a red walking coat
+    in a blue coat   -> a tall man in a blue coat
+    not blue         -> a tall man in a coat
+    through the park -> a tall man in a coat, through the park
 
 (the spacing around the commas really is uneven - it is stitching fragments
 together, not writing them out)
 
-Notice the third step. 'she' was resolved to the woman it has been tracking, and
-the verb was folded in as a modifier rather than appended - which is how 'a red
-walking coat' happens. That is the character of this node: it is a generative
-instrument that produces compressed, slightly strange descriptions, not a
-grammar engine that produces correct ones. Judge it by whether the results are
-worth having.
+Look at the third step. 'she' was taken to mean the woman it has been tracking,
+and the verb was folded in as a modifier rather than appended - which is how 'a
+red walking coat' happens. That is the character of this node: it is a
+generative instrument that produces compressed, slightly strange descriptions,
+not a grammar engine that produces correct ones. Judge it by whether the
+results are worth having.
 
-Send 'no', 'wrong' or 'go back' and it steps back to the previous phrase.
+A fragment that starts with 'it', 'they', 'he' or 'she' has that word swapped
+for the noun the phrase is about. A fragment that starts with 'not' takes a
+word out: 'not blue' removes the adjective 'blue'.
 
-THE THRESHOLDS, AND WHICH WAY THEY POINT:
-'complexity replace threshold' is an upper limit on what it will TRY. Complexity
-counts nouns, verbs and prepositions, plus a quarter of the word count - so
-about 1.5 for 'a woman' and 14 for a long descriptive sentence. A fragment above
-the threshold is passed through untouched rather than folded in, so the default
-of 6 means it works with fragments, not whole sentences.
+STEPPING BACK DOES NOT WORK YET:
+'no', 'wrong' and 'go back' are meant to return to the previous phrase. At
+present that only happens once the 'clear input pause' has run out. Sent while
+the phrase is still live, the previous phrase is folded into the current one as
+if it were a new fragment, and the result is a garble ('an a tall blue man in
+a blue coat in a coat'). Do not rely on it.
 
-'clip score' is a feedback path. When the score arriving there is ABOVE 'clip
-score threshold' the node stops rewriting and emits nothing at all - the reading
-is that whatever is consuming the phrase is already doing well enough, so leave
-it alone. A rephrase that has gone quiet is usually this, not a fault.
+THE SETTINGS, AND WHICH WAY THEY POINT:
+'replace similarity' is how alike in meaning a fragment and a part of the phrase
+must be before the fragment replaces that part. Raise it and more fragments are
+added on the end; lower it and more of the phrase gets overwritten. 0.5 by
+default.
 
-'clear input pause' is how long a phrase stays live. Fragments arriving within
-that many seconds are folded into the phrase in progress; after the pause, the
-next fragment starts fresh.
+'complexity replace threshold' is an upper limit on what it will try to fold
+in. Complexity counts nouns, pronouns, verbs and prepositions, plus a quarter
+of the word count - so 1.5 for 'a woman' and 9 for 'the old man walked slowly
+across the wide empty square at dawn'. A fragment above the threshold is not
+folded in: it replaces the whole phrase and the next fragment builds on it. The
+default of 6 means it works with fragments, not whole sentences. Two exceptions:
+a fragment whose main word is a preposition is always tried, and a long one
+that starts with a word like 'and' or 'because' is added on the end.
+
+'clear input pause' is how long a phrase stays live, in seconds. A fragment
+arriving within that time of the last one is folded into the phrase in
+progress; after a longer gap, the next fragment starts afresh. 40 by default.
+
+'clip score threshold' goes with the 'clip score' inlet, which is a feedback
+path. When the score last received there is at or above the threshold the node
+stops rewriting and sends nothing at all - the reading is that whatever is
+consuming the phrase is already doing well enough, so leave it alone. A
+rephrase that has gone quiet is usually this, not a fault. The default of 640
+is far above anything the inlet sees until you wire it.
 
 'output as list' sends the result word by word instead of as one string.
 
 SYNTAX:
-lemma
-rephrase
-
-EXAMPLE:
 rephrase
 
 INPUTS and PARAMETERS:
 
 text in:
-A fragment. Receiving it folds it in and sends the result.
+A fragment. Receiving it folds it in and sends the result. A list is joined
+back into one phrase first, so a message node works as a source.
 
 clip score:
-The feedback number. High enough, and the node goes quiet.
+The feedback number. It does not trigger anything; it is held and checked when
+the next fragment arrives.
 
-replace similarity:
-How alike two pieces must be before one replaces the other.
+MESSAGES:
 
-OUTPUTS: 
+full_tree <word>:
+Sends, as a list, the word and everything that depends on it in the current
+phrase.
 
-lemmas out:
-A list, one dictionary form per word.
+bare_tree <word>:
+The same, cut off where the next phrase begins. On 'a tall man in a coat, through
+the park', 'full_tree man' sends the whole thing and 'bare_tree man' sends
+'a tall man'. Only for a noun, verb or
+preposition.
+
+Either sends nothing if the word is not in the current phrase.
+
+OUTPUTS:
 
 results:
 The accumulated phrase.
 """ + MODEL + """
 RELATED:
+lemma also works from the grammar of a phrase.
 spacy_similarity works on meaning rather than grammar.
 context_tracker keeps track of place, time and actors across a stream of text."""
 
 demo = [
-    {'key': 'm1', 'init': 'message', 'pos': (30, 62), 'w': 380, 'h': 42,
-     'props': MSG('the geese were running quickly')},
-    {'key': 'lm', 'init': 'lemma', 'pos': (30, 120), 'w': 180, 'h': 80},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 215), 'w': 380, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c0', 'comment': True, 'text': 'geese -> goose, were -> be, running -> run\nit knows the irregular forms - it has\nparsed the sentence, not chopped endings',
-     'pos': (30, 265)},
-
-    {'key': 'm2', 'init': 'message', 'pos': (30, 400), 'w': 180, 'h': 42,
+    {'key': 'm1', 'init': 'message', 'pos': (30, 62), 'w': 180, 'h': 42,
      'props': MSG('a woman')},
-    {'key': 'm3', 'init': 'message', 'pos': (30, 455), 'w': 220, 'h': 42,
+    {'key': 'm2', 'init': 'message', 'pos': (30, 117), 'w': 220, 'h': 42,
      'props': MSG('in a red coat')},
-    {'key': 'm4', 'init': 'message', 'pos': (30, 510), 'w': 220, 'h': 42,
+    {'key': 'm3', 'init': 'message', 'pos': (30, 172), 'w': 220, 'h': 42,
      'props': MSG('she is walking')},
-    {'key': 'm5', 'init': 'message', 'pos': (30, 565), 'w': 240, 'h': 42,
+    {'key': 'm4', 'init': 'message', 'pos': (30, 227), 'w': 180, 'h': 42,
+     'props': MSG('a tall man')},
+    {'key': 'm5', 'init': 'message', 'pos': (30, 282), 'w': 220, 'h': 42,
+     'props': MSG('in a blue coat')},
+    {'key': 'm6', 'init': 'message', 'pos': (30, 337), 'w': 160, 'h': 42,
+     'props': MSG('not blue')},
+    {'key': 'm7', 'init': 'message', 'pos': (30, 392), 'w': 240, 'h': 42,
      'props': MSG('through the park')},
-    {'key': 'm6', 'init': 'message', 'pos': (30, 620), 'w': 140, 'h': 42,
-     'props': MSG('no')},
-    {'key': 'c3', 'comment': True, 'text': "click these in order, one at a time\n'no' steps back to the previous phrase",
-     'pos': (30, 670)},
+    {'key': 'c0', 'comment': True, 'text': 'click these in order, one at a time,\nless than 40 seconds apart',
+     'pos': (30, 445)},
 
-    {'key': 'rp', 'init': 'rephrase', 'pos': (450, 400), 'w': 300, 'h': 260},
-    {'key': 'l2', 'init': 'list', 'pos': (450, 675), 'w': 420, 'h': 42,
-     'props': {'text in': '', 'font size': '24'}},
-    {'key': 'c5', 'comment': True, 'text': 'each fragment is folded into the phrase\nbuilt so far, not appended to it\ncomplexity above the threshold is passed\nthrough untouched - it works on fragments',
-     'pos': (450, 725)},
+    {'key': 'rp', 'init': 'rephrase', 'pos': (300, 62), 'w': 300, 'h': 260},
+    {'key': 'l2', 'init': 'string', 'pos': (300, 340), 'w': 420, 'h': 42,
+     'props': {'text in': '', 'font size': '24', 'width': 380}},
+    {'key': 'c1', 'comment': True, 'text': 'a fragment like part of the phrase\nreplaces it; anything else goes on the end',
+     'pos': (300, 390)},
 ]
-links = [('m1', 'message out', 'lm', 'text in'), ('lm', 'lemmas out', 'l1', ''),
+links = [('m1', 'message out', 'rp', 'text in'),
          ('m2', 'message out', 'rp', 'text in'),
          ('m3', 'message out', 'rp', 'text in'),
          ('m4', 'message out', 'rp', 'text in'),
          ('m5', 'message out', 'rp', 'text in'),
          ('m6', 'message out', 'rp', 'text in'),
+         ('m7', 'message out', 'rp', 'text in'),
          ('rp', 'results', 'l2', '')]
-print(build('rephrase', 'lemma and rephrase - working from grammar', body,
-            demo, links, demo_width=900, text_width=800, text_height=760))
+print(build('rephrase', 'rephrase - a phrase built from fragments', body,
+            demo, links, demo_width=760, text_width=800, text_height=760))

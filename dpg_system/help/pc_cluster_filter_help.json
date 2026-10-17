@@ -1,0 +1,586 @@
+{
+    "height": 1247,
+    "width": 1876,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "pc_cluster_filter_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/pc_cluster_filter_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment pc_cluster_filter - steady the box values",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pc_cluster_filter - steady the box values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pc_cluster_filter - steady the box values"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1018,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pc_cluster_filter cleans up the per-box values that pc_voxel puts on the frame.\n\nWhen pc_voxel groups its voxels into boxes, each box gets a value every frame -\nthe sum of the voxel weights in it. Raw, those values shimmer with sensor\nnoise. This node sits between pc_voxel and whatever reads the boxes, and\nconditions those numbers. It changes nothing else on the frame, so you can put\none in, or two, or none. A frame without boxes on it passes through untouched.\n\nTHE CHAIN, IN ORDER:\n\n1. THRESHOLD:\n'threshold' with the 'gate' option set to 'squeeze' (the default) subtracts\nthe threshold from every box and floors at zero, so a box just over the line\nstarts from zero instead of jumping; 'gate' zeroes what is at or under it and\npasses the rest untouched; 'none' skips this step. This is where you kill the\nfloor of sensor noise. 'threshold' starts at 0, which is off.\n\n2. FILTER:\nAdaptive either way - smooth hard while a box is idle, get out of the way when\nit moves. The 'filter' option picks which:\n\n'one euro' is the default and the better of the two. It low-passes each box at\na cutoff that rises with that box's speed: 'min cutoff' sets how still an idle\nbox looks, 'beta' how little a moving one lags. Tune it the way its authors\nsay - beta to 0, drop 'min cutoff' until an idle box stops shimmering, then\nraise beta until a real arrival stops lagging. 'd cutoff' (option) is the\nfilter's own smoothing of the speed estimate; 1 rarely wants changing.\n\n'adaptive' is the C++ cBins filter, kept for fidelity: 'smooth' (option) is\nthe floor on the smoothing and 'knee' (option) the change at which it is\nreleased.\n\nThe reason one euro is the default is not subtlety, it is TIME. Its numbers are\nin Hz against the measured frame interval, so its behaviour does not move when\nthe frame rate does. Measured over 10 to 90 fps, the C++ filter's step response\nran from 0.044 s to 0.400 s - a factor of nine - while one euro held 0.400 s\nthroughout. Tune the C++ one at 30 fps and it is a different filter at 15. It\nalso took about 10% less lag at every jitter budget tested.\n\n'decay' (option) bleeds that much off every box per second, so a box does not\nrest on a residue. It only acts when a filter is on.\n\n3. MOTION:\n'motion' switches from the level to the CHANGE in the level - the C++\ndynamicBins - so a box lights up when something moves through it rather than\nwhen something is in it. Differencing amplifies noise, so it comes after the\nfilter, not before; on a depth sensor do not turn it on with 'filter' set to\nnone. Measured on a still but noisy box, the spurious motion reported was 7.7\nunfiltered, 0.9 through the adaptive filter and 0.34 through one euro.\n\nChanging the number of boxes resets the filter's memory, since box 7 is then\na different piece of the room.\n\nSYNTAX:\npc_cluster_filter\n\nEXAMPLE:\npc_cluster_filter\n\nINPUTS and PARAMETERS:\n\ncloud:\nThe frame from pc_voxel (or another pc_cluster_filter). Receiving it does the\nwork.\n\nthreshold:\nThe noise floor to gate or squeeze away. 0 is off.\n\nmin cutoff / beta:\nThe one euro filter's two controls.\n\nmotion:\nSend the change in each box rather than its level.\n\ngate / filter / d cutoff / smooth / knee / decay (options):\nAs above.\n\nOUTPUTS:\n\ncloud out:\nThe same frame with the box values replaced by the conditioned ones -\nmgl_cluster_boxes draws them from here.\n\nvalues:\nThe conditioned values, as an (x,y,z) array like pc_voxel's 'box values'.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "pc_cluster_filter cleans up the per-box values that pc_voxel puts on the frame.\n\nWhen pc_voxel groups its voxels into boxes, each box gets a value every frame -\nthe sum of the voxel weights in it. Raw, those values shimmer with sensor\nnoise. This node sits between pc_voxel and whatever reads the boxes, and\nconditions those numbers. It changes nothing else on the frame, so you can put\none in, or two, or none. A frame without boxes on it passes through untouched.\n\nTHE CHAIN, IN ORDER:\n\n1. THRESHOLD:\n'threshold' with the 'gate' option set to 'squeeze' (the default) subtracts\nthe threshold from every box and floors at zero, so a box just over the line\nstarts from zero instead of jumping; 'gate' zeroes what is at or under it and\npasses the rest untouched; 'none' skips this step. This is where you kill the\nfloor of sensor noise. 'threshold' starts at 0, which is off.\n\n2. FILTER:\nAdaptive either way - smooth hard while a box is idle, get out of the way when\nit moves. The 'filter' option picks which:\n\n'one euro' is the default and the better of the two. It low-passes each box at\na cutoff that rises with that box's speed: 'min cutoff' sets how still an idle\nbox looks, 'beta' how little a moving one lags. Tune it the way its authors\nsay - beta to 0, drop 'min cutoff' until an idle box stops shimmering, then\nraise beta until a real arrival stops lagging. 'd cutoff' (option) is the\nfilter's own smoothing of the speed estimate; 1 rarely wants changing.\n\n'adaptive' is the C++ cBins filter, kept for fidelity: 'smooth' (option) is\nthe floor on the smoothing and 'knee' (option) the change at which it is\nreleased.\n\nThe reason one euro is the default is not subtlety, it is TIME. Its numbers are\nin Hz against the measured frame interval, so its behaviour does not move when\nthe frame rate does. Measured over 10 to 90 fps, the C++ filter's step response\nran from 0.044 s to 0.400 s - a factor of nine - while one euro held 0.400 s\nthroughout. Tune the C++ one at 30 fps and it is a different filter at 15. It\nalso took about 10% less lag at every jitter budget tested.\n\n'decay' (option) bleeds that much off every box per second, so a box does not\nrest on a residue. It only acts when a filter is on.\n\n3. MOTION:\n'motion' switches from the level to the CHANGE in the level - the C++\ndynamicBins - so a box lights up when something moves through it rather than\nwhen something is in it. Differencing amplifies noise, so it comes after the\nfilter, not before; on a depth sensor do not turn it on with 'filter' set to\nnone. Measured on a still but noisy box, the spurious motion reported was 7.7\nunfiltered, 0.9 through the adaptive filter and 0.34 through one euro.\n\nChanging the number of boxes resets the filter's memory, since box 7 is then\na different piece of the room.\n\nSYNTAX:\npc_cluster_filter\n\nEXAMPLE:\npc_cluster_filter\n\nINPUTS and PARAMETERS:\n\ncloud:\nThe frame from pc_voxel (or another pc_cluster_filter). Receiving it does the\nwork.\n\nthreshold:\nThe noise floor to gate or squeeze away. 0 is off.\n\nmin cutoff / beta:\nThe one euro filter's two controls.\n\nmotion:\nSend the change in each box rather than its level.\n\ngate / filter / d cutoff / smooth / knee / decay (options):\nAs above.\n\nOUTPUTS:\n\ncloud out:\nThe same frame with the box values replaced by the conditioned ones -\nmgl_cluster_boxes draws them from here.\n\nvalues:\nThe conditioned values, as an (x,y,z) array like pc_voxel's 'box values'."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 33.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 33"
+        },
+        "4": {
+            "name": "np.rand",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 8000 3"
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 714,
+            "position_y": 290,
+            "width": 274,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "8000 random points in a one metre cube,\n30 times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "8000 random points in a one metre cube,\n30 times a second"
+        },
+        "6": {
+            "name": "pc_voxel",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 276,
+            "height": 196,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "voxel size (cm)",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "distance compensation",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "boxes (x,y,z)",
+                    "value": [
+                        2.0,
+                        2.0,
+                        2.0
+                    ],
+                    "value_type": "list"
+                },
+                "3": {
+                    "name": "min (x,y,z)",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "value_type": "list"
+                },
+                "4": {
+                    "name": "max (x,y,z)",
+                    "value": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "7": {
+            "init": "comment divided into 2 x 2 x 2 boxes",
+            "name": "comment",
+            "id": 496,
+            "position_x": 714,
+            "position_y": 610,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "divided into 2 x 2 x 2 boxes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "divided into 2 x 2 x 2 boxes"
+        },
+        "8": {
+            "name": "pc_cluster_filter",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 650,
+            "width": 154,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "np.ravel",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 850,
+            "width": 123,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 935,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 9.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 11.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment filtered: the same eight boxes, steadied",
+            "name": "comment",
+            "id": 644,
+            "position_x": 714,
+            "position_y": 1120,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "filtered: the same eight boxes, steadied",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "filtered: the same eight boxes, steadied"
+        },
+        "12": {
+            "name": "np.ravel",
+            "id": 681,
+            "position_x": 380,
+            "position_y": 650,
+            "width": 123,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "plot",
+            "id": 718,
+            "position_x": 380,
+            "position_y": 735,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 9.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 11.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "name": "text_block",
+            "id": 755,
+            "annotation": true,
+            "position_x": 714,
+            "position_y": 920,
+            "width": 249,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "raw 'box values': eight boxes, each\nabout 10, shimmering with noise",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "raw 'box values': eight boxes, each\nabout 10, shimmering with noise"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1143,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "voxel cloud",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "cloud"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "values",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "flattened array",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "box values",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "flattened array",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

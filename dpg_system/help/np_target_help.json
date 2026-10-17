@@ -1,11 +1,11 @@
 {
     "height": 881,
-    "width": 1503,
+    "width": 1704,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 866,
     "name": "np_target_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/np_target_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 645,
+            "position_x": 846,
             "position_y": 45,
             "width": 818,
             "height": 776,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These nodes measure a position against a reference, and report when it gets close.\n\nThey exist because \"how near is this to that\" is a question you ask constantly \nof tracked bodies, and answering it with separate subtract, norm and compare \nnodes is both tedious and easy to get wrong.\n\nTHE NODES:\n\nnp.distance_from_target  how far the input is from a stored target\nnp.proximity_to_target   the same measurement inverted, so near is HIGH - \n                         the shape you want for driving something\nproximity_trigger        the same, plus a trigger that fires on arrival\nnp.line_intersection     where two line segments cross, if they do\nrotate_position          rotate a position about an axis\n\nThe target is captured rather than typed. Put the thing where you want the \ntarget to be, click \"set target\", and the node remembers that position. \nFrom then on it reports against it.\n\nnp.proximity_to_target holds as many targets as you like. Set \"target index\" \nto a slot, put the tracker where that target should be, click \"capture\". \nChoose another index and capture again. Skipping ahead leaves the slots in \nbetween unset, and they report 0. The \"targets\" inlet replaces the whole set \nwith a list of positions; \"clear\" empties it. The targets are saved with the \npatch.\n\nEach target has a responsive zone of size \"radius\": proximity is 1 at the \ntarget and falls to 0 at the radius. \"exponent\" shapes the fall - above 1 the \nresponse concentrates near the centre, below 1 it stays high across the zone \nand drops off at the edge.\n\nThe \"fade\" outlet plugs straight into the fade inlet of polyphonic_sampler~: \nit sends [[sound_id, fade], ...], target i driving sound \"first sound\" + i. \nLike effort_fader it is sparse - a sound is sent while its target is in range, \ngets a single 0 when the tracker leaves the zone (so the sample stops), and \nis otherwise left alone. With several trackers the closest one sets each \ntarget's fade. \"nearest\" gives the index of the closest target whose zone \nyou are in, or -1.\n\nproximity_trigger is the one that turns this into an event. It has two \nthresholds, near and far, and fires when the input comes closer than the near \none - then will not fire again until it has retreated past the far one. \nThat is the same hysteresis the trigger node uses, and for the same reason: \nwithout the gap, a hand hovering at the boundary fires continuously.\n\nSYNTAX:\nnp.distance_from_target\nproximity_trigger\n\nEXAMPLE:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as an array. Receiving it triggers the node.\n\nset target:\nA button. Captures whatever is at the input right now as the reference.\n\naxis:\nFor arrays of several positions at once, which direction the coordinates run \nalong - so you can measure a whole set of points against a whole set of \ntargets in one go.\n\nthreshold / release_threshold (proximity_trigger):\nHow close counts as arrived, and how far away it must go before it can arrive \nagain. Keep the release larger than the threshold.\n\narm / reset_count (proximity_trigger):\nEnable the trigger, and set its count back to zero.\n\nline 1 start / line 1 end / line 2 start / line 2 end (np.line_intersection):\nThe two segments.\n\ndirection matters / intersect line 2 segment (np.line_intersection):\nWhether to treat the lines as directed, and whether the crossing has to fall \nwithin the second segment rather than on its infinite extension.\n\nposition / angle / axis (rotate_position):\nThe point to rotate, by how much, and about which axis.\n\nOUTPUTS: \n\nnorm:\nThe distance, or the proximity.\n\nstate / count / proximity (proximity_trigger):\nWhether it is currently near, how many times it has arrived, and the \nunderlying measurement.\n\nintersection is valid / point of intersection / fraction of segment 2:\nWhether the segments actually cross, where, and how far along the second one - \ncheck the valid outlet before using the point, since parallel lines have no \ncrossing to report.",
+                    "value": "These nodes measure a position against a reference, and report when it gets close.\n\nThey exist because \"how near is this to that\" is a question you ask constantly\nof tracked bodies, and answering it with separate subtract, norm and compare\nnodes is both tedious and easy to get wrong.\n\nTHE NODES:\n\nnp.distance_from_target  how far the input is from one stored target\nnp.proximity_to_target   closeness to any number of targets, 1 at a target\n                         falling to 0 at the edge of its zone - the shape you\n                         want for driving sounds\nproximity_trigger        an event when the input arrives at one target\n\nThe target is captured rather than typed. Put the thing where you want the\ntarget to be, click \"set target\" (or \"capture\"), and the node remembers that\nposition. From then on it reports against it.\n\nnp.distance_from_target:\nSends the straight-line distance from the input to the target every time an\ninput arrives. Nothing comes out until a target has been set. Its target is\nNOT saved with the patch - set it again after opening.\n\n\"axis\" matters when the input holds several positions at once. Left at None,\nthe whole difference is measured as one distance. For an array of positions,\none per row, choose axis 1 and you get one distance per row. The target is whatever\nwas at the input when you captured it, so a set of positions captures a set,\nand each is measured against its own.\n\nnp.proximity_to_target:\nHolds as many targets as you like. Set \"target index\" to a slot, put the\ntracker where that target should be, click \"capture\". Choose another index\nand capture again. Skipping ahead leaves the slots in between unset, and they\nreport 0. The \"targets\" inlet replaces the whole set with a list of\npositions; \"clear\" empties it. The targets are saved with the patch, and the\n\"targets\" outlet sends the whole set whenever it changes.\n\nEach target has a responsive zone of size \"radius\": proximity is 1 at the\ntarget and falls to 0 at the radius. \"exponent\" shapes the fall - above 1 the\nresponse concentrates near the centre, below 1 it stays high across the zone\nand drops off at the edge.\n\nThe \"fade\" outlet plugs straight into the fade inlet of polyphonic_sampler~:\nit sends [[sound_id, fade], ...], target i driving sound \"first sound\" + i.\nLike effort_fader it is sparse - a sound is sent while its target is in range,\ngets a single 0 when the tracker leaves the zone (so the sample stops), and\nis otherwise left alone. With several trackers at once (one per row) the\nclosest one sets each target's fade. \"nearest\" gives the index of the closest\ntarget whose zone you are in, or -1.\n\nproximity_trigger:\nTurns arrival into an event. It has two distances, \"threshold\" and\n\"release_threshold\". When the input comes closer than the threshold it sends\ntrue from \"state\" and adds one to \"count\"; it will not fire again until the\ninput has gone further away than the release threshold, when it sends false. That is\nthe same hysteresis the trigger node uses, and for the same reason: without\nthe gap, a hand hovering at the boundary fires continuously. Keep the release\nlarger than the threshold.\n\n\"arm\" must be ticked. It starts unticked, and while it is off the node does\nnothing at all - no distance, no events. Ticking or unticking it (or\nclicking \"reset_count\") sets the count back to zero.\n\nIt measures one position against one target. Its target is saved with the\npatch, but only as x, y and z: use three-number positions with it.\n\nSYNTAX:\nnp.distance_from_target\nnp.proximity_to_target\nproximity_trigger\n\nEXAMPLE:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as a list or array. Receiving it triggers the node.\n\nset target (np.distance_from_target, proximity_trigger):\nA button. Captures whatever is at the input right now as the reference.\n\naxis (np.distance_from_target, proximity_trigger):\nWhich direction to measure along when the input holds several positions.\nLeave it at None for a single position.\n\ntarget index / capture / targets / clear (np.proximity_to_target):\nChoose a slot, capture into it, replace all targets at once, or forget them.\n\nradius / exponent (np.proximity_to_target):\nThe size of each target's zone, and the shape of the fall-off across it.\n\nfirst sound (np.proximity_to_target):\nThe sound number target 0 drives.\n\narm / reset_count (proximity_trigger):\nSwitch the trigger on (it is off until you do), and set the count to zero.\n\nthreshold / release_threshold (proximity_trigger):\nHow close counts as arrived, and how far away it must go before it can\narrive again.\n\nOUTPUTS:\n\nnorm (np.distance_from_target):\nThe distance.\n\nfade / nearest / targets (np.proximity_to_target):\nThe [[sound_id, fade], ...] list, the index of the nearest target in range\n(or -1), and the current set of targets.\n\nstate / count / proximity (proximity_trigger):\ntrue on arrival and false on release (sent only when it changes), how many times it\nhas arrived, and the distance to the target on every input. Despite its name,\nthe \"proximity\" outlet sends the distance, so it gets SMALLER as you approach.\n\nRELATED:\nnp.line_intersection and rotate_position used to share this page; each has\nits own now.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,13 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "These nodes measure a position against a reference, and report when it gets close.\n\nThey exist because \"how near is this to that\" is a question you ask constantly \nof tracked bodies, and answering it with separate subtract, norm and compare \nnodes is both tedious and easy to get wrong.\n\nTHE NODES:\n\nnp.distance_from_target  how far the input is from a stored target\nnp.proximity_to_target   the same measurement inverted, so near is HIGH - \n                         the shape you want for driving something\nproximity_trigger        the same, plus a trigger that fires on arrival\nnp.line_intersection     where two line segments cross, if they do\nrotate_position          rotate a position about an axis\n\nThe target is captured rather than typed. Put the thing where you want the \ntarget to be, click \"set target\", and the node remembers that position. \nFrom then on it reports against it.\n\nnp.proximity_to_target holds as many targets as you like. Set \"target index\" \nto a slot, put the tracker where that target should be, click \"capture\". \nChoose another index and capture again. Skipping ahead leaves the slots in \nbetween unset, and they report 0. The \"targets\" inlet replaces the whole set \nwith a list of positions; \"clear\" empties it. The targets are saved with the \npatch.\n\nEach target has a responsive zone of size \"radius\": proximity is 1 at the \ntarget and falls to 0 at the radius. \"exponent\" shapes the fall - above 1 the \nresponse concentrates near the centre, below 1 it stays high across the zone \nand drops off at the edge.\n\nThe \"fade\" outlet plugs straight into the fade inlet of polyphonic_sampler~: \nit sends [[sound_id, fade], ...], target i driving sound \"first sound\" + i. \nLike effort_fader it is sparse - a sound is sent while its target is in range, \ngets a single 0 when the tracker leaves the zone (so the sample stops), and \nis otherwise left alone. With several trackers the closest one sets each \ntarget's fade. \"nearest\" gives the index of the closest target whose zone \nyou are in, or -1.\n\nproximity_trigger is the one that turns this into an event. It has two \nthresholds, near and far, and fires when the input comes closer than the near \none - then will not fire again until it has retreated past the far one. \nThat is the same hysteresis the trigger node uses, and for the same reason: \nwithout the gap, a hand hovering at the boundary fires continuously.\n\nSYNTAX:\nnp.distance_from_target\nproximity_trigger\n\nEXAMPLE:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as an array. Receiving it triggers the node.\n\nset target:\nA button. Captures whatever is at the input right now as the reference.\n\naxis:\nFor arrays of several positions at once, which direction the coordinates run \nalong - so you can measure a whole set of points against a whole set of \ntargets in one go.\n\nthreshold / release_threshold (proximity_trigger):\nHow close counts as arrived, and how far away it must go before it can arrive \nagain. Keep the release larger than the threshold.\n\narm / reset_count (proximity_trigger):\nEnable the trigger, and set its count back to zero.\n\nline 1 start / line 1 end / line 2 start / line 2 end (np.line_intersection):\nThe two segments.\n\ndirection matters / intersect line 2 segment (np.line_intersection):\nWhether to treat the lines as directed, and whether the crossing has to fall \nwithin the second segment rather than on its infinite extension.\n\nposition / angle / axis (rotate_position):\nThe point to rotate, by how much, and about which axis.\n\nOUTPUTS: \n\nnorm:\nThe distance, or the proximity.\n\nstate / count / proximity (proximity_trigger):\nWhether it is currently near, how many times it has arrived, and the \nunderlying measurement.\n\nintersection is valid / point of intersection / fraction of segment 2:\nWhether the segments actually cross, where, and how far along the second one - \ncheck the valid outlet before using the point, since parallel lines have no \ncrossing to report."
+            "text": "These nodes measure a position against a reference, and report when it gets close.\n\nThey exist because \"how near is this to that\" is a question you ask constantly\nof tracked bodies, and answering it with separate subtract, norm and compare\nnodes is both tedious and easy to get wrong.\n\nTHE NODES:\n\nnp.distance_from_target  how far the input is from one stored target\nnp.proximity_to_target   closeness to any number of targets, 1 at a target\n                         falling to 0 at the edge of its zone - the shape you\n                         want for driving sounds\nproximity_trigger        an event when the input arrives at one target\n\nThe target is captured rather than typed. Put the thing where you want the\ntarget to be, click \"set target\" (or \"capture\"), and the node remembers that\nposition. From then on it reports against it.\n\nnp.distance_from_target:\nSends the straight-line distance from the input to the target every time an\ninput arrives. Nothing comes out until a target has been set. Its target is\nNOT saved with the patch - set it again after opening.\n\n\"axis\" matters when the input holds several positions at once. Left at None,\nthe whole difference is measured as one distance. For an array of positions,\none per row, choose axis 1 and you get one distance per row. The target is whatever\nwas at the input when you captured it, so a set of positions captures a set,\nand each is measured against its own.\n\nnp.proximity_to_target:\nHolds as many targets as you like. Set \"target index\" to a slot, put the\ntracker where that target should be, click \"capture\". Choose another index\nand capture again. Skipping ahead leaves the slots in between unset, and they\nreport 0. The \"targets\" inlet replaces the whole set with a list of\npositions; \"clear\" empties it. The targets are saved with the patch, and the\n\"targets\" outlet sends the whole set whenever it changes.\n\nEach target has a responsive zone of size \"radius\": proximity is 1 at the\ntarget and falls to 0 at the radius. \"exponent\" shapes the fall - above 1 the\nresponse concentrates near the centre, below 1 it stays high across the zone\nand drops off at the edge.\n\nThe \"fade\" outlet plugs straight into the fade inlet of polyphonic_sampler~:\nit sends [[sound_id, fade], ...], target i driving sound \"first sound\" + i.\nLike effort_fader it is sparse - a sound is sent while its target is in range,\ngets a single 0 when the tracker leaves the zone (so the sample stops), and\nis otherwise left alone. With several trackers at once (one per row) the\nclosest one sets each target's fade. \"nearest\" gives the index of the closest\ntarget whose zone you are in, or -1.\n\nproximity_trigger:\nTurns arrival into an event. It has two distances, \"threshold\" and\n\"release_threshold\". When the input comes closer than the threshold it sends\ntrue from \"state\" and adds one to \"count\"; it will not fire again until the\ninput has gone further away than the release threshold, when it sends false. That is\nthe same hysteresis the trigger node uses, and for the same reason: without\nthe gap, a hand hovering at the boundary fires continuously. Keep the release\nlarger than the threshold.\n\n\"arm\" must be ticked. It starts unticked, and while it is off the node does\nnothing at all - no distance, no events. Ticking or unticking it (or\nclicking \"reset_count\") sets the count back to zero.\n\nIt measures one position against one target. Its target is saved with the\npatch, but only as x, y and z: use three-number positions with it.\n\nSYNTAX:\nnp.distance_from_target\nnp.proximity_to_target\nproximity_trigger\n\nEXAMPLE:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as a list or array. Receiving it triggers the node.\n\nset target (np.distance_from_target, proximity_trigger):\nA button. Captures whatever is at the input right now as the reference.\n\naxis (np.distance_from_target, proximity_trigger):\nWhich direction to measure along when the input holds several positions.\nLeave it at None for a single position.\n\ntarget index / capture / targets / clear (np.proximity_to_target):\nChoose a slot, capture into it, replace all targets at once, or forget them.\n\nradius / exponent (np.proximity_to_target):\nThe size of each target's zone, and the shape of the fall-off across it.\n\nfirst sound (np.proximity_to_target):\nThe sound number target 0 drives.\n\narm / reset_count (proximity_trigger):\nSwitch the trigger on (it is off until you do), and set the count to zero.\n\nthreshold / release_threshold (proximity_trigger):\nHow close counts as arrived, and how far away it must go before it can\narrive again.\n\nOUTPUTS:\n\nnorm (np.distance_from_target):\nThe distance.\n\nfade / nearest / targets (np.proximity_to_target):\nThe [[sound_id, fade], ...] list, the index of the nearest target in range\n(or -1), and the current set of targets.\n\nstate / count / proximity (proximity_trigger):\ntrue on arrival and false on release (sent only when it changes), how many times it\nhas arrived, and the distance to the target on every input. Despite its name,\nthe \"proximity\" outlet sends the distance, so it gets SMALLER as you approach.\n\nRELATED:\nnp.line_intersection and rotate_position used to share this page; each has\nits own now."
         },
         "3": {
             "name": "signal",
-            "id": 422,
+            "id": 348,
             "position_x": 30,
-            "position_y": 52,
+            "position_y": 62,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -138,9 +138,9 @@
         },
         "4": {
             "name": "signal",
-            "id": 459,
-            "position_x": 200,
-            "position_y": 52,
+            "id": 385,
+            "position_x": 180,
+            "position_y": 62,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -181,25 +181,69 @@
             "init": "signal 5.0 cos"
         },
         "5": {
+            "name": "signal",
+            "id": 422,
+            "position_x": 330,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 7.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 7.0 sin"
+        },
+        "6": {
             "name": "pack",
-            "id": 496,
+            "id": 459,
             "position_x": 30,
-            "position_y": 152,
+            "position_y": 160,
             "width": 33,
-            "height": 56,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "pack 2"
+            "init": "pack 3"
         },
-        "6": {
-            "init": "comment a position wandering about",
+        "7": {
+            "init": "comment an x y z position wandering about",
             "name": "comment",
-            "id": 533,
-            "position_x": 355,
-            "position_y": 242,
-            "width": 168,
+            "id": 496,
+            "position_x": 536,
+            "position_y": 270,
+            "width": 211,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -207,7 +251,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "a position wandering about",
+                    "value": "an x y z position wandering about",
                     "value_type": "str"
                 },
                 "1": {
@@ -216,13 +260,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "a position wandering about"
+            "comment": "an x y z position wandering about"
         },
-        "7": {
+        "8": {
             "name": "np.distance_from_target",
-            "id": 570,
+            "id": 533,
             "position_x": 30,
-            "position_y": 280,
+            "position_y": 310,
             "width": 150,
             "height": 70,
             "visibility": "show_all",
@@ -230,36 +274,51 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
-            "init": "comment click \"set target\" to capture a reference",
-            "name": "comment",
-            "id": 607,
-            "position_x": 355,
-            "position_y": 410,
-            "width": 260,
-            "height": 30,
+        "9": {
+            "name": "text_block",
+            "id": 570,
+            "annotation": true,
+            "position_x": 536,
+            "position_y": 440,
+            "width": 261,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "click \"set target\" to capture a reference",
+                    "name": "block",
+                    "value": "click \"set target\" on both to capture\na reference",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "click \"set target\" to capture a reference"
+            "text": "click \"set target\" on both to capture\na reference"
         },
-        "9": {
+        "10": {
             "name": "plot",
-            "id": 644,
+            "id": 607,
             "position_x": 30,
-            "position_y": 450,
+            "position_y": 490,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -313,17 +372,17 @@
                 },
                 "9": {
                     "name": "max y",
-                    "value": 2.5,
+                    "value": 3.0,
                     "value_type": "float"
                 }
             }
         },
-        "10": {
+        "11": {
             "init": "comment distance from wherever you captured",
             "name": "comment",
-            "id": 681,
-            "position_x": 355,
-            "position_y": 635,
+            "id": 644,
+            "position_x": 536,
+            "position_y": 675,
             "width": 224,
             "height": 30,
             "visibility": "show_all",
@@ -343,11 +402,119 @@
             },
             "comment": "distance from wherever you captured"
         },
-        "11": {
-            "name": "close",
+        "12": {
+            "name": "proximity_trigger",
+            "id": 681,
+            "position_x": 300,
+            "position_y": 310,
+            "width": 197,
+            "height": 154,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "arm",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "threshold",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "release_threshold",
+                    "value": 0.8,
+                    "value_type": "float"
+                }
+            }
+        },
+        "13": {
+            "name": "toggle",
             "id": 718,
+            "position_x": 300,
+            "position_y": 530,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "int",
+            "id": 755,
+            "position_x": 380,
+            "position_y": 530,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 536,
+            "position_y": 585,
+            "width": 280,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "on while within 0.5, off again past 0.8;\nthe count goes up once per arrival",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 272,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "on while within 0.5, off again past 0.8;\nthe count goes up once per arrival"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
             "position_x": 24,
-            "position_y": 658,
+            "position_y": 698,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -364,44 +531,84 @@
     },
     "links": {
         "0": {
-            "source_node": 422,
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in 1"
         },
         "1": {
-            "source_node": 459,
+            "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 496,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in 2"
         },
         "2": {
-            "source_node": 496,
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 3"
+        },
+        "3": {
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 570,
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
-        "3": {
-            "source_node": 570,
+        "4": {
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "norm",
-            "dest_node": 644,
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "state",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "count",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
         }
     }
 }

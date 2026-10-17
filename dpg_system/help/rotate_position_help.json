@@ -1,0 +1,439 @@
+{
+    "height": 761,
+    "width": 1501,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "rotate_position_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/rotate_position_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment rotate_position - turn a point about an axis",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 549,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "rotate_position - turn a point about an axis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "rotate_position - turn a point about an axis"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 663,
+            "position_y": 45,
+            "width": 798,
+            "height": 656,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "rotate_position turns a position about one of the three axes.\n\nGive it an x y z position and an angle in degrees; it sends the position\nrotated by that angle about the X, Y or Z axis, around the origin. It is the\nquick way to turn a tracked point into a different frame - to correct a sensor\nmounted at an angle, or to face a body forward before measuring it.\n\nA ROTATION FOLLOWS THE RIGHT-HAND RULE:\nPoint your right thumb along the chosen axis; positive angles turn the way\nyour fingers curl. About Y, a point at 1 0 0 turned by 90 degrees ends at\n0 0 -1.\n\nONE POSITION OR MANY:\nA single position of three numbers comes out as three numbers. An array of\npositions, one x y z per row, comes out with every row rotated. Anything else\n- a two-number point, say - is passed through UNCHANGED, with no warning, so\nif nothing seems to turn, check the shape of what you are sending.\n\nONLY THE POSITION TRIGGERS:\nChanging \"angle\" does not send anything by itself - the new angle is used on\nthe next position that arrives. Changing \"axis\" does re-send the last position\nstraight away. To sweep the angle over a fixed point, keep sending the point,\nas the demo does with tick.\n\nThe result is always float32.\n\nSYNTAX:\nrotate_position\n\nEXAMPLE:\nrotate_position\n\nINPUTS and PARAMETERS:\n\nposition:\nAn x y z position, or an array of them. Receiving it triggers the node.\n\nangle:\nThe rotation, in degrees.\n\naxis:\nX, Y or Z. Default Y - the vertical axis in most body data, so the default\nturns things about the vertical.\n\nOUTPUTS:\n\nrotated:\nThe rotated position or positions.\n\nRELATED:\nFor rotations about an arbitrary axis, or by a quaternion, use the\nquaternion nodes.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 640,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "rotate_position turns a position about one of the three axes.\n\nGive it an x y z position and an angle in degrees; it sends the position\nrotated by that angle about the X, Y or Z axis, around the origin. It is the\nquick way to turn a tracked point into a different frame - to correct a sensor\nmounted at an angle, or to face a body forward before measuring it.\n\nA ROTATION FOLLOWS THE RIGHT-HAND RULE:\nPoint your right thumb along the chosen axis; positive angles turn the way\nyour fingers curl. About Y, a point at 1 0 0 turned by 90 degrees ends at\n0 0 -1.\n\nONE POSITION OR MANY:\nA single position of three numbers comes out as three numbers. An array of\npositions, one x y z per row, comes out with every row rotated. Anything else\n- a two-number point, say - is passed through UNCHANGED, with no warning, so\nif nothing seems to turn, check the shape of what you are sending.\n\nONLY THE POSITION TRIGGERS:\nChanging \"angle\" does not send anything by itself - the new angle is used on\nthe next position that arrives. Changing \"axis\" does re-send the last position\nstraight away. To sweep the angle over a fixed point, keep sending the point,\nas the demo does with tick.\n\nThe result is always float32.\n\nSYNTAX:\nrotate_position\n\nEXAMPLE:\nrotate_position\n\nINPUTS and PARAMETERS:\n\nposition:\nAn x y z position, or an array of them. Receiving it triggers the node.\n\nangle:\nThe rotation, in degrees.\n\naxis:\nX, Y or Z. Default Y - the vertical axis in most body data, so the default\nturns things about the vertical.\n\nOUTPUTS:\n\nrotated:\nThe rotated position or positions.\n\nRELATED:\nFor rotations about an arbitrary axis, or by a quaternion, use the\nquaternion nodes."
+        },
+        "3": {
+            "name": "tick",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 33,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "name": "message",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 120,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 0 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "5": {
+            "init": "comment a point on the x axis, sent every frame",
+            "name": "comment",
+            "id": 422,
+            "position_x": 385,
+            "position_y": 190,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a point on the x axis, sent every frame",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a point on the x axis, sent every frame"
+        },
+        "6": {
+            "name": "signal",
+            "id": 459,
+            "position_x": 230,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 180.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 saw"
+        },
+        "7": {
+            "init": "comment an angle sweeping -180 to 180",
+            "name": "comment",
+            "id": 496,
+            "position_x": 385,
+            "position_y": 150,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "an angle sweeping -180 to 180",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "an angle sweeping -180 to 180"
+        },
+        "8": {
+            "name": "rotate_position",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 210,
+            "width": 123,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "9": {
+            "name": "list",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 350,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 410,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 385,
+            "position_y": 600,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "about Y: x and z trace a circle\nwhile y stays at 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "about Y: x and z trace a circle\nwhile y stays at 0"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 618,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "position"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "angle"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "rotated",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "rotated",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

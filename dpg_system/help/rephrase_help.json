@@ -1,11 +1,11 @@
 {
     "height": 881,
-    "width": 1911,
+    "width": 1906,
     "position": [
         100,
         100
     ],
-    "id": 866,
+    "id": 792,
     "name": "rephrase_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/rephrase_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment lemma and rephrase - working from grammar",
+            "init": "comment rephrase - a phrase built from fragments",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 512,
+            "width": 500,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "lemma and rephrase - working from grammar",
+                    "value": "rephrase - a phrase built from fragments",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,12 +51,12 @@
                     "value_type": "str"
                 }
             },
-            "comment": "lemma and rephrase - working from grammar"
+            "comment": "rephrase - a phrase built from fragments"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 1063,
+            "position_x": 1058,
             "position_y": 45,
             "width": 808,
             "height": 776,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Two nodes that use the grammar of a sentence rather than its vectors.\n\nTHE NODES:\n\nlemma     every word reduced to its dictionary form\nrephrase  fragments accumulated into a growing phrase\n\nlemma IS THE SMALL USEFUL ONE:\nIt gives back the dictionary form of every word: 'geese' becomes 'goose', 'were'\nbecomes 'be', 'running' becomes 'run'. It is not chopping off endings - it knows\nthe irregular forms, because it has parsed the sentence and knows which word is\ndoing what.\n\nThe use is matching. Counting words, comparing phrases or looking for a term all\nwork better on lemmas, because 'run', 'running' and 'ran' stop being three\ndifferent things. Put it in front of spacy_similarity or a word count and the\nresults get noticeably steadier.\n\nIt outputs a LIST, one lemma per word, punctuation included.\n\nrephrase IS NOT WHAT ITS NAME SUGGESTS:\nIt does not simplify a sentence. It ACCUMULATES: each fragment you send it is\nfolded into the phrase built so far, using the grammar of both to decide where\nthe new material belongs.\n\nSend it these, one at a time:\n\n    a woman             -> a woman\n    in a red coat       -> a woman, in a red coat\n    she is walking      -> a woman , in a red walking coat\n    through the park    -> a woman , in a red walking coat, through the park\n\n(the spacing around the commas really is uneven - it is stitching fragments\ntogether, not writing them out)\n\nNotice the third step. 'she' was resolved to the woman it has been tracking, and\nthe verb was folded in as a modifier rather than appended - which is how 'a red\nwalking coat' happens. That is the character of this node: it is a generative\ninstrument that produces compressed, slightly strange descriptions, not a\ngrammar engine that produces correct ones. Judge it by whether the results are\nworth having.\n\nSend 'no', 'wrong' or 'go back' and it steps back to the previous phrase.\n\nTHE THRESHOLDS, AND WHICH WAY THEY POINT:\n'complexity replace threshold' is an upper limit on what it will TRY. Complexity\ncounts nouns, verbs and prepositions, plus a quarter of the word count - so\nabout 1.5 for 'a woman' and 14 for a long descriptive sentence. A fragment above\nthe threshold is passed through untouched rather than folded in, so the default\nof 6 means it works with fragments, not whole sentences.\n\n'clip score' is a feedback path. When the score arriving there is ABOVE 'clip\nscore threshold' the node stops rewriting and emits nothing at all - the reading\nis that whatever is consuming the phrase is already doing well enough, so leave\nit alone. A rephrase that has gone quiet is usually this, not a fault.\n\n'clear input pause' is how long a phrase stays live. Fragments arriving within\nthat many seconds are folded into the phrase in progress; after the pause, the\nnext fragment starts fresh.\n\n'output as list' sends the result word by word instead of as one string.\n\nSYNTAX:\nlemma\nrephrase\n\nEXAMPLE:\nrephrase\n\nINPUTS and PARAMETERS:\n\ntext in:\nA fragment. Receiving it folds it in and sends the result.\n\nclip score:\nThe feedback number. High enough, and the node goes quiet.\n\nreplace similarity:\nHow alike two pieces must be before one replaces the other.\n\nOUTPUTS: \n\nlemmas out:\nA list, one dictionary form per word.\n\nresults:\nThe accumulated phrase.\n\nTHEY ALL SHARE ONE LANGUAGE MODEL:\nThe first of these nodes to be created loads en_core_web_lg, and every spacy\nnode in every patch then shares it. It is a few hundred megabytes and takes a\nmoment, so the first one costs something and the rest are free.\n\nIf the model is not installed the nodes still build, but they do nothing at all\n- no output, no error each time. A spacy node that is silent when everything is\nwired correctly is the thing to suspect.\n\nRELATED:\nspacy_similarity works on meaning rather than grammar.\ncontext_tracker keeps track of place, time and actors across a stream of text.",
+                    "value": "rephrase builds a phrase out of fragments, using the grammar of each.\n\nIT IS NOT WHAT ITS NAME SUGGESTS:\nIt does not simplify a sentence. It ACCUMULATES. Each fragment you send is\ncompared with the phrase built so far, part by part:\n\n- if the phrase already has a part of the same kind - a noun phrase, a\n  phrase starting with a preposition, a verb, an adjective - and the two are\n  close enough in meaning, the new fragment REPLACES that part\n- otherwise the fragment is added on the end, after a comma\n\nSend it these, one at a time:\n\n    a woman          -> a woman\n    in a red coat    -> a woman, in a red coat\n    she is walking   -> a woman , in a red walking coat\n    a tall man       -> a tall man in a red walking coat\n    in a blue coat   -> a tall man in a blue coat\n    not blue         -> a tall man in a coat\n    through the park -> a tall man in a coat, through the park\n\n(the spacing around the commas really is uneven - it is stitching fragments\ntogether, not writing them out)\n\nLook at the third step. 'she' was taken to mean the woman it has been tracking,\nand the verb was folded in as a modifier rather than appended - which is how 'a\nred walking coat' happens. That is the character of this node: it is a\ngenerative instrument that produces compressed, slightly strange descriptions,\nnot a grammar engine that produces correct ones. Judge it by whether the\nresults are worth having.\n\nA fragment that starts with 'it', 'they', 'he' or 'she' has that word swapped\nfor the noun the phrase is about. A fragment that starts with 'not' takes a\nword out: 'not blue' removes the adjective 'blue'.\n\nSTEPPING BACK DOES NOT WORK YET:\n'no', 'wrong' and 'go back' are meant to return to the previous phrase. At\npresent that only happens once the 'clear input pause' has run out. Sent while\nthe phrase is still live, the previous phrase is folded into the current one as\nif it were a new fragment, and the result is a garble ('an a tall blue man in\na blue coat in a coat'). Do not rely on it.\n\nTHE SETTINGS, AND WHICH WAY THEY POINT:\n'replace similarity' is how alike in meaning a fragment and a part of the phrase\nmust be before the fragment replaces that part. Raise it and more fragments are\nadded on the end; lower it and more of the phrase gets overwritten. 0.5 by\ndefault.\n\n'complexity replace threshold' is an upper limit on what it will try to fold\nin. Complexity counts nouns, pronouns, verbs and prepositions, plus a quarter\nof the word count - so 1.5 for 'a woman' and 9 for 'the old man walked slowly\nacross the wide empty square at dawn'. A fragment above the threshold is not\nfolded in: it replaces the whole phrase and the next fragment builds on it. The\ndefault of 6 means it works with fragments, not whole sentences. Two exceptions:\na fragment whose main word is a preposition is always tried, and a long one\nthat starts with a word like 'and' or 'because' is added on the end.\n\n'clear input pause' is how long a phrase stays live, in seconds. A fragment\narriving within that time of the last one is folded into the phrase in\nprogress; after a longer gap, the next fragment starts afresh. 40 by default.\n\n'clip score threshold' goes with the 'clip score' inlet, which is a feedback\npath. When the score last received there is at or above the threshold the node\nstops rewriting and sends nothing at all - the reading is that whatever is\nconsuming the phrase is already doing well enough, so leave it alone. A\nrephrase that has gone quiet is usually this, not a fault. The default of 640\nis far above anything the inlet sees until you wire it.\n\n'output as list' sends the result word by word instead of as one string.\n\nSYNTAX:\nrephrase\n\nINPUTS and PARAMETERS:\n\ntext in:\nA fragment. Receiving it folds it in and sends the result. A list is joined\nback into one phrase first, so a message node works as a source.\n\nclip score:\nThe feedback number. It does not trigger anything; it is held and checked when\nthe next fragment arrives.\n\nMESSAGES:\n\nfull_tree <word>:\nSends, as a list, the word and everything that depends on it in the current\nphrase.\n\nbare_tree <word>:\nThe same, cut off where the next phrase begins. On 'a tall man in a coat, through\nthe park', 'full_tree man' sends the whole thing and 'bare_tree man' sends\n'a tall man'. Only for a noun, verb or\npreposition.\n\nEither sends nothing if the word is not in the current phrase.\n\nOUTPUTS:\n\nresults:\nThe accumulated phrase.\n\nTHEY ALL SHARE ONE LANGUAGE MODEL:\nThe first of these nodes to be created loads en_core_web_lg, and every spacy\nnode in every patch then shares it. It is a few hundred megabytes and takes a\nmoment, so the first one costs something and the rest are free.\n\nIf the model is not installed the nodes still build, but they do nothing at all\n- no output, no error each time. A spacy node that is silent when everything is\nwired correctly is the thing to suspect.\n\nRELATED:\nlemma also works from the grammar of a phrase.\nspacy_similarity works on meaning rather than grammar.\ncontext_tracker keeps track of place, time and actors across a stream of text.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,111 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "Two nodes that use the grammar of a sentence rather than its vectors.\n\nTHE NODES:\n\nlemma     every word reduced to its dictionary form\nrephrase  fragments accumulated into a growing phrase\n\nlemma IS THE SMALL USEFUL ONE:\nIt gives back the dictionary form of every word: 'geese' becomes 'goose', 'were'\nbecomes 'be', 'running' becomes 'run'. It is not chopping off endings - it knows\nthe irregular forms, because it has parsed the sentence and knows which word is\ndoing what.\n\nThe use is matching. Counting words, comparing phrases or looking for a term all\nwork better on lemmas, because 'run', 'running' and 'ran' stop being three\ndifferent things. Put it in front of spacy_similarity or a word count and the\nresults get noticeably steadier.\n\nIt outputs a LIST, one lemma per word, punctuation included.\n\nrephrase IS NOT WHAT ITS NAME SUGGESTS:\nIt does not simplify a sentence. It ACCUMULATES: each fragment you send it is\nfolded into the phrase built so far, using the grammar of both to decide where\nthe new material belongs.\n\nSend it these, one at a time:\n\n    a woman             -> a woman\n    in a red coat       -> a woman, in a red coat\n    she is walking      -> a woman , in a red walking coat\n    through the park    -> a woman , in a red walking coat, through the park\n\n(the spacing around the commas really is uneven - it is stitching fragments\ntogether, not writing them out)\n\nNotice the third step. 'she' was resolved to the woman it has been tracking, and\nthe verb was folded in as a modifier rather than appended - which is how 'a red\nwalking coat' happens. That is the character of this node: it is a generative\ninstrument that produces compressed, slightly strange descriptions, not a\ngrammar engine that produces correct ones. Judge it by whether the results are\nworth having.\n\nSend 'no', 'wrong' or 'go back' and it steps back to the previous phrase.\n\nTHE THRESHOLDS, AND WHICH WAY THEY POINT:\n'complexity replace threshold' is an upper limit on what it will TRY. Complexity\ncounts nouns, verbs and prepositions, plus a quarter of the word count - so\nabout 1.5 for 'a woman' and 14 for a long descriptive sentence. A fragment above\nthe threshold is passed through untouched rather than folded in, so the default\nof 6 means it works with fragments, not whole sentences.\n\n'clip score' is a feedback path. When the score arriving there is ABOVE 'clip\nscore threshold' the node stops rewriting and emits nothing at all - the reading\nis that whatever is consuming the phrase is already doing well enough, so leave\nit alone. A rephrase that has gone quiet is usually this, not a fault.\n\n'clear input pause' is how long a phrase stays live. Fragments arriving within\nthat many seconds are folded into the phrase in progress; after the pause, the\nnext fragment starts fresh.\n\n'output as list' sends the result word by word instead of as one string.\n\nSYNTAX:\nlemma\nrephrase\n\nEXAMPLE:\nrephrase\n\nINPUTS and PARAMETERS:\n\ntext in:\nA fragment. Receiving it folds it in and sends the result.\n\nclip score:\nThe feedback number. High enough, and the node goes quiet.\n\nreplace similarity:\nHow alike two pieces must be before one replaces the other.\n\nOUTPUTS: \n\nlemmas out:\nA list, one dictionary form per word.\n\nresults:\nThe accumulated phrase.\n\nTHEY ALL SHARE ONE LANGUAGE MODEL:\nThe first of these nodes to be created loads en_core_web_lg, and every spacy\nnode in every patch then shares it. It is a few hundred megabytes and takes a\nmoment, so the first one costs something and the rest are free.\n\nIf the model is not installed the nodes still build, but they do nothing at all\n- no output, no error each time. A spacy node that is silent when everything is\nwired correctly is the thing to suspect.\n\nRELATED:\nspacy_similarity works on meaning rather than grammar.\ncontext_tracker keeps track of place, time and actors across a stream of text."
+            "text": "rephrase builds a phrase out of fragments, using the grammar of each.\n\nIT IS NOT WHAT ITS NAME SUGGESTS:\nIt does not simplify a sentence. It ACCUMULATES. Each fragment you send is\ncompared with the phrase built so far, part by part:\n\n- if the phrase already has a part of the same kind - a noun phrase, a\n  phrase starting with a preposition, a verb, an adjective - and the two are\n  close enough in meaning, the new fragment REPLACES that part\n- otherwise the fragment is added on the end, after a comma\n\nSend it these, one at a time:\n\n    a woman          -> a woman\n    in a red coat    -> a woman, in a red coat\n    she is walking   -> a woman , in a red walking coat\n    a tall man       -> a tall man in a red walking coat\n    in a blue coat   -> a tall man in a blue coat\n    not blue         -> a tall man in a coat\n    through the park -> a tall man in a coat, through the park\n\n(the spacing around the commas really is uneven - it is stitching fragments\ntogether, not writing them out)\n\nLook at the third step. 'she' was taken to mean the woman it has been tracking,\nand the verb was folded in as a modifier rather than appended - which is how 'a\nred walking coat' happens. That is the character of this node: it is a\ngenerative instrument that produces compressed, slightly strange descriptions,\nnot a grammar engine that produces correct ones. Judge it by whether the\nresults are worth having.\n\nA fragment that starts with 'it', 'they', 'he' or 'she' has that word swapped\nfor the noun the phrase is about. A fragment that starts with 'not' takes a\nword out: 'not blue' removes the adjective 'blue'.\n\nSTEPPING BACK DOES NOT WORK YET:\n'no', 'wrong' and 'go back' are meant to return to the previous phrase. At\npresent that only happens once the 'clear input pause' has run out. Sent while\nthe phrase is still live, the previous phrase is folded into the current one as\nif it were a new fragment, and the result is a garble ('an a tall blue man in\na blue coat in a coat'). Do not rely on it.\n\nTHE SETTINGS, AND WHICH WAY THEY POINT:\n'replace similarity' is how alike in meaning a fragment and a part of the phrase\nmust be before the fragment replaces that part. Raise it and more fragments are\nadded on the end; lower it and more of the phrase gets overwritten. 0.5 by\ndefault.\n\n'complexity replace threshold' is an upper limit on what it will try to fold\nin. Complexity counts nouns, pronouns, verbs and prepositions, plus a quarter\nof the word count - so 1.5 for 'a woman' and 9 for 'the old man walked slowly\nacross the wide empty square at dawn'. A fragment above the threshold is not\nfolded in: it replaces the whole phrase and the next fragment builds on it. The\ndefault of 6 means it works with fragments, not whole sentences. Two exceptions:\na fragment whose main word is a preposition is always tried, and a long one\nthat starts with a word like 'and' or 'because' is added on the end.\n\n'clear input pause' is how long a phrase stays live, in seconds. A fragment\narriving within that time of the last one is folded into the phrase in\nprogress; after a longer gap, the next fragment starts afresh. 40 by default.\n\n'clip score threshold' goes with the 'clip score' inlet, which is a feedback\npath. When the score last received there is at or above the threshold the node\nstops rewriting and sends nothing at all - the reading is that whatever is\nconsuming the phrase is already doing well enough, so leave it alone. A\nrephrase that has gone quiet is usually this, not a fault. The default of 640\nis far above anything the inlet sees until you wire it.\n\n'output as list' sends the result word by word instead of as one string.\n\nSYNTAX:\nrephrase\n\nINPUTS and PARAMETERS:\n\ntext in:\nA fragment. Receiving it folds it in and sends the result. A list is joined\nback into one phrase first, so a message node works as a source.\n\nclip score:\nThe feedback number. It does not trigger anything; it is held and checked when\nthe next fragment arrives.\n\nMESSAGES:\n\nfull_tree <word>:\nSends, as a list, the word and everything that depends on it in the current\nphrase.\n\nbare_tree <word>:\nThe same, cut off where the next phrase begins. On 'a tall man in a coat, through\nthe park', 'full_tree man' sends the whole thing and 'bare_tree man' sends\n'a tall man'. Only for a noun, verb or\npreposition.\n\nEither sends nothing if the word is not in the current phrase.\n\nOUTPUTS:\n\nresults:\nThe accumulated phrase.\n\nTHEY ALL SHARE ONE LANGUAGE MODEL:\nThe first of these nodes to be created loads en_core_web_lg, and every spacy\nnode in every patch then shares it. It is a few hundred megabytes and takes a\nmoment, so the first one costs something and the rest are free.\n\nIf the model is not installed the nodes still build, but they do nothing at all\n- no output, no error each time. A spacy node that is silent when everything is\nwired correctly is the thing to suspect.\n\nRELATED:\nlemma also works from the grammar of a phrase.\nspacy_similarity works on meaning rather than grammar.\ncontext_tracker keeps track of place, time and actors across a stream of text."
         },
         "3": {
             "name": "message",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "the geese were running quickly",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "4": {
-            "name": "lemma",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 120,
-            "width": 70,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "list",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 215,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "6": {
-            "name": "text_block",
-            "id": 459,
-            "annotation": true,
-            "position_x": 741,
-            "position_y": 265,
-            "width": 292,
-            "height": 52,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "geese -> goose, were -> be, running -> run\nit knows the irregular forms - it has\nparsed the sentence, not chopped endings",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 284,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "geese -> goose, were -> be, running -> run\nit knows the irregular forms - it has\nparsed the sentence, not chopped endings"
-        },
-        "7": {
-            "name": "message",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 400,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -213,11 +115,11 @@
                 }
             }
         },
-        "8": {
+        "4": {
             "name": "message",
-            "id": 533,
+            "id": 385,
             "position_x": 30,
-            "position_y": 455,
+            "position_y": 117,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -236,11 +138,11 @@
                 }
             }
         },
-        "9": {
+        "5": {
             "name": "message",
-            "id": 570,
+            "id": 422,
             "position_x": 30,
-            "position_y": 510,
+            "position_y": 172,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -259,11 +161,80 @@
                 }
             }
         },
-        "10": {
+        "6": {
             "name": "message",
-            "id": 607,
+            "id": 459,
             "position_x": 30,
-            "position_y": 565,
+            "position_y": 227,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "a tall man",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "message",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 282,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "in a blue coat",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 337,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "not blue",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "message",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 392,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -282,36 +253,13 @@
                 }
             }
         },
-        "11": {
-            "name": "message",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 620,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "no",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "12": {
+        "10": {
             "name": "text_block",
-            "id": 681,
+            "id": 607,
             "annotation": true,
-            "position_x": 741,
-            "position_y": 670,
-            "width": 268,
+            "position_x": 736,
+            "position_y": 445,
+            "width": 255,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -319,7 +267,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "click these in order, one at a time\n'no' steps back to the previous phrase",
+                    "value": "click these in order, one at a time,\nless than 40 seconds apart",
                     "value_type": "str"
                 },
                 "1": {
@@ -329,7 +277,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 260,
+                    "value": 247,
                     "value_type": "int"
                 },
                 "3": {
@@ -343,13 +291,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "click these in order, one at a time\n'no' steps back to the previous phrase"
+            "text": "click these in order, one at a time,\nless than 40 seconds apart"
         },
-        "13": {
+        "11": {
             "name": "rephrase",
-            "id": 718,
-            "position_x": 450,
-            "position_y": 400,
+            "id": 644,
+            "position_x": 300,
+            "position_y": 62,
             "width": 265,
             "height": 126,
             "visibility": "show_all",
@@ -357,12 +305,12 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "14": {
-            "name": "list",
-            "id": 755,
-            "position_x": 450,
-            "position_y": 675,
-            "width": 130,
+        "12": {
+            "name": "string",
+            "id": 681,
+            "position_x": 300,
+            "position_y": 340,
+            "width": 410,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -377,24 +325,29 @@
                     "name": "font size",
                     "value": "24",
                     "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 380,
+                    "value_type": "int"
                 }
             }
         },
-        "15": {
+        "13": {
             "name": "text_block",
-            "id": 792,
+            "id": 718,
             "annotation": true,
-            "position_x": 741,
-            "position_y": 725,
-            "width": 286,
-            "height": 64,
+            "position_x": 736,
+            "position_y": 390,
+            "width": 292,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "each fragment is folded into the phrase\nbuilt so far, not appended to it\ncomplexity above the threshold is passed\nthrough untouched - it works on fragments",
+                    "value": "a fragment like part of the phrase\nreplaces it; anything else goes on the end",
                     "value_type": "str"
                 },
                 "1": {
@@ -404,12 +357,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 278,
+                    "value": 284,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 48,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -418,13 +371,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "each fragment is folded into the phrase\nbuilt so far, not appended to it\ncomplexity above the threshold is passed\nthrough untouched - it works on fragments"
+            "text": "a fragment like part of the phrase\nreplaces it; anything else goes on the end"
         },
-        "16": {
+        "14": {
             "name": "close",
-            "id": 829,
+            "id": 755,
             "position_x": 24,
-            "position_y": 747,
+            "position_y": 464,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -445,7 +398,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 385,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
@@ -454,68 +407,68 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "lemmas out",
-            "dest_node": 422,
+            "source_output_name": "message out",
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "text in"
         },
         "2": {
-            "source_node": 496,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 718,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
         },
         "3": {
-            "source_node": 533,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 718,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
         },
         "4": {
-            "source_node": 570,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 718,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
         },
         "5": {
-            "source_node": 607,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 718,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
         },
         "6": {
-            "source_node": 644,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 718,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "text in"
         },
         "7": {
-            "source_node": 718,
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "results",
-            "dest_node": 755,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

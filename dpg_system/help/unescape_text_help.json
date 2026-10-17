@@ -1,0 +1,254 @@
+{
+    "height": 681,
+    "width": 1608,
+    "position": [
+        100,
+        100
+    ],
+    "id": 570,
+    "name": "unescape_text_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/unescape_text_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment unescape_text - HTML escapes back to characters",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 586,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "unescape_text - HTML escapes back to characters",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "unescape_text - HTML escapes back to characters"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 770,
+            "position_y": 45,
+            "width": 798,
+            "height": 576,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "unescape_text turns HTML escapes back into the characters they stand for.\n\nText out of a web page, a feed or some network services arrives with\ncharacters written as codes: \"&amp;\" for an ampersand, \"&lt;\" and \"&gt;\" for\nangle brackets, \"&quot;\" for a double quote, \"&eacute;\" for an accented e,\n\"&#8212;\" or \"&#x2014;\" for a long dash. Until they are turned back, the string\nlooks wrong when shown and fails to match words it should match.\n\nEvery named and numbered escape HTML knows is handled. Anything else is left\nas it is.\n\nONE TO WATCH:\n\"&nbsp;\" becomes a non-breaking space. It looks like a space but is not one,\nso splitting on spaces will not split there - and printable, which keeps only\nplain characters, removes it entirely, joining the words on either side.\n\nWHAT IT TAKES:\nAnything; it is turned into a string first. A list of words is joined with\nspaces, and line breaks are removed.\n\nSYNTAX:\nunescape_text\n\nINPUTS:\n\nescaped string in:\nThe text. Receiving it triggers the node.\n\nOUTPUTS:\n\nunescaped string out:\nThe same text with the escapes replaced.\n\nRELATED:\nprintable removes characters rather than translating them.\nstring_replace for any other substitution.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 560,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "unescape_text turns HTML escapes back into the characters they stand for.\n\nText out of a web page, a feed or some network services arrives with\ncharacters written as codes: \"&amp;\" for an ampersand, \"&lt;\" and \"&gt;\" for\nangle brackets, \"&quot;\" for a double quote, \"&eacute;\" for an accented e,\n\"&#8212;\" or \"&#x2014;\" for a long dash. Until they are turned back, the string\nlooks wrong when shown and fails to match words it should match.\n\nEvery named and numbered escape HTML knows is handled. Anything else is left\nas it is.\n\nONE TO WATCH:\n\"&nbsp;\" becomes a non-breaking space. It looks like a space but is not one,\nso splitting on spaces will not split there - and printable, which keeps only\nplain characters, removes it entirely, joining the words on either side.\n\nWHAT IT TAKES:\nAnything; it is turned into a string first. A list of words is joined with\nspaces, and line breaks are removed.\n\nSYNTAX:\nunescape_text\n\nINPUTS:\n\nescaped string in:\nThe text. Receiving it triggers the node.\n\nOUTPUTS:\n\nunescaped string out:\nThe same text with the escapes replaced.\n\nRELATED:\nprintable removes characters rather than translating them.\nstring_replace for any other substitution."
+        },
+        "3": {
+            "name": "string",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 430,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "fish &amp; chips &lt;b&gt; caf&eacute; &#8212; &quot;hi&quot;",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 400,
+                    "value_type": "int"
+                }
+            }
+        },
+        "4": {
+            "init": "comment click to send it",
+            "name": "comment",
+            "id": 385,
+            "position_x": 486,
+            "position_y": 112,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to send it"
+        },
+        "5": {
+            "name": "unescape_text",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 131,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 245,
+            "width": 430,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 400,
+                    "value_type": "int"
+                }
+            }
+        },
+        "7": {
+            "init": "comment each code becomes the character it names",
+            "name": "comment",
+            "id": 496,
+            "position_x": 486,
+            "position_y": 295,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "each code becomes the character it names",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "each code becomes the character it names"
+        },
+        "8": {
+            "name": "close",
+            "id": 533,
+            "position_x": 24,
+            "position_y": 317,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "escaped string in"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "unescaped string out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

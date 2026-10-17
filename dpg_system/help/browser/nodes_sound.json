@@ -297,7 +297,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "filters, distortion, shapers and lookups, delay~ / echo~,\nconditioning, vst~ / plugin~",
+                    "value": "filters, distortion, shapers and lookups, delay~ / echo~,\nclean~ / condition~, one_euro~ / smooth~, vst~ / plugin~",
                     "value_type": "str"
                 },
                 "1": {
@@ -321,7 +321,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "filters, distortion, shapers and lookups, delay~ / echo~,\nconditioning, vst~ / plugin~",
+            "text": "filters, distortion, shapers and lookups, delay~ / echo~,\nclean~ / condition~, one_euro~ / smooth~, vst~ / plugin~",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,

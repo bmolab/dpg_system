@@ -1,11 +1,11 @@
 {
-    "height": 492,
-    "width": 860,
+    "height": 588,
+    "width": 848,
     "position": [
         100,
         100
     ],
-    "id": 1092,
+    "id": 1240,
     "name": "nodes_numpy_calculating",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_calculating.json",
     "nodes": {
@@ -445,12 +445,12 @@
             "annotation": true,
             "position_x": 232,
             "position_y": 378,
-            "width": 588,
-            "height": 52,
+            "width": 452,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "how near is this to that\n(np.distance_from_target, np.line_intersection, np.proximity_to_target, proximity_trigger,\n rotate_position)",
+                    "value": "how near is this to that\n(np.distance_from_target, np.proximity_to_target, proximity_trigger)",
                     "value_type": "str"
                 },
                 "1": {
@@ -460,12 +460,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 580,
+                    "value": 444,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 36,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -474,8 +474,146 @@
                     "value_type": "str"
                 }
             },
-            "text": "how near is this to that\n(np.distance_from_target, np.line_intersection, np.proximity_to_target, proximity_trigger,\n rotate_position)",
+            "text": "how near is this to that\n(np.distance_from_target, np.proximity_to_target, proximity_trigger)",
             "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link np.line_intersection np.line_intersection",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 426,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.line_intersection",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 430,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "where two lines cross",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "where two lines cross",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link rotate_position rotate_position",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 478,
+            "width": 194,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "rotate_position",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 178,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 232,
+            "position_y": 482,
+            "width": 194,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "turn a point about an axis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 186,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "turn a point about an axis",
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

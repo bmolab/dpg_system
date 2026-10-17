@@ -1,4 +1,4 @@
-"""trigger/hysteresis, noise_gate, ranger, register, stream/subsample."""
+"""trigger/hysteresis, noise_gate, ranger, register, stream, subsample."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
@@ -295,28 +295,81 @@ print(build('register', 'register - hold a value, send it when asked', body,
             demo, links, demo_width=400, text_width=780, text_height=640))
 
 # --------------------------------------------------------------------- stream
-body = """These two nodes change how OFTEN data moves, without changing the data itself.
+body = """stream resends the most recent value it received, on every frame.
 
-They solve opposite problems. stream takes a value that arrives occasionally and 
-repeats it on every frame, turning an event into a continuous supply. 
-subsample takes a value that arrives on every frame and passes on only some of 
-them, thinning a fast stream down to something slower.
+It turns an event into a continuous supply. Something upstream that only
+speaks when it changes - a slider, a message, a value that arrives now and
+then - becomes a steady stream at the frame rate, about 60 times a second.
+You use it when something downstream needs to be fed continuously.
 
-Between them they let you match a source's rate to what the rest of the patch 
-wants, rather than rebuilding either end.
+It does not change the value. Arriving at 'input' does not send anything by
+itself; the value is stored and goes out on the next frame, and every frame
+after, until a new value replaces it.
 
-THE NODES:
-
-stream       resend the most recent value on every frame
-subsample    pass on only every Nth value
-
-You use stream when something downstream needs to be fed continuously but your 
-source only speaks when it changes. You use subsample when a fast sensor is 
-driving something expensive - a network send, a model, a redraw - more often 
-than it needs.
+IT RUNS FROM THE START:
+It fires on every frame from the moment it exists, before any value has
+arrived. Nodes after it see a trigger with no new value; most ignore that,
+but one that reacts to any trigger - a counter, say - starts counting at once.
 
 SYNTAX:
 stream
+
+INPUTS and PARAMETERS:
+
+input:
+The value to repeat. It does not trigger anything.
+
+stream:
+When checked the node repeats on every frame. Unchecked, it stops entirely -
+it does not pass values through either. On by default.
+
+OUTPUTS:
+
+out:
+The most recent value, every frame.
+
+RELATED:
+subsample does the opposite job: it thins a fast stream down.
+tick fires every frame without carrying a value."""
+
+demo = [
+    {'key': 'f0', 'init': 'float', 'pos': (30, 62), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c0', 'comment': True, 'text': 'drag this now and then', 'pos': (30, 112)},
+    {'key': 'st', 'init': 'stream', 'pos': (30, 150), 'w': 140, 'h': 70},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 235), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'cnt', 'init': 'counter 1000000', 'pos': (200, 235), 'w': 123, 'h': 84,
+     'props': {'count': 1000000, 'step': 1}},
+    {'key': 'i1', 'init': 'int', 'pos': (200, 335), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'c1', 'comment': True, 'text': 'counts sends: about 60 a second,\nhowever seldom the value changes\nuntick stream and it all stops',
+     'pos': (30, 390)},
+]
+links = [('f0', 'float out', 'st', 'input'), ('st', 'out', 'f1', ''),
+         ('st', 'out', 'cnt', 'input'), ('cnt', 'count out', 'i1', '')]
+print(build('stream', 'stream - resend the latest value every frame', body,
+            demo, links, demo_width=400, text_width=790, text_height=600))
+
+# ------------------------------------------------------------------ subsample
+body = """subsample passes on only every Nth value it receives.
+
+It thins a fast stream down to something slower. You use it when a fast sensor
+or a per-frame source is driving something expensive - a network send, a
+model, a redraw - more often than it needs.
+
+It does not average or smooth: the values in between are simply dropped. If
+you want fewer values without losing the shape, filter first, then subsample.
+
+A NOTE ON ITS TIMING:
+subsample also watches how fast values arrive. If the input goes quiet for
+longer than the usual gap times the rate, it sends the latest value once more
+and starts counting afresh. So a stream that stops does not leave the node
+holding a value it never passed on - though if the last value WAS passed on,
+it goes out a second time.
+
+At a rate of 1 that check is tight enough that ordinary unevenness in arrival
+can trip it, so some values are sent twice; at 0 it trips after every value.
+Use 2 or more.
+
+SYNTAX:
 subsample <rate: int>
 
 EXAMPLE:
@@ -325,45 +378,35 @@ subsample 4
 INPUTS and PARAMETERS:
 
 input:
-The data. On subsample this triggers the node; on stream it is stored and 
-resent on every frame.
+The data. Receiving it triggers the node.
 
-stream (stream only):
-When checked the node repeats on every frame. Unchecked, it stops entirely - 
-it does not pass values through. On by default.
+rate:
+How many values arrive for each one that leaves. 2 halves the rate, 10 sends
+one in ten. 2 by default.
 
-rate (subsample only):
-How many values arrive for each one that leaves. 
-2 halves the rate, 10 sends one in ten. A rate of 1 passes everything.
-
-OUTPUTS: 
+OUTPUTS:
 
 out:
-The value - repeated every frame by stream, thinned by subsample.
+The values that get through.
 
-A NOTE ON SUBSAMPLE'S TIMING:
-subsample also watches how fast values are arriving, and if the input goes quiet 
-for longer than the expected gap it sends the last value anyway. 
-That way a stream that simply stops does not leave the node holding a value 
-it never passed on. Thinning a stream loses detail permanently - if what you 
-want is fewer values without losing the shape, filter first, then subsample."""
+RELATED:
+stream does the opposite job: it repeats a value on every frame.
+rate_limiter thins by time rather than by count."""
 
 demo = [
-    {'key': 'tog', 'init': 'toggle', 'pos': (30, 62), 'w': 45, 'h': 42, 'props': {'': True}},
-    {'key': 'met', 'init': 'metro 30', 'pos': (30, 112), 'w': 129, 'h': 70,
-     'props': {'on': True, 'period': 30.0, 'units': 'milliseconds'}},
-    {'key': 'cnt', 'init': 'counter', 'pos': (30, 192), 'w': 123, 'h': 84,
-     'props': {'step': 1}},
-    {'key': 'c0', 'comment': True, 'text': 'a fast counter', 'pos': (30, 285)},
-    {'key': 'i0', 'init': 'int', 'pos': (30, 320), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'sub', 'init': 'subsample 10', 'pos': (30, 380), 'w': 140, 'h': 70,
+    {'key': 'tk', 'init': 'tick', 'pos': (30, 62), 'w': 33, 'h': 42, 'props': {'': True}},
+    {'key': 'cnt', 'init': 'counter 1000000', 'pos': (30, 115), 'w': 123, 'h': 84,
+     'props': {'count': 1000000, 'step': 1}},
+    {'key': 'c0', 'comment': True, 'text': 'counts every frame', 'pos': (30, 210)},
+    {'key': 'i0', 'init': 'int', 'pos': (30, 245), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'sub', 'init': 'subsample 10', 'pos': (30, 305), 'w': 140, 'h': 70,
      'props': {'rate': 10}},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 465), 'w': 127, 'h': 42, 'props': INT},
+    {'key': 'i1', 'init': 'int', 'pos': (30, 390), 'w': 127, 'h': 42, 'props': INT},
     {'key': 'c1', 'comment': True, 'text': 'one value in ten gets through\ndrag rate and watch it thin out',
-     'pos': (30, 515)},
+     'pos': (30, 440)},
 ]
-links = [('tog', '', 'met', 'on'), ('met', '', 'cnt', 'input'),
+links = [('tk', '', 'cnt', 'input'),
          ('cnt', 'count out', 'i0', ''), ('cnt', 'count out', 'sub', 'input'),
          ('sub', 'out', 'i1', '')]
-print(build('stream', 'stream and subsample - change how often data moves', body,
-            demo, links, demo_width=400, text_width=790, text_height=660))
+print(build('subsample', 'subsample - pass on every Nth value', body,
+            demo, links, demo_width=400, text_width=790, text_height=600))

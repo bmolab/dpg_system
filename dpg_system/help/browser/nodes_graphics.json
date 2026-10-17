@@ -1,6 +1,6 @@
 {
-    "height": 404,
-    "width": 644,
+    "height": 412,
+    "width": 650,
     "position": [
         100,
         100
@@ -228,12 +228,12 @@
             "annotation": true,
             "position_x": 170,
             "position_y": 226,
-            "width": 348,
-            "height": 40,
+            "width": 440,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "femto / femto_bolt, pc_background / pc_denoise,\npc crop / voxel / info, t point cloud voxels / crop",
+                    "value": "femto / femto_bolt, pc_background / pc_denoise, pc_crop, pc_voxel,\npc_info, pc_cluster_filter, mgl_cluster_boxes,\nt point cloud voxels / crop",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,12 +243,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 340,
+                    "value": 432,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "femto / femto_bolt, pc_background / pc_denoise,\npc crop / voxel / info, t point cloud voxels / crop",
+            "text": "femto / femto_bolt, pc_background / pc_denoise, pc_crop, pc_voxel,\npc_info, pc_cluster_filter, mgl_cluster_boxes,\nt point cloud voxels / crop",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
@@ -267,7 +267,7 @@
             "init": "help_link nodes_graphics_older_gl Older GL",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 274,
+            "position_y": 282,
             "width": 132,
             "height": 44,
             "properties": {
@@ -291,7 +291,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 170,
-            "position_y": 278,
+            "position_y": 286,
             "width": 434,
             "height": 64,
             "properties": {

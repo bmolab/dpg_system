@@ -1,0 +1,670 @@
+{
+    "height": 1312,
+    "width": 2067,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "mgl_cluster_boxes_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_cluster_boxes_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl_cluster_boxes - draw what is in each box",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 549,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl_cluster_boxes - draw what is in each box",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl_cluster_boxes - draw what is in each box"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1209,
+            "position_y": 45,
+            "width": 818,
+            "height": 806,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "mgl_cluster_boxes draws pc_voxel's boxes: one translucent cube per box, lit by what is in it.\n\nFeed it the voxel cloud from a pc_voxel with 'boxes (x,y,z)' set - directly,\nor through pc_cluster_filter - and put it on an mgl chain. It reads the boxes\noff the frame, so nothing else needs patching. A frame with no boxes on it\ndraws nothing.\n\nBRIGHTNESS IS THE BOX'S SUM:\nAn empty box vanishes and a busy one glows. 'sensitivity' is the gain on\nthat, and is the control you actually use - the raw sums depend on your voxel\nsize, your crop and pc_voxel's 'sense', so wind it until the range of the room\nreads well and leave it. 1.0 is roughly right for a room; the widget is scaled\nso that it is.\n\nTHE FRAME IS WHERE THE DYNAMIC RANGE COMES FROM:\nEach box is drawn twice - a filled cube and its wireframe outline - off the\nsame sum but at two gains. 'frame sensitivity' defaults to 4x 'sensitivity',\nso the outline saturates while the fill is still a quarter of the way up. The\nbottom of the range is carried by the frame lighting up, the top by the fill\nblooming behind it, and you read far more of the range than either could show\nalone. The C++ app does the same thing with boxGain and boxFrameGain.\n\nWind 'frame sensitivity' up for a room where almost nothing is happening and\nyou want the faintest presence to register; wind it down toward 'sensitivity'\nwhen everything is already bright and the outlines are just glare. 'show fill'\nand 'show frames' (options) turn off either half.\n\nCOLOUR:\n'hue', 'saturation' and 'alpha' set the colour. The 'color mode' option\ndecides the hue. 'uniform' gives every box the same hue, so the picture is\npurely intensity - what you want when you are reading activity. 'per box'\nwalks the hue by 'hue spread' per box, the way the C++ app colours its\nregions, so neighbouring boxes stay distinguishable - what you want when you\nare working out WHICH box is which.\n\nTHE OTHER OPTIONS:\n'threshold' hides boxes below a brightness (0 to 1) rather than drawing them\nnearly black. 'fill' shrinks each cube inside its box so the lattice reads as\nseparate cells. 'blend' is additive by default: these cubes are translucent\nand unsorted, so alpha blending would make the picture depend on the order\nthey happen to be drawn in, while additive does not.\n\nCubes are drawn from the outside: a camera placed inside a box does not see\nthat box.\n\nSYNTAX:\nmgl_cluster_boxes\n\nEXAMPLE:\nmgl_cluster_boxes\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe draw, from the chain.\n\nvoxel cloud:\nThe frame from pc_voxel or pc_cluster_filter.\n\nsensitivity / frame sensitivity:\nGain on the sum for the fill and for the outline. The outline wants the higher\nof the two.\n\nhue / saturation / alpha:\nThe colour it is drawn in.\n\nshow fill / show frames / color mode / hue spread / threshold / fill / blend\n(options):\nAs above.\n\nOUTPUTS:\n\nmgl chain out:\nThe draw, passed on to the rest of the chain.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 790,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "mgl_cluster_boxes draws pc_voxel's boxes: one translucent cube per box, lit by what is in it.\n\nFeed it the voxel cloud from a pc_voxel with 'boxes (x,y,z)' set - directly,\nor through pc_cluster_filter - and put it on an mgl chain. It reads the boxes\noff the frame, so nothing else needs patching. A frame with no boxes on it\ndraws nothing.\n\nBRIGHTNESS IS THE BOX'S SUM:\nAn empty box vanishes and a busy one glows. 'sensitivity' is the gain on\nthat, and is the control you actually use - the raw sums depend on your voxel\nsize, your crop and pc_voxel's 'sense', so wind it until the range of the room\nreads well and leave it. 1.0 is roughly right for a room; the widget is scaled\nso that it is.\n\nTHE FRAME IS WHERE THE DYNAMIC RANGE COMES FROM:\nEach box is drawn twice - a filled cube and its wireframe outline - off the\nsame sum but at two gains. 'frame sensitivity' defaults to 4x 'sensitivity',\nso the outline saturates while the fill is still a quarter of the way up. The\nbottom of the range is carried by the frame lighting up, the top by the fill\nblooming behind it, and you read far more of the range than either could show\nalone. The C++ app does the same thing with boxGain and boxFrameGain.\n\nWind 'frame sensitivity' up for a room where almost nothing is happening and\nyou want the faintest presence to register; wind it down toward 'sensitivity'\nwhen everything is already bright and the outlines are just glare. 'show fill'\nand 'show frames' (options) turn off either half.\n\nCOLOUR:\n'hue', 'saturation' and 'alpha' set the colour. The 'color mode' option\ndecides the hue. 'uniform' gives every box the same hue, so the picture is\npurely intensity - what you want when you are reading activity. 'per box'\nwalks the hue by 'hue spread' per box, the way the C++ app colours its\nregions, so neighbouring boxes stay distinguishable - what you want when you\nare working out WHICH box is which.\n\nTHE OTHER OPTIONS:\n'threshold' hides boxes below a brightness (0 to 1) rather than drawing them\nnearly black. 'fill' shrinks each cube inside its box so the lattice reads as\nseparate cells. 'blend' is additive by default: these cubes are translucent\nand unsorted, so alpha blending would make the picture depend on the order\nthey happen to be drawn in, while additive does not.\n\nCubes are drawn from the outside: a camera placed inside a box does not see\nthat box.\n\nSYNTAX:\nmgl_cluster_boxes\n\nEXAMPLE:\nmgl_cluster_boxes\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe draw, from the chain.\n\nvoxel cloud:\nThe frame from pc_voxel or pc_cluster_filter.\n\nsensitivity / frame sensitivity:\nGain on the sum for the fill and for the outline. The outline wants the higher\nof the two.\n\nhue / saturation / alpha:\nThe colour it is drawn in.\n\nshow fill / show frames / color mode / hue spread / threshold / fill / blend\n(options):\nAs above.\n\nOUTPUTS:\n\nmgl chain out:\nThe draw, passed on to the rest of the chain."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_mouse_events",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "comment drag on the picture to orbit",
+            "name": "comment",
+            "id": 385,
+            "position_x": 905,
+            "position_y": 62,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag on the picture to orbit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag on the picture to orbit"
+        },
+        "5": {
+            "name": "mgl_orbit_camera",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 430,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "metro",
+            "id": 459,
+            "position_x": 400,
+            "position_y": 430,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 33.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 33"
+        },
+        "7": {
+            "name": "np.rand",
+            "id": 496,
+            "position_x": 400,
+            "position_y": 520,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -0.25,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 0.25,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 3000 3"
+        },
+        "8": {
+            "init": "comment a half-metre blob of points...",
+            "name": "comment",
+            "id": 533,
+            "position_x": 905,
+            "position_y": 660,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a half-metre blob of points...",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a half-metre blob of points..."
+        },
+        "9": {
+            "name": "signal",
+            "id": 570,
+            "position_x": 600,
+            "position_y": 430,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "sin",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.7,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 5.0 sin"
+        },
+        "10": {
+            "name": "signal",
+            "id": 607,
+            "position_x": 750,
+            "position_y": 430,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 7.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "cos",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 0.7,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 7.0 cos"
+        },
+        "11": {
+            "name": "pack",
+            "id": 644,
+            "position_x": 600,
+            "position_y": 530,
+            "width": 33,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 3"
+        },
+        "12": {
+            "name": "+",
+            "id": 681,
+            "position_x": 400,
+            "position_y": 700,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment ...wandering about the volume",
+            "name": "comment",
+            "id": 718,
+            "position_x": 905,
+            "position_y": 780,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "...wandering about the volume",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "...wandering about the volume"
+        },
+        "14": {
+            "name": "pc_voxel",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 620,
+            "width": 276,
+            "height": 196,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "voxel size (cm)",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "distance compensation",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "boxes (x,y,z)",
+                    "value": [
+                        4.0,
+                        4.0,
+                        4.0
+                    ],
+                    "value_type": "list"
+                },
+                "3": {
+                    "name": "min (x,y,z)",
+                    "value": [
+                        -1.0,
+                        -1.0,
+                        -1.0
+                    ],
+                    "value_type": "list"
+                },
+                "4": {
+                    "name": "max (x,y,z)",
+                    "value": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "value_type": "list"
+                }
+            }
+        },
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 905,
+            "position_y": 935,
+            "width": 274,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "pc_voxel divides -1 to 1 into 4 x 4 x 4\nboxes, and draws their lattice",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "pc_voxel divides -1 to 1 into 4 x 4 x 4\nboxes, and draws their lattice"
+        },
+        "16": {
+            "name": "mgl_cluster_boxes",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 990,
+            "width": 197,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "sensitivity",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "frame sensitivity",
+                    "value": 40.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "17": {
+            "name": "text_block",
+            "id": 866,
+            "annotation": true,
+            "position_x": 905,
+            "position_y": 1200,
+            "width": 268,
+            "height": 52,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the boxes the blob is in light up;\nsensitivity 10, because one small blob\nsums to far less than a room",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the boxes the blob is in light up;\nsensitivity 10, because one small blob\nsums to far less than a room"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 1146,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "7": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "8": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "9": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "point cloud"
+        },
+        "10": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "voxel cloud",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "voxel cloud"
+        }
+    }
+}

@@ -1,13 +1,13 @@
 {
-    "height": 801,
+    "height": 695,
     "width": 1395,
     "position": [
         100,
         100
     ],
     "id": 718,
-    "name": "np_util_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/np_util_help.json",
+    "name": "np.astype_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.astype_help.json",
     "nodes": {
         "0": {
             "name": "",
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment np utilities - types, editing, loading",
+            "init": "comment np.astype - change an array's number type",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 475,
+            "width": 512,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "np utilities - types, editing, loading",
+                    "value": "np.astype - change an array's number type",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,7 +51,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "np utilities - types, editing, loading"
+            "comment": "np.astype - change an array's number type"
         },
         "2": {
             "name": "text_block",
@@ -59,14 +59,14 @@
             "position_x": 557,
             "position_y": 45,
             "width": 798,
-            "height": 696,
+            "height": 576,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Four odds and ends for working with arrays.\n\nTHE NODES:\n\nnp.astype      convert an array to a different number type\nnp.add_alpha   add an opacity channel to an image\nnp.edit        show an array's values and let you change them by hand\nnp.load        read a saved .npz file from disk\n\nnp.astype is the one that comes up. An array of float64 and one of float32 hold \nthe same numbers and are not interchangeable everywhere - image work usually \nwants uint8, torch usually wants float32, and indices have to be integers. \nWhen a node refuses an array that looks correct, the type is a likely culprit, \nand info will tell you what it actually is.\n\nnp.edit is for when you want to see and adjust the numbers themselves, \nthe way table does for a grid. Useful for calibration values, small weight \nvectors, anything you are tuning by hand.\n\nnp.add_alpha turns a three-channel image into a four-channel one, so it can be \ncomposited over something else.\n\nnp.load reads back an .npz file - the format np.sequence writes, and the one \nmost numpy data arrives in.\n\nSYNTAX:\nnp.astype\nnp.load <path>\n\nEXAMPLE:\nnp.astype\n\nINPUTS and PARAMETERS:\n\ninput array / array in:\nThe array. Receiving it triggers the node.\n\ntype (np.astype):\nWhat to convert to, chosen from a menu: \nbool, uint8, int8, int64, float, float32, double. \nNote that there is no int32 here, and that \"float\" means the platform double \nwhile \"float32\" is the single-precision one torch usually wants.\n\nindices / values (np.edit):\nChange particular positions from the patch rather than by hand.\n\nwidget width (np.edit):\nHow wide to draw the fields.\n\nload / send / path (np.load):\nRead a file, send what was read, and where to read it from.\n\nOUTPUTS: \n\nconverted array / output / image with alpha:\nThe result.\n\ndict out (np.load):\nThe file's contents. An .npz holds several named arrays, so what comes out is \na dictionary - use the dict nodes to take it apart, and dict_keys to find out \nwhat is in a file you did not write.\n\nA NOTE ON CONVERTING TO INTEGERS:\nConverting a float array to an int type TRUNCATES rather than rounding, so 0.9 \nbecomes 0. If you want the nearest whole number, round first with np.round and \nthen convert.",
+                    "value": "np.astype converts an array to a different number type.\n\nAn array of float64 and one of float32 hold the same numbers and are not\ninterchangeable everywhere - image work usually wants uint8, torch usually\nwants float32, and indices have to be integers. When a node refuses an array\nthat looks correct, the type is a likely culprit, and info will tell you what\nit actually is.\n\nTHE TYPES:\nChosen from the \"type\" menu: bool, uint8, int8, int64, float, float32, double.\nThere is no int32 here. \"float\" and \"double\" are the same thing, the\n64-bit float; \"float32\" is the single-precision one torch usually wants.\n\nCONVERTING TO INTEGERS TRUNCATES:\nConverting a float array to an integer type cuts off the fraction rather than\nrounding, so 9.7 becomes 9 and -0.9 becomes 0. If you want the nearest whole\nnumber, round first with np.round and then convert.\n\nOut-of-range values do not stop at the limit: converted to uint8, 300 comes\nout as 44 and -1 as 255. Clip first (np.clip) if the data can leave the 0 to\n255 range.\n\nLists and single numbers are accepted too, and come out as arrays.\n\nSYNTAX:\nnp.astype\n\nEXAMPLE:\nnp.astype\n\nINPUTS and PARAMETERS:\n\ninput array:\nThe array. Receiving it triggers the node.\n\ntype:\nWhat to convert to.\n\nOUTPUTS:\n\nconverted array:\nThe same values, in the new type.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 680,
+                    "value": 560,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Four odds and ends for working with arrays.\n\nTHE NODES:\n\nnp.astype      convert an array to a different number type\nnp.add_alpha   add an opacity channel to an image\nnp.edit        show an array's values and let you change them by hand\nnp.load        read a saved .npz file from disk\n\nnp.astype is the one that comes up. An array of float64 and one of float32 hold \nthe same numbers and are not interchangeable everywhere - image work usually \nwants uint8, torch usually wants float32, and indices have to be integers. \nWhen a node refuses an array that looks correct, the type is a likely culprit, \nand info will tell you what it actually is.\n\nnp.edit is for when you want to see and adjust the numbers themselves, \nthe way table does for a grid. Useful for calibration values, small weight \nvectors, anything you are tuning by hand.\n\nnp.add_alpha turns a three-channel image into a four-channel one, so it can be \ncomposited over something else.\n\nnp.load reads back an .npz file - the format np.sequence writes, and the one \nmost numpy data arrives in.\n\nSYNTAX:\nnp.astype\nnp.load <path>\n\nEXAMPLE:\nnp.astype\n\nINPUTS and PARAMETERS:\n\ninput array / array in:\nThe array. Receiving it triggers the node.\n\ntype (np.astype):\nWhat to convert to, chosen from a menu: \nbool, uint8, int8, int64, float, float32, double. \nNote that there is no int32 here, and that \"float\" means the platform double \nwhile \"float32\" is the single-precision one torch usually wants.\n\nindices / values (np.edit):\nChange particular positions from the patch rather than by hand.\n\nwidget width (np.edit):\nHow wide to draw the fields.\n\nload / send / path (np.load):\nRead a file, send what was read, and where to read it from.\n\nOUTPUTS: \n\nconverted array / output / image with alpha:\nThe result.\n\ndict out (np.load):\nThe file's contents. An .npz holds several named arrays, so what comes out is \na dictionary - use the dict nodes to take it apart, and dict_keys to find out \nwhat is in a file you did not write.\n\nA NOTE ON CONVERTING TO INTEGERS:\nConverting a float array to an int type TRUNCATES rather than rounding, so 0.9 \nbecomes 0. If you want the nearest whole number, round first with np.round and \nthen convert."
+            "text": "np.astype converts an array to a different number type.\n\nAn array of float64 and one of float32 hold the same numbers and are not\ninterchangeable everywhere - image work usually wants uint8, torch usually\nwants float32, and indices have to be integers. When a node refuses an array\nthat looks correct, the type is a likely culprit, and info will tell you what\nit actually is.\n\nTHE TYPES:\nChosen from the \"type\" menu: bool, uint8, int8, int64, float, float32, double.\nThere is no int32 here. \"float\" and \"double\" are the same thing, the\n64-bit float; \"float32\" is the single-precision one torch usually wants.\n\nCONVERTING TO INTEGERS TRUNCATES:\nConverting a float array to an integer type cuts off the fraction rather than\nrounding, so 9.7 becomes 9 and -0.9 becomes 0. If you want the nearest whole\nnumber, round first with np.round and then convert.\n\nOut-of-range values do not stop at the limit: converted to uint8, 300 comes\nout as 44 and -1 as 255. Clip first (np.clip) if the data can leave the 0 to\n255 range.\n\nLists and single numbers are accepted too, and come out as arrays.\n\nSYNTAX:\nnp.astype\n\nEXAMPLE:\nnp.astype\n\nINPUTS and PARAMETERS:\n\ninput array:\nThe array. Receiving it triggers the node.\n\ntype:\nWhat to convert to.\n\nOUTPUTS:\n\nconverted array:\nThe same values, in the new type."
         },
         "3": {
             "name": "button",
@@ -162,12 +162,12 @@
             }
         },
         "6": {
-            "init": "comment floats between 0 and 10",
+            "init": "comment click: floats between 0 and 10",
             "name": "comment",
             "id": 459,
             "position_x": 291,
             "position_y": 295,
-            "width": 150,
+            "width": 193,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -175,7 +175,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "floats between 0 and 10",
+                    "value": "click: floats between 0 and 10",
                     "value_type": "str"
                 },
                 "1": {
@@ -184,7 +184,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "floats between 0 and 10"
+            "comment": "click: floats between 0 and 10"
         },
         "7": {
             "name": "np.astype",

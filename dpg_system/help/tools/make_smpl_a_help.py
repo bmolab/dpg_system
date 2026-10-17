@@ -183,105 +183,266 @@ print(build('shadow_to_smpl', 'shadow_to_smpl - joint order, format, up axis', b
             demo, links, demo_width=690, text_width=800, text_height=740))
 
 # ------------------------------------------------------------- smpl_pose_adjust
-body = """These correct an SMPL pose that is right in shape but wrong in detail.
+body = """smpl_pose_adjust adds a fixed rotation to chosen joints of an SMPL pose - for a
+pose that is right in shape but wrong in detail, such as a sensor that sits a
+little off on one limb.
 
-THE NODES:
+WHAT IT TAKES:
+An SMPL pose in AXIS-ANGLE form: three numbers per joint, at least 22 joints,
+flat or one row per joint. Joints past the 22nd (the hands) pass through
+untouched. A pose in quaternions produces no output at all - from
+shadow_to_smpl, set 'output_format' to axis_angle.
 
-smpl_pose_adjust      per-joint corrections
-smpl_mag_yaw_correct  magnetometer yaw errors, per joint
-floor_zero            put the feet on the floor
+THE CORRECTIONS:
+There is one row of three numbers per body joint, named pelvis, left_hip, and
+so on to right_wrist. Each row is a rotation in axis-angle form: the direction
+of the three numbers is the axis, and their length is the angle in radians.
+All zeros means no correction. A corrected joint carries everything below it
+with it, as a real joint would.
 
 WHICH FRAME A CORRECTION IS IN:
-smpl_pose_adjust applies a per-joint axis-angle adjustment, and the frame it 
-applies in decides whether the correction holds as the body moves.
+The frame the rotation is applied in decides whether the correction holds as
+the body moves.
 
-By default the pelvis is post-multiplied - body-local - and every other joint 
-is pre-multiplied, so the correction sits in the PARENT bone's frame. 
-The 'child frame' checkbox switches the others to post-multiply, putting the 
-correction in the joint's OWN frame.
+The pelvis correction is always in the body's own frame. Every other joint's
+correction is, by default, in its PARENT bone's frame. The 'child frame'
+checkbox switches them to the joint's OWN frame.
 
-A sensor mounted on the child side of a joint produces an error in the child's 
-frame, and correcting it in the parent's will drift as the joint bends. 
-If a correction looks right in one posture and wrong in another, this is the 
+A sensor mounted on the child side of a joint produces an error in the child's
+frame, and correcting it in the parent's will drift as the joint bends. If a
+correction looks right in one posture and wrong in another, this is the
 setting.
-
-smpl_mag_yaw_correct HAS THE SAME TWO CORRECTIONS AS ITS SUIT COUNTERPART:
-'Global yaw' is pre-multiplied in the world frame and addresses ongoing 
-magnetometer drift. 'Local yaw' is post-multiplied in the joint's body frame 
-and addresses a residual calibration offset baked into the T-pose.
-
-'sync' keeps the two equal, which is correct when a hard-iron bias produces the 
-same error in both - and wrong when it does not, so it is a convenience rather 
-than a default to leave on.
-
-floor_zero IS A ONE-TIME CALIBRATION:
-On 'calibrate' it runs a single forward-kinematics pass on the current pose, 
-finds the lowest foot relative to the root, and stores a CONSTANT vertical 
-offset that puts that foot on the floor.
-
-Constant is the point. The offset is applied to every subsequent translation, 
-so real vertical motion - jumps, crouches - is preserved exactly. A node that 
-kept re-zeroing would flatten precisely the movement you care about.
 
 SYNTAX:
 smpl_pose_adjust
+
+EXAMPLE:
+smpl_pose_adjust
+
+INPUTS:
+
+pose in:
+The axis-angle pose.
+
+child frame:
+Off: corrections in the parent bone's frame. On: in the joint's own frame.
+
+reset:
+Set every correction back to zero.
+
+pelvis ... right_wrist:
+The correction for each joint, as above. The values are saved with the patch
+and with presets.
+
+OUTPUT:
+
+pose out:
+The corrected pose, one row per joint. Joints without a
+correction come out exactly as they went in.
+
+RELATED:
+smpl_mag_yaw_correct corrects magnetometer heading errors joint by joint.
+floor_zero puts the feet on the floor."""
+
+demo = [
+    {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 280, 'h': 320},
+    {'key': 'ss', 'init': 'shadow_to_smpl', 'pos': (30, 400), 'w': 260, 'h': 140,
+     'props': {'output_format': 'axis_angle'}},
+    {'key': 'c0', 'comment': True, 'text': 'output_format axis_angle:\nquaternions are ignored',
+     'pos': (330, 400)},
+    {'key': 'pa', 'init': 'smpl_pose_adjust', 'pos': (30, 560), 'w': 280, 'h': 200},
+    {'key': 'c1', 'comment': True, 'text': 'one rotation per joint, in radians\nchild frame: which frame it applies in',
+     'pos': (330, 560)},
+]
+links = [('sh', 'body 1 quaternions', 'ss', 'pose'),
+         ('sh', 'body 1 positions', 'ss', 'positions'),
+         ('ss', 'pose', 'pa', 'pose in')]
+print(build('smpl_pose_adjust', 'smpl_pose_adjust - per-joint corrections', body,
+            demo, links, demo_width=650, text_width=810, text_height=780))
+
+# --------------------------------------------------------- smpl_mag_yaw_correct
+body = """smpl_mag_yaw_correct turns joints of an SMPL pose about the vertical, to undo
+heading errors that come from the suit's magnetometers.
+
+WHAT IT TAKES:
+An SMPL pose in AXIS-ANGLE form, at least 22 joints. Joints past the 22nd pass
+through untouched. A pose in quaternions produces no output at all - from
+shadow_to_smpl, set 'output_format' to axis_angle.
+
+Set 'up axis' to match the pose. It defaults to Y, but shadow_to_smpl sends
+Z-up by default, and a heading correction about the wrong axis is a tilt.
+
+EACH JOINT IS CORRECTED WHERE IT IS IN THE ROOM:
+The node works out every joint's orientation in the room, turns each one, and
+then works the pose back out from the corrected orientations. So a correction
+on the upper arm turns the upper arm alone: the forearm stays where it was in
+the room. That matches the problem, because each sensor has its own heading
+error.
+
+TWO CORRECTIONS PER JOINT:
+Each joint has two values, in degrees.
+
+The first, named after the joint (left_shoulder), turns the joint about the
+room's vertical. This is the one for heading drift: the whole sensor reading
+rotated in the room.
+
+The second, named with _cal (left_shoulder_cal), turns it about the vertical
+axis in the joint's own frame - so its effect follows the joint as it moves.
+
+'sync local/global' keeps the two equal. Equal values leave a joint that is in
+the rest orientation - or turned from it only about the vertical - exactly as
+it is; the correction shows as the joint tilts away. That is right when a
+sensor's heading error is the same whichever way it faces, and not otherwise,
+so it is a convenience rather than a setting to leave on regardless.
+
+After the conversion from the suit to SMPL the _cal value is no longer the
+sensor's own calibration offset; treat it as a heading adjustment that travels
+with the joint.
+
+SYNTAX:
+smpl_mag_yaw_correct
+
+EXAMPLE:
+smpl_mag_yaw_correct
+
+INPUTS and PROPERTIES:
+
+pose in:
+The axis-angle pose.
+
+up axis:
+Y or Z: which way is up in the pose.
+
+symmetric:
+Editing a left joint copies the same value to the right one, and the other
+way round.
+
+sync local/global:
+Editing either value of a joint copies it to the other.
+
+Both act when you edit a value; ticking them does not change values already
+set.
+
+reset:
+Set every value back to zero.
+
+pelvis ... right_wrist, pelvis_cal ... right_wrist_cal:
+The two corrections for each joint, in degrees.
+
+OUTPUT:
+
+pose out:
+The corrected pose, one row per joint.
+
+RELATED:
+mag_yaw_correct does the same correction on the suit side, per sensor, before
+the pose becomes SMPL at all. Correcting there is better when you can, because
+it fixes the measurement rather than its consequences.
+smpl_pose_adjust adds a fixed rotation to any joint, in the joint's frame or
+its parent's."""
+
+demo = [
+    {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 280, 'h': 320},
+    {'key': 'ss', 'init': 'shadow_to_smpl', 'pos': (30, 400), 'w': 260, 'h': 140,
+     'props': {'output_format': 'axis_angle'}},
+    {'key': 'c0', 'comment': True, 'text': 'axis_angle out, Z-up', 'pos': (330, 400)},
+    {'key': 'my', 'init': 'smpl_mag_yaw_correct', 'pos': (30, 560), 'w': 280, 'h': 220,
+     'props': {'up axis': 'Z'}},
+    {'key': 'c1', 'comment': True, 'text': 'up axis Z, to match\nfirst value: turn in the room\n_cal: turn in the joint\'s own frame',
+     'pos': (330, 560)},
+]
+links = [('sh', 'body 1 quaternions', 'ss', 'pose'),
+         ('sh', 'body 1 positions', 'ss', 'positions'),
+         ('ss', 'pose', 'my', 'pose in')]
+print(build('smpl_mag_yaw_correct', 'smpl_mag_yaw_correct - heading, joint by joint',
+            body, demo, links, demo_width=650, text_width=810, text_height=780))
+
+# ------------------------------------------------------------------ floor_zero
+body = """floor_zero shifts the root translation up or down by a constant, so that the
+feet are on the floor.
+
+WHAT IT MEASURES:
+Click 'calibrate'. On the next translation that arrives, it builds the SMPL
+skeleton - from the betas and gender in 'config', or a neutral body if there
+is none - puts it in the current pose, and finds the lower of the two foot
+joints. It stores the offset that brings that foot, less 'sole_offset', down
+or up to 'floor_height'.
+
+Click it while the performer is standing, with a foot on the floor.
+
+THE OFFSET IS CONSTANT:
+After calibration the same offset is added to every translation that comes
+through. Real vertical motion - jumps, crouches - is preserved exactly. A node
+that kept re-zeroing would flatten precisely the movement you care about.
+Click 'calibrate' again whenever you want a new measurement; until the first
+one, translations pass through unchanged.
+
+SYNTAX:
 floor_zero
 
 EXAMPLE:
 floor_zero
 
-INPUTS and PARAMETERS:
+INPUTS:
 
-pose in / pose:
-The pose.
+trans:
+The root translation, x y z. Each one is sent on, shifted.
 
-trans / config (floor_zero):
-The root translation, and the body config it needs to run the kinematics.
+pose:
+The current pose: 22 joints as axis-angle (three numbers each) or as
+quaternions (four, w first). Only used when calibrating. If no pose has
+arrived, calibrating does nothing.
 
-child frame (smpl_pose_adjust):
-Which frame the correction is applied in.
+config:
+A dictionary with 'betas' and 'gender', as smpl_beta_editor sends. Optional.
 
-symmetric / sync local/global (smpl_mag_yaw_correct):
-Mirror left to right, and tie the two corrections together.
+PROPERTIES and OPTIONS:
 
-reset:
-Clear the corrections.
+calibrate:
+Measure on the next translation.
 
-OUTPUTS: 
+up_axis:
+Which axis is up: Z (the default, as shadow_to_smpl sends) or Y.
 
-pose out / trans:
-The corrected pose or translation.
+floor_height:
+Where the floor is. Usually 0.
 
-offset / measured sole height (floor_zero):
-What was applied, and what it measured - worth checking, because an 
-implausible sole height means the pose or the betas are wrong rather than the 
-floor.
+sole_offset:
+How far the sole is below the foot joint. The foot joint is inside the foot,
+so without this the joint, not the sole, is put on the floor.
 
-RELATED:
-mag_yaw_correct does the same magnetic correction on the suit side, per sensor, 
-before the pose becomes SMPL at all. Correcting there is better when you can, 
-because it fixes the measurement rather than its consequences."""
+OUTPUTS:
+
+trans:
+The shifted translation.
+
+offset:
+The shift, as a single number, on every frame - so the same shift can be
+added to a translation elsewhere, for example a Y-up copy being saved.
+
+measured sole height:
+Sent once per calibration: where the sole was before the shift. Worth checking,
+because an implausible value means the pose or the betas are wrong rather than
+the floor."""
 
 demo = [
     {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 280, 'h': 320},
     {'key': 'be', 'init': 'smpl_beta_editor', 'pos': (350, 62), 'w': 300, 'h': 340},
-    {'key': 'ss', 'init': 'shadow_to_smpl', 'pos': (30, 400), 'w': 260, 'h': 140},
-    {'key': 'pa', 'init': 'smpl_pose_adjust', 'pos': (30, 560), 'w': 280, 'h': 200},
-    {'key': 'c0', 'comment': True, 'text': 'child frame: which frame it applies in',
-     'pos': (30, 775)},
-    {'key': 'my', 'init': 'smpl_mag_yaw_correct', 'pos': (350, 560), 'w': 280, 'h': 220},
-    {'key': 'c1', 'comment': True, 'text': 'global = drift in the room;\nlocal = calibration baked into T-pose',
-     'pos': (350, 795)},
-    {'key': 'fz', 'init': 'floor_zero', 'pos': (30, 958), 'w': 260, 'h': 160},
-    {'key': 'c3', 'comment': True, 'text': 'a CONSTANT offset, so jumps survive',
-     'pos': (30, 1133)},
+    {'key': 'ss', 'init': 'shadow_to_smpl', 'pos': (30, 420), 'w': 260, 'h': 140},
+    {'key': 'fz', 'init': 'floor_zero', 'pos': (30, 590), 'w': 260, 'h': 160},
+    {'key': 'c0', 'comment': True, 'text': 'stand still, click calibrate\na CONSTANT offset, so jumps survive',
+     'pos': (330, 590)},
+    {'key': 'f0', 'init': 'float', 'pos': (30, 780), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'f1', 'init': 'float', 'pos': (200, 780), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'c1', 'comment': True, 'text': 'offset, and the sole height it measured',
+     'pos': (30, 835)},
 ]
 links = [('sh', 'body 1 quaternions', 'ss', 'pose'),
          ('sh', 'body 1 positions', 'ss', 'positions'),
-         ('be', 'config', 'ss', 'config'),
-         ('ss', 'pose', 'pa', 'pose in'),
-         ('ss', 'pose', 'my', 'pose in'),
-         ('ss', 'trans', 'fz', 'trans'), ('ss', 'pose', 'fz', 'pose'),
-         ('be', 'config', 'fz', 'config')]
-print(build('smpl_pose_adjust', 'smpl corrections - frames, yaw and the floor', body,
+         ('ss', 'pose', 'fz', 'pose'),
+         ('ss', 'trans', 'fz', 'trans'),
+         ('be', 'config', 'fz', 'config'),
+         ('fz', 'offset', 'f0', ''),
+         ('fz', 'measured sole height', 'f1', '')]
+print(build('floor_zero', 'floor_zero - put the feet on the floor', body,
             demo, links, demo_width=690, text_width=810, text_height=780))

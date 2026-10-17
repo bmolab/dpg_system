@@ -164,12 +164,12 @@
             "annotation": true,
             "position_x": 127,
             "position_y": 154,
-            "width": 409,
+            "width": 459,
             "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "characters as numbers, combine / join / split, building text,\ntext_change, string replacement, text_file / text_editor,\nword triggers",
+                    "value": "characters as numbers, combine / join / split, building text,\ntext_change, string_replace / word_replace, unescape_text, printable,\ntext_file / text_editor, word triggers",
                     "value_type": "str"
                 },
                 "1": {
@@ -179,7 +179,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 401,
+                    "value": 451,
                     "value_type": "int"
                 },
                 "3": {
@@ -193,7 +193,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "characters as numbers, combine / join / split, building text,\ntext_change, string replacement, text_file / text_editor,\nword triggers",
+            "text": "characters as numbers, combine / join / split, building text,\ntext_change, string_replace / word_replace, unescape_text, printable,\ntext_file / text_editor, word triggers",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
@@ -233,7 +233,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "rephrase / lemma, spacy vectors / similarity,\ntranslate / translate_api, context_tracker,\nweighted / ambient prompts, prompt_composer, cairo_layout / llm_layout",
+                    "value": "rephrase, lemma, spacy vectors / similarity,\ntranslate / translate_api, context_tracker,\nweighted / ambient prompts, prompt_composer, cairo_layout / llm_layout",
                     "value_type": "str"
                 },
                 "1": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "rephrase / lemma, spacy vectors / similarity,\ntranslate / translate_api, context_tracker,\nweighted / ambient prompts, prompt_composer, cairo_layout / llm_layout",
+            "text": "rephrase, lemma, spacy vectors / similarity,\ntranslate / translate_api, context_tracker,\nweighted / ambient prompts, prompt_composer, cairo_layout / llm_layout",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,

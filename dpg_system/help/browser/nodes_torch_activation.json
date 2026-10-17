@@ -1,6 +1,6 @@
 {
     "height": 312,
-    "width": 637,
+    "width": 650,
     "position": [
         100,
         100
@@ -228,12 +228,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 206,
-            "width": 415,
-            "height": 28,
+            "width": 428,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.special functions, t.special gamma, t.special xlogy / logits",
+                    "value": "t.special functions, t.special gamma, t.special xlogy / xlog1py,\nt.special.logits, t.special.zeta",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,12 +243,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 407,
+                    "value": 420,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.special functions, t.special gamma, t.special xlogy / logits",
+            "text": "t.special functions, t.special gamma, t.special xlogy / xlog1py,\nt.special.logits, t.special.zeta",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
