@@ -1017,9 +1017,6 @@
   "one_euro_filter": [
     "one_euro_filter"
   ],
-  "kinetic_filter": [
-    "kinetic_filter"
-  ],
   "random": [
     "random",
     "random.betavariate",

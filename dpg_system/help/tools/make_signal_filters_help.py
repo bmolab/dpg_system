@@ -1,4 +1,4 @@
-"""diff_filter, band_pass, spectrum, adaptive_filter, kinetic_filter (multi_filter, one_euro_filter and kalman_filter are hand-made)."""
+"""diff_filter, band_pass, spectrum, adaptive_filter (multi_filter, one_euro_filter and kalman_filter are hand-made)."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
@@ -533,76 +533,6 @@ print(build('adaptive_filter', 'adaptive_filter - smooth when still, quick when 
 
 # one_euro_filter_help.json is laid out by hand now (David's version) and is no longer
 # generated here; regenerating it would overwrite that layout.
-
-# -------------------------------------------------------------- kinetic_filter
-body = """kinetic_filter smooths a signal by refusing to let it move in ways a physical 
-object could not.
-
-Instead of averaging, it carries a position, a velocity and an acceleration, and 
-moves them towards the incoming value under limits you set. A spike in the input 
-does not get averaged away - it simply cannot be followed, because reaching it 
-would need an impossible change of acceleration.
-
-It hands you all three - position, velocity and acceleration - so you get the 
-derivatives of the smoothed motion as well as the smoothed value.
-
-There is no damping. The output chases the target as hard as the limits allow, 
-so it overshoots a sudden step and swings back before it settles. For plain 
-responsive smoothing, one_euro_filter is usually the better choice.
-
-SYNTAX:
-kinetic_filter
-
-INPUTS:
-
-in:
-The target. Receiving data here triggers the node. Takes single numbers.
-
-reset:
-A button that returns position, velocity and acceleration to zero.
-
-max delta accel:
-The largest change in acceleration allowed per step - the jerk limit, 
-and the main smoothing control.
-
-max accel / max velocity:
-Ceilings on acceleration and speed, per step.
-
-All the limits are per step, not per second, so the same settings behave 
-differently at different input rates.
-
-OUTPUTS: 
-
-accel out / velocity out / position out:
-The smoothed value and its first two derivatives. 
-The velocity outlet is a much cleaner speed estimate than putting diff after a 
-filter, because it is part of the model rather than a difference of noisy 
-samples.
-
-TUNING:
-Start loose - limits high enough that nothing is constrained - and bring them 
-down until the jitter goes. The first limit that changes anything is the one 
-doing the work. If the output lags or swings badly, that limit is too tight; 
-if it still jitters, it is not tight enough."""
-
-demo = starter() + [
-    {'key': 'sig', 'init': 'signal 5.0 square', 'pos': (30, 132), 'w': 129, 'h': 78,
-     'props': SIG('square', 5.0, 0.7)},
-    {'key': 'c0', 'comment': True, 'text': 'an abrupt step', 'pos': (30, 215)},
-    {'key': 'p0', 'init': 'plot', 'pos': (30, 250), 'w': 208, 'h': 176,
-     'props': PLOT(-1.2, 1.2)},
-    {'key': 'kf', 'init': 'kinetic_filter', 'pos': (30, 450), 'w': 190, 'h': 150,
-     'props': {'max delta accel': 0.001, 'max accel': 0.1, 'max velocity': 1.0}},
-    {'key': 'p1', 'init': 'plot', 'pos': (30, 650), 'w': 208, 'h': 176,
-     'props': PLOT(-1.2, 1.2)},
-    {'key': 'c1', 'comment': True, 'text': 'it accelerates, travels, overshoots\nand swings back',
-     'pos': (30, 835)},
-]
-links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
-         ('sig', '', 'p0', 'y'),
-         ('sig', '', 'kf', 'in'), ('kf', 'position out', 'p1', 'y')]
-print(build('kinetic_filter', 'kinetic_filter - smooth by obeying physics', body,
-            demo, links, demo_width=430, text_width=820, text_height=780))
 
 # kalman_filter_help.json is laid out by hand now (David's version) and is no longer
 # generated here; regenerating it would overwrite that layout.

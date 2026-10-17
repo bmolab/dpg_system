@@ -297,7 +297,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "filter / smooth, multi_filter, diff_filter / diff_filter_bank,\nband_pass / filter_bank, adaptive filters, one_euro_filter,\nkalman_filter, physics_filter / kinetic_filter",
+                    "value": "filter / smooth, multi_filter, diff_filter / diff_filter_bank,\nband_pass / filter_bank, adaptive filters, one_euro_filter,\nkalman_filter",
                     "value_type": "str"
                 },
                 "1": {
@@ -321,7 +321,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "filter / smooth, multi_filter, diff_filter / diff_filter_bank,\nband_pass / filter_bank, adaptive filters, one_euro_filter,\nkalman_filter, physics_filter / kinetic_filter",
+            "text": "filter / smooth, multi_filter, diff_filter / diff_filter_bank,\nband_pass / filter_bank, adaptive filters, one_euro_filter,\nkalman_filter",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,

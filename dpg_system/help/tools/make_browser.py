@@ -96,7 +96,7 @@ TREE = {
         ('Sources and streams', ['signal', 'random', 'stream', 'sample_hold', 'register']),
         ('Events and ranges', ['togedge', 'trigger', 'diff', 'ranger', 'noise_gate']),
         ('Filters', ['filter', 'multi_filter', 'diff_filter', 'band_pass', 'adaptive_filter', 'one_euro_filter',
-                     'kalman_filter', 'kinetic_filter']),
+                     'kalman_filter']),
         ('History and analysis', ['buffer', 'spectrum', 'cwt', 'confusion']),
     ]),
     'nodes_text': ('Text and language', 'Characters, words and sentences.', [
