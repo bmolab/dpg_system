@@ -1,23 +1,23 @@
 {
-    "height": 641,
-    "width": 1261,
+    "height": 1262,
+    "width": 1376,
     "position": [
         100,
-        100
+        67
     ],
-    "id": 681,
+    "id": 2118,
     "name": "accumulate_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/accumulate_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 237,
+            "id": 2146,
+            "sid": 1,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
+            "visibility": "hidden",
+            "draggable": false,
             "protected": true,
             "presentation_state": "hidden",
             "properties": {
@@ -31,7 +31,8 @@
         "1": {
             "init": "comment accumulate - a running total",
             "name": "comment",
-            "id": 274,
+            "id": 2164,
+            "sid": 2,
             "position_x": 24,
             "position_y": -4,
             "width": 353,
@@ -43,31 +44,32 @@
                 "0": {
                     "name": "text",
                     "value": "accumulate - a running total",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "48",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "accumulate - a running total"
         },
         "2": {
             "name": "text_block",
-            "id": 311,
-            "position_x": 433,
+            "id": 2175,
+            "sid": 3,
+            "position_x": 548,
             "position_y": 45,
-            "width": 788,
-            "height": 536,
+            "width": 686,
+            "height": 931,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The accumulate node adds up everything it is given and reports the running total.\n\nEach value that arrives is added to the total so far, and the new total is sent out. \nIt is a running sum, kept between frames - the node remembers.\n\nYou use it to integrate a stream: turning a rate into a distance, a speed into a \nposition, or a series of increments into a count. \nFeeding it a stream of 1s makes it a simple counter.\n\nSYNTAX:\naccumulate\n\nEXAMPLE:\naccumulate\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to add to the running total. \nReceiving data here triggers the node - it adds, then sends the new total. \nNegative values subtract, so a stream that goes both ways will wander up and down.\n\nset:\nSets the running total directly, discarding what was there. \nThe new total is sent out immediately. \nUse this to jump the accumulator to a known starting point.\n\nreset:\nA button that returns the total to zero and sends that zero out. \nClick it, or send it anything from elsewhere in the patch.\n\nOUTPUTS: \n\nsum:\nThe running total after the latest value has been added.\n\nA NOTE ON TYPE:\nIncoming values are converted to a single number - an integer if they look like \none, otherwise a float. This node keeps a scalar total; \nit does not accumulate arrays element by element.",
-                    "value_type": "str"
+                    "value": "The accumulate node adds up everything it is given and reports the running total.\n\nEach value that arrives is added to the total so far, and the new total is sent out. \nIt is a running sum, kept between frames - the node remembers.\n\nYou use it to integrate a stream: turning a speed into a position, a rate into an \namount, or a series of small steps into a path. Feeding it a stream of 1s makes it \na simple counter.\n\nThe demos:\nAt the top, twenty times a second a random step between -0.1 and 0.1 is added. \nThe total wanders up and down with no destination - a random walk, the classic \nway to make a value drift naturally. Click reset on the node to bring it home.\n\nBelow it, a sawtooth ramps steadily from -1 up to 1 every 4 seconds, then jumps \nback. Added up frame by frame, the total falls while the saw is below zero and \nclimbs while it is above, so each ramp becomes a smooth rounded bowl (the running \ntotal of a straight ramp is a parabola). Where the saw jumps from 1 back to -1, \nthe total switches at once from climbing to falling - a sharp peak between bowls. \nEach ramp adds up to nothing overall, so the bowls repeat at the same level \nrather than drifting away.\n\nSYNTAX:\naccumulate\n\nEXAMPLE:\naccumulate\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to add to the running total. \nReceiving data here triggers the node - it adds, then sends the new total. \nNegative values subtract, so a stream that goes both ways will wander up and down.\n\nset:\nSets the running total directly, discarding what was there. \nThe new total is sent out immediately. \nUse this to jump the accumulator to a known starting point.\n\nreset:\nA button that returns the total to zero and sends that zero out. \nClick it, or send it anything from elsewhere in the patch.\n\nOUTPUTS: \n\nsum:\nThe running total after the latest value has been added.\n\nONCE PER VALUE, NOT PER SECOND:\naccumulate adds each value once, whenever it arrives, so the total depends on \nhow often values come. A signal sends about 60 values a second, so half a ramp \nof the sawtooth - 120 values averaging 0.5 - moves the total by about 60. To turn \na speed in units per second into a distance, multiply it by the time between \nvalues first (* 0.0167 at 60 a second). Small irregularities in timing add up \ntoo, so a total like this slowly drifts - use set or reset to pin it down again.\n\nA NOTE ON TYPE:\nIncoming values are converted to a single number - an integer if they look like \none, otherwise a float. This node keeps a scalar total; \nit does not accumulate arrays element by element.",
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "lock",
@@ -76,27 +78,29 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 780,
+                    "value": 678,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 520,
+                    "value": 915,
                     "value_type": "int"
                 },
                 "4": {
                     "name": "text_size",
                     "value": "30",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
-            "text": "The accumulate node adds up everything it is given and reports the running total.\n\nEach value that arrives is added to the total so far, and the new total is sent out. \nIt is a running sum, kept between frames - the node remembers.\n\nYou use it to integrate a stream: turning a rate into a distance, a speed into a \nposition, or a series of increments into a count. \nFeeding it a stream of 1s makes it a simple counter.\n\nSYNTAX:\naccumulate\n\nEXAMPLE:\naccumulate\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to add to the running total. \nReceiving data here triggers the node - it adds, then sends the new total. \nNegative values subtract, so a stream that goes both ways will wander up and down.\n\nset:\nSets the running total directly, discarding what was there. \nThe new total is sent out immediately. \nUse this to jump the accumulator to a known starting point.\n\nreset:\nA button that returns the total to zero and sends that zero out. \nClick it, or send it anything from elsewhere in the patch.\n\nOUTPUTS: \n\nsum:\nThe running total after the latest value has been added.\n\nA NOTE ON TYPE:\nIncoming values are converted to a single number - an integer if they look like \none, otherwise a float. This node keeps a scalar total; \nit does not accumulate arrays element by element."
+            "text": "The accumulate node adds up everything it is given and reports the running total.\n\nEach value that arrives is added to the total so far, and the new total is sent out. \nIt is a running sum, kept between frames - the node remembers.\n\nYou use it to integrate a stream: turning a speed into a position, a rate into an \namount, or a series of small steps into a path. Feeding it a stream of 1s makes it \na simple counter.\n\nThe demos:\nAt the top, twenty times a second a random step between -0.1 and 0.1 is added. \nThe total wanders up and down with no destination - a random walk, the classic \nway to make a value drift naturally. Click reset on the node to bring it home.\n\nBelow it, a sawtooth ramps steadily from -1 up to 1 every 4 seconds, then jumps \nback. Added up frame by frame, the total falls while the saw is below zero and \nclimbs while it is above, so each ramp becomes a smooth rounded bowl (the running \ntotal of a straight ramp is a parabola). Where the saw jumps from 1 back to -1, \nthe total switches at once from climbing to falling - a sharp peak between bowls. \nEach ramp adds up to nothing overall, so the bowls repeat at the same level \nrather than drifting away.\n\nSYNTAX:\naccumulate\n\nEXAMPLE:\naccumulate\n\nINPUTS and PARAMETERS:\n\nin:\nThe value to add to the running total. \nReceiving data here triggers the node - it adds, then sends the new total. \nNegative values subtract, so a stream that goes both ways will wander up and down.\n\nset:\nSets the running total directly, discarding what was there. \nThe new total is sent out immediately. \nUse this to jump the accumulator to a known starting point.\n\nreset:\nA button that returns the total to zero and sends that zero out. \nClick it, or send it anything from elsewhere in the patch.\n\nOUTPUTS: \n\nsum:\nThe running total after the latest value has been added.\n\nONCE PER VALUE, NOT PER SECOND:\naccumulate adds each value once, whenever it arrives, so the total depends on \nhow often values come. A signal sends about 60 values a second, so half a ramp \nof the sawtooth - 120 values averaging 0.5 - moves the total by about 60. To turn \na speed in units per second into a distance, multiply it by the time between \nvalues first (* 0.0167 at 60 a second). Small irregularities in timing add up \ntoo, so a total like this slowly drifts - use set or reset to pin it down again.\n\nA NOTE ON TYPE:\nIncoming values are converted to a single number - an integer if they look like \none, otherwise a float. This node keeps a scalar total; \nit does not accumulate arrays element by element."
         },
         "3": {
+            "init": "metro 50",
             "name": "metro",
-            "id": 348,
+            "id": 2216,
+            "sid": 5,
             "position_x": 30,
-            "position_y": 92,
+            "position_y": 47,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -110,23 +114,145 @@
                 },
                 "1": {
                     "name": "period",
-                    "value": 100.0,
+                    "value": 50.0,
                     "value_type": "float"
                 },
                 "2": {
                     "name": "units",
                     "value": "milliseconds",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
-            },
-            "init": "metro 100"
+            }
         },
         "4": {
-            "name": "toggle",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 50,
-            "width": 45,
+            "init": "comment twenty a second",
+            "name": "comment",
+            "id": 2229,
+            "sid": 6,
+            "position_x": 35,
+            "position_y": 120,
+            "width": 101,
+            "height": 29,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twenty a second",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "twenty a second"
+        },
+        "5": {
+            "init": "random 0.1",
+            "name": "random",
+            "id": 2240,
+            "sid": 7,
+            "position_x": 184,
+            "position_y": 53,
+            "width": 123,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "range",
+                    "value": 0.10000000149011612,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "6": {
+            "init": "comment a random step, -0.1 to 0.1",
+            "name": "comment",
+            "id": 2253,
+            "sid": 8,
+            "position_x": 172,
+            "position_y": 121,
+            "width": 168,
+            "height": 29,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a random step, -0.1 to 0.1",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "a random step, -0.1 to 0.1"
+        },
+        "7": {
+            "name": "accumulate",
+            "id": 2264,
+            "sid": 9,
+            "position_x": 42,
+            "position_y": 250,
+            "width": 88,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "8": {
+            "init": "comment click reset to bring it home",
+            "name": "comment",
+            "id": 2277,
+            "sid": 10,
+            "position_x": 34,
+            "position_y": 340,
+            "width": 211,
+            "height": 29,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "(click reset to bring it to zero)",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "(click reset to bring it to zero)"
+        },
+        "9": {
+            "name": "float",
+            "id": 2288,
+            "sid": 11,
+            "position_x": 191,
+            "position_y": 290,
+            "width": 77,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -134,18 +260,123 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": true,
+                    "value": -3.201601028442383,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 47,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
                     "value_type": "bool"
                 }
             }
         },
-        "5": {
-            "init": "comment ten values a second",
+        "10": {
+            "name": "plot",
+            "id": 2321,
+            "sid": 12,
+            "position_x": 291,
+            "position_y": 226,
+            "width": 208,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -2.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment the running total wanders: a random walk",
             "name": "comment",
-            "id": 422,
-            "position_x": 186,
-            "position_y": 110,
-            "width": 125,
+            "id": 2367,
+            "sid": 13,
+            "position_x": 258,
+            "position_y": 187,
+            "width": 254,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -153,125 +384,150 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "ten values a second",
-                    "value_type": "str"
+                    "value": "the running total wanders: a random walk",
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
-            "comment": "ten values a second"
+            "comment": "the running total wanders: a random walk"
         },
-        "6": {
-            "name": "t",
-            "id": 459,
+        "12": {
+            "name": "signal",
+            "id": 2395,
+            "sid": 16,
             "position_x": 30,
-            "position_y": 178,
-            "width": 22,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t 1"
-        },
-        "7": {
-            "init": "comment each tick becomes the number 1",
-            "name": "comment",
-            "id": 496,
-            "position_x": 186,
-            "position_y": 182,
-            "width": 193,
-            "height": 30,
+            "position_y": 449,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "each tick becomes the number 1",
-                    "value_type": "str"
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
                 }
-            },
-            "comment": "each tick becomes the number 1"
+            }
         },
-        "8": {
+        "13": {
             "name": "accumulate",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 245,
+            "id": 2438,
+            "sid": 19,
+            "position_x": 50,
+            "position_y": 613,
             "width": 88,
             "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "name": "int",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 370,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
                 }
             }
         },
-        "10": {
-            "init": "comment click reset on the node to zero it",
-            "name": "comment",
-            "id": 607,
-            "position_x": 186,
-            "position_y": 280,
-            "width": 217,
-            "height": 30,
+        "14": {
+            "name": "plot",
+            "id": 2451,
+            "sid": 20,
+            "position_x": 284,
+            "position_y": 626,
+            "width": 216,
+            "height": 142,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "click reset on the node to zero it",
-                    "value_type": "str"
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
+                    "name": "width",
+                    "value": 208,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 92,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 300.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -65.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 65.0,
+                    "value_type": "float"
                 }
-            },
-            "comment": "click reset on the node to zero it"
+            }
         },
-        "11": {
+        "15": {
             "name": "close",
-            "id": 644,
+            "id": 2508,
+            "sid": 22,
             "position_x": 24,
-            "position_y": 442,
+            "position_y": 1308,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -284,48 +540,263 @@
                     "value_type": "NoneType"
                 }
             }
+        },
+        "16": {
+            "name": "plot",
+            "id": 2562,
+            "sid": 24,
+            "position_x": 282,
+            "position_y": 451,
+            "width": 216,
+            "height": 119,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 208,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 69,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "string"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is stream of samples",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 300.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1.7999999523162842,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.7999999523162842,
+                    "value_type": "float"
+                }
+            }
+        },
+        "17": {
+            "init": "comment accumulating a sawtooth wave gives you this curve",
+            "name": "comment",
+            "id": 2618,
+            "sid": 26,
+            "position_x": 202,
+            "position_y": 586,
+            "width": 310,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "accumulating a sawtooth wave gives you this curve",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "accumulating a sawtooth wave gives you this curve"
+        },
+        "18": {
+            "name": "float",
+            "id": 2629,
+            "sid": 27,
+            "position_x": 336,
+            "position_y": 62,
+            "width": 77,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": -0.07946468889713287,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
+                    "name": "width",
+                    "value": 47,
+                    "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "19": {
+            "init": "comment accumulate the random steps",
+            "name": "comment",
+            "id": 2671,
+            "sid": 29,
+            "position_x": 38,
+            "position_y": 210,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "accumulate the random steps",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                }
+            },
+            "comment": "accumulate the random steps"
         }
     },
     "links": {
         "0": {
-            "source_node": 385,
-            "source_node_name": "",
+            "source_node": 2216,
+            "source_node_name": "metro",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 348,
-            "dest_node_name": "",
+            "dest_node": 2240,
+            "dest_node_name": "random",
             "dest_input_index": 0,
-            "dest_input_name": "on"
+            "dest_input_name": "trigger"
         },
         "1": {
-            "source_node": 348,
-            "source_node_name": "",
+            "source_node": 2240,
+            "source_node_name": "random",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "2": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "1",
-            "dest_node": 533,
-            "dest_node_name": "",
+            "source_output_name": "out",
+            "dest_node": 2264,
+            "dest_node_name": "accumulate",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "3": {
-            "source_node": 533,
-            "source_node_name": "",
+        "2": {
+            "source_node": 2240,
+            "source_node_name": "random",
             "source_output_index": 0,
-            "source_output_name": "sum",
-            "dest_node": 570,
-            "dest_node_name": "",
+            "source_output_name": "out",
+            "dest_node": 2629,
+            "dest_node_name": "float",
             "dest_input_index": 0,
             "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 2264,
+            "source_node_name": "accumulate",
+            "source_output_index": 0,
+            "source_output_name": "sum",
+            "dest_node": 2288,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 2264,
+            "source_node_name": "accumulate",
+            "source_output_index": 0,
+            "source_output_name": "sum",
+            "dest_node": 2321,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 2395,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 2562,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 2395,
+            "source_node_name": "signal",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 2438,
+            "dest_node_name": "accumulate",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 2438,
+            "source_node_name": "accumulate",
+            "source_output_index": 0,
+            "source_output_name": "sum",
+            "dest_node": 2451,
+            "dest_node_name": "plot",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         }
     }
 }

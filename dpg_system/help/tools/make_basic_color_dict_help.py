@@ -1,112 +1,13 @@
-"""color_convert, the dict family, dict_search/list_box, the replace family."""
+"""The dict family, dict_search/list_box, the replace family."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
 from help_common import SIG, PLOT, INT, FLT, starter
 
-# -------------------------------------------------------------- color_convert
-body = """These nodes convert a colour from one way of describing it to another.
-
-A colour is three numbers, but what those three numbers MEAN depends on the 
-space you are working in, and the spaces are good at different things. 
-Converting between them is not decoration - it is what lets you say 
-"the same colour but brighter" without also changing its hue.
-
-THE SPACES:
-
-rgb   red, green, blue - how a screen makes light. 
-      Natural for output, awkward for adjustment: there is no component 
-      that means "brightness" or "how vivid".
-cmy   cyan, magenta, yellow - the inverse of rgb, how inks subtract light. 
-      Each value is simply one minus the rgb one.
-hsl   hue, saturation, lightness. Hue is the colour itself as an angle 
-      round the wheel, saturation is how vivid, lightness runs black to white 
-      with the pure colour at the middle.
-hsv   hue, saturation, value. Like hsl, but value runs black to the pure 
-      colour rather than through to white. Handy when you think of it as 
-      "how much light is on this".
-
-Reach for hsl or hsv whenever you want to CHANGE a colour - rotate the hue, 
-drain the saturation, dim it - then convert back to rgb to display it.
-
-THE NODES:
-
-There is one node per pairing, named for what it does:
-
-rgb_to_cmy   rgb_to_hsl   rgb_to_hsv
-cmy_to_rgb   cmy_to_hsl   cmy_to_hsv
-hsl_to_rgb   hsl_to_cmy   hsl_to_hsv
-hsv_to_rgb   hsv_to_cmy   hsv_to_hsl
-
-color_convert is the same node with nothing preset - choose both spaces 
-yourself from its menus. The named versions are just conveniences; every one 
-of them can be repointed after the fact, so a rgb_to_hsl node can be turned 
-into a hsv_to_rgb node without replacing it.
-
-SYNTAX:
-<from>_to_<to>
-color_convert
-
-EXAMPLE:
-rgb_to_hsl
-
-INPUTS and PARAMETERS:
-
-in:
-Three numbers - a list, or a NumPy array. Receiving data here triggers 
-the conversion.
-
-from / to:
-The spaces being converted between: rgb, cmy, hsl or hsv. 
-The node name sets these; the menus let you change them.
-
-in scale / out scale:
-What numeric range the values use, INDEPENDENTLY at each end:
-
-  0-1     0.0 to 1.0, the usual choice inside a patch
-  0-100   percentages, as design tools tend to use
-  0-255   bytes, as image files and many devices use
-
-Because the two are separate, this node also does the rescaling for you: 
-set in scale to 0-255 and out scale to 0-1 to bring an image's colours into 
-patch range in the same move as the conversion.
-
-HUE IS ALWAYS IN DEGREES:
-The scale settings apply to every component EXCEPT hue, which is always 0 to 
-360 whatever the scale says. Hue is an angle, not a proportion, and 360 of them 
-go round the circle regardless. This catches people out: an hsl value coming 
-out as [210, 0.5, 0.4] with a 0-1 scale is correct, not a bug.
-
-OUTPUTS: 
-
-out:
-The converted colour, as a list of three numbers in the output space and scale."""
-
-demo = starter() + [
-    {'key': 't2', 'init': 't 0.8', 'pos': (200, 66), 'w': 40, 'h': 46},
-    {'key': 't3', 'init': 't 0.5', 'pos': (260, 66), 'w': 40, 'h': 46},
-    {'key': 'sig', 'init': 'signal 6.0 saw', 'pos': (30, 132), 'w': 129, 'h': 78,
-     'props': SIG('saw', 6.0, 360.0, False)},
-    {'key': 'c0', 'comment': True, 'text': 'a hue sweeping round the wheel', 'pos': (30, 215)},
-    {'key': 'pk', 'init': 'pack 3', 'pos': (30, 255), 'w': 150, 'h': 100},
-    {'key': 'c1', 'comment': True, 'text': 'hue, saturation 0.8, lightness 0.5',
-     'pos': (30, 365)},
-    {'key': 'cc', 'init': 'hsl_to_rgb', 'pos': (30, 405), 'w': 170, 'h': 140,
-     'props': {'from': 'hsl', 'to': 'rgb', 'in scale': '0-1', 'out scale': '0-1'}},
-    {'key': 'hm', 'init': 'heat_map', 'pos': (30, 565), 'w': 208, 'h': 148,
-     'props': {'color': 'viridis', 'width': 200, 'height': 100, 'sample count': 3,
-               'min y': 0.0, 'max y': 1.0, 'update_mode': 'heat_map',
-               'number format': '%.2f'}},
-    {'key': 'c2', 'comment': True, 'text': 'red, green and blue rise and fall in turn\nset out scale to 0-255 for byte values',
-     'pos': (30, 725)},
-]
-links = [('lb', 'out', 'tt', ''), ('tt', '1', 'sig', 'on'),
-         ('lb', 'out', 't2', ''), ('t2', '0.8', 'pk', 'in 2'),
-         ('lb', 'out', 't3', ''), ('t3', '0.5', 'pk', 'in 3'),
-         ('sig', '', 'pk', 'in 1'), ('pk', 'out', 'cc', 'in'),
-         ('cc', 'out', 'hm', 'y')]
-print(build('color_convert', 'color_convert - the same colour, described differently',
-            body, demo, links, demo_width=430, text_width=820, text_height=760))
+# color_convert is no longer generated here: color_convert_help.json is laid out
+# by hand, and derive_color_convert_help.py copies its layout into one page per
+# conversion (rgb_to_hsl, ...). Regenerating it here would overwrite the hand
+# layout on every rebuild.
 
 # ----------------------------------------------------------------------- dict
 body = """These nodes build dictionaries, take them apart, and look things up in them.

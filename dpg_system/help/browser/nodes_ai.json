@@ -1,11 +1,11 @@
 {
-    "height": 710,
-    "width": 1376,
+    "height": 416,
+    "width": 662,
     "position": [
         100,
         100
     ],
-    "id": 1832,
+    "id": 1018,
     "name": "nodes_ai",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_ai.json",
     "nodes": {
@@ -136,509 +136,232 @@
             "presentation_state": "show_all"
         },
         "5": {
-            "init": "comment Language models",
-            "name": "comment",
+            "init": "help_link nodes_ai_language_models Language models",
+            "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 131,
-            "height": 30,
+            "width": 132,
+            "height": 44,
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "Language models",
-                    "value_type": "str"
+                    "name": "Language models",
+                    "value": null,
+                    "value_type": "NoneType"
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "30",
-                    "value_type": "str"
+                    "name": "width",
+                    "value": 116,
+                    "value_type": "int"
                 }
             },
-            "comment": "Language models",
             "id": 722,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "6": {
-            "init": "help_link gemma_4 gemma_4 / gemma_4_31b",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 184,
-            "width": 181,
-            "height": 44,
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 170,
+            "position_y": 154,
+            "width": 452,
+            "height": 28,
             "properties": {
                 "0": {
-                    "name": "gemma_4 / gemma_4_31b",
-                    "value": null,
-                    "value_type": "NoneType"
+                    "name": "block",
+                    "value": "gemma_4 / gemma_4_31b, gemma, neuronpedia_search, qwen_moe, bonsai_2",
+                    "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
                 },
                 "2": {
-                    "name": "colour",
-                    "value": "green",
+                    "name": "width",
+                    "value": 444,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
                     "value_type": "str"
                 }
             },
+            "text": "gemma_4 / gemma_4_31b, gemma, neuronpedia_search, qwen_moe, bonsai_2",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "7": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 219,
-            "position_y": 188,
-            "width": 249,
-            "height": 40,
+            "init": "help_link nodes_ai_vision Vision",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 202,
+            "width": 132,
+            "height": 44,
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "a language model you can reach into\n(gemma_4, gemma_4_31b)",
-                    "value_type": "str"
+                    "name": "Vision",
+                    "value": null,
+                    "value_type": "NoneType"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
                     "name": "width",
-                    "value": 241,
+                    "value": 116,
                     "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
                 }
             },
-            "text": "a language model you can reach into\n(gemma_4, gemma_4_31b)",
             "id": 796,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "8": {
-            "init": "help_link gemma gemma",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 236,
-            "width": 181,
-            "height": 44,
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 170,
+            "position_y": 206,
+            "width": 422,
+            "height": 28,
             "properties": {
                 "0": {
-                    "name": "gemma",
-                    "value": null,
-                    "value_type": "NoneType"
+                    "name": "block",
+                    "value": "vision_describe models, depth_anything, clip_embedding (length)",
+                    "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
                 },
                 "2": {
-                    "name": "colour",
-                    "value": "green",
+                    "name": "width",
+                    "value": 414,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
                     "value_type": "str"
                 }
             },
+            "text": "vision_describe models, depth_anything, clip_embedding (length)",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "9": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 219,
-            "position_y": 240,
-            "width": 323,
-            "height": 28,
+            "init": "help_link nodes_ai_speech Speech",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 132,
+            "height": 44,
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "unfinished prototype, not loaded - see its page",
-                    "value_type": "str"
+                    "name": "Speech",
+                    "value": null,
+                    "value_type": "NoneType"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
                     "name": "width",
-                    "value": 315,
+                    "value": 116,
                     "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
                 }
             },
-            "text": "unfinished prototype, not loaded - see its page",
             "id": 870,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "10": {
-            "init": "help_link neuronpedia_search neuronpedia_search",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 288,
-            "width": 181,
-            "height": 44,
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 170,
+            "position_y": 258,
+            "width": 274,
+            "height": 28,
             "properties": {
                 "0": {
-                    "name": "neuronpedia_search",
-                    "value": null,
-                    "value_type": "NoneType"
+                    "name": "block",
+                    "value": "whisper(~), nemotron(~), eleven_labs(~)",
+                    "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
                 },
                 "2": {
-                    "name": "colour",
-                    "value": "green",
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
                     "value_type": "str"
                 }
             },
+            "text": "whisper(~), nemotron(~), eleven_labs(~)",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 219,
-            "position_y": 292,
-            "width": 206,
-            "height": 28,
+            "init": "help_link nodes_ai_autoencoders Autoencoders",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 132,
+            "height": 44,
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "finding the feature to steer",
-                    "value_type": "str"
+                    "name": "Autoencoders",
+                    "value": null,
+                    "value_type": "NoneType"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
                     "name": "width",
-                    "value": 198,
+                    "value": 116,
                     "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
                 }
             },
-            "text": "finding the feature to steer",
             "id": 944,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "12": {
-            "init": "help_link qwen_moe qwen_moe",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 340,
-            "width": 181,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "qwen_moe",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
-                }
-            },
-            "id": 981,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "13": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 219,
-            "position_y": 344,
-            "width": 261,
-            "height": 28,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "a mixture of experts, in this process",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "a mixture of experts, in this process",
-            "id": 1018,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "14": {
-            "init": "help_link bonsai_2 bonsai_2",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 392,
-            "width": 181,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "bonsai_2",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
-                }
-            },
-            "id": 1055,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "15": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 219,
-            "position_y": 396,
-            "width": 218,
-            "height": 28,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "a 27B model in seven gigabytes",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 210,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "a 27B model in seven gigabytes",
-            "id": 1092,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "16": {
-            "init": "comment Vision",
-            "name": "comment",
-            "position_x": 24,
-            "position_y": 462,
-            "width": 62,
-            "height": 30,
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "Vision",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "30",
-                    "value_type": "str"
-                }
-            },
-            "comment": "Vision",
-            "id": 1129,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "17": {
-            "init": "help_link vision_describe vision_describe models",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 496,
-            "width": 181,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "vision_describe models",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "orange",
-                    "value_type": "str"
-                }
-            },
-            "id": 1166,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "18": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 219,
-            "position_y": 500,
-            "width": 551,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "what is in this picture\n(vision_describe, vision_describe_gemma, vision_describe_qwen, vision_describe_smol)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 543,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "what is in this picture\n(vision_describe, vision_describe_gemma, vision_describe_qwen, vision_describe_smol)",
-            "id": 1203,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "19": {
-            "init": "help_link depth_anything depth_anything",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 548,
-            "width": 181,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "depth_anything",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "orange",
-                    "value_type": "str"
-                }
-            },
-            "id": 1240,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "20": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 219,
-            "position_y": 552,
+            "position_x": 170,
+            "position_y": 310,
             "width": 169,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "depth from one picture",
+                    "value": "vposer / vposer6D, vae",
                     "value_type": "str"
                 },
                 "1": {
@@ -662,472 +385,8 @@
                     "value_type": "str"
                 }
             },
-            "text": "depth from one picture",
-            "id": 1277,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "21": {
-            "init": "help_link clip_embedding clip_embedding (length)",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 600,
-            "width": 181,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "clip_embedding (length)",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "orange",
-                    "value_type": "str"
-                }
-            },
-            "id": 1314,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "22": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 219,
-            "position_y": 604,
-            "width": 274,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "words as CLIP sees them\n(clip_embedding, clip_embedding_length)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 266,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "words as CLIP sees them\n(clip_embedding, clip_embedding_length)",
-            "id": 1351,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "23": {
-            "init": "comment Speech",
-            "name": "comment",
-            "position_x": 830,
-            "position_y": 150,
-            "width": 62,
-            "height": 30,
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "Speech",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "30",
-                    "value_type": "str"
-                }
-            },
-            "comment": "Speech",
-            "id": 1388,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "24": {
-            "init": "help_link whisper whisper(~)",
-            "name": "help_link",
-            "position_x": 830,
-            "position_y": 184,
-            "width": 181,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "whisper(~)",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "violet",
-                    "value_type": "str"
-                }
-            },
-            "id": 1425,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "25": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 1025,
-            "position_y": 188,
-            "width": 151,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "speech into text\n(whisper, whisper~)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 143,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "speech into text\n(whisper, whisper~)",
-            "id": 1462,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "26": {
-            "init": "help_link nemotron nemotron(~)",
-            "name": "help_link",
-            "position_x": 830,
-            "position_y": 236,
-            "width": 181,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "nemotron(~)",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "violet",
-                    "value_type": "str"
-                }
-            },
-            "id": 1499,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "27": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 1025,
-            "position_y": 240,
-            "width": 311,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "streaming speech to text, final as it arrives\n(nemotron, nemotron~)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 303,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "streaming speech to text, final as it arrives\n(nemotron, nemotron~)",
-            "id": 1536,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "28": {
-            "init": "help_link eleven_labs eleven_labs(~)",
-            "name": "help_link",
-            "position_x": 830,
-            "position_y": 288,
-            "width": 181,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "eleven_labs(~)",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "violet",
-                    "value_type": "str"
-                }
-            },
-            "id": 1573,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "29": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 1025,
-            "position_y": 292,
-            "width": 200,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "text into speech\n(eleven_labs, eleven_labs~)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 192,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "text into speech\n(eleven_labs, eleven_labs~)",
-            "id": 1610,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "30": {
-            "init": "comment Autoencoders",
-            "name": "comment",
-            "position_x": 830,
-            "position_y": 358,
-            "width": 108,
-            "height": 30,
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "Autoencoders",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "30",
-                    "value_type": "str"
-                }
-            },
-            "comment": "Autoencoders",
-            "id": 1647,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "31": {
-            "init": "help_link vposer vposer / vposer6D",
-            "name": "help_link",
-            "position_x": 830,
-            "position_y": 392,
-            "width": 181,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "vposer / vposer6D",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "teal",
-                    "value_type": "str"
-                }
-            },
-            "id": 1684,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "32": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 1025,
-            "position_y": 396,
-            "width": 188,
-            "height": 40,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "a body pose as 32 numbers\n(vposer, vposer6D)",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 180,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "a body pose as 32 numbers\n(vposer, vposer6D)",
-            "id": 1721,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "33": {
-            "init": "help_link vae vae",
-            "name": "help_link",
-            "position_x": 830,
-            "position_y": 444,
-            "width": 181,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "vae",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 165,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "teal",
-                    "value_type": "str"
-                }
-            },
-            "id": 1758,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "34": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 1025,
-            "position_y": 448,
-            "width": 261,
-            "height": 28,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "a variational autoencoder of your own",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "a variational autoencoder of your own",
-            "id": 1795,
+            "text": "vposer / vposer6D, vae",
+            "id": 981,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

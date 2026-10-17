@@ -374,64 +374,8 @@ print(build('crossfade', 'crossfade - blend between two inputs', body,
             demo, links, demo_width=400, text_width=780, text_height=580))
 
 
-# ------------------------------------------------------------------ accumulate
-body = """The accumulate node adds up everything it is given and reports the running total.
-
-Each value that arrives is added to the total so far, and the new total is sent out. 
-It is a running sum, kept between frames - the node remembers.
-
-You use it to integrate a stream: turning a rate into a distance, a speed into a 
-position, or a series of increments into a count. 
-Feeding it a stream of 1s makes it a simple counter.
-
-SYNTAX:
-accumulate
-
-EXAMPLE:
-accumulate
-
-INPUTS and PARAMETERS:
-
-in:
-The value to add to the running total. 
-Receiving data here triggers the node - it adds, then sends the new total. 
-Negative values subtract, so a stream that goes both ways will wander up and down.
-
-set:
-Sets the running total directly, discarding what was there. 
-The new total is sent out immediately. 
-Use this to jump the accumulator to a known starting point.
-
-reset:
-A button that returns the total to zero and sends that zero out. 
-Click it, or send it anything from elsewhere in the patch.
-
-OUTPUTS: 
-
-sum:
-The running total after the latest value has been added.
-
-A NOTE ON TYPE:
-Incoming values are converted to a single number - an integer if they look like 
-one, otherwise a float. This node keeps a scalar total; 
-it does not accumulate arrays element by element."""
-
-demo = [
-    {'key': 'met', 'init': 'metro 100', 'pos': (30, 62), 'w': 129, 'h': 70,
-     'props': {'on': True, 'period': 100.0, 'units': 'milliseconds'}},
-    {'key': 'tog', 'init': 'toggle', 'pos': (30, 20), 'w': 45, 'h': 42,
-     'props': {'': True}},
-    {'key': 'c0', 'comment': True, 'text': 'ten values a second', 'pos': (172, 80)},
-    {'key': 'tt', 'init': 't 1', 'pos': (30, 148), 'w': 22, 'h': 46},
-    {'key': 'c1', 'comment': True, 'text': 'each tick becomes the number 1', 'pos': (68, 152)},
-    {'key': 'acc', 'init': 'accumulate', 'pos': (30, 215), 'w': 140, 'h': 100},
-    {'key': 'i1', 'init': 'int', 'pos': (30, 340), 'w': 127, 'h': 42, 'props': INT},
-    {'key': 'c2', 'comment': True, 'text': 'click reset on the node to zero it', 'pos': (185, 250)},
-]
-links = [('tog', '', 'met', 'on'), ('met', '', 'tt', ''),
-         ('tt', '1', 'acc', 'in'), ('acc', 'sum', 'i1', '')]
-print(build('accumulate', 'accumulate - a running total', body,
-            demo, links, demo_width=430, text_width=780, text_height=520))
+# accumulate is no longer generated here: accumulate_help.json is laid out by
+# hand. Regenerating it here would overwrite that layout on every rebuild.
 
 # --------------------------------------------------------- continuous_rotation
 body = """The continuous_rotation node removes the jump that happens when an angle wraps around.

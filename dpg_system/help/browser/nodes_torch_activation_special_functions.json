@@ -1,0 +1,347 @@
+{
+    "height": 420,
+    "width": 828,
+    "position": [
+        100,
+        100
+    ],
+    "id": 944,
+    "name": "nodes_torch_activation_special_functions",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_activation_special_functions.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment Special functions",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 224,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "Special functions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "Special functions",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_torch_activation < Activations",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 120,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< Activations",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 104,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 168,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 231,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Curves applied to every element.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Curves applied to every element.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "help_link t.special t.special functions",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 187,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.special functions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 171,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 225,
+            "position_y": 154,
+            "width": 563,
+            "height": 100,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "special functions: erf, gamma, bessel and others\n(t.special.airy_ai, t.special.bessel_j0, t.special.bessel_j1, t.special.digamma,\n t.special.entr, t.special.erf, t.special.erfc, t.special.erfcx, t.special.erfinv,\n t.special.exp2, t.special.expit, t.special.expm1, t.special.gammaln, t.special.i0,\n t.special.i0e, t.special.i1, t.special.i1e, t.special.log1p, t.special.logndtr,\n t.special.ndtr, t.special.ndtri, t.special.scaled_modified_bessel_k0, t.special.sinc,\n t.special.spherical_bessel_j0)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 555,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 84,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "special functions: erf, gamma, bessel and others\n(t.special.airy_ai, t.special.bessel_j0, t.special.bessel_j1, t.special.digamma,\n t.special.entr, t.special.erf, t.special.erfc, t.special.erfcx, t.special.erfinv,\n t.special.exp2, t.special.expit, t.special.expm1, t.special.gammaln, t.special.i0,\n t.special.i0e, t.special.i1, t.special.i1e, t.special.log1p, t.special.logndtr,\n t.special.ndtr, t.special.ndtri, t.special.scaled_modified_bessel_k0, t.special.sinc,\n t.special.spherical_bessel_j0)",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link t.special.gammainc t.special gamma",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 258,
+            "width": 187,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.special gamma",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 171,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 225,
+            "position_y": 262,
+            "width": 563,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "factorials, continued\n(t.special.gammainc, t.special.gammaincc, t.special.multigammaln, t.special.polygamma)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 555,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "factorials, continued\n(t.special.gammainc, t.special.gammaincc, t.special.multigammaln, t.special.polygamma)",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link t.special.xlogy t.special xlogy / logits",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 310,
+            "width": 187,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.special xlogy / logits",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 171,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 225,
+            "position_y": 314,
+            "width": 465,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "surviving the edge cases\n(t.special.logits, t.special.xlog1py, t.special.xlogy, t.special.zeta)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 457,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "surviving the edge cases\n(t.special.logits, t.special.xlog1py, t.special.xlogy, t.special.zeta)",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

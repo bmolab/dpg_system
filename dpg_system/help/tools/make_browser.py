@@ -8,6 +8,11 @@ buttons: a blue button opens a further page IN PLACE of the current one, a
 green button opens a help patch (closing the help patch opened before it), so
 browsing never piles up tabs.
 
+A page in TREE with two or more groups of help links is split when the script
+runs (split_groups): each group becomes a subpage <page>_<group>, and the page
+keeps one blue link per group, described by the node names it holds. So a new
+help patch is still added to its group in TREE, never to a subpage by hand.
+
 Every help patch must be reachable. The script refuses to write anything if a
 help patch is missing from the tree, or if the tree names a help patch that is
 not there -- so after adding a help patch, add its stem to a section here.
@@ -74,35 +79,18 @@ TREE = {
         ('Curves and plots', ['envelope', 'shape_sequencer', 'profile', 'plot', 'heat_map']),
     ]),
     'nodes_math': ('Math', 'Numbers, lists and arrays in; results out.', [
-        ('', [
-            ('page:nodes_math_arithmetic', 'Arithmetic', '+ - * / and the rest: one calculation with an operand'),
-            ('page:nodes_math_comparison', 'Comparison', '> >= < <= == !=: a test against an operand'),
-            ('page:nodes_math_single', 'Single-input math', 'abs, sqrt, exp, logarithms, inverse, norm, rounding'),
-            ('page:nodes_math_trig', 'Trigonometry', 'sin, cos, tan and the angles back from them'),
-            ('page:nodes_math_functions', 'Functions', 'clamping, accumulating, change, crossfades, colour'),
-            ('page:nodes_math_rotations', 'Rotations', 'quaternions, euler angles, aligning trackers'),
-        ]),
-    ]),
-    'nodes_math_arithmetic': ('Arithmetic', 'One calculation on the input, using an operand.', [
-        ('', ['arithmetic', 'add', 'subtract', 'multiply', 'divide', 'floor_divide', 'modulo',
-              'power', 'min', 'max', 'reverse_subtract', 'reverse_divide', 'perm', 'combination']),
-    ]),
-    'nodes_math_comparison': ('Comparison', 'Test the input against an operand: true or false.', [
-        ('', ['comparison', 'greater', 'greater_equal', 'less', 'less_equal', 'equal', 'not_equal']),
-    ]),
-    'nodes_math_single': ('Single-input math', 'One function of the input, no operand.', [
-        ('', ['math_single', 'abs', 'sqrt', 'exp', 'log2', 'log10', 'inverse', 'norm',
-              'round', 'floor', 'ceil', 'trunc']),
-    ]),
-    'nodes_math_trig': ('Trigonometry', 'Angles in, ratios out - and back again.', [
-        ('', ['trig', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan']),
-    ]),
-    'nodes_math_functions': ('Functions', 'Shaping, limiting and blending values.', [
-        ('', ['clamp', 'accumulate', 'change', 'crossfade', 'continuous_rotation', 'color_convert']),
-    ]),
-    'nodes_math_rotations': ('Rotations', 'Converting, comparing and aligning orientations.', [
-        ('', ['quaternion_to_euler', 'quaternion_to_6d', 'quaternion_diff', 'quaternion_norm',
-              'tracker_align', 'swing_twist']),
+        ('Arithmetic', ['arithmetic', 'add', 'subtract', 'multiply', 'divide', 'floor_divide', 'modulo',
+                        'power', 'min', 'max', 'reverse_subtract', 'reverse_divide', 'perm', 'combination']),
+        ('Comparison', ['comparison', 'greater', 'greater_equal', 'less', 'less_equal', 'equal', 'not_equal']),
+        ('Single-input math', ['math_single', 'abs', 'sqrt', 'exp', 'log2', 'log10', 'inverse', 'norm',
+                               'round', 'floor', 'ceil', 'trunc']),
+        ('Trigonometry', ['trig', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan']),
+        ('Functions', ['clamp', 'accumulate', 'change', 'crossfade', 'continuous_rotation']),
+        ('Colour', ['color_convert', 'rgb_to_cmy', 'rgb_to_hsl', 'rgb_to_hsv', 'cmy_to_rgb', 'cmy_to_hsl',
+                    'cmy_to_hsv', 'hsl_to_rgb', 'hsl_to_cmy', 'hsl_to_hsv', 'hsv_to_rgb', 'hsv_to_cmy',
+                    'hsv_to_hsl']),
+        ('Rotations', ['quaternion_to_euler', 'quaternion_to_6d', 'quaternion_diff', 'quaternion_norm',
+                       'tracker_align', 'swing_twist']),
     ]),
     'nodes_signal': ('Signals and filters', 'Streams of values: making them, smoothing them, reacting to them.', [
         ('Sources and streams', ['signal', 'random', 'stream', 'sample_hold', 'register']),
@@ -229,7 +217,7 @@ LABELS = {
     'arithmetic': 'all of the arithmetic nodes', 'ascii': 'characters as numbers',
     'body_to_joints': 'body / joints', 'bow~': 'friction models', 'button': 'button / button_set',
     'change': 'change / increasing / decreasing', 'clean~': 'conditioning',
-    'color_convert': 'colour conversion', 'combine': 'combine / join / split',
+    'color_convert': 'all of the colour conversions', 'combine': 'combine / join / split',
     'comparison': 'all of the comparison nodes', 'dict': 'dictionaries', 'eos_console': 'Eos lighting console',
     'fold~': 'distortion', 'gather_sentence': 'building text', 'gl_line_array': 'gl_line_array / vertex_buffer',
     'gl_sphere': 'gl shapes', 'gl_translate': 'gl transforms', 'k.sobel': 'k. filters',
@@ -291,6 +279,47 @@ COLUMN_GAP = 60
 ROW_GAP = 8
 SECTION_GAP = 18
 MAX_COLUMN_H = 820       # past this a page splits its sections into two columns
+
+
+# A page with two or more groups of help links is split: each group becomes a
+# subpage of its own (<page>_<group>), and the page keeps one blue link per
+# group, described by the names on it. A subpage's intro is its parent's, unless
+# GROUP_INTROS gives one.
+GROUP_INTROS = {
+    ('nodes_math', 'Arithmetic'): 'One calculation on the input, using an operand.',
+    ('nodes_math', 'Comparison'): 'Test the input against an operand: true or false.',
+    ('nodes_math', 'Single-input math'): 'One function of the input, no operand.',
+    ('nodes_math', 'Trigonometry'): 'Angles in, ratios out - and back again.',
+    ('nodes_math', 'Functions'): 'Shaping, limiting and blending values.',
+    ('nodes_math', 'Rotations'): 'Converting, comparing and aligning orientations.',
+}
+GROUP_DESC_WRAP = 70     # characters per line of a group link's list of names
+
+
+def slug(heading):
+    return ''.join(c if c.isalnum() else '_' for c in heading.lower()).strip('_').replace('__', '_')
+
+
+def split_groups(names_by_stem):
+    """Give each group of help links on a crowded page a subpage of its own."""
+    for name in list(TREE):
+        title, intro, sections = TREE[name]
+        groups = [(h, e) for h, e in sections if any(not isinstance(x, tuple) for x in e)]
+        if len(groups) < 2:
+            continue
+        entries = []
+        for heading, members in sections:
+            if not any(not isinstance(x, tuple) for x in members):
+                entries += members             # links to pages stay as they are
+                continue
+            sub = f'{name}_{slug(heading)}'
+            TREE[sub] = (heading, GROUP_INTROS.get((name, heading), intro), [('', members)])
+            # name the nodes it holds; an overview page documents no name itself
+            shown = [label_for(m, sorted(names_by_stem.get(m, []))) for m in members
+                     if names_by_stem.get(m)]
+            entries.append(('page:' + sub, heading, wrap([n + ',' for n in shown[:-1]] + shown[-1:],
+                                                         GROUP_DESC_WRAP)))
+        TREE[name] = (title, intro, [('', entries)])
 
 
 def titles():
@@ -428,7 +457,7 @@ def build_page(name, names_by_stem, taglines):
     # every entry on the page shares one button width, so they line up
     def entry_parts(e):
         if isinstance(e, tuple):
-            return e[0][len('page:'):], e[1], [e[2]]
+            return e[0][len('page:'):], e[1], (e[2] if isinstance(e[2], list) else [e[2]])
         lines = [taglines.get(e, '')] if taglines.get(e) else []
         names = sorted(names_by_stem.get(e, []))
         if names and names != [e]:    # an overview page documents no name itself
@@ -497,6 +526,7 @@ def main():
     names_by_stem = collections.defaultdict(list)
     for label, stem in covered.items():
         names_by_stem[stem].append(label)
+    split_groups(names_by_stem)
     taglines = titles()
 
     placed = set()
@@ -521,6 +551,10 @@ def main():
         sys.exit(1)
 
     os.makedirs(OUT, exist_ok=True)
+    for old in glob.glob(os.path.join(OUT, 'nodes*.json')):
+        if os.path.basename(old)[:-len('.json')] not in TREE:
+            os.remove(old)
+            print('removed', os.path.relpath(old, HELP))
     for name in TREE:
         path, patch = build_page(name, names_by_stem, taglines)
         json.dump(patch, open(path, 'w'), indent=4)

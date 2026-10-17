@@ -1,13 +1,13 @@
 {
-    "height": 572,
-    "width": 564,
+    "height": 424,
+    "width": 804,
     "position": [
         100,
         100
     ],
-    "id": 1240,
-    "name": "nodes_math_trig",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_math_trig.json",
+    "id": 1018,
+    "name": "nodes_torch_signal_filters",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_signal_filters.json",
     "nodes": {
         "0": {
             "name": "",
@@ -29,16 +29,16 @@
             }
         },
         "1": {
-            "init": "comment Trigonometry",
+            "init": "comment Filters",
             "name": "comment",
             "position_x": 24,
             "position_y": -4,
-            "width": 163,
+            "width": 102,
             "height": 30,
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "Trigonometry",
+                    "value": "Filters",
                     "value_type": "str"
                 },
                 "1": {
@@ -47,28 +47,28 @@
                     "value_type": "str"
                 }
             },
-            "comment": "Trigonometry",
+            "comment": "Filters",
             "id": 574,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "2": {
-            "init": "help_link nodes_math < Math",
+            "init": "help_link nodes_torch_signal < Signal processing",
             "name": "help_link",
             "position_x": 24,
             "position_y": 52,
-            "width": 76,
+            "width": 157,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "< Math",
+                    "name": "< Signal processing",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 60,
+                    "value": 141,
                     "value_type": "int"
                 }
             },
@@ -79,7 +79,7 @@
         },
         "3": {
             "name": "close",
-            "position_x": 124,
+            "position_x": 205,
             "position_y": 52,
             "width": 88,
             "height": 44,
@@ -100,12 +100,12 @@
             "annotation": true,
             "position_x": 24,
             "position_y": 108,
-            "width": 274,
+            "width": 323,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Angles in, ratios out - and back again.",
+                    "value": "Frequency, timescale and estimation on tensors.",
                     "value_type": "str"
                 },
                 "1": {
@@ -115,7 +115,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 266,
+                    "value": 315,
                     "value_type": "int"
                 },
                 "3": {
@@ -129,28 +129,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "Angles in, ratios out - and back again.",
+            "text": "Frequency, timescale and estimation on tensors.",
             "id": 685,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "5": {
-            "init": "help_link trig all of the trigonometry nodes",
+            "init": "help_link t.filter_bank t.filter_bank / band diff",
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 218,
+            "width": 194,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "all of the trigonometry nodes",
+                    "name": "t.filter_bank / band diff",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 178,
                     "value_type": "int"
                 },
                 "2": {
@@ -167,14 +167,14 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 232,
             "position_y": 154,
-            "width": 268,
-            "height": 28,
+            "width": 261,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "angles in, ratios out (and back again)",
+                    "value": "movement split by timescale\n(t.filter_bank, t.rotation_band_diff)",
                     "value_type": "str"
                 },
                 "1": {
@@ -184,12 +184,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 260,
+                    "value": 253,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -198,28 +198,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "angles in, ratios out (and back again)",
+            "text": "movement split by timescale\n(t.filter_bank, t.rotation_band_diff)",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link sin sin",
+            "init": "help_link t.sav_gol_filter t.sav_gol_filter",
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
-            "width": 218,
+            "width": 194,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "sin",
+                    "name": "t.sav_gol_filter",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 178,
                     "value_type": "int"
                 },
                 "2": {
@@ -236,14 +236,14 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 232,
             "position_y": 206,
-            "width": 58,
+            "width": 218,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "sine",
+                    "value": "smoothing that keeps the shape",
                     "value_type": "str"
                 },
                 "1": {
@@ -253,7 +253,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 50,
+                    "value": 210,
                     "value_type": "int"
                 },
                 "3": {
@@ -267,28 +267,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "sine",
+            "text": "smoothing that keeps the shape",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link cos cos",
+            "init": "help_link t.smart_clamp_kf t Kalman filters",
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
-            "width": 218,
+            "width": 194,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "cos",
+                    "name": "t Kalman filters",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 178,
                     "value_type": "int"
                 },
                 "2": {
@@ -305,14 +305,14 @@
         "10": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
+            "position_x": 232,
             "position_y": 258,
-            "width": 70,
-            "height": 28,
+            "width": 532,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "cosine",
+                    "value": "glitch or fast movement?\n(t.hybrid_quat_kf, t.jerk_aware_quat_kf, t.persistence_quat_kf, t.smart_clamp_kf,\n t.smart_clamp_quat_kf)",
                     "value_type": "str"
                 },
                 "1": {
@@ -322,12 +322,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 62,
+                    "value": 524,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -336,28 +336,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "cosine",
+            "text": "glitch or fast movement?\n(t.hybrid_quat_kf, t.jerk_aware_quat_kf, t.persistence_quat_kf, t.smart_clamp_kf,\n t.smart_clamp_quat_kf)",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
-            "init": "help_link tan tan",
+            "init": "help_link t.ESEKF t.ESEKF / t.quat_ESEKF",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 306,
-            "width": 218,
+            "position_y": 314,
+            "width": 194,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "tan",
+                    "name": "t.ESEKF / t.quat_ESEKF",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 202,
+                    "value": 178,
                     "value_type": "int"
                 },
                 "2": {
@@ -374,14 +374,14 @@
         "12": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
-            "position_y": 310,
-            "width": 77,
-            "height": 28,
+            "position_x": 232,
+            "position_y": 318,
+            "width": 249,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "tangent",
+                    "value": "error-state, rotationally invariant\n(t.ESEKF, t.quat_ESEKF)",
                     "value_type": "str"
                 },
                 "1": {
@@ -391,12 +391,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 69,
+                    "value": 241,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -405,215 +405,8 @@
                     "value_type": "str"
                 }
             },
-            "text": "tangent",
+            "text": "error-state, rotationally invariant\n(t.ESEKF, t.quat_ESEKF)",
             "id": 981,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "13": {
-            "init": "help_link asin asin",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 358,
-            "width": 218,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "asin",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 202,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
-                }
-            },
-            "id": 1018,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "14": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 256,
-            "position_y": 362,
-            "width": 77,
-            "height": 28,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "arcsine",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 69,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "arcsine",
-            "id": 1055,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "15": {
-            "init": "help_link acos acos",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 410,
-            "width": 218,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "acos",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 202,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
-                }
-            },
-            "id": 1092,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "16": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 256,
-            "position_y": 414,
-            "width": 89,
-            "height": 28,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "arccosine",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 81,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "arccosine",
-            "id": 1129,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "17": {
-            "init": "help_link atan atan",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 462,
-            "width": 218,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "atan",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 202,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "colour",
-                    "value": "green",
-                    "value_type": "str"
-                }
-            },
-            "id": 1166,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "18": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 256,
-            "position_y": 466,
-            "width": 95,
-            "height": 28,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "arctangent",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 87,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "arctangent",
-            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

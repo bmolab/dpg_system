@@ -13,20 +13,17 @@
   "active_widget": [
     "active_widget"
   ],
+  "cmy_to_hsl": [
+    "cmy_to_hsl"
+  ],
+  "cmy_to_hsv": [
+    "cmy_to_hsv"
+  ],
+  "cmy_to_rgb": [
+    "cmy_to_rgb"
+  ],
   "color_convert": [
-    "cmy_to_hsl",
-    "cmy_to_hsv",
-    "cmy_to_rgb",
-    "color_convert",
-    "hsl_to_cmy",
-    "hsl_to_hsv",
-    "hsl_to_rgb",
-    "hsv_to_cmy",
-    "hsv_to_hsl",
-    "hsv_to_rgb",
-    "rgb_to_cmy",
-    "rgb_to_hsl",
-    "rgb_to_hsv"
+    "color_convert"
   ],
   "dict": [
     "construct_dict",
@@ -43,6 +40,24 @@
   ],
   "directory_iterator": [
     "directory_iterator"
+  ],
+  "hsl_to_cmy": [
+    "hsl_to_cmy"
+  ],
+  "hsl_to_hsv": [
+    "hsl_to_hsv"
+  ],
+  "hsl_to_rgb": [
+    "hsl_to_rgb"
+  ],
+  "hsv_to_cmy": [
+    "hsv_to_cmy"
+  ],
+  "hsv_to_hsl": [
+    "hsv_to_hsl"
+  ],
+  "hsv_to_rgb": [
+    "hsv_to_rgb"
   ],
   "info": [
     "info",
@@ -69,6 +84,15 @@
     "dict_replace",
     "int_replace",
     "replace"
+  ],
+  "rgb_to_cmy": [
+    "rgb_to_cmy"
+  ],
+  "rgb_to_hsl": [
+    "rgb_to_hsl"
+  ],
+  "rgb_to_hsv": [
+    "rgb_to_hsv"
   ],
   "send": [
     "r",

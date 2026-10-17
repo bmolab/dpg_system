@@ -1,11 +1,11 @@
 {
-    "height": 520,
-    "width": 582,
+    "height": 580,
+    "width": 687,
     "position": [
         100,
         100
     ],
-    "id": 1166,
+    "id": 1240,
     "name": "nodes_math",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_math.json",
     "nodes": {
@@ -164,12 +164,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 154,
-            "width": 360,
+            "width": 459,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "+ - * / and the rest: one calculation with an operand",
+                    "value": "+, -, *, /, //, % / mod, ^ / pow, min, max, !-, !/, perm, combination",
                     "value_type": "str"
                 },
                 "1": {
@@ -179,7 +179,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 352,
+                    "value": 451,
                     "value_type": "int"
                 },
                 "3": {
@@ -193,7 +193,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "+ - * / and the rest: one calculation with an operand",
+            "text": "+, -, *, /, //, % / mod, ^ / pow, min, max, !-, !/, perm, combination",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
@@ -228,12 +228,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 206,
-            "width": 292,
+            "width": 157,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "> >= < <= == !=: a test against an operand",
+                    "value": ">, >=, <, <=, ==, !=",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,7 +243,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 284,
+                    "value": 149,
                     "value_type": "int"
                 },
                 "3": {
@@ -257,14 +257,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "> >= < <= == !=: a test against an operand",
+            "text": ">, >=, <, <=, ==, !=",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link nodes_math_single Single-input math",
+            "init": "help_link nodes_math_single_input_math Single-input math",
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
@@ -292,12 +292,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 258,
-            "width": 348,
-            "height": 28,
+            "width": 409,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "abs, sqrt, exp, logarithms, inverse, norm, rounding",
+                    "value": "abs, sqrt, exp, log2, log10, inverse, norm, round / np.round,\nfloor / np.floor, ceil / np.ceil, trunc / np.trunc",
                     "value_type": "str"
                 },
                 "1": {
@@ -307,12 +307,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 340,
+                    "value": 401,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -321,14 +321,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "abs, sqrt, exp, logarithms, inverse, norm, rounding",
+            "text": "abs, sqrt, exp, log2, log10, inverse, norm, round / np.round,\nfloor / np.floor, ceil / np.ceil, trunc / np.trunc",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
-            "init": "help_link nodes_math_trig Trigonometry",
+            "init": "help_link nodes_math_trigonometry Trigonometry",
             "name": "help_link",
             "position_x": 24,
             "position_y": 306,
@@ -356,12 +356,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 310,
-            "width": 298,
+            "width": 224,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "sin, cos, tan and the angles back from them",
+                    "value": "sin, cos, tan, asin, acos, atan",
                     "value_type": "str"
                 },
                 "1": {
@@ -371,7 +371,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 290,
+                    "value": 216,
                     "value_type": "int"
                 },
                 "3": {
@@ -385,7 +385,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "sin, cos, tan and the angles back from them",
+            "text": "sin, cos, tan, asin, acos, atan",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
@@ -420,12 +420,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 362,
-            "width": 342,
-            "height": 28,
+            "width": 465,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "clamping, accumulating, change, crossfades, colour",
+                    "value": "clamp, accumulate, change / increasing / decreasing, crossfade / lerp,\ncontinuous_rotation",
                     "value_type": "str"
                 },
                 "1": {
@@ -435,12 +435,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 334,
+                    "value": 457,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -449,14 +449,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "clamping, accumulating, change, crossfades, colour",
+            "text": "clamp, accumulate, change / increasing / decreasing, crossfade / lerp,\ncontinuous_rotation",
             "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "15": {
-            "init": "help_link nodes_math_rotations Rotations",
+            "init": "help_link nodes_math_colour Colour",
             "name": "help_link",
             "position_x": 24,
             "position_y": 410,
@@ -464,7 +464,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Rotations",
+                    "name": "Colour",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -484,12 +484,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 414,
-            "width": 305,
-            "height": 28,
+            "width": 440,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "quaternions, euler angles, aligning trackers",
+                    "value": "all of the colour conversions, rgb_to_cmy, rgb_to_hsl, rgb_to_hsv,\ncmy_to_rgb, cmy_to_hsl, cmy_to_hsv, hsl_to_rgb, hsl_to_cmy,\nhsl_to_hsv, hsv_to_rgb, hsv_to_cmy, hsv_to_hsl",
                     "value_type": "str"
                 },
                 "1": {
@@ -499,12 +499,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 297,
+                    "value": 432,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 12,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -513,8 +513,72 @@
                     "value_type": "str"
                 }
             },
-            "text": "quaternions, euler angles, aligning trackers",
+            "text": "all of the colour conversions, rgb_to_cmy, rgb_to_hsl, rgb_to_hsv,\ncmy_to_rgb, cmy_to_hsl, cmy_to_hsv, hsl_to_rgb, hsl_to_cmy,\nhsl_to_hsv, hsv_to_rgb, hsv_to_cmy, hsv_to_hsl",
             "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link nodes_math_rotations Rotations",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 470,
+            "width": 144,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Rotations",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 182,
+            "position_y": 474,
+            "width": 378,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 370,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist",
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

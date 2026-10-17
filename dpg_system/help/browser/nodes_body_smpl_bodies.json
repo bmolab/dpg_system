@@ -1,0 +1,416 @@
+{
+    "height": 424,
+    "width": 804,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1018,
+    "name": "nodes_body_smpl_bodies",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_body_smpl_bodies.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment SMPL bodies",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 151,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SMPL bodies",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SMPL bodies",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_body < Body and motion",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 144,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< Body and motion",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 192,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 459,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Capturing a moving body, cleaning it up, and asking what it is doing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 451,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "Capturing a moving body, cleaning it up, and asking what it is doing.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "help_link shadow_to_smpl shadow / smpl conversions",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "shadow / smpl conversions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 154,
+            "width": 520,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "joint order, format, up axis\n(active_to_smpl, quats_flip_y_z, shadow_to_smpl, smpl_to_active, smpl_to_quats,\n smpl_trans_to_y_up)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 512,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "joint order, format, up axis\n(active_to_smpl, quats_flip_y_z, shadow_to_smpl, smpl_to_active, smpl_to_quats,\n smpl_trans_to_y_up)",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link smpl_pose smpl_pose / body / take",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 210,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl_pose / body / take",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 214,
+            "width": 348,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the body, its shape and its posture\n(smpl_beta_editor, smpl_body, smpl_pose, smpl_take)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the body, its shape and its posture\n(smpl_beta_editor, smpl_body, smpl_pose, smpl_take)",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link smpl_pose_adjust smpl corrections",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 262,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl corrections",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 266,
+            "width": 354,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "frames, yaw and the floor\n(floor_zero, smpl_mag_yaw_correct, smpl_pose_adjust)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 346,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "frames, yaw and the floor\n(floor_zero, smpl_mag_yaw_correct, smpl_pose_adjust)",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link smpl_pose_to_joints smpl pose / quats to joints",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 314,
+            "width": 206,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "smpl pose / quats to joints",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 190,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 244,
+            "position_y": 318,
+            "width": 298,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one outlet per joint\n(smpl_pose_to_joints, smpl_quats_to_joints)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one outlet per joint\n(smpl_pose_to_joints, smpl_quats_to_joints)",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}
