@@ -1,11 +1,11 @@
 {
-    "height": 1160,
+    "height": 1368,
     "width": 891,
     "position": [
         100,
         100
     ],
-    "id": 2054,
+    "id": 2350,
     "name": "nodes_graphics_moderngl_scenes",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_graphics_moderngl_scenes.json",
     "nodes": {
@@ -619,7 +619,7 @@
             "presentation_state": "show_all"
         },
         "19": {
-            "init": "help_link mgl_mesh mgl meshes and models",
+            "init": "help_link mgl_mesh mgl_mesh",
             "name": "help_link",
             "position_x": 24,
             "position_y": 530,
@@ -627,7 +627,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "mgl meshes and models",
+                    "name": "mgl_mesh",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -652,12 +652,12 @@
             "annotation": true,
             "position_x": 275,
             "position_y": 534,
-            "width": 446,
-            "height": 40,
+            "width": 212,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "drawing data you supply\n(mgl_line_array, mgl_mesh, mgl_model, mgl_point_cloud, mgl_surface)",
+                    "value": "drawing a mesh from the patch",
                     "value_type": "str"
                 },
                 "1": {
@@ -667,12 +667,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 438,
+                    "value": 204,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -681,14 +681,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "drawing data you supply\n(mgl_line_array, mgl_mesh, mgl_model, mgl_point_cloud, mgl_surface)",
+            "text": "drawing a mesh from the patch",
             "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "21": {
-            "init": "help_link mgl_texture mgl_texture / mgl_image",
+            "init": "help_link mgl_model mgl_model",
             "name": "help_link",
             "position_x": 24,
             "position_y": 582,
@@ -696,7 +696,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "mgl_texture / mgl_image",
+                    "name": "mgl_model",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -721,6 +721,282 @@
             "annotation": true,
             "position_x": 275,
             "position_y": 586,
+            "width": 144,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a mesh from a file",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 136,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a mesh from a file",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link mgl_surface mgl_surface",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 634,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl_surface",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 638,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a grid of points as a surface",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a grid of points as a surface",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link mgl_point_cloud mgl_point_cloud",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 686,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl_point_cloud",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 690,
+            "width": 120,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "drawing points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 112,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "drawing points",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "help_link mgl_line_array mgl_line_array",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 738,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl_line_array",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 742,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "many lines from one array",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "many lines from one array",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link mgl_texture mgl_texture / mgl_image",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 790,
+            "width": 237,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "mgl_texture / mgl_image",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 221,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 275,
+            "position_y": 794,
             "width": 181,
             "height": 40,
             "properties": {
@@ -751,16 +1027,16 @@
                 }
             },
             "text": "an image on a surface\n(mgl_image, mgl_texture)",
-            "id": 1351,
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "31": {
             "init": "help_link mgl_text mgl_text",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 634,
+            "position_y": 842,
             "width": 237,
             "height": 44,
             "properties": {
@@ -780,16 +1056,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1388,
+            "id": 1684,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "32": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 638,
+            "position_y": 846,
             "width": 138,
             "height": 28,
             "properties": {
@@ -820,16 +1096,16 @@
                 }
             },
             "text": "text in the scene",
-            "id": 1425,
+            "id": 1721,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "33": {
             "init": "help_link mgl_shader mgl_shader",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 686,
+            "position_y": 894,
             "width": 237,
             "height": 44,
             "properties": {
@@ -849,16 +1125,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1462,
+            "id": 1758,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "34": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 690,
+            "position_y": 898,
             "width": 114,
             "height": 28,
             "properties": {
@@ -889,16 +1165,16 @@
                 }
             },
             "text": "your own GLSL",
-            "id": 1499,
+            "id": 1795,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "27": {
+        "35": {
             "init": "help_link mgl_body mgl_body",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 738,
+            "position_y": 946,
             "width": 237,
             "height": 44,
             "properties": {
@@ -918,16 +1194,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1536,
+            "id": 1832,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "28": {
+        "36": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 742,
+            "position_y": 950,
             "width": 163,
             "height": 28,
             "properties": {
@@ -958,16 +1234,16 @@
                 }
             },
             "text": "drawing a moving body",
-            "id": 1573,
+            "id": 1869,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "29": {
+        "37": {
             "init": "help_link body_proportions body_proportions",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 790,
+            "position_y": 998,
             "width": 237,
             "height": 44,
             "properties": {
@@ -987,16 +1263,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1610,
+            "id": 1906,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "30": {
+        "38": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 794,
+            "position_y": 1002,
             "width": 181,
             "height": 28,
             "properties": {
@@ -1027,16 +1303,16 @@
                 }
             },
             "text": "reshaping a body by hand",
-            "id": 1647,
+            "id": 1943,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "31": {
+        "39": {
             "init": "help_link mgl_body_orientation mgl_body_orientation",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 842,
+            "position_y": 1050,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1056,16 +1332,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1684,
+            "id": 1980,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "32": {
+        "40": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 846,
+            "position_y": 1054,
             "width": 194,
             "height": 28,
             "properties": {
@@ -1096,16 +1372,16 @@
                 }
             },
             "text": "a body with rotation disks",
-            "id": 1721,
+            "id": 2017,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "33": {
+        "41": {
             "init": "help_link mgl_orientation_disks mgl_orientation_disks",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 894,
+            "position_y": 1102,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1125,16 +1401,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1758,
+            "id": 2054,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "34": {
+        "42": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 898,
+            "position_y": 1106,
             "width": 132,
             "height": 28,
             "properties": {
@@ -1165,16 +1441,16 @@
                 }
             },
             "text": "seeing rotations",
-            "id": 1795,
+            "id": 2091,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "35": {
+        "43": {
             "init": "help_link mgl_contact_disks mgl_contact_disks",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 946,
+            "position_y": 1154,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1194,16 +1470,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1832,
+            "id": 2128,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "36": {
+        "44": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 950,
+            "position_y": 1158,
             "width": 151,
             "height": 28,
             "properties": {
@@ -1234,16 +1510,16 @@
                 }
             },
             "text": "where the weight is",
-            "id": 1869,
+            "id": 2165,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "37": {
+        "45": {
             "init": "help_link mgl_torque_arc mgl_torque_arc",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 998,
+            "position_y": 1206,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1263,16 +1539,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1906,
+            "id": 2202,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "38": {
+        "46": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 1002,
+            "position_y": 1210,
             "width": 181,
             "height": 28,
             "properties": {
@@ -1303,16 +1579,16 @@
                 }
             },
             "text": "a torque drawn as a turn",
-            "id": 1943,
+            "id": 2239,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "39": {
+        "47": {
             "init": "help_link mgl_smpl_mesh mgl_smpl_mesh / mgl_smpl_heatmap",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 1050,
+            "position_y": 1258,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1332,16 +1608,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1980,
+            "id": 2276,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "40": {
+        "48": {
             "name": "text_block",
             "annotation": true,
             "position_x": 275,
-            "position_y": 1054,
+            "position_y": 1262,
             "width": 237,
             "height": 40,
             "properties": {
@@ -1372,7 +1648,7 @@
                 }
             },
             "text": "the figure and its effort\n(mgl_smpl_heatmap, mgl_smpl_mesh)",
-            "id": 2017,
+            "id": 2313,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

@@ -5,83 +5,172 @@ from build_help import build
 from help_common import SIG, PLOT, INT, FLT, starter
 
 # ---------------------------------------------------------------------- shadow
-body = """These read live data from a Shadow suit.
+body = """shadow reads live motion capture from a Shadow suit, for up to four bodies.
 
-THE NODES:
+shadow_sensor, which reads the raw sensor values of one sensor, has its own help
+patch. shadow_pose is not a suit node: it builds a 37-row pose from single
+joints, and is described on the pose help patch.
 
-shadow         the suit: joint orientations and positions, for up to four bodies
-shadow_sensor  the raw sensor readings from one sensor - magnetometer, 
-               accelerometer and gyroscope, before any fusion
-
-shadow_pose is not a suit node: it builds a 37-row pose from single joints, 
-and is described on the pose help patch.
+CONNECTING:
+shadow talks to the Shadow application on this machine, port 32076. On a Mac,
+if Shadow is not running, creating the node launches it, and the node connects
+once it is up. 'reconnect' drops the connection and makes it again.
 
 WHAT THE SUIT GIVES YOU:
-Each body has a quaternions outlet and a positions outlet. The quaternions are 
-the joint ORIENTATIONS, which is the real measurement - the suit is a set of 
-inertial sensors, and orientation is what they produce. The positions are 
-inferred from those orientations plus assumed limb lengths, so they are a 
-derived quantity and only as good as the assumptions behind them.
+Each body has a quaternions outlet and a positions outlet, each 37 rows, one
+per joint in the Shadow layout.
 
-That distinction matters constantly. An orientation error is a sensor problem; 
-a position error may be an orientation error, or a limb length, or the root 
+The quaternions are the joint ORIENTATIONS - each joint's rotation, w x y z -
+and they are the real measurement: the suit is a set of inertial sensors, and
+orientation is what they produce. The positions are worked out by Shadow from
+those orientations plus its limb lengths, so they are a derived quantity and
+only as good as the assumptions behind them. They arrive in centimetres and the
+node divides by 100, so they go out in metres.
+
+That distinction matters constantly. An orientation error is a sensor problem;
+a position error may be an orientation error, or a limb length, or the root
 inference - see the sensor_to_root help patch.
 
-shadow_sensor IS FOR DIAGNOSING, NOT PERFORMING:
-It gives you what one sensor actually reads before the fusion combines them. 
-The magnetometer outlet is the one that matters for troubleshooting: a sensor 
-sitting in a distorted field produces a yaw error that no amount of filtering 
-downstream will fix, and the only way to see it is to look at the raw field. 
-Patch it into mag_offset to measure that.
+WHEN IT SENDS:
+Frames are read on a background thread. Normally the newest frame goes out once
+per frame of the app, positions first, then quaternions, body by body; frames
+that arrive in between are replaced by the newest. With 'direct_out' on, every
+frame goes out from the background thread the moment it arrives.
 
 SYNTAX:
 shadow
-shadow_sensor
 
 EXAMPLE:
 shadow
 
 INPUTS and PARAMETERS:
 
-flush (shadow):
-Discard whatever is queued and start from the current frame. Use it when the 
-stream has fallen behind and you would rather lose data than lag.
+flush:
+Discard whatever is queued in the connection and start from the current frame.
+Use it when the stream has fallen behind and you would rather lose data than
+lag.
 
 reconnect:
-Re-establish the connection to the suit.
+Close the connection to Shadow and open it again.
 
-OUTPUTS: 
+direct_out:
+Off by default. On, each frame is sent from the background thread as it
+arrives instead of once per app frame.
+
+OUTPUTS:
 
 body N quaternions:
-The joint orientations for that body - the measurement.
+The joint orientations for that body, 37 rows of w x y z - the measurement.
 
 body N positions:
-Joint positions, inferred from the orientations and the limb lengths.
-
-magnetometer / accelerometer / gyroscope (shadow_sensor):
-The raw readings from one sensor.
+The 37 joint positions in metres, worked out from the orientations.
 
 A NOTE ON MULTIPLE BODIES:
-The four bodies are separate suits, and the outlets are static - body 3's 
-outlets exist whether or not a third suit is connected, and simply stay quiet. 
-So a patch built for two performers works unchanged with one."""
+The four bodies are separate suits, and the outlets are static - body 3's
+outlets exist whether or not a third suit is connected, and simply stay quiet.
+So a patch built for two performers works unchanged with one.
+
+RELATED:
+active_joints reduces the 37 rows to the 20 joints most patches use, as in the
+example.
+shadow_sensor shows what one sensor reads before Shadow combines them.
+take records the stream and plays it back."""
 
 demo = [
-    {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 280, 'h': 320},
-    {'key': 'c0', 'comment': True, 'text': 'quaternions are the measurement\npositions are inferred from them',
-     'pos': (30, 395)},
-    {'key': 'aj', 'init': 'active_joints', 'pos': (30, 470), 'w': 220, 'h': 90},
+    {'key': 'sh', 'init': 'shadow', 'pos': (30, 62), 'w': 119, 'h': 168},
+    {'key': 'c0', 'comment': True, 'text': 'needs a running suit\nquaternions are the measurement\npositions are inferred from them',
+     'pos': (330, 62)},
+    {'key': 'aj', 'init': 'active_joints', 'pos': (30, 250), 'w': 144, 'h': 42},
     {'key': 'c2', 'comment': True, 'text': 'the 20 joints most patches want',
-     'pos': (30, 575)},
-    {'key': 'ss', 'init': 'shadow_sensor', 'pos': (350, 62), 'w': 240, 'h': 180},
-    {'key': 'mo', 'init': 'mag_offset', 'pos': (350, 260), 'w': 240, 'h': 220},
-    {'key': 'c3', 'comment': True, 'text': 'raw field, for diagnosing a bad sensor',
-     'pos': (350, 495)},
+     'pos': (330, 250)},
+    {'key': 'ap', 'init': 'active_pose', 'pos': (30, 315), 'w': 321, 'h': 350},
+    {'key': 'c3', 'comment': True, 'text': 'body 1, one row per joint',
+     'pos': (330, 315)},
 ]
 links = [('sh', 'body 1 quaternions', 'aj', 'full pose quats in'),
-         ('ss', 'magnetometer', 'mo', 'magnetometer')]
+         ('aj', 'active joint quats out', 'ap', 'in')]
 print(build('shadow', 'shadow - live data from the suit', body, demo, links,
-            demo_width=620, text_width=800, text_height=700))
+            demo_width=620, text_width=800, text_height=980))
+
+# --------------------------------------------------------------- shadow_sensor
+body = """shadow_sensor shows what one sensor in a Shadow suit actually reads - its
+magnetometer, accelerometer and gyroscope - before Shadow combines the sensors
+into a pose.
+
+IT IS FOR DIAGNOSING, NOT PERFORMING:
+The magnetometer outlet is the one that matters for troubleshooting. A sensor
+sitting in a distorted field, or carrying a bit of magnetised metal with it,
+reports a heading that is wrong - a limb turned about the vertical - and no
+amount of filtering downstream will fix it, because it is not noise. The only
+way to see it is to look at the field the sensor reads. Patch the magnetometer
+into mag_offset, turn the sensor through many orientations, and mag_offset
+measures it, as in the example.
+
+CONNECTING:
+It opens its own connection to the Shadow application on this machine, port
+32076, separate from any shadow node, so it can run beside a capture patch
+without disturbing it. Shadow must already be running; 'reconnect' tries again.
+
+CHOOSING A SENSOR:
+'sensor' lists only the physical sensors that are actually reporting - joints
+that Shadow derives rather than measures never appear. Until data arrives it
+reads '<waiting for device>'. 'body' picks the suit, 0 to 3.
+
+THREE KINDS OF DATA:
+'data' chooses what Shadow is asked for. Changing it reconnects.
+  a / m / g             accelerometer in g, magnetometer in microtesla,
+                        gyroscope in degrees per second (the default)
+  sensor (calibrated)   the same three after the suit's own calibration has
+                        corrected each sensor's bias and scale
+  raw                   uncalibrated integer counts, before any of that
+
+Comparing 'sensor (calibrated)' with 'raw' tells you whether the suit's stored
+calibration is already removing an offset you have measured. A clean
+magnetometer in 'sensor (calibrated)' mode, turned through every orientation,
+traces a sphere centred close to the origin with a radius equal to the local
+field strength - between about 52 and 55 microtesla in the Toronto studios.
+
+SYNTAX:
+shadow_sensor
+
+EXAMPLE:
+shadow_sensor
+
+INPUTS and PARAMETERS:
+
+reconnect:
+Close the connection and open it again.
+
+body:
+Which suit, 0 to 3.
+
+data:
+a / m / g, sensor (calibrated) or raw - see above.
+
+sensor:
+Which sensor, from the ones reporting.
+
+OUTPUTS:
+
+magnetometer / accelerometer / gyroscope:
+Three numbers each, x y z in the sensor's own frame. All three go out
+together, once per app frame, whenever a new reading has arrived.
+
+RELATED:
+mag_offset fits a sphere to the magnetometer readings, as in the example.
+shadow is the suit's pose, after the sensors are combined."""
+
+demo = [
+    {'key': 'ss', 'init': 'shadow_sensor', 'pos': (30, 62), 'w': 129, 'h': 112},
+    {'key': 'c0', 'comment': True, 'text': 'needs a running suit\npick a sensor once it is listed',
+     'pos': (330, 62)},
+    {'key': 'mo', 'init': 'mag_offset', 'pos': (30, 200), 'w': 246, 'h': 182},
+    {'key': 'c1', 'comment': True, 'text': 'turn the sensor through many orientations\nthe offset is what the sensor adds to the field',
+     'pos': (330, 200)},
+]
+links = [('ss', 'magnetometer', 'mo', 'magnetometer')]
+print(build('shadow_sensor', 'shadow_sensor - one sensor, before fusion', body, demo, links,
+            demo_width=620, text_width=800, text_height=1000))
 
 # ------------------------------------------------------------------------ pose
 # A quaternion stream every pose demo below shares: a swinging angle about x,

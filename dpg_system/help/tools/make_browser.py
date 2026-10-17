@@ -108,7 +108,7 @@ TREE = {
     'nodes_sound': ('Sound', 'Nodes ending in ~ pass sound between them as a signal.', [
         ('Sources', ['vco~', 'noise~', 'sig~', 'sampler_osc~', 'additive~', 'adc~', 'record~', 't.audio_source']),
         ('Time', ['adsr~', 'clock~']),
-        ('Shaping', ['vcf~', 'fold~', 'shaper~', 'delay~', 'clean~', 'one_euro~', 'vst~']),
+        ('Shaping', ['vcf~', 'formant~', 'vocoder~', 'fold~', 'shaper~', 'delay~', 'clean~', 'one_euro~', 'vst~']),
         ('Physical models', ['modal~', 'bow~', 'wind~']),
         ('Levels and output', ['vca~', 'vu~', 'scope~', 'place~', 'audio_out~']),
         ('Between sound and data', ['stream~', 'capture~', 'snapshot~']),
@@ -116,8 +116,8 @@ TREE = {
         ('Speech analysis', ['speech_envelope', 'speech_pitch', 'speech_spectral']),
     ]),
     'nodes_body': ('Body and motion', 'Capturing a moving body, cleaning it up, and asking what it is doing.', [
-        ('Sensors', ['shadow', 'movesense', 'pipo_motion', 'vive_tracker']),
-        ('Cleaning and correcting', ['mag_offset', 'cadence_filter', 'check_burst', 'sensor_to_root', 'tracker_align',
+        ('Sensors', ['shadow', 'shadow_sensor', 'movesense', 'pipo_motion', 'vive_tracker']),
+        ('Cleaning and correcting', ['mag_offset', 'mag_yaw_correct', 'shadow_arm_correct', 'cadence_filter', 'check_burst', 'sensor_to_root', 'tracker_align',
                                      'noise_review', 'json_npz_frame_picker']),
         ('Poses and joints', ['pose', 'active_pose', 'active_joints', 'target_pose', 'pose_adjust', 'calibrate_pose', 'body_to_joints', 'quaternion_diff_and_axis', 'take']),
         ('SMPL bodies', ['shadow_to_smpl', 'smpl_pose', 'smpl_body', 'smpl_take', 'smpl_beta_editor', 'smpl_pose_adjust', 'smpl_mag_yaw_correct', 'floor_zero', 'smpl_pose_to_joints']),
@@ -126,10 +126,10 @@ TREE = {
         ('Drawing bodies', ['mgl_body', 'body_proportions', 'mgl_body_orientation', 'mgl_orientation_disks', 'mgl_contact_disks', 'mgl_torque_arc', 'mgl_smpl_mesh', 'gl_body', 'limb_size']),
     ]),
     'nodes_graphics': ('3D graphics', 'A scene is a chain of nodes hanging from a context.', [
-        ('ModernGL scenes', ['mgl_context', 'mgl_camera', 'mgl_light', 'mgl_material', 'mgl_color', 'mgl_transform', 'mgl_sphere', 'mgl_mesh',
+        ('ModernGL scenes', ['mgl_context', 'mgl_camera', 'mgl_light', 'mgl_material', 'mgl_color', 'mgl_transform', 'mgl_sphere', 'mgl_mesh', 'mgl_model', 'mgl_surface', 'mgl_point_cloud', 'mgl_line_array',
                              'mgl_texture', 'mgl_text', 'mgl_shader', 'mgl_body', 'body_proportions', 'mgl_body_orientation', 'mgl_orientation_disks', 'mgl_contact_disks', 'mgl_torque_arc', 'mgl_smpl_mesh']),
         ('Point clouds', ['femto', 'pc_background', 'pc_denoise', 'pc_crop', 'pc_voxel', 'pc_info', 'pc_cluster_filter', 'mgl_cluster_boxes', 't.point_cloud_voxels']),
-        ('Older GL', ['gl_context', 'gl_translate', 'gl_sphere', 'gl_light', 'gl_line_array', 'gl_text',
+        ('Older GL', ['gl_context', 'gl_translate', 'gl_sphere', 'gl_light', 'gl_material', 'gl_color', 'gl_line_array', 'gl_text',
                       'gl_orientation_disks', 'gl_button_grid', 'gl_body']),
     ]),
     'nodes_video': ('Video and images', 'Pictures in, pictures changed.', [
@@ -221,7 +221,7 @@ LABELS = {
     'fold~': 'distortion', 'gl_line_array': 'gl_line_array / vertex_buffer',
     'gl_sphere': 'gl shapes', 'gl_translate': 'gl transforms', 'k.sobel': 'k. filters',
     'math_single': 'all of the single-input math nodes',
-    'mgl_mesh': 'mgl meshes and models',
+   
     'mgl_sphere': 'mgl shapes', 'mgl_transform': 'mgl transforms',
     'midi_control_in': 'MIDI controllers / programs', 'midi_note_in': 'MIDI notes',
     'midi_pitchbend_in': 'MIDI bend / aftertouch', 'modal~': 'struck models',
@@ -246,7 +246,7 @@ LABELS = {
     't.special.xlogy': 't.special xlogy / xlog1py',
     't.window': 't.window functions',
     't.zeros': 't tensor makers', 'tcp_numpy_send': 'tcp send / receive', 'trig': 'all of the trigonometry nodes',
-    'tv.adjust_brightness': 'tv adjustments', 'gl_orientation_disks': 'gl orientation / rotation disks', 'vca~': 'levels and mixing', 'vcf~': 'filters',
+    'tv.adjust_brightness': 'tv adjustments', 'gl_orientation_disks': 'gl orientation / rotation disks', 'vca~': 'levels and mixing',
     'vco~': 'oscillators', 'vision_describe': 'vision_describe models',
     'wind~': 'blown models', 'word_trigger': 'word triggers',
     # three names, but too long spelled out
@@ -254,8 +254,8 @@ LABELS = {
     'shape_sequencer': 'shape / function sequencer',
     'adaptive_filter': 'adaptive filters', 'spacy_vector': 'spacy vectors / similarity',
     'weighted_prompt': 'weighted / ambient prompts', 'sampler_engine': 'sampler engine / voices',
-    'effort_fader': 'effort / muscle faders', 'shadow': 'shadow suit',
-    'mag_offset': 'magnetometer corrections', 'sensor_to_root': 'sensor_to_root / root inference',
+    'effort_fader': 'effort / muscle faders',
+    'sensor_to_root': 'sensor_to_root / root inference',
     'take': 'take / take_dict',
     'smpl_pose_to_joints': 'smpl pose / quats to joints', 'torque_gang': 'torque gangs',
     'gl_body': 'gl_body (alt, simple)', 'mgl_context': 'mgl context / display / enable',

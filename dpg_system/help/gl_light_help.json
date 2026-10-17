@@ -1,11 +1,11 @@
 {
-    "height": 1101,
-    "width": 1579,
+    "height": 1440,
+    "width": 1681,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 866,
     "name": "gl_light_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_light_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment gl light, material and colour",
+            "init": "comment gl_light - one of the eight lights",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 365,
+            "width": 426,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "gl light, material and colour",
+                    "value": "gl_light - one of the eight lights",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "gl light, material and colour"
+            "comment": "gl_light - one of the eight lights"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 731,
+            "position_x": 833,
             "position_y": 45,
             "width": 808,
-            "height": 756,
+            "height": 1116,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These decide how surfaces are lit and what colour they are.\n\nTHE NODES:\n\ngl_light     a light source\ngl_material  how a surface responds to light\ngl_color     a flat colour, ignoring lighting\n\nA SCENE NEEDS A LIGHT:\nWithout one, anything using a material is black. That is the usual reason a \nchain that looks correct renders a dark window - the shapes are being drawn and \nthere is nothing to see them by.\n\ngl_color IS NOT gl_material:\nA colour is flat, so the shape comes out an even patch with no shading and no \nsense of form. A material responds to lights, so the same shape shows its \ncurvature. Use colour for markers, lines and anything schematic; material for \nanything meant to look like an object.\n\nTHE COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light, \n'specular' the colour of the highlight, and 'shininess' how tight that highlight \nis - high is a small hard glint, low a broad sheen. The light has the matching \nthree, and what you see is the product of the two, which is why a red light on \na green object gives almost nothing.\n\ngl_material also has 'emission', which the light does not: a surface that \nappears to give out light without illuminating anything else. That is how you \nmake something read as glowing or as self-lit among lit objects.\n\nMULTIPLE LIGHTS:\ngl_light has an 'id' so several can exist at once, and 'positional' decides \nwhether it is a point in the scene or a direction from infinitely far away. \nA directional light is the sun; a positional one falls off with distance and \nshows where it is.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_light\ngl_material\n\nEXAMPLE:\ngl_material\n\nINPUTS and PARAMETERS:\n\nenabled / id / positional (gl_light):\nWhether it is on, which light it is, and what kind.\n\nposition / ambient / diffuse / specular:\nWhere the light is and what it contributes.\n\nambient / diffuse / specular / emission / shininess / alpha (gl_material):\nHow the surface answers, and its transparency.\n\nred / green / blue / alpha (gl_color):\nThe flat colour.\n\nOUTPUTS: \n\ngl chain out:\nThe chain, with the setting in force downstream.\n\nA NOTE ON ALPHA:\nTransparency needs blending enabled, which is a gl_enable flag, and it is \norder-dependent - transparent things have to be drawn after what shows through \nthem. If something transparent is disappearing behind what it should reveal, \nthat is the chain order rather than the alpha value.",
+                    "value": "gl_light sets up one of the eight OpenGL lights.\n\nIT CHANGES A LIGHT, AND DOES NOT PUT IT BACK:\nOpenGL has eight lights, numbered 0 to 7. A gl_light sets the one named by\n'id' each time the chain reaches it, and leaves it that way: unlike a\ntransform, a material or a colour, it is not undone at the end of its branch.\nThe light keeps those settings for the rest of the frame, in every branch,\nand into the next frame - so from the second frame on it lights shapes\nearlier in the chain too. In practice a light lights the whole scene. Put\nlights near the top of the chain anyway, so the first frame is right and the\nposition is easy to reason about.\n\nWHAT THE CONTEXT ALREADY SETS UP:\ngl_context switches lighting on when its window opens, with two lights of\nits own (light 0 and light 1, grey, from the upper left) and a scene-wide\nambient glow. So shapes are lit before any gl_light is added - a scene with\nno gl_light is not dark.\n\nA gl_light takes over the light of the same number, the context's included.\n'enabled' starts UNTICKED, and an unticked gl_light switches its light OFF -\nso a fresh gl_light with id 0 turns out the context's light 0. Tick 'enabled'\nand give it a position.\n\nPOSITION:\nWith 'positional' off (the default) the light is a direction, like the sun:\n'position' is the direction the light comes FROM, and every surface is lit\nfrom that same direction. The default position is 0 0 0, which is no\ndirection at all, so a light left there adds only its ambient. Send it\nsomething like -1 1 1 (from the upper left, on the viewer's side).\n\nWith 'positional' on (send it 1) the light is a point at 'position'. It\nfades with distance only if you set the attenuation; by default it does not.\n\nEither way the position is taken in the chain's coordinates where the\ngl_light sits, so a transform before it moves or turns the light.\n\nTHE COLOURS:\n'ambient' is light that reaches every surface regardless of direction,\n'diffuse' the main light, brightest on surfaces facing it, and 'specular'\nthe colour of the highlight. Each is red green blue (alpha optional), from\n0 to 1. A gl_light's specular starts at black, so it makes no highlight until\nyou send one. What you see is each of these times the matching part of the\nmaterial - which is why a red light on a green surface gives almost nothing.\n\nA SPOTLIGHT:\nFor a positional light, 'spot_cutoff' (in degrees, 90 or less) narrows it to\na cone around 'spot_direction', and 'spot_exponent' concentrates it toward\nthe middle of the cone. Above 90 there is no cone.\n\nTHE LIGHTING MODEL:\nThese affect lighting as a whole, not this light, and are only applied while\n'light_model_active' is ticked. 'global ambient enabled' with\n'global_ambient' sets the scene-wide ambient glow. 'local_viewer' and\n'two_sided' switch those OpenGL modes on; unticking them does not switch them\noff again. (The context already turns two_sided on.)\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_light\n\nSet the light's number with the 'id' inlet - a number typed after the name\nis not used.\n\nEXAMPLE:\ngl_light\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nenabled:\nWhether this light is on. Off by default, which switches the light off.\n\nid:\nWhich light, 0 to 7. Changing it leaves the previous light as it was\nlast set.\n\nambient / diffuse / specular:\nRed green blue, or red green blue alpha, 0 to 1. Defaults: 0.2 grey,\n0.8 grey, black.\n\nposition:\nx y z: a direction, or a place with 'positional' on.\n\npositional:\nSend 1 for a point light, 0 for a directional one.\n\nspot_direction / spot_cutoff / spot_exponent:\nThe spotlight, as above. 0 0 -1, 180 (no cone) and 0 by default.\n\nconstant_attenuation / linear_attenuation / quadratic_attenuation:\nHow a positional light fades with distance. 1, 0, 0 by default: no fading.\n\nlight_model_active / global ambient enabled / global_ambient /\nlocal_viewer / two_sided:\nThe lighting model, as above.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\ngl_material for how surfaces answer the light; gl_color for unlit colour.\nmgl_light is the newer equivalent, and does go away at the end of the\nframe.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 740,
+                    "value": 1100,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These decide how surfaces are lit and what colour they are.\n\nTHE NODES:\n\ngl_light     a light source\ngl_material  how a surface responds to light\ngl_color     a flat colour, ignoring lighting\n\nA SCENE NEEDS A LIGHT:\nWithout one, anything using a material is black. That is the usual reason a \nchain that looks correct renders a dark window - the shapes are being drawn and \nthere is nothing to see them by.\n\ngl_color IS NOT gl_material:\nA colour is flat, so the shape comes out an even patch with no shading and no \nsense of form. A material responds to lights, so the same shape shows its \ncurvature. Use colour for markers, lines and anything schematic; material for \nanything meant to look like an object.\n\nTHE COMPONENTS:\n'ambient' is the colour in shadow, 'diffuse' the colour in plain light, \n'specular' the colour of the highlight, and 'shininess' how tight that highlight \nis - high is a small hard glint, low a broad sheen. The light has the matching \nthree, and what you see is the product of the two, which is why a red light on \na green object gives almost nothing.\n\ngl_material also has 'emission', which the light does not: a surface that \nappears to give out light without illuminating anything else. That is how you \nmake something read as glowing or as self-lit among lit objects.\n\nMULTIPLE LIGHTS:\ngl_light has an 'id' so several can exist at once, and 'positional' decides \nwhether it is a point in the scene or a direction from infinitely far away. \nA directional light is the sun; a positional one falls off with distance and \nshows where it is.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_light\ngl_material\n\nEXAMPLE:\ngl_material\n\nINPUTS and PARAMETERS:\n\nenabled / id / positional (gl_light):\nWhether it is on, which light it is, and what kind.\n\nposition / ambient / diffuse / specular:\nWhere the light is and what it contributes.\n\nambient / diffuse / specular / emission / shininess / alpha (gl_material):\nHow the surface answers, and its transparency.\n\nred / green / blue / alpha (gl_color):\nThe flat colour.\n\nOUTPUTS: \n\ngl chain out:\nThe chain, with the setting in force downstream.\n\nA NOTE ON ALPHA:\nTransparency needs blending enabled, which is a gl_enable flag, and it is \norder-dependent - transparent things have to be drawn after what shows through \nthem. If something transparent is disappearing behind what it should reveal, \nthat is the chain order rather than the alpha value."
+            "text": "gl_light sets up one of the eight OpenGL lights.\n\nIT CHANGES A LIGHT, AND DOES NOT PUT IT BACK:\nOpenGL has eight lights, numbered 0 to 7. A gl_light sets the one named by\n'id' each time the chain reaches it, and leaves it that way: unlike a\ntransform, a material or a colour, it is not undone at the end of its branch.\nThe light keeps those settings for the rest of the frame, in every branch,\nand into the next frame - so from the second frame on it lights shapes\nearlier in the chain too. In practice a light lights the whole scene. Put\nlights near the top of the chain anyway, so the first frame is right and the\nposition is easy to reason about.\n\nWHAT THE CONTEXT ALREADY SETS UP:\ngl_context switches lighting on when its window opens, with two lights of\nits own (light 0 and light 1, grey, from the upper left) and a scene-wide\nambient glow. So shapes are lit before any gl_light is added - a scene with\nno gl_light is not dark.\n\nA gl_light takes over the light of the same number, the context's included.\n'enabled' starts UNTICKED, and an unticked gl_light switches its light OFF -\nso a fresh gl_light with id 0 turns out the context's light 0. Tick 'enabled'\nand give it a position.\n\nPOSITION:\nWith 'positional' off (the default) the light is a direction, like the sun:\n'position' is the direction the light comes FROM, and every surface is lit\nfrom that same direction. The default position is 0 0 0, which is no\ndirection at all, so a light left there adds only its ambient. Send it\nsomething like -1 1 1 (from the upper left, on the viewer's side).\n\nWith 'positional' on (send it 1) the light is a point at 'position'. It\nfades with distance only if you set the attenuation; by default it does not.\n\nEither way the position is taken in the chain's coordinates where the\ngl_light sits, so a transform before it moves or turns the light.\n\nTHE COLOURS:\n'ambient' is light that reaches every surface regardless of direction,\n'diffuse' the main light, brightest on surfaces facing it, and 'specular'\nthe colour of the highlight. Each is red green blue (alpha optional), from\n0 to 1. A gl_light's specular starts at black, so it makes no highlight until\nyou send one. What you see is each of these times the matching part of the\nmaterial - which is why a red light on a green surface gives almost nothing.\n\nA SPOTLIGHT:\nFor a positional light, 'spot_cutoff' (in degrees, 90 or less) narrows it to\na cone around 'spot_direction', and 'spot_exponent' concentrates it toward\nthe middle of the cone. Above 90 there is no cone.\n\nTHE LIGHTING MODEL:\nThese affect lighting as a whole, not this light, and are only applied while\n'light_model_active' is ticked. 'global ambient enabled' with\n'global_ambient' sets the scene-wide ambient glow. 'local_viewer' and\n'two_sided' switch those OpenGL modes on; unticking them does not switch them\noff again. (The context already turns two_sided on.)\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_light\n\nSet the light's number with the 'id' inlet - a number typed after the name\nis not used.\n\nEXAMPLE:\ngl_light\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nenabled:\nWhether this light is on. Off by default, which switches the light off.\n\nid:\nWhich light, 0 to 7. Changing it leaves the previous light as it was\nlast set.\n\nambient / diffuse / specular:\nRed green blue, or red green blue alpha, 0 to 1. Defaults: 0.2 grey,\n0.8 grey, black.\n\nposition:\nx y z: a direction, or a place with 'positional' on.\n\npositional:\nSend 1 for a point light, 0 for a directional one.\n\nspot_direction / spot_cutoff / spot_exponent:\nThe spotlight, as above. 0 0 -1, 180 (no cone) and 0 by default.\n\nconstant_attenuation / linear_attenuation / quadratic_attenuation:\nHow a positional light fades with distance. 1, 0, 0 by default: no fading.\n\nlight_model_active / global ambient enabled / global_ambient /\nlocal_viewer / two_sided:\nThe lighting model, as above.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, continuing.\n\nRELATED:\ngl_material for how surfaces answer the light; gl_color for unlit colour.\nmgl_light is the newer equivalent, and does go away at the end of the\nframe."
         },
         "3": {
             "name": "gl_context",
@@ -105,48 +105,12 @@
             "properties": {}
         },
         "4": {
-            "name": "gl_light",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 202,
-            "width": 222,
-            "height": 294,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "5": {
-            "name": "gl_material",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 516,
-            "width": 148,
-            "height": 140,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "6": {
-            "name": "gl_sphere",
-            "id": 459,
-            "position_x": 30,
-            "position_y": 776,
-            "width": 129,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "7": {
-            "init": "comment material: it shows its curvature",
+            "init": "comment the picture opens in its own window",
             "name": "comment",
-            "id": 496,
-            "position_x": 496,
-            "position_y": 1011,
-            "width": 205,
+            "id": 385,
+            "position_x": 486,
+            "position_y": 190,
+            "width": 224,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -154,7 +118,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "material: it shows its curvature",
+                    "value": "the picture opens in its own window",
                     "value_type": "str"
                 },
                 "1": {
@@ -163,38 +127,72 @@
                     "value_type": "str"
                 }
             },
-            "comment": "material: it shows its curvature"
+            "comment": "the picture opens in its own window"
+        },
+        "5": {
+            "name": "load_bang",
+            "id": 422,
+            "position_x": 330,
+            "position_y": 240,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 330,
+            "position_y": 300,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "-1 1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "message",
+            "id": 496,
+            "position_x": 330,
+            "position_y": 360,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 0.2 0.2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
         },
         "8": {
-            "name": "gl_color",
-            "id": 533,
-            "position_x": 310,
-            "position_y": 516,
-            "width": 123,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "name": "gl_cylinder",
-            "id": 570,
-            "position_x": 310,
-            "position_y": 736,
-            "width": 160,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "10": {
-            "init": "comment colour: flat, no shading",
+            "init": "comment from the upper left, red",
             "name": "comment",
-            "id": 607,
-            "position_x": 496,
-            "position_y": 971,
+            "id": 533,
+            "position_x": 486,
+            "position_y": 420,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -203,7 +201,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "colour: flat, no shading",
+                    "value": "from the upper left, red",
                     "value_type": "str"
                 },
                 "1": {
@@ -212,13 +210,188 @@
                     "value_type": "str"
                 }
             },
-            "comment": "colour: flat, no shading"
+            "comment": "from the upper left, red"
+        },
+        "9": {
+            "name": "gl_light",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 222,
+            "height": 294,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "enabled",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "id",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            }
+        },
+        "10": {
+            "name": "message",
+            "id": 607,
+            "position_x": 330,
+            "position_y": 680,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
         },
         "11": {
-            "name": "close",
+            "name": "message",
             "id": 644,
+            "position_x": 330,
+            "position_y": 740,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.2 0.4 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment from the upper right, blue",
+            "name": "comment",
+            "id": 681,
+            "position_x": 486,
+            "position_y": 800,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "from the upper right, blue",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "from the upper right, blue"
+        },
+        "13": {
+            "name": "gl_light",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 680,
+            "width": 222,
+            "height": 294,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "enabled",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "id",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "14": {
+            "name": "gl_sphere",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 1120,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "size",
+                    "value": 0.25,
+                    "value_type": "float"
+                }
+            }
+        },
+        "15": {
+            "name": "text_block",
+            "id": 792,
+            "annotation": true,
+            "position_x": 486,
+            "position_y": 1340,
+            "width": 317,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "lit red from one side and blue from the other:\nthe two lights add up",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 309,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "lit red from one side and blue from the other:\nthe two lights add up"
+        },
+        "16": {
+            "name": "close",
+            "id": 829,
             "position_x": 24,
-            "position_y": 904,
+            "position_y": 1248,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -239,50 +412,110 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl_chain",
-            "dest_node": 385,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 422,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "2": {
-            "source_node": 422,
+            "source_node": 718,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "gl chain out",
-            "dest_node": 459,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "gl chain in"
         },
         "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
             "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "gl chain out",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
-        },
-        "4": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "gl chain out",
+            "source_output_name": "",
             "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "gl chain in"
+            "dest_input_name": "position"
+        },
+        "8": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "diffuse"
+        },
+        "9": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "position"
+        },
+        "10": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "diffuse"
         }
     }
 }

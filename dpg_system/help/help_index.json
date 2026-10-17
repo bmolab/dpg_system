@@ -211,18 +211,22 @@
   "gl_button_grid": [
     "gl_button_grid"
   ],
+  "gl_color": [
+    "gl_color"
+  ],
   "gl_context": [
     "gl_context",
     "gl_enable"
   ],
   "gl_light": [
-    "gl_light",
-    "gl_material",
-    "gl_color"
+    "gl_light"
   ],
   "gl_line_array": [
     "gl_line_array",
     "gl_vertex_buffer"
+  ],
+  "gl_material": [
+    "gl_material"
   ],
   "gl_orientation_disks": [
     "gl_orientation_disks",
@@ -604,18 +608,23 @@
   "mgl_light": [
     "mgl_light"
   ],
+  "mgl_line_array": [
+    "mgl_line_array"
+  ],
   "mgl_material": [
     "mgl_material"
   ],
   "mgl_mesh": [
-    "mgl_mesh",
-    "mgl_model",
-    "mgl_point_cloud",
-    "mgl_surface",
-    "mgl_line_array"
+    "mgl_mesh"
+  ],
+  "mgl_model": [
+    "mgl_model"
   ],
   "mgl_orientation_disks": [
     "mgl_orientation_disks"
+  ],
+  "mgl_point_cloud": [
+    "mgl_point_cloud"
   ],
   "mgl_sphere": [
     "mgl_box",
@@ -626,6 +635,9 @@
     "mgl_partial_disk",
     "mgl_plane",
     "mgl_line"
+  ],
+  "mgl_surface": [
+    "mgl_surface"
   ],
   "mgl_text": [
     "mgl_text"
@@ -688,9 +700,10 @@
     "limb_size"
   ],
   "mag_offset": [
-    "mag_offset",
-    "mag_yaw_correct",
-    "shadow_arm_correct"
+    "mag_offset"
+  ],
+  "mag_yaw_correct": [
+    "mag_yaw_correct"
   ],
   "pose": [
     "pose",
@@ -707,7 +720,12 @@
     "tracker_root_inference"
   ],
   "shadow": [
-    "shadow",
+    "shadow"
+  ],
+  "shadow_arm_correct": [
+    "shadow_arm_correct"
+  ],
+  "shadow_sensor": [
     "shadow_sensor"
   ],
   "take": [
@@ -1285,6 +1303,10 @@
     "mult~",
     "ring~"
   ],
+  "formant~": [
+    "formant~",
+    "vowel~"
+  ],
   "modal~": [
     "bounce~",
     "drop~",
@@ -1344,15 +1366,15 @@
     "vca~"
   ],
   "vcf~": [
-    "formant~",
-    "vcf~",
-    "vocoder~",
-    "vowel~"
+    "vcf~"
   ],
   "vco~": [
     "lfo~",
     "phasor~",
     "vco~"
+  ],
+  "vocoder~": [
+    "vocoder~"
   ],
   "vst~": [
     "plugin~",

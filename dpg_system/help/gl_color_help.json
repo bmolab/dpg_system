@@ -1,0 +1,468 @@
+{
+    "height": 1160,
+    "width": 1587,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "gl_color_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/gl_color_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment gl_color - plain colour, for unlit drawing",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 525,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "gl_color - plain colour, for unlit drawing",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "gl_color - plain colour, for unlit drawing"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 739,
+            "position_y": 45,
+            "width": 808,
+            "height": 896,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "gl_color sets the plain colour things are drawn in when lighting is off.\n\nLIGHTING IGNORES IT:\ngl_context switches lighting on, and while it is on, OpenGL takes a shape's\ncolour from the material and the lights - the current colour is not used at\nall. So gl_color placed before a lit sphere changes nothing. To see it,\nswitch lighting off for that branch with gl_enable GL_LIGHTING, unticked.\n\nWith lighting off a shape is drawn in exactly this colour, an even patch\nwith no shading and no sense of form. That is right for markers, lines and\nanything schematic; gl_material and a light are for anything meant to look\nlike an object.\n\ngl_text, gl_line_array and gl_button_grid set colours of their own and are\nnot affected.\n\nIT IS PUT BACK, LIKE A TRANSFORM:\nThe colour applies from where it sits onward and the previous colour is\nrestored at the end of its branch.\n\nIT STARTS INVISIBLE:\nAll four sliders start at 0 - black, and fully transparent. Blending is on\nin the context, so until 'alpha' is raised, what it colours cannot be seen.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_color\n\nIt takes no arguments.\n\nEXAMPLE:\ngl_color\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nred / green / blue / alpha:\nThe colour, each 0 to 1. All 0 by default.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, with this colour in force downstream.\n\nRELATED:\ngl_enable to switch lighting off; gl_material for lit surfaces. mgl_color is\nthe newer equivalent, and does tint lit shapes.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 880,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "gl_color sets the plain colour things are drawn in when lighting is off.\n\nLIGHTING IGNORES IT:\ngl_context switches lighting on, and while it is on, OpenGL takes a shape's\ncolour from the material and the lights - the current colour is not used at\nall. So gl_color placed before a lit sphere changes nothing. To see it,\nswitch lighting off for that branch with gl_enable GL_LIGHTING, unticked.\n\nWith lighting off a shape is drawn in exactly this colour, an even patch\nwith no shading and no sense of form. That is right for markers, lines and\nanything schematic; gl_material and a light are for anything meant to look\nlike an object.\n\ngl_text, gl_line_array and gl_button_grid set colours of their own and are\nnot affected.\n\nIT IS PUT BACK, LIKE A TRANSFORM:\nThe colour applies from where it sits onward and the previous colour is\nrestored at the end of its branch.\n\nIT STARTS INVISIBLE:\nAll four sliders start at 0 - black, and fully transparent. Blending is on\nin the context, so until 'alpha' is raised, what it colours cannot be seen.\n\nTHIS IS THE OLDER SYSTEM:\nmgl_ nodes do the same job in the newer scene graph, with real materials, \nshaders and a main-thread guard on the drawing. For anything new, use those.\n\nThese remain because patches are built on them, because gl_body and its \nrelatives live in this world, and because the fixed-function pipeline they use \nis sometimes simpler to reason about when all you want is a few shapes.\n\nSYNTAX:\ngl_color\n\nIt takes no arguments.\n\nEXAMPLE:\ngl_color\n\nINPUTS and PARAMETERS:\n\ngl chain in:\nThe chain. This triggers the node.\n\nred / green / blue / alpha:\nThe colour, each 0 to 1. All 0 by default.\n\nOUTPUTS:\n\ngl chain out:\nThe chain, with this colour in force downstream.\n\nRELATED:\ngl_enable to switch lighting off; gl_material for lit surfaces. mgl_color is\nthe newer equivalent, and does tint lit shapes."
+        },
+        "3": {
+            "name": "gl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 70,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment the picture opens in its own window",
+            "name": "comment",
+            "id": 385,
+            "position_x": 485,
+            "position_y": 190,
+            "width": 224,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the picture opens in its own window",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the picture opens in its own window"
+        },
+        "5": {
+            "name": "gl_color",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "red",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "green",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "blue",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "alpha",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "init": "comment orange, for both branches",
+            "name": "comment",
+            "id": 459,
+            "position_x": 485,
+            "position_y": 460,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "orange, for both branches",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "orange, for both branches"
+        },
+        "7": {
+            "name": "gl_translate",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 99,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": -0.3,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "gl_translate -0.3 0 0"
+        },
+        "8": {
+            "name": "gl_enable",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 680,
+            "width": 157,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "gl_enable GL_LIGHTING"
+        },
+        "9": {
+            "init": "comment lighting off for this branch",
+            "name": "comment",
+            "id": 570,
+            "position_x": 485,
+            "position_y": 810,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "lighting off for this branch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "lighting off for this branch"
+        },
+        "10": {
+            "name": "gl_sphere",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 850,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "size",
+                    "value": 0.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment flat orange: no shading",
+            "name": "comment",
+            "id": 644,
+            "position_x": 485,
+            "position_y": 1070,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "flat orange: no shading",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "flat orange: no shading"
+        },
+        "12": {
+            "name": "gl_translate",
+            "id": 681,
+            "position_x": 330,
+            "position_y": 500,
+            "width": 99,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "x",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "z",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "gl_translate 0.3 0 0"
+        },
+        "13": {
+            "name": "gl_sphere",
+            "id": 718,
+            "position_x": 330,
+            "position_y": 680,
+            "width": 129,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "size",
+                    "value": 0.2,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "name": "text_block",
+            "id": 755,
+            "annotation": true,
+            "position_x": 485,
+            "position_y": 900,
+            "width": 163,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "still lit and shaded:\nthe orange is ignored",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "still lit and shaded:\nthe orange is ignored"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 978,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl_chain",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "4": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "gl chain out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "gl chain in"
+        }
+    }
+}

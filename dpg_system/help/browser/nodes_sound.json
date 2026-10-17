@@ -1,5 +1,5 @@
 {
-    "height": 624,
+    "height": 632,
     "width": 699,
     "position": [
         100,
@@ -292,12 +292,12 @@
             "annotation": true,
             "position_x": 213,
             "position_y": 258,
-            "width": 385,
-            "height": 40,
+            "width": 446,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "filters, distortion, shapers and lookups, delay~ / echo~,\nclean~ / condition~, one_euro~ / smooth~, vst~ / plugin~",
+                    "value": "vcf~, formant~ / vowel~, vocoder~, distortion, shapers and lookups,\ndelay~ / echo~, clean~ / condition~, one_euro~ / smooth~,\nvst~ / plugin~",
                     "value_type": "str"
                 },
                 "1": {
@@ -307,12 +307,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 377,
+                    "value": 438,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -321,7 +321,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "filters, distortion, shapers and lookups, delay~ / echo~,\nclean~ / condition~, one_euro~ / smooth~, vst~ / plugin~",
+            "text": "vcf~, formant~ / vowel~, vocoder~, distortion, shapers and lookups,\ndelay~ / echo~, clean~ / condition~, one_euro~ / smooth~,\nvst~ / plugin~",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
@@ -331,7 +331,7 @@
             "init": "help_link nodes_sound_physical_models Physical models",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 306,
+            "position_y": 314,
             "width": 175,
             "height": 44,
             "properties": {
@@ -355,7 +355,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 213,
-            "position_y": 310,
+            "position_y": 318,
             "width": 305,
             "height": 28,
             "properties": {
@@ -395,7 +395,7 @@
             "init": "help_link nodes_sound_levels_and_output Levels and output",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 358,
+            "position_y": 366,
             "width": 175,
             "height": 44,
             "properties": {
@@ -419,7 +419,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 213,
-            "position_y": 362,
+            "position_y": 370,
             "width": 397,
             "height": 28,
             "properties": {
@@ -459,7 +459,7 @@
             "init": "help_link nodes_sound_between_sound_and_data Between sound and data",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 410,
+            "position_y": 418,
             "width": 175,
             "height": 44,
             "properties": {
@@ -483,7 +483,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 213,
-            "position_y": 414,
+            "position_y": 422,
             "width": 335,
             "height": 28,
             "properties": {
@@ -523,7 +523,7 @@
             "init": "help_link nodes_sound_samplers Samplers",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 462,
+            "position_y": 470,
             "width": 175,
             "height": 44,
             "properties": {
@@ -547,7 +547,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 213,
-            "position_y": 466,
+            "position_y": 474,
             "width": 385,
             "height": 40,
             "properties": {
@@ -587,7 +587,7 @@
             "init": "help_link nodes_sound_speech_analysis Speech analysis",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 514,
+            "position_y": 522,
             "width": 175,
             "height": 44,
             "properties": {
@@ -611,7 +611,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 213,
-            "position_y": 518,
+            "position_y": 526,
             "width": 446,
             "height": 28,
             "properties": {

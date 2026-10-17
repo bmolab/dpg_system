@@ -1,0 +1,268 @@
+{
+    "height": 1101,
+    "width": 1713,
+    "position": [
+        100,
+        100
+    ],
+    "id": 570,
+    "name": "mgl_model_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_model_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl_model - a mesh from a file",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 377,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl_model - a mesh from a file",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl_model - a mesh from a file"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 855,
+            "position_y": 45,
+            "width": 818,
+            "height": 996,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "mgl_model loads a mesh from a file and draws it.\n\nTHE FILE:\nType its path into 'file_path' (a full path is safest; a short one is found\nfrom the folder the program runs in). Anything the trimesh library reads\nwill do: obj, stl, ply, glb, off and more. A file holding several meshes is\nmerged into one. The console says how many corners and faces it loaded.\n\nA file that will not load is reported once in the console, and tried again\nwhen 'file_path' changes or 'generate_uv' is clicked.\n\nOne fault to know about: if a file has loaded and 'file_path' is then\nchanged to one that will not load (or emptied), the node raises an error\nevery frame and nothing chained after it is drawn. Give it a good file again.\n\nSIZE AND PLACE:\n'center' (on by default) moves the mesh's centre of mass to the origin when\nit loads. 'scale' multiplies the size and takes effect at once.\n\nTEXTURE COORDINATES:\nTo map an image onto the model through 'texture', it needs texture\ncoordinates. 'uv_mode' original uses the file's own, if it has them -\nwithout them every point gets 0 0, and the console says so. The other\nmodes make them up from the shape: sphere, cylinder, plane_xy, plane_xz,\nor box, which puts the image once on each side of the bounding box, each\nface taking the side it faces most. 'uv_scale' multiplies them, so above 1\nthe image repeats.\n\n'uv_mode', 'uv_scale' and 'center' are applied when the file loads; click\n'generate_uv' to load it again with the new settings.\n\nIt is an mgl shape: lit, in the current colour and material.\n\nSYNTAX:\nmgl_model\n\nIt takes no arguments.\n\nEXAMPLE:\nmgl_model\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\nfile_path:\nThe mesh file.\n\nscale:\nSize multiplier, 1 by default.\n\ncenter:\nCentre of mass to the origin, on load.\n\nuv_mode / uv_scale / generate_uv:\nTexture coordinates, as above.\n\nmode / cull / point_size / round / texture:\nAs for the other mgl shapes: drawn solid, as wireframe or as points;\nwhether back faces are skipped; the size of points in pixels; whether points\nare round; an image mapped onto the surface.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_mesh draws a mesh sent down a cord instead. mgl_texture makes a texture\nfrom an image.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 980,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "mgl_model loads a mesh from a file and draws it.\n\nTHE FILE:\nType its path into 'file_path' (a full path is safest; a short one is found\nfrom the folder the program runs in). Anything the trimesh library reads\nwill do: obj, stl, ply, glb, off and more. A file holding several meshes is\nmerged into one. The console says how many corners and faces it loaded.\n\nA file that will not load is reported once in the console, and tried again\nwhen 'file_path' changes or 'generate_uv' is clicked.\n\nOne fault to know about: if a file has loaded and 'file_path' is then\nchanged to one that will not load (or emptied), the node raises an error\nevery frame and nothing chained after it is drawn. Give it a good file again.\n\nSIZE AND PLACE:\n'center' (on by default) moves the mesh's centre of mass to the origin when\nit loads. 'scale' multiplies the size and takes effect at once.\n\nTEXTURE COORDINATES:\nTo map an image onto the model through 'texture', it needs texture\ncoordinates. 'uv_mode' original uses the file's own, if it has them -\nwithout them every point gets 0 0, and the console says so. The other\nmodes make them up from the shape: sphere, cylinder, plane_xy, plane_xz,\nor box, which puts the image once on each side of the bounding box, each\nface taking the side it faces most. 'uv_scale' multiplies them, so above 1\nthe image repeats.\n\n'uv_mode', 'uv_scale' and 'center' are applied when the file loads; click\n'generate_uv' to load it again with the new settings.\n\nIt is an mgl shape: lit, in the current colour and material.\n\nSYNTAX:\nmgl_model\n\nIt takes no arguments.\n\nEXAMPLE:\nmgl_model\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\nfile_path:\nThe mesh file.\n\nscale:\nSize multiplier, 1 by default.\n\ncenter:\nCentre of mass to the origin, on load.\n\nuv_mode / uv_scale / generate_uv:\nTexture coordinates, as above.\n\nmode / cull / point_size / round / texture:\nAs for the other mgl shapes: drawn solid, as wireframe or as points;\nwhether back faces are skipped; the size of points in pixels; whether points\nare round; an image mapped onto the surface.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\nRELATED:\nmgl_mesh draws a mesh sent down a cord instead. mgl_texture makes a texture\nfrom an image."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_mouse_events",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "comment drag on the picture to orbit",
+            "name": "comment",
+            "id": 385,
+            "position_x": 514,
+            "position_y": 120,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag on the picture to orbit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag on the picture to orbit"
+        },
+        "5": {
+            "name": "mgl_orbit_camera",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "mgl_model",
+            "id": 459,
+            "position_x": 340,
+            "position_y": 440,
+            "width": 148,
+            "height": 196,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "text_block",
+            "id": 496,
+            "annotation": true,
+            "position_x": 514,
+            "position_y": 440,
+            "width": 311,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "type the path of an obj, stl, ply or glb file\ninto file_path and press return",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 303,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "type the path of an obj, stl, ply or glb file\ninto file_path and press return"
+        },
+        "8": {
+            "name": "close",
+            "id": 533,
+            "position_x": 24,
+            "position_y": 666,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        }
+    }
+}

@@ -1,11 +1,11 @@
 {
-    "height": 572,
+    "height": 676,
     "width": 601,
     "position": [
         100,
         100
     ],
-    "id": 1240,
+    "id": 1388,
     "name": "nodes_sound_shaping",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_sound_shaping.json",
     "nodes": {
@@ -136,7 +136,7 @@
             "presentation_state": "show_all"
         },
         "5": {
-            "init": "help_link vcf~ filters",
+            "init": "help_link vcf~ vcf~",
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
@@ -144,7 +144,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "filters",
+                    "name": "vcf~",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -169,12 +169,12 @@
             "annotation": true,
             "position_x": 195,
             "position_y": 154,
-            "width": 243,
-            "height": 40,
+            "width": 157,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "shaping by frequency\n(formant~, vcf~, vocoder~, vowel~)",
+                    "value": "shaping by frequency",
                     "value_type": "str"
                 },
                 "1": {
@@ -184,12 +184,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 235,
+                    "value": 149,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -198,14 +198,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "shaping by frequency\n(formant~, vcf~, vocoder~, vowel~)",
+            "text": "shaping by frequency",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link fold~ distortion",
+            "init": "help_link formant~ formant~ / vowel~",
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
@@ -213,7 +213,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "distortion",
+                    "name": "formant~ / vowel~",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -238,6 +238,144 @@
             "annotation": true,
             "position_x": 195,
             "position_y": 206,
+            "width": 200,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a vowel, as five resonances\n(formant~, vowel~)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a vowel, as five resonances\n(formant~, vowel~)",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link vocoder~ vocoder~",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 157,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "vocoder~",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 141,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 195,
+            "position_y": 258,
+            "width": 200,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "one sound shaped by another",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "one sound shaped by another",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link fold~ distortion",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 157,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "distortion",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 141,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 195,
+            "position_y": 310,
             "width": 366,
             "height": 40,
             "properties": {
@@ -268,16 +406,16 @@
                 }
             },
             "text": "harmonics that were not there\n(*~, crush~, decimate~, distort~, fold~, mult~, ring~)",
-            "id": 833,
+            "id": 981,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "9": {
+        "13": {
             "init": "help_link shaper~ shapers and lookups",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 254,
+            "position_y": 358,
             "width": 157,
             "height": 44,
             "properties": {
@@ -297,16 +435,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 870,
+            "id": 1018,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "10": {
+        "14": {
             "name": "text_block",
             "annotation": true,
             "position_x": 195,
-            "position_y": 258,
+            "position_y": 362,
             "width": 317,
             "height": 40,
             "properties": {
@@ -337,16 +475,16 @@
                 }
             },
             "text": "a drawn curve, applied every sample\n(envelope~, lookup~, scaler~, scale~, shaper~)",
-            "id": 907,
+            "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "11": {
+        "15": {
             "init": "help_link delay~ delay~ / echo~",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 306,
+            "position_y": 410,
             "width": 157,
             "height": 44,
             "properties": {
@@ -366,16 +504,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 944,
+            "id": 1092,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "12": {
+        "16": {
             "name": "text_block",
             "annotation": true,
             "position_x": 195,
-            "position_y": 310,
+            "position_y": 414,
             "width": 305,
             "height": 40,
             "properties": {
@@ -406,16 +544,16 @@
                 }
             },
             "text": "repeats, and the short ones you cannot patch\n(delay~, echo~)",
-            "id": 981,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "13": {
+        "17": {
             "init": "help_link clean~ clean~ / condition~",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 358,
+            "position_y": 462,
             "width": 157,
             "height": 44,
             "properties": {
@@ -435,16 +573,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1018,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "14": {
+        "18": {
             "name": "text_block",
             "annotation": true,
             "position_x": 195,
-            "position_y": 362,
+            "position_y": 466,
             "width": 194,
             "height": 40,
             "properties": {
@@ -475,16 +613,16 @@
                 }
             },
             "text": "take off what nobody hears\n(clean~, condition~)",
-            "id": 1055,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "19": {
             "init": "help_link one_euro~ one_euro~ / smooth~",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 410,
+            "position_y": 514,
             "width": 157,
             "height": 44,
             "properties": {
@@ -504,16 +642,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1092,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "20": {
             "name": "text_block",
             "annotation": true,
             "position_x": 195,
-            "position_y": 414,
+            "position_y": 518,
             "width": 175,
             "height": 40,
             "properties": {
@@ -544,16 +682,16 @@
                 }
             },
             "text": "smoothing that keeps up\n(one_euro~, smooth~)",
-            "id": 1129,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "21": {
             "init": "help_link vst~ vst~ / plugin~",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 462,
+            "position_y": 566,
             "width": 157,
             "height": 44,
             "properties": {
@@ -573,16 +711,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1166,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "22": {
             "name": "text_block",
             "annotation": true,
             "position_x": 195,
-            "position_y": 466,
+            "position_y": 570,
             "width": 243,
             "height": 40,
             "properties": {
@@ -613,7 +751,7 @@
                 }
             },
             "text": "somebody else's effect, patched in\n(plugin~, vst~)",
-            "id": 1203,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

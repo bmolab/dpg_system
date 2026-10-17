@@ -112,10 +112,19 @@ def main():
                     continue
                 key = (id(n), label, out.get_label())
                 seen[key] = []
+                # A node may hand its value to set_value() and then call a bare
+                # send(), which only triggers the children -- so the value is
+                # taken from whichever of the two carries it.
                 def tap(v=None, _k=key, _orig=out.send, *a, **k):
-                    seen[_k].append(v)
+                    if v is not None:
+                        seen[_k].append(v)
                     return _orig(v, *a, **k)
+                def tap_set(v, _k=key, _orig=out.set_value):
+                    if v is not None:
+                        seen[_k].append(v)
+                    return _orig(v)
                 out.send = tap
+                out.set_value = tap_set
 
         buttons = [n for n in editor._nodes if getattr(n, 'label', '') == 'button']
         frames = 40 if click else FRAMES

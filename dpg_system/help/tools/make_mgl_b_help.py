@@ -108,81 +108,246 @@ print(build('mgl_sphere', 'mgl shapes - the built-in geometry', body, demo, link
             demo_width=560, text_width=810, text_height=760))
 
 # ------------------------------------------------------------ geometry from data
-body = """These draw geometry you supply, rather than a shape they already know.
+def view():
+    """A context showing its picture in the node, and an orbit camera.
+    Shapes use the context's own default light. The chain continues from
+    'cam'."""
+    nodes = [
+        {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
+         'props': {'auto_render': True, 'node_display_width': 320,
+                   'node_display_height': 240, 'node_mouse_events': True}},
+        {'key': 'c0', 'comment': True, 'text': 'drag on the picture to orbit',
+         'pos': (30, 120)},
+        {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (30, 440), 'w': 240, 'h': 160},
+    ]
+    links = [('ctx', 'mgl_chain', 'cam', 'mgl chain in'),
+             ('ctx', 'ui', 'cam', 'ui')]
+    return nodes, links
 
-THE NODES:
 
-mgl_mesh         a mesh handed to it down a cord: corners and triangles
-mgl_model        a mesh loaded from a file
-mgl_point_cloud  a set of points
-mgl_surface      a grid of points drawn as a continuous surface
-mgl_line_array   many lines at once, built for trails of motion
+SHAPE_INPUTS = """
+mode / cull / point_size / round / texture:
+As for the other mgl shapes: drawn solid, as wireframe or as points;
+whether back faces are skipped; the size of points in pixels; whether points
+are round; an image mapped onto the surface."""
 
-All but mgl_line_array are mgl shapes: they are lit, take the current colour 
-and material, and share the shape inputs 'mode' (solid, wireframe or 
-points), 'cull', 'point_size', 'round' and 'texture'. mgl_line_array draws 
-in the current colour without lighting.
+# -------------------------------------------------------------------- mgl_mesh
+body = """mgl_mesh draws a mesh handed to it down a cord: corners and triangles.
 
-mgl_mesh TAKES A MESH FROM THE PATCH:
-On 'mesh' it takes a dictionary with 'vertices' (n by 3), 'faces' (m by 3 
-corner indices) and optionally 'normals' - what shape_modes sends - or a 
-list of [vertices, faces], or a bare n by 3 array of corners with no faces. 
-Normals are worked out from the faces when none come with it. Faces that 
-point past the last corner are thrown away, leaving just the corners. 
-Corners without faces are drawn as points whatever 'mode' says, 
-'point_size' pixels across. They all face the viewer along z, so with 
-'cull' ticked they vanish when seen from behind. The 'holding' 
-line says what it last received - 'nothing yet', so many points, or so many 
-corners and triangles - which tells a mesh that never arrived from one drawn 
-somewhere you are not looking.
+Anything in the patch that works out a shape can be looked at this way.
+shape_modes is the node it was made for: its 'mesh' outlet sends the shape
+it has solved.
 
-mgl_model LOADS A FILE:
-Name the file in 'file_path' (anything trimesh reads: obj, stl, ply, glb...). 
-A file holding several meshes is merged into one. 'uv_mode' can replace the 
-file's own texture coordinates with a projection - sphere, cylinder, 
-plane_xy, plane_xz, or box, which puts the image once on each side of the 
-bounding box, each face taking the side it faces most - applied the 
-next time the file loads; click 'generate_uv' to reload it now. A file 
-that will not load is reported once in the console, and tried again when 
-'file_path' changes or 'generate_uv' is clicked.
+WHAT IT TAKES:
+On 'mesh':
+  a dictionary with 'vertices' (n by 3), 'faces' (m by 3 corner numbers,
+  counting from 0) and optionally 'normals' (n by 3) - what shape_modes
+  sends;
+  a list of [vertices, faces], or [vertices, faces, normals];
+  or a bare n by 3 array of corners, with no faces.
 
-mgl_point_cloud FOR POINTS:
-'points' takes an n by 3 array (or a flat list of x y z triples), or a cloud 
-frame from the point cloud nodes - a dictionary whose 'point_cloud' entry 
-holds the points and which may carry per-point 'weights' (0 to 1) and a 
-'voxel_size'. 'weights' chooses whether the weights set each point's size, 
-brightness, both, or neither; 'blend' additive (the default) lets dense 
-regions glow rather than the nearest point hiding the rest; 'draw at voxel size' draws 
-each point at the frame's voxel size in the scene rather than at 
-'point_size' pixels. Points that are not finite numbers are dropped. 
-A new node starts in points mode with culling off; a saved one keeps the 
-'mode' and 'cull' it was saved with.
+Normals are worked out from the faces when none come with it, averaged at
+each corner so a curved skin lights as a curve. Faces that are not m by 3,
+or that name a corner that is not there, are thrown away, leaving just the
+corners.
 
-mgl_surface FOR A GRID:
-'points' takes a rows by columns by 3 array of positions, and joins 
-neighbours into a smooth surface, lit on both sides. It is a grid of 3D 
-points, not a list of heights: to draw a height field, build the x and z 
-of each grid point and put the height in y.
+CORNERS WITHOUT FACES are drawn as points whatever 'mode' says,
+'point_size' pixels across at one unit from the camera and smaller further
+off. They all face the viewer along z, so with 'cull' ticked they vanish
+when seen from behind.
 
-mgl_line_array IS THE ONE BUILT FOR MOTION:
-'array' takes points by lines by 3 - each line is one column, newest point 
-first - or a points by 3 array for a single line. It draws the whole array 
-at once, and its options are about making motion legible: 'alpha_fade' and 
-'fade_rate' let older parts of a trail die away; 'accent_motion' measures 
-how far each point moved since the last array and lets that speed brighten 
-the lines ('accent_brightness'), colour them along a dark-to-yellow scale 
-('accent_colour'), and thicken them ('accent_width'), each with its own 
-scale. A trail drawn at constant width and brightness tells you where 
-something went; one that brightens where it moved fast tells you how.
+The 'holding' line says what it last built from - 'nothing yet', so many
+points, or so many corners and triangles - which tells a mesh that never
+arrived from one drawn somewhere you are not looking.
+
+SIZE AND PLACE:
+'center' moves the average corner to the origin and 'fit' then scales the
+mesh to just fit inside a box from -1 to 1 on every axis, which saves
+guessing at the units it was made in. Both are on by default, and both are
+applied when a mesh arrives - changing them shows with the next mesh.
+'scale' multiplies the size and takes effect at once.
+
+It is an mgl shape: lit, in the current colour and material. A mesh can
+arrive as often as you like and on any thread; it is built into what is
+drawn on the next render.
 
 SYNTAX:
 mgl_mesh
-mgl_model
-mgl_point_cloud
-mgl_surface
-mgl_line_array
 
-None of them takes arguments.
+It takes no arguments.
+
+EXAMPLE:
+mgl_mesh
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. This triggers the drawing.
+
+mesh:
+The mesh, as above.
+
+scale:
+Size multiplier, 1 by default.
+
+center / fit:
+As above.
+""" + SHAPE_INPUTS + """
+
+holding:
+What it is drawing, as above.
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+mgl_model loads a mesh from a file instead. mgl_point_cloud is better for
+points alone. shape_modes produces meshes for this."""
+
+demo, links = view()
+demo += [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (340, 440), 'w': 88, 'h': 42},
+    {'key': 'ls', 'init': 'list', 'pos': (30, 640), 'w': 740, 'h': 42,
+     'props': {'text in': '[[[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], '
+                          '[[0, 2, 1], [0, 1, 3], [0, 3, 2], [1, 2, 3]]]',
+               'font size': '24'}},
+    {'key': 'c1', 'comment': True,
+     'text': 'above: [corners, triangles],\nfour of each',
+     'pos': (340, 710)},
+    {'key': 'ms', 'init': 'mgl_mesh', 'pos': (30, 710), 'w': 240, 'h': 300},
+    {'key': 'c2', 'comment': True,
+     'text': 'a tetrahedron, centred and fitted;\nset mode to wireframe to see its edges',
+     'pos': (30, 1030)},
+]
+links += [('cam', 'mgl chain out', 'ms', 'mgl chain in'),
+          ('lb', 'out', 'ls', ''),
+          ('ls', 'list out', 'ms', 'mesh')]
+print(build('mgl_mesh', 'mgl_mesh - drawing a mesh from the patch', body, demo, links,
+            demo_width=580, text_width=810, text_height=1000))
+
+# ------------------------------------------------------------------- mgl_model
+body = """mgl_model loads a mesh from a file and draws it.
+
+THE FILE:
+Type its path into 'file_path' (a full path is safest; a short one is found
+from the folder the program runs in). Anything the trimesh library reads
+will do: obj, stl, ply, glb, off and more. A file holding several meshes is
+merged into one. The console says how many corners and faces it loaded.
+
+A file that will not load is reported once in the console, and tried again
+when 'file_path' changes or 'generate_uv' is clicked.
+
+One fault to know about: if a file has loaded and 'file_path' is then
+changed to one that will not load (or emptied), the node raises an error
+every frame and nothing chained after it is drawn. Give it a good file again.
+
+SIZE AND PLACE:
+'center' (on by default) moves the mesh's centre of mass to the origin when
+it loads. 'scale' multiplies the size and takes effect at once.
+
+TEXTURE COORDINATES:
+To map an image onto the model through 'texture', it needs texture
+coordinates. 'uv_mode' original uses the file's own, if it has them -
+without them every point gets 0 0, and the console says so. The other
+modes make them up from the shape: sphere, cylinder, plane_xy, plane_xz,
+or box, which puts the image once on each side of the bounding box, each
+face taking the side it faces most. 'uv_scale' multiplies them, so above 1
+the image repeats.
+
+'uv_mode', 'uv_scale' and 'center' are applied when the file loads; click
+'generate_uv' to load it again with the new settings.
+
+It is an mgl shape: lit, in the current colour and material.
+
+SYNTAX:
+mgl_model
+
+It takes no arguments.
+
+EXAMPLE:
+mgl_model
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. This triggers the drawing.
+
+file_path:
+The mesh file.
+
+scale:
+Size multiplier, 1 by default.
+
+center:
+Centre of mass to the origin, on load.
+
+uv_mode / uv_scale / generate_uv:
+Texture coordinates, as above.
+""" + SHAPE_INPUTS + """
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+mgl_mesh draws a mesh sent down a cord instead. mgl_texture makes a texture
+from an image."""
+
+demo, links = view()
+demo += [
+    {'key': 'md', 'init': 'mgl_model', 'pos': (340, 440), 'w': 260, 'h': 380},
+    {'key': 'c1', 'comment': True,
+     'text': 'type the path of an obj, stl, ply or glb file\ninto file_path and press return',
+     'pos': (340, 440)},
+]
+links += [('cam', 'mgl chain out', 'md', 'mgl chain in')]
+print(build('mgl_model', 'mgl_model - a mesh from a file', body, demo, links,
+            demo_width=580, text_width=810, text_height=980))
+
+# ------------------------------------------------------------- mgl_point_cloud
+body = """mgl_point_cloud draws a set of points.
+
+WHAT IT TAKES:
+'points' takes an n by 3 array, or a flat list of x y z triples. It also
+takes a cloud frame from the point cloud nodes: a dictionary whose
+'point_cloud' entry holds the points, and which may carry a 'weights' entry
+(one value per point, 0 to 1) and a 'voxel_size'. Points that are not
+finite numbers are dropped, with a note in the console. An empty cloud
+clears the picture.
+
+Points can arrive as often as you like and on any thread; they are built
+into what is drawn on the next render.
+
+POINT SIZE:
+Each point is 'point_size' pixels across at one unit from the camera, and
+smaller further off. With 'draw at voxel size' ticked (the default) and a
+voxel size in the frame, each point is drawn instead about one voxel
+wide in the scene.
+
+WEIGHTS:
+When the frame carries weights, 'weights' chooses what they do: make
+low-weight points smaller ('size'), dim them ('brightness'), both (the
+default), or neither ('off').
+
+BLEND:
+'additive' (the default) adds the points' light together, so dense regions
+glow rather than the nearest point hiding the rest. 'normal' draws them as
+ordinary opaque dots.
+
+KEEP IT IN POINTS MODE:
+A new node starts in points mode with 'cull' off; a saved one keeps the
+'mode' and 'cull' it was saved with. In solid or wireframe mode the points
+are joined three at a time, in order, into meaningless triangles. Each
+point is lit as if it faced straight up, so with 'cull' ticked the points
+above the camera disappear.
+
+SYNTAX:
+mgl_point_cloud
+
+It takes no arguments.
 
 EXAMPLE:
 mgl_point_cloud
@@ -192,44 +357,18 @@ INPUTS and PARAMETERS:
 mgl chain in:
 The chain. This triggers the drawing.
 
-mesh / file_path / points / array:
-The geometry. Data can arrive as often as you like and on any thread: the 
-nodes store it, and build what they draw on the next render.
+points:
+The points, as above.
 
-scale / center (mgl_mesh, mgl_model):
-Scale multiplies the size. 'center' moves the middle of the mesh to the 
-origin - the average corner for mgl_mesh, the centre of mass for mgl_model.
+weights:
+off, size, brightness, or size + brightness.
 
-fit (mgl_mesh):
-Scales the mesh so its farthest corner is one unit out, which saves guessing 
-at the units it was made in.
+blend:
+additive or normal.
 
-uv_mode / uv_scale / generate_uv (mgl_model):
-Texture coordinates, as above.
-
-weights / blend / draw at voxel size (mgl_point_cloud):
-As above.
-
-line_width:
-The width in pixels. 'perspective_width' makes it shrink with distance.
-
-alpha_fade / fade_rate (mgl_line_array):
-Fade along each line from its newest point; 'fade_rate' above 1 shortens 
-the bright part, below 1 holds it longer.
-
-accent_motion / accent_brightness / accent_scale / accent_colour / 
-accent_colour_scale / white_hot / accent_width / accent_width_scale / 
-accent_width_curve / accent_width_max (mgl_line_array):
-Whether speed shows, and how: each accent has a switch and a scale, 
-'white_hot' carries the top of the colour scale on into white, and the 
-width accent has a curve and a ceiling.
-
-selected_lines (mgl_line_array):
-Line numbers to draw, separated by spaces. Empty draws them all.
-
-use_line_colors / color index / color_control (mgl_line_array):
-With 'use_line_colors' ticked each line has its own colour: set 'color 
-index' to a line number and pick its colour; index -1 recolours every line.
+draw at voxel size:
+Use the frame's voxel size for the point size. On by default.
+""" + SHAPE_INPUTS + """
 
 OUTPUTS:
 
@@ -237,45 +376,210 @@ mgl chain out:
 The chain, continuing.
 
 RELATED:
-mgl_sphere and the other built-in shapes. shape_modes and the point cloud 
-nodes produce data for these. mgl_text draws text in the scene and used to 
-share this page. gl_line_array is the older equivalent of mgl_line_array."""
+The point cloud nodes (pc_voxel and others) produce cloud frames. mgl_mesh
+also draws bare corners as points. gl_vertex_buffer is the older system's
+way to draw points."""
 
-demo = [
-    {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,
-     'props': {'auto_render': True, 'node_display_width': 320,
-               'node_display_height': 240, 'node_mouse_events': True}},
-    {'key': 'c0', 'comment': True, 'text': 'drag on the picture to orbit',
-     'pos': (30, 120)},
-    {'key': 'cam', 'init': 'mgl_orbit_camera', 'pos': (30, 440), 'w': 240, 'h': 160},
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 630), 'w': 88, 'h': 42},
-    {'key': 'nr1', 'init': 'np.rand 40 3 3', 'pos': (30, 700), 'w': 140, 'h': 160,
-     'props': {'min': -1.0, 'max': 1.0}},
-    {'key': 'c1', 'comment': True, 'text': '40 points on each of 3 lines',
-     'pos': (30, 700)},
-    {'key': 'la', 'init': 'mgl_line_array', 'pos': (30, 890), 'w': 220, 'h': 400,
-     'props': {'alpha_fade': True}},
-    {'key': 'c2', 'comment': True,
-     'text': 'alpha_fade: each line fades from\nits first point to its last',
-     'pos': (30, 890)},
-    {'key': 'nr2', 'init': 'np.rand 500 3', 'pos': (30, 1320), 'w': 140, 'h': 140,
+demo, links = view()
+demo += [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (340, 440), 'w': 88, 'h': 42},
+    {'key': 'nr', 'init': 'np.rand 500 3', 'pos': (340, 500), 'w': 140, 'h': 140,
      'props': {'min': -0.6, 'max': 0.6}},
-    {'key': 'c3', 'comment': True, 'text': '500 points in a cube', 'pos': (30, 1320)},
+    {'key': 'c1', 'comment': True, 'text': '500 points in a cube', 'pos': (340, 500)},
     # mode/cull saved explicitly: custom_create only switches a NEW node to
     # points, and a node loaded from file would otherwise come up solid
-    {'key': 'pc', 'init': 'mgl_point_cloud', 'pos': (30, 1490), 'w': 240, 'h': 280,
-     'props': {'mode': 'points', 'cull': False}},
+    {'key': 'pc', 'init': 'mgl_point_cloud', 'pos': (30, 640), 'w': 240, 'h': 300,
+     'props': {'mode': 'points', 'cull': False, 'point_size': 12.0}},
+    {'key': 'c2', 'comment': True,
+     'text': 'drag point_size; orbit to see\nnear points drawn larger than far ones',
+     'pos': (30, 960)},
 ]
-links = [('ctx', 'mgl_chain', 'cam', 'mgl chain in'),
-         ('ctx', 'ui', 'cam', 'ui'),
-         ('cam', 'mgl chain out', 'la', 'mgl chain in'),
-         ('lb', 'out', 'nr1', ''),
-         ('nr1', 'random array', 'la', 'array'),
-         ('la', 'mgl chain out', 'pc', 'mgl chain in'),
-         ('lb', 'out', 'nr2', ''),
-         ('nr2', 'random array', 'pc', 'points')]
-print(build('mgl_mesh', 'mgl geometry - drawing data you supply', body, demo, links,
-            demo_width=560, text_width=810, text_height=1100))
+links += [('cam', 'mgl chain out', 'pc', 'mgl chain in'),
+          ('lb', 'out', 'nr', ''),
+          ('nr', 'random array', 'pc', 'points')]
+print(build('mgl_point_cloud', 'mgl_point_cloud - drawing points', body, demo, links,
+            demo_width=580, text_width=810, text_height=980))
+
+# ----------------------------------------------------------------- mgl_surface
+body = """mgl_surface joins a grid of points into a smooth surface.
+
+WHAT IT TAKES:
+'points' takes a rows by columns by 3 array of positions: neighbours in the
+grid are joined, two triangles to each square. It needs at least two rows
+and two columns. An n by 3 array is taken as a single row, and so draws
+nothing. A cloud frame from the point cloud nodes works too, using its
+'point_cloud' entry.
+
+It is a grid of 3D points, not a list of heights: to draw a height field,
+build the x and z of each grid point and put the height in y.
+
+Points can arrive as often as you like and on any thread; the surface is
+rebuilt on the next render.
+
+HOW IT LOOKS:
+The surface is lit on both sides, with normals averaged at each point so it
+shades smoothly. It is an mgl shape: in the current colour and material. An
+image sent to 'texture' is stretched once across the whole grid.
+
+SYNTAX:
+mgl_surface
+
+It takes no arguments.
+
+EXAMPLE:
+mgl_surface
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. This triggers the drawing.
+
+points:
+The grid, as above.
+""" + SHAPE_INPUTS + """
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+np.grid makes a flat grid of points to start from. mgl_mesh draws
+triangles of any arrangement; mgl_plane is a flat subdivided rectangle."""
+
+demo, links = view()
+demo += [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 630), 'w': 88, 'h': 42},
+    {'key': 'tg', 'init': 't bang bang', 'pos': (30, 690), 'w': 130, 'h': 42},
+    {'key': 'gr', 'init': 'np.grid -1 1 -1 1 16 16', 'pos': (30, 760), 'w': 200, 'h': 260},
+    {'key': 'c1', 'comment': True, 'text': 'a flat 16 by 16 grid', 'pos': (30, 760)},
+    {'key': 'nr', 'init': 'np.rand 16 16 3', 'pos': (330, 760), 'w': 140, 'h': 140,
+     'props': {'min': -0.06, 'max': 0.06}},
+    {'key': 'c2', 'comment': True, 'text': 'a small random nudge\nfor every point',
+     'pos': (330, 920)},
+    {'key': 'add', 'init': '+', 'pos': (30, 1050), 'w': 120, 'h': 60},
+    {'key': 'sf', 'init': 'mgl_surface', 'pos': (30, 1140), 'w': 240, 'h': 260},
+    {'key': 'c3', 'comment': True,
+     'text': 'a crumpled sheet, lit on both sides;\nset mode to wireframe to see the grid',
+     'pos': (30, 1420)},
+]
+links += [('cam', 'mgl chain out', 'sf', 'mgl chain in'),
+          ('lb', 'out', 'tg', ''),
+          ('tg', 'bang', 'nr', '', 1, 0),
+          ('tg', 'bang', 'gr', '', 0, 0),
+          ('nr', 'random array', 'add', '###operand', 0, 1),
+          ('gr', 'grid points', 'add', 'in'),
+          ('add', 'result', 'sf', 'points')]
+print(build('mgl_surface', 'mgl_surface - a grid of points as a surface', body, demo,
+            links, demo_width=580, text_width=810, text_height=900))
+
+# -------------------------------------------------------------- mgl_line_array
+body = """mgl_line_array draws many lines at once, from one array - built for trails
+of motion.
+
+WHAT IT TAKES:
+'array' takes points by lines by 3: each line is one column of the array,
+its points in order. A points by 3 array is a single line. An empty array
+clears the picture. Point 0 is taken to be the newest - the head of the
+trail - which is how a rolling buffer of positions arrives.
+
+Drawing a set of trails as separate line nodes does not scale; this draws
+the whole array in one go. The lines are drawn in the current colour, alpha
+included, without lighting, so mgl_color sets them and mgl_light does not
+touch them.
+
+MAKING MOTION LEGIBLE:
+'alpha_fade' fades each line from its head to its tail, so a trail dies away
+behind the moving point. 'fade_rate' bends that fade: above 1 the bright
+part is shorter, below 1 it holds longer.
+
+'accent_motion' measures how far each point moved since the previous array
+and lets that speed show, each in its own way and with its own scale:
+'accent_brightness' (on by default) makes the lines only as bright as the
+movement times 'accent_scale', so a still trail disappears and a fast one
+shines. 'accent_colour' colours them by speed along a dark-purple to yellow
+scale, set by 'accent_colour_scale'; 'white_hot' carries the top of that
+scale on into white. 'accent_width' thickens fast parts, by the movement
+(raised to 'accent_width_curve') times 'accent_width_scale', up to
+'accent_width_max' pixels.
+
+A trail drawn at constant width and brightness tells you where something
+went; one that brightens where it moved fast tells you how. The movement is
+only measured while 'accent_motion' is ticked, and starts afresh when the
+number of lines changes.
+
+WIDTH:
+'line_width' is in pixels. With 'perspective_width' ticked it is the width
+at one unit from the camera, and lines thin with distance.
+
+WHICH LINES, AND THEIR COLOURS:
+'selected_lines' lists line numbers to draw, separated by spaces; empty
+draws them all. With 'use_line_colors' ticked each line has its own colour
+instead of the current one: set 'color index' to a line number and pick its
+colour with 'color_control'. Index -1 recolours every line. Lines start
+white.
+
+SYNTAX:
+mgl_line_array
+
+It takes no arguments.
+
+EXAMPLE:
+mgl_line_array
+
+INPUTS and PARAMETERS:
+
+mgl chain in:
+The chain. This triggers the drawing.
+
+array:
+The lines, as above.
+
+line_width / perspective_width:
+Width in pixels, 1 by default, and whether it shrinks with distance.
+
+alpha_fade / fade_rate:
+The fade along each line. Off, and 1, by default.
+
+accent_motion / accent_brightness / accent_scale / accent_colour /
+accent_colour_scale / white_hot / accent_width / accent_width_scale /
+accent_width_curve / accent_width_max:
+Whether speed shows, and how, as above.
+
+selected_lines:
+Line numbers to draw.
+
+use_line_colors / color index / color_control:
+Per-line colours, as above.
+
+OUTPUTS:
+
+mgl chain out:
+The chain, continuing.
+
+RELATED:
+np.rolling_buffer builds trails from a stream. gl_line_array is the older
+equivalent. mgl_line draws a single line."""
+
+demo, links = view()
+demo += [
+    {'key': 'lb', 'init': 'load_bang', 'pos': (340, 440), 'w': 88, 'h': 42},
+    {'key': 'nr', 'init': 'np.rand 40 3 3', 'pos': (340, 500), 'w': 140, 'h': 160,
+     'props': {'min': -1.0, 'max': 1.0}},
+    {'key': 'c1', 'comment': True, 'text': '40 points on each of 3 lines',
+     'pos': (340, 500)},
+    {'key': 'la', 'init': 'mgl_line_array', 'pos': (30, 640), 'w': 220, 'h': 420,
+     'props': {'alpha_fade': True, 'line_width': 2.0}},
+    {'key': 'c2', 'comment': True,
+     'text': 'alpha_fade: each line fades from\nits first point to its last',
+     'pos': (30, 640)},
+]
+links += [('cam', 'mgl chain out', 'la', 'mgl chain in'),
+          ('lb', 'out', 'nr', ''),
+          ('nr', 'random array', 'la', 'array')]
+print(build('mgl_line_array', 'mgl_line_array - many lines from one array', body, demo,
+            links, demo_width=560, text_width=810, text_height=1080))
+
 
 # -------------------------------------------------------------------- mgl_text
 body = """mgl_text draws a line of text into the 3D scene.
@@ -340,8 +644,8 @@ The chain, continuing. The text does not move anything downstream.
 
 RELATED:
 mgl_billboard to keep it facing the camera; mgl_color for its colour; 
-mgl_translate to place it. mgl_mesh covers the geometry nodes and used to 
-share this page. gl_text is the older equivalent."""
+mgl_translate to place it. mgl_mesh, mgl_model, mgl_surface and 
+mgl_point_cloud draw other kinds of geometry. gl_text is the older equivalent."""
 
 demo = [
     {'key': 'ctx', 'init': 'mgl_context', 'pos': (30, 62), 'w': 340, 'h': 340,

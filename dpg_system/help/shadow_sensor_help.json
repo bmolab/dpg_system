@@ -1,0 +1,230 @@
+{
+    "height": 1121,
+    "width": 1503,
+    "position": [
+        100,
+        100
+    ],
+    "id": 533,
+    "name": "shadow_sensor_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/shadow_sensor_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment shadow_sensor - one sensor, before fusion",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shadow_sensor - one sensor, before fusion",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shadow_sensor - one sensor, before fusion"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 655,
+            "position_y": 45,
+            "width": 808,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "shadow_sensor shows what one sensor in a Shadow suit actually reads - its\nmagnetometer, accelerometer and gyroscope - before Shadow combines the sensors\ninto a pose.\n\nIT IS FOR DIAGNOSING, NOT PERFORMING:\nThe magnetometer outlet is the one that matters for troubleshooting. A sensor\nsitting in a distorted field, or carrying a bit of magnetised metal with it,\nreports a heading that is wrong - a limb turned about the vertical - and no\namount of filtering downstream will fix it, because it is not noise. The only\nway to see it is to look at the field the sensor reads. Patch the magnetometer\ninto mag_offset, turn the sensor through many orientations, and mag_offset\nmeasures it, as in the example.\n\nCONNECTING:\nIt opens its own connection to the Shadow application on this machine, port\n32076, separate from any shadow node, so it can run beside a capture patch\nwithout disturbing it. Shadow must already be running; 'reconnect' tries again.\n\nCHOOSING A SENSOR:\n'sensor' lists only the physical sensors that are actually reporting - joints\nthat Shadow derives rather than measures never appear. Until data arrives it\nreads '<waiting for device>'. 'body' picks the suit, 0 to 3.\n\nTHREE KINDS OF DATA:\n'data' chooses what Shadow is asked for. Changing it reconnects.\n  a / m / g             accelerometer in g, magnetometer in microtesla,\n                        gyroscope in degrees per second (the default)\n  sensor (calibrated)   the same three after the suit's own calibration has\n                        corrected each sensor's bias and scale\n  raw                   uncalibrated integer counts, before any of that\n\nComparing 'sensor (calibrated)' with 'raw' tells you whether the suit's stored\ncalibration is already removing an offset you have measured. A clean\nmagnetometer in 'sensor (calibrated)' mode, turned through every orientation,\ntraces a sphere centred close to the origin with a radius equal to the local\nfield strength - between about 52 and 55 microtesla in the Toronto studios.\n\nSYNTAX:\nshadow_sensor\n\nEXAMPLE:\nshadow_sensor\n\nINPUTS and PARAMETERS:\n\nreconnect:\nClose the connection and open it again.\n\nbody:\nWhich suit, 0 to 3.\n\ndata:\na / m / g, sensor (calibrated) or raw - see above.\n\nsensor:\nWhich sensor, from the ones reporting.\n\nOUTPUTS:\n\nmagnetometer / accelerometer / gyroscope:\nThree numbers each, x y z in the sensor's own frame. All three go out\ntogether, once per app frame, whenever a new reading has arrived.\n\nRELATED:\nmag_offset fits a sphere to the magnetometer readings, as in the example.\nshadow is the suit's pose, after the sensors are combined.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 800,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "shadow_sensor shows what one sensor in a Shadow suit actually reads - its\nmagnetometer, accelerometer and gyroscope - before Shadow combines the sensors\ninto a pose.\n\nIT IS FOR DIAGNOSING, NOT PERFORMING:\nThe magnetometer outlet is the one that matters for troubleshooting. A sensor\nsitting in a distorted field, or carrying a bit of magnetised metal with it,\nreports a heading that is wrong - a limb turned about the vertical - and no\namount of filtering downstream will fix it, because it is not noise. The only\nway to see it is to look at the field the sensor reads. Patch the magnetometer\ninto mag_offset, turn the sensor through many orientations, and mag_offset\nmeasures it, as in the example.\n\nCONNECTING:\nIt opens its own connection to the Shadow application on this machine, port\n32076, separate from any shadow node, so it can run beside a capture patch\nwithout disturbing it. Shadow must already be running; 'reconnect' tries again.\n\nCHOOSING A SENSOR:\n'sensor' lists only the physical sensors that are actually reporting - joints\nthat Shadow derives rather than measures never appear. Until data arrives it\nreads '<waiting for device>'. 'body' picks the suit, 0 to 3.\n\nTHREE KINDS OF DATA:\n'data' chooses what Shadow is asked for. Changing it reconnects.\n  a / m / g             accelerometer in g, magnetometer in microtesla,\n                        gyroscope in degrees per second (the default)\n  sensor (calibrated)   the same three after the suit's own calibration has\n                        corrected each sensor's bias and scale\n  raw                   uncalibrated integer counts, before any of that\n\nComparing 'sensor (calibrated)' with 'raw' tells you whether the suit's stored\ncalibration is already removing an offset you have measured. A clean\nmagnetometer in 'sensor (calibrated)' mode, turned through every orientation,\ntraces a sphere centred close to the origin with a radius equal to the local\nfield strength - between about 52 and 55 microtesla in the Toronto studios.\n\nSYNTAX:\nshadow_sensor\n\nEXAMPLE:\nshadow_sensor\n\nINPUTS and PARAMETERS:\n\nreconnect:\nClose the connection and open it again.\n\nbody:\nWhich suit, 0 to 3.\n\ndata:\na / m / g, sensor (calibrated) or raw - see above.\n\nsensor:\nWhich sensor, from the ones reporting.\n\nOUTPUTS:\n\nmagnetometer / accelerometer / gyroscope:\nThree numbers each, x y z in the sensor's own frame. All three go out\ntogether, once per app frame, whenever a new reading has arrived.\n\nRELATED:\nmag_offset fits a sphere to the magnetometer readings, as in the example.\nshadow is the suit's pose, after the sensors are combined."
+        },
+        "3": {
+            "name": "shadow_sensor",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "text_block",
+            "id": 385,
+            "annotation": true,
+            "position_x": 302,
+            "position_y": 62,
+            "width": 224,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "needs a running suit\npick a sensor once it is listed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "needs a running suit\npick a sensor once it is listed"
+        },
+        "5": {
+            "name": "mag_offset",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 200,
+            "width": 246,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 302,
+            "position_y": 200,
+            "width": 323,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "turn the sensor through many orientations\nthe offset is what the sensor adds to the field",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 315,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "turn the sensor through many orientations\nthe offset is what the sensor adds to the field"
+        },
+        "7": {
+            "name": "close",
+            "id": 496,
+            "position_x": 24,
+            "position_y": 412,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "magnetometer",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "magnetometer"
+        }
+    }
+}

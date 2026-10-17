@@ -1,11 +1,11 @@
 {
-    "height": 821,
-    "width": 1742,
+    "height": 1101,
+    "width": 1486,
     "position": [
         100,
         100
     ],
-    "id": 644,
+    "id": 607,
     "name": "shadow_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/shadow_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 894,
+            "position_x": 638,
             "position_y": 45,
             "width": 808,
-            "height": 716,
+            "height": 996,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These read live data from a Shadow suit.\n\nTHE NODES:\n\nshadow         the suit: joint orientations and positions, for up to four bodies\nshadow_sensor  the raw sensor readings from one sensor - magnetometer, \n               accelerometer and gyroscope, before any fusion\n\nshadow_pose is not a suit node: it builds a 37-row pose from single joints, \nand is described on the pose help patch.\n\nWHAT THE SUIT GIVES YOU:\nEach body has a quaternions outlet and a positions outlet. The quaternions are \nthe joint ORIENTATIONS, which is the real measurement - the suit is a set of \ninertial sensors, and orientation is what they produce. The positions are \ninferred from those orientations plus assumed limb lengths, so they are a \nderived quantity and only as good as the assumptions behind them.\n\nThat distinction matters constantly. An orientation error is a sensor problem; \na position error may be an orientation error, or a limb length, or the root \ninference - see the sensor_to_root help patch.\n\nshadow_sensor IS FOR DIAGNOSING, NOT PERFORMING:\nIt gives you what one sensor actually reads before the fusion combines them. \nThe magnetometer outlet is the one that matters for troubleshooting: a sensor \nsitting in a distorted field produces a yaw error that no amount of filtering \ndownstream will fix, and the only way to see it is to look at the raw field. \nPatch it into mag_offset to measure that.\n\nSYNTAX:\nshadow\nshadow_sensor\n\nEXAMPLE:\nshadow\n\nINPUTS and PARAMETERS:\n\nflush (shadow):\nDiscard whatever is queued and start from the current frame. Use it when the \nstream has fallen behind and you would rather lose data than lag.\n\nreconnect:\nRe-establish the connection to the suit.\n\nOUTPUTS: \n\nbody N quaternions:\nThe joint orientations for that body - the measurement.\n\nbody N positions:\nJoint positions, inferred from the orientations and the limb lengths.\n\nmagnetometer / accelerometer / gyroscope (shadow_sensor):\nThe raw readings from one sensor.\n\nA NOTE ON MULTIPLE BODIES:\nThe four bodies are separate suits, and the outlets are static - body 3's \noutlets exist whether or not a third suit is connected, and simply stay quiet. \nSo a patch built for two performers works unchanged with one.",
+                    "value": "shadow reads live motion capture from a Shadow suit, for up to four bodies.\n\nshadow_sensor, which reads the raw sensor values of one sensor, has its own help\npatch. shadow_pose is not a suit node: it builds a 37-row pose from single\njoints, and is described on the pose help patch.\n\nCONNECTING:\nshadow talks to the Shadow application on this machine, port 32076. On a Mac,\nif Shadow is not running, creating the node launches it, and the node connects\nonce it is up. 'reconnect' drops the connection and makes it again.\n\nWHAT THE SUIT GIVES YOU:\nEach body has a quaternions outlet and a positions outlet, each 37 rows, one\nper joint in the Shadow layout.\n\nThe quaternions are the joint ORIENTATIONS - each joint's rotation, w x y z -\nand they are the real measurement: the suit is a set of inertial sensors, and\norientation is what they produce. The positions are worked out by Shadow from\nthose orientations plus its limb lengths, so they are a derived quantity and\nonly as good as the assumptions behind them. They arrive in centimetres and the\nnode divides by 100, so they go out in metres.\n\nThat distinction matters constantly. An orientation error is a sensor problem;\na position error may be an orientation error, or a limb length, or the root\ninference - see the sensor_to_root help patch.\n\nWHEN IT SENDS:\nFrames are read on a background thread. Normally the newest frame goes out once\nper frame of the app, positions first, then quaternions, body by body; frames\nthat arrive in between are replaced by the newest. With 'direct_out' on, every\nframe goes out from the background thread the moment it arrives.\n\nSYNTAX:\nshadow\n\nEXAMPLE:\nshadow\n\nINPUTS and PARAMETERS:\n\nflush:\nDiscard whatever is queued in the connection and start from the current frame.\nUse it when the stream has fallen behind and you would rather lose data than\nlag.\n\nreconnect:\nClose the connection to Shadow and open it again.\n\ndirect_out:\nOff by default. On, each frame is sent from the background thread as it\narrives instead of once per app frame.\n\nOUTPUTS:\n\nbody N quaternions:\nThe joint orientations for that body, 37 rows of w x y z - the measurement.\n\nbody N positions:\nThe 37 joint positions in metres, worked out from the orientations.\n\nA NOTE ON MULTIPLE BODIES:\nThe four bodies are separate suits, and the outlets are static - body 3's\noutlets exist whether or not a third suit is connected, and simply stay quiet.\nSo a patch built for two performers works unchanged with one.\n\nRELATED:\nactive_joints reduces the 37 rows to the 20 joints most patches use, as in the\nexample.\nshadow_sensor shows what one sensor reads before Shadow combines them.\ntake records the stream and plays it back.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 700,
+                    "value": 980,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These read live data from a Shadow suit.\n\nTHE NODES:\n\nshadow         the suit: joint orientations and positions, for up to four bodies\nshadow_sensor  the raw sensor readings from one sensor - magnetometer, \n               accelerometer and gyroscope, before any fusion\n\nshadow_pose is not a suit node: it builds a 37-row pose from single joints, \nand is described on the pose help patch.\n\nWHAT THE SUIT GIVES YOU:\nEach body has a quaternions outlet and a positions outlet. The quaternions are \nthe joint ORIENTATIONS, which is the real measurement - the suit is a set of \ninertial sensors, and orientation is what they produce. The positions are \ninferred from those orientations plus assumed limb lengths, so they are a \nderived quantity and only as good as the assumptions behind them.\n\nThat distinction matters constantly. An orientation error is a sensor problem; \na position error may be an orientation error, or a limb length, or the root \ninference - see the sensor_to_root help patch.\n\nshadow_sensor IS FOR DIAGNOSING, NOT PERFORMING:\nIt gives you what one sensor actually reads before the fusion combines them. \nThe magnetometer outlet is the one that matters for troubleshooting: a sensor \nsitting in a distorted field produces a yaw error that no amount of filtering \ndownstream will fix, and the only way to see it is to look at the raw field. \nPatch it into mag_offset to measure that.\n\nSYNTAX:\nshadow\nshadow_sensor\n\nEXAMPLE:\nshadow\n\nINPUTS and PARAMETERS:\n\nflush (shadow):\nDiscard whatever is queued and start from the current frame. Use it when the \nstream has fallen behind and you would rather lose data than lag.\n\nreconnect:\nRe-establish the connection to the suit.\n\nOUTPUTS: \n\nbody N quaternions:\nThe joint orientations for that body - the measurement.\n\nbody N positions:\nJoint positions, inferred from the orientations and the limb lengths.\n\nmagnetometer / accelerometer / gyroscope (shadow_sensor):\nThe raw readings from one sensor.\n\nA NOTE ON MULTIPLE BODIES:\nThe four bodies are separate suits, and the outlets are static - body 3's \noutlets exist whether or not a third suit is connected, and simply stay quiet. \nSo a patch built for two performers works unchanged with one."
+            "text": "shadow reads live motion capture from a Shadow suit, for up to four bodies.\n\nshadow_sensor, which reads the raw sensor values of one sensor, has its own help\npatch. shadow_pose is not a suit node: it builds a 37-row pose from single\njoints, and is described on the pose help patch.\n\nCONNECTING:\nshadow talks to the Shadow application on this machine, port 32076. On a Mac,\nif Shadow is not running, creating the node launches it, and the node connects\nonce it is up. 'reconnect' drops the connection and makes it again.\n\nWHAT THE SUIT GIVES YOU:\nEach body has a quaternions outlet and a positions outlet, each 37 rows, one\nper joint in the Shadow layout.\n\nThe quaternions are the joint ORIENTATIONS - each joint's rotation, w x y z -\nand they are the real measurement: the suit is a set of inertial sensors, and\norientation is what they produce. The positions are worked out by Shadow from\nthose orientations plus its limb lengths, so they are a derived quantity and\nonly as good as the assumptions behind them. They arrive in centimetres and the\nnode divides by 100, so they go out in metres.\n\nThat distinction matters constantly. An orientation error is a sensor problem;\na position error may be an orientation error, or a limb length, or the root\ninference - see the sensor_to_root help patch.\n\nWHEN IT SENDS:\nFrames are read on a background thread. Normally the newest frame goes out once\nper frame of the app, positions first, then quaternions, body by body; frames\nthat arrive in between are replaced by the newest. With 'direct_out' on, every\nframe goes out from the background thread the moment it arrives.\n\nSYNTAX:\nshadow\n\nEXAMPLE:\nshadow\n\nINPUTS and PARAMETERS:\n\nflush:\nDiscard whatever is queued in the connection and start from the current frame.\nUse it when the stream has fallen behind and you would rather lose data than\nlag.\n\nreconnect:\nClose the connection to Shadow and open it again.\n\ndirect_out:\nOff by default. On, each frame is sent from the background thread as it\narrives instead of once per app frame.\n\nOUTPUTS:\n\nbody N quaternions:\nThe joint orientations for that body, 37 rows of w x y z - the measurement.\n\nbody N positions:\nThe 37 joint positions in metres, worked out from the orientations.\n\nA NOTE ON MULTIPLE BODIES:\nThe four bodies are separate suits, and the outlets are static - body 3's\noutlets exist whether or not a third suit is connected, and simply stay quiet.\nSo a patch built for two performers works unchanged with one.\n\nRELATED:\nactive_joints reduces the 37 rows to the 20 joints most patches use, as in the\nexample.\nshadow_sensor shows what one sensor reads before Shadow combines them.\ntake records the stream and plays it back."
         },
         "3": {
             "name": "shadow",
@@ -108,17 +108,17 @@
             "name": "text_block",
             "id": 385,
             "annotation": true,
-            "position_x": 622,
-            "position_y": 395,
+            "position_x": 377,
+            "position_y": 62,
             "width": 231,
-            "height": 40,
+            "height": 52,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "quaternions are the measurement\npositions are inferred from them",
+                    "value": "needs a running suit\nquaternions are the measurement\npositions are inferred from them",
                     "value_type": "str"
                 },
                 "1": {
@@ -133,7 +133,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -142,13 +142,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "quaternions are the measurement\npositions are inferred from them"
+            "text": "needs a running suit\nquaternions are the measurement\npositions are inferred from them"
         },
         "5": {
             "name": "active_joints",
             "id": 422,
             "position_x": 30,
-            "position_y": 470,
+            "position_y": 250,
             "width": 144,
             "height": 42,
             "visibility": "show_all",
@@ -160,8 +160,8 @@
             "init": "comment the 20 joints most patches want",
             "name": "comment",
             "id": 459,
-            "position_x": 622,
-            "position_y": 575,
+            "position_x": 377,
+            "position_y": 250,
             "width": 199,
             "height": 30,
             "visibility": "show_all",
@@ -182,36 +182,24 @@
             "comment": "the 20 joints most patches want"
         },
         "7": {
-            "name": "shadow_sensor",
+            "name": "active_pose",
             "id": 496,
-            "position_x": 350,
-            "position_y": 62,
-            "width": 129,
-            "height": 112,
+            "position_x": 30,
+            "position_y": 315,
+            "width": 321,
+            "height": 350,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
         "8": {
-            "name": "mag_offset",
-            "id": 533,
-            "position_x": 350,
-            "position_y": 260,
-            "width": 246,
-            "height": 182,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "init": "comment raw field, for diagnosing a bad sensor",
+            "init": "comment body 1, one row per joint",
             "name": "comment",
-            "id": 570,
-            "position_x": 622,
-            "position_y": 495,
-            "width": 242,
+            "id": 533,
+            "position_x": 377,
+            "position_y": 315,
+            "width": 162,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -219,7 +207,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "raw field, for diagnosing a bad sensor",
+                    "value": "body 1, one row per joint",
                     "value_type": "str"
                 },
                 "1": {
@@ -228,13 +216,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "raw field, for diagnosing a bad sensor"
+            "comment": "body 1, one row per joint"
         },
-        "10": {
+        "9": {
             "name": "close",
-            "id": 607,
+            "id": 570,
             "position_x": 24,
-            "position_y": 542,
+            "position_y": 695,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -261,14 +249,14 @@
             "dest_input_name": "full pose quats in"
         },
         "1": {
-            "source_node": 496,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "magnetometer",
-            "dest_node": 533,
+            "source_output_name": "active joint quats out",
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "magnetometer"
+            "dest_input_name": "in"
         }
     }
 }

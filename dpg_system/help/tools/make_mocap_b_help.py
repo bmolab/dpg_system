@@ -308,123 +308,376 @@ print(build('json_npz_frame_picker', 'json_npz_frame_picker - reviewing flagged 
             body, demo, links, demo_width=480, text_width=800, text_height=1260))
 
 # ----------------------------------------------------------------- mag_offset
-body = """These measure and correct magnetometer errors - the main source of yaw drift 
-in an inertial suit.
+body = """mag_offset measures a magnetometer: it collects the field readings as the
+sensor is turned, fits a sphere to them, and tells you how far that sphere sits
+from the origin.
 
 WHY THIS MATTERS:
-An IMU works out which way is down from gravity, and that is reliable. 
-Which way is NORTH it takes from the magnetic field, and that is not: any steel 
-near the sensor distorts the field, and the sensor reads a heading that is 
-wrong by an amount depending on where it is and which way it is facing.
+An inertial sensor works out which way is down from gravity, and that is
+reliable. Which way is NORTH it takes from the magnetic field, and that is not:
+a bit of magnetised metal travelling with the sensor adds its own field to the
+earth's, and the sensor reads a heading that is wrong by an amount that depends
+on which way it is facing. The result is a limb turned about the vertical, which
+no downstream filtering will remove, because it is not noise.
 
-The result is a yaw error - a limb rotated about the vertical - that no 
-downstream filtering will remove, because it is not noise. It is a consistent 
-wrong answer, and it has to be measured and subtracted.
-
-THE NODES:
-
-mag_offset          measure a sensor's field, by fitting a sphere to it
-mag_yaw_correct     correct yaw errors per sensor
-shadow_arm_correct  the interactive version of the upper-arm offset fit
-
-mag_offset AND WHAT THE SPHERE MEANS:
-Turn a sensor through every orientation and its magnetometer readings should 
-trace a sphere centred on the origin, with a radius equal to the field 
-strength. What you actually get is a sphere displaced from the origin - and 
-that displacement is the hard-iron offset, the steel travelling with the sensor.
+WHAT THE SPHERE MEANS:
+Turn a clean sensor through every orientation and its readings trace a sphere
+centred on the origin, with a radius equal to the strength of the field. A
+magnetised sensor traces the same sphere, moved off the origin - and that
+displacement is the hard-iron offset, the field the sensor carries with it.
 
 So the fit gives you three things:
-  'center'    the hard-iron offset - what to subtract
-  'radius'    the field strength the sensor is seeing
-  'residual'  how well a sphere fits at all - a large residual means the 
-              distortion is not a simple offset and cannot be corrected this way
+  centre     the hard-iron offset, x y z - what the sensor adds to every reading
+  radius     the strength of the field the sensor is in
+  residual   how far, on average, the readings sit from the fitted sphere - a
+             measure of how well a sphere fits at all
 
-For reference, a clean sensor in this studio reads about 54.6 microtesla with 
-a centre offset near 1.5 and a residual around 0.42. A centre offset that is a 
-large fraction of the radius is a sensor that needs recalibrating, not 
-correcting in software.
+READING THE NUMBERS:
+Judge the offset by its length as a percentage of the radius. As a reference,
+a clean chest sensor in the 2026 studio assessments read a radius of 54.6
+microtesla, an offset about 1.5 microtesla long (under 3 percent of the radius)
+and a residual of 0.42 microtesla. Clean sensors there ran from about 0.3 to 3
+percent; the sensors that needed recalibrating carried 7 to 33 percent.
 
-mag_yaw_correct HAS TWO CORRECTIONS, AND THEY ARE DIFFERENT:
-'Global yaw' is pre-multiplied around world vertical, and addresses ongoing 
-magnetometer error - the sensor's heading being wrong in the room.
-'Local yaw' is post-multiplied in the sensor's own frame, and addresses 
-calibration error baked into the T-pose identity - the sensor being mounted 
-rotated on the limb.
+The radius should match the local earth field - about 54.5 microtesla in
+Toronto. A low radius usually means the sensor was not turned through enough
+orientations, not that the sensor's scale is wrong. A high residual with a small
+offset means either too little coverage again, or a distortion that is not a
+simple offset (soft iron).
 
-They look similar and are not interchangeable. A global error changes as the 
-performer moves around the room; a local one is fixed to the limb. If a 
-correction holds in one part of the room and fails in another, it is the global 
-one; if it holds everywhere but only for one limb, it is the local one.
+A sensor with a large offset needs recalibrating in Shadow, not correcting in
+software.
 
-shadow_arm_correct:
-The live version of the offline upper-arm fit. Lowered arms hang biased, and 
-the cause is a constant per-upper-arm offset at the shoulder. This applies the 
-same per-arm fit plus anatomical dials - twist, abduction, flex, elbow, wrist, 
-hand twist - with sliders, so you tune while watching the render rather than 
-generating files and reloading.
+HOW TO MEASURE A SENSOR:
+Stay in one spot, waist height or higher, and turn the sensor slowly through as
+many orientations as you can - every face pointing every way. Do not walk
+around while you turn it, and do not do it near the floor: the field of the room
+itself varies from place to place, and moving through that variation while
+turning mixes it into a fit that assumes one field. (To map the room itself,
+do the opposite: keep one sensor in a fixed orientation and move it.)
+
+COLLECTING:
+Each reading arriving at 'magnetometer' is kept if it is at least 'min point
+spacing' away from the last one kept, so holding the sensor still does not pile
+up points in one place. Readings of exactly zero are ignored. Only the newest
+'max points' are kept. The fit starts once there are 8 points, and every kept
+reading refits and sends everything again.
+
+The units are whatever comes in; from shadow_sensor they are microtesla.
 
 SYNTAX:
 mag_offset
-mag_yaw_correct
 
 EXAMPLE:
 mag_offset
 
 INPUTS and PARAMETERS:
 
-magnetometer (mag_offset):
-The raw field readings, from shadow_sensor.
+magnetometer:
+One reading, three numbers x y z - an array or a list.
 
 clear:
-Discard the accumulated cloud and start the fit again.
+Discard the collected readings and start again. Sends the empty result.
 
-pose in:
-The pose to correct.
+max points:
+How many readings to keep, newest first. Default 2000.
 
-symmetric / sync local-global (mag_yaw_correct):
-Mirror the correction left to right, and tie the two corrections together.
+offset (uT) / radius (uT) / fit residual / samples:
+The current fit, and how many readings it is based on.
 
-fit / load fit npz / take file (shadow_arm_correct):
-Run the fit, load a saved one, and the take to fit against.
+OPTIONS:
 
-OUTPUTS: 
+min point spacing:
+How far a reading must be from the last one kept, in the units of the
+readings. Default 1.
 
-cloud / centered cloud (mag_offset):
-The readings as measured, and after the offset is removed - the second should 
-be centred on the origin.
+OUTPUTS:
 
-center / radius / residual:
-The fit. See above for what each means.
+cloud:
+All the kept readings, one row each.
 
-pose out:
-The corrected pose.
+centered cloud:
+The same readings with the offset taken away - they should now sit on a
+sphere around the origin.
 
-HOW TO MEASURE A SENSOR:
-Hold the sensor still in a fixed orientation and read the field; then another 
-orientation; and so on. Do NOT sweep it continuously - a sweep through a 
-gradient in the room mixes the room's variation into the sensor's, and the fit 
-then describes neither."""
+center:
+The offset, x y z.
+
+radius / residual:
+The fit, as above.
+
+RELATED:
+shadow_sensor supplies the readings from a suit.
+mgl_point_cloud can draw 'cloud' or 'centered cloud' in 3-D."""
 
 demo = [
-    {'key': 'ss', 'init': 'shadow_sensor', 'pos': (30, 62), 'w': 240, 'h': 180},
-    {'key': 'mo', 'init': 'mag_offset', 'pos': (30, 260), 'w': 240, 'h': 240},
-    {'key': 'c0', 'comment': True, 'text': 'turn the sensor through many orientations',
-     'pos': (30, 515)},
-    {'key': 'f1', 'init': 'float', 'pos': (310, 260), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'f2', 'init': 'float', 'pos': (310, 315), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'f3', 'init': 'float', 'pos': (310, 370), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c1', 'comment': True, 'text': 'centre, radius, residual\na clean sensor here reads about 54.6', 'pos': (310, 420)},
-    {'key': 'sh', 'init': 'shadow', 'pos': (30, 560), 'w': 280, 'h': 320},
-    {'key': 'my', 'init': 'mag_yaw_correct', 'pos': (30, 900), 'w': 280, 'h': 240},
-    {'key': 'c3', 'comment': True, 'text': 'global yaw: wrong heading in the room\nlocal yaw: sensor mounted rotated',
-     'pos': (30, 1155)},
+    {'key': 'met', 'init': 'metro 50', 'pos': (30, 62), 'w': 129, 'h': 70,
+     'props': {'on': True, 'period': 50.0, 'units': 'milliseconds'}},
+    {'key': 'c0', 'comment': True, 'text': 'a new reading every 50 milliseconds',
+     'pos': (330, 62)},
+    {'key': 'nr', 'init': 'np.rand 3', 'pos': (30, 150), 'w': 140, 'h': 100,
+     'props': {'min': -1.0, 'max': 1.0}},
+    {'key': 'no', 'init': 'norm', 'pos': (30, 270), 'w': 80, 'h': 42},
+    {'key': 'c1', 'comment': True, 'text': 'a random direction, one unit long',
+     'pos': (330, 270)},
+    {'key': 'mu', 'init': '* 54.6', 'pos': (30, 330), 'w': 120, 'h': 42},
+    {'key': 'c2', 'comment': True, 'text': 'scaled to the strength of the field',
+     'pos': (330, 330)},
+    {'key': 'ad', 'init': '+ 3.', 'pos': (30, 390), 'w': 120, 'h': 42},
+    {'key': 'c3', 'comment': True, 'text': 'a magnetised sensor: 3 microtesla added\nto x, y and z - drag it to change',
+     'pos': (330, 390)},
+    {'key': 'mo', 'init': 'mag_offset', 'pos': (30, 450), 'w': 240, 'h': 240},
+    {'key': 'c4', 'comment': True, 'text': 'offset 3, 3, 3 and radius 54.6\nresidual near zero: these points\nlie exactly on a sphere',
+     'pos': (330, 450)},
 ]
-links = [('ss', 'magnetometer', 'mo', 'magnetometer'),
-         ('mo', 'center', 'f1', ''), ('mo', 'radius', 'f2', ''),
-         ('mo', 'residual', 'f3', ''),
-         ('sh', 'body 1 quaternions', 'my', 'pose in')]
-print(build('mag_offset', 'mag_offset - measuring and correcting the field', body,
-            demo, links, demo_width=600, text_width=820, text_height=820))
+links = [('met', '', 'nr', ''), ('nr', 'random array', 'no', 'in'),
+         ('no', 'result', 'mu', 'in'), ('mu', 'result', 'ad', 'in'),
+         ('ad', 'result', 'mo', 'magnetometer')]
+print(build('mag_offset', 'mag_offset - how far off the field is', body,
+            demo, links, demo_width=620, text_width=820, text_height=1300))
+
+# ------------------------------------------------------------ mag_yaw_correct
+body = """mag_yaw_correct turns individual joints of a 20-joint pose about the vertical,
+to take out heading errors that a magnetometer has put into the suit data.
+
+THE SLIDERS:
+Every joint has two sliders, in degrees:
+  head, neck, spine3 ... r_wrist             the global correction
+  head_cal, neck_cal ... r_wrist_cal         the local correction
+
+They follow the 20 active joints in order: head is the base of the skull, neck
+the upper vertebrae, spine3, spine2 and spine1 the mid vertebrae, lower
+vertebrae and spine pelvis, pelvis the pelvis anchor, then hips, knees and
+ankles, and l_collar / r_collar the shoulder blades, then shoulders, elbows and
+wrists.
+
+TWO CORRECTIONS, AND THEY ARE DIFFERENT:
+The global correction turns the joint about the vertical of the room. A value
+of 10 turns it by -10 degrees: you enter the error, and it is taken back out.
+It is meant for an ongoing magnetometer error - the sensor's heading being wrong
+in the room.
+
+The local correction turns the joint about its own up axis (its y axis, which
+is vertical in the T-pose), by the value as given. It is meant for an error baked in at calibration - the sensor's idea
+of its T-pose being turned on the limb.
+
+A global error comes from the field around the sensor, so a fixed global
+correction may hold in one part of the room and not another; a local one is
+fixed to the limb and holds everywhere.
+
+EACH JOINT ON ITS OWN:
+The corrections act on each joint's orientation in the room, and the pose is
+then turned back into joint-to-joint rotations. So correcting one joint does
+not carry the joints below it: in the example the elbows are turned and the
+wrists keep the direction they had, which shows up as the opposite turn in the
+wrist rows. Each sensor's error is its own, so this is what you want.
+
+symmetric AND sync:
+Both are on by default and act when you move a slider.
+'symmetric' copies the value to the same slider on the other side - hip, knee,
+ankle, collar, shoulder, elbow, wrist - with the same sign.
+'sync local/global' copies a joint's global value to its local slider and back,
+so the joint gets both turns with the same angle. That is right when the
+magnetic error is the same at every orientation of the sensor. Note that for a
+joint that is upright and only turned about the vertical, the two then cancel,
+and you will see no change.
+
+WHAT IT TAKES:
+A 20-joint pose, 20 rows of w x y z (or the same 80 numbers in one row), from
+active_joints, active_pose or a take. A 37-row pose straight from shadow is
+ignored - put active_joints in between. With every slider at zero the pose
+passes through unchanged.
+
+SYNTAX:
+mag_yaw_correct
+
+EXAMPLE:
+mag_yaw_correct
+
+INPUTS and PARAMETERS:
+
+pose in:
+The 20-joint pose to correct.
+
+symmetric:
+Copy each slider move to the other side. On by default.
+
+sync local/global:
+Tie each joint's global and local sliders together. On by default.
+
+reset:
+Set every slider back to zero.
+
+head ... r_wrist:
+The global corrections, in degrees.
+
+head_cal ... r_wrist_cal:
+The local corrections, in degrees.
+
+OUTPUT:
+
+pose out:
+The corrected 20-joint pose.
+
+RELATED:
+mag_offset measures a sensor's magnetic offset.
+shadow_arm_correct fits and corrects a fixed upper-arm error.
+pose_adjust applies fixed corrections joint by joint."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click to send the pose', 'pos': (330, 62)},
+    {'key': 'ap', 'init': 'active_pose', 'pos': (30, 130), 'w': 321, 'h': 350},
+    {'key': 'c1', 'comment': True, 'text': 'every joint at rest', 'pos': (330, 130)},
+    {'key': 'my', 'init': 'mag_yaw_correct', 'pos': (30, 500), 'w': 144, 'h': 644,
+     'props': {'symmetric': True, 'sync local/global': False,
+               'l_elbow': 30.0, 'r_elbow': 30.0}},
+    {'key': 'c2', 'comment': True,
+     'text': 'both elbows: a global correction of 30\nsync is off, so only the global turn applies',
+     'pos': (330, 500)},
+    {'key': 'qe', 'init': 'quaternion_to_euler', 'pos': (30, 1165), 'w': 125, 'h': 42,
+     'props': {'degrees': True}},
+    {'key': 've', 'init': 'vector', 'pos': (30, 1230), 'w': 160, 'h': 126},
+    {'key': 'c3', 'comment': True,
+     'text': 'x y z angles in degrees, one row per joint\nelbow rows: -30 about y (the vertical)\nwrist rows: +30, so the hands keep\nthe direction they had',
+     'pos': (330, 1230)},
+]
+links = [('btn', '', 'ap', 'in'), ('ap', 'out', 'my', 'pose in'),
+         ('my', 'pose out', 'qe', 'quaternion'),
+         ('qe', 'euler angles', 've', 'in')]
+print(build('mag_yaw_correct', 'mag_yaw_correct - turning joints back to true heading',
+            body, demo, links, demo_width=640, text_width=820, text_height=1300))
+
+# --------------------------------------------------------- shadow_arm_correct
+body = """shadow_arm_correct fixes Shadow recordings in which the arms hang wrongly - a
+lowered arm biased out to the side or twisted - although the calibration
+looked fine.
+
+THE CAUSE IT CORRECTS:
+The error was traced to a fixed rotation of each upper-arm sensor (Shadow's
+Shoulder joint); the shoulder blades, spine and forearms are comparatively
+clean. In the takes it was built for, the left arm's error was close to a pure
+turn about the vertical - a magnetometer heading error - while the right arm's
+was more of a tilt.
+
+This node is the live version of the script
+smpl_utilities/correct_upper_arm_offset.py: the same correction, with sliders,
+so you can tune it while watching the render instead of writing files and
+reloading them.
+
+WHAT IT CHANGES:
+Only the shoulder, elbow and wrist rows of each arm. The fitted correction and
+the twist turn the upper arm while the forearm and hand keep the orientation
+they had in the room, so the elbow row changes to absorb the shoulder
+correction. The other dials move the arm as described below.
+
+FITTING A TAKE:
+Fill in:
+  take file    a Shadow take, an .npz with 'quats' (and 'positions' if you
+               have them), 37 or 20 joints
+  sym ranges   frames where the performer holds a left-right symmetric pose,
+               as first:last pairs separated by commas - 100:250,900:1000
+  relax        one first:last range of relaxed arm swing, such as walking;
+               the moments in it when the arms pass each other symmetrically
+               are found and used as well
+
+then press 'fit'. It finds the fixed rotation for each upper arm that makes the
+two arms the best mirror images over those frames, plus, for each arm, a
+heading error that changes with the compass direction the arm points. A report
+goes to the console. Ranges outside the take are clamped or skipped, with a
+message.
+
+The fit can only see the DIFFERENCE between the arms. Turning both arms by the
+same amount leaves them mirror images, so that part of the error is invisible
+to it - which is what the dials are for.
+
+'load fit npz' loads a fit saved by the script's --save-fit instead. The node
+does not save fits itself; 'export armfix' saves the corrected take.
+
+THE DIALS:
+All in degrees, applied after the fit.
+  twist        both upper arms about their own long axis
+  abduct_l / abduct_r
+               each arm out to the side, about the body's front-back axis
+  flex         both arms forward (positive) or back
+  elbow        open both elbows about their hinge
+  wrist        extend both wrists
+  wtwist       roll both hands about their long axis
+With 'symmetric' on (the default), abduct_l sets both arms and abduct_r is
+ignored, so the dials cannot break the left-right balance the fit found.
+
+THE BODY'S AXES:
+Abduction and flex need to know which way the body faces. With Shadow
+positions at 'positions in' it uses the line between the shoulders; without,
+it uses the chest sensor's orientation. Do not send SMPL joint positions - they
+are in a different frame.
+
+SYNTAX:
+shadow_arm_correct
+
+EXAMPLE:
+shadow_arm_correct
+
+INPUTS and PARAMETERS:
+
+pose in:
+A Shadow pose, 37 rows or the 20 active joints, w x y z. Each one is
+corrected and sent.
+
+positions in:
+Optional Shadow joint positions, 37 or 20 rows, for the body's axes.
+
+take file / sym ranges / relax / fit:
+Fit the per-arm correction from a take - see above.
+
+load fit npz:
+Load a saved fit instead.
+
+symmetric:
+Tie the two abduction dials. On by default.
+
+twist / abduct_l / abduct_r / flex / elbow / wrist / wtwist:
+The dials, in degrees.
+
+reset dials:
+Set every dial to zero. The fit is kept.
+
+export armfix:
+Apply the current fit and dials to every frame of the take file and write it
+next to it with _armfix added to the name; every other array in the file is
+copied unchanged. Needs 'take file' to be filled in.
+
+OUTPUT:
+
+pose out:
+The corrected pose, in the same layout as it came in.
+
+RELATED:
+mag_yaw_correct turns single joints about the vertical.
+mag_offset measures a sensor's magnetic offset."""
+
+demo = [
+    {'key': 'btn', 'init': 'button', 'pos': (30, 62), 'w': 88, 'h': 46},
+    {'key': 'c0', 'comment': True, 'text': 'click to send the pose', 'pos': (330, 62)},
+    {'key': 'ap', 'init': 'active_pose', 'pos': (30, 130), 'w': 321, 'h': 350},
+    {'key': 'c1', 'comment': True, 'text': 'every joint at rest', 'pos': (330, 130)},
+    {'key': 'sa', 'init': 'shadow_arm_correct', 'pos': (30, 500), 'w': 166, 'h': 266,
+     'props': {'symmetric': True, 'abduct_l': 20.0}},
+    {'key': 'c2', 'comment': True,
+     'text': 'no fit loaded - just the abduct dial\nsymmetric on, so 20 moves both arms',
+     'pos': (330, 500)},
+    {'key': 'qe', 'init': 'quaternion_to_euler', 'pos': (30, 790), 'w': 125, 'h': 42,
+     'props': {'degrees': True}},
+    {'key': 've', 'init': 'vector', 'pos': (30, 855), 'w': 160, 'h': 126},
+    {'key': 'c3', 'comment': True,
+     'text': 'x y z angles in degrees, one row per joint\nleft shoulder +20 about z, right -20:\nboth arms out by 20, mirror images',
+     'pos': (330, 855)},
+]
+links = [('btn', '', 'ap', 'in'), ('ap', 'out', 'sa', 'pose in'),
+         ('sa', 'pose out', 'qe', 'quaternion'),
+         ('qe', 'euler angles', 've', 'in')]
+print(build('shadow_arm_correct', 'shadow_arm_correct - arms that hang wrongly',
+            body, demo, links, demo_width=640, text_width=820, text_height=1400))
 
 # ------------------------------------------------------------- cadence_filter
 body = """cadence_filter removes a rhythm that the recording put into the data, not the

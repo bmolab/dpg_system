@@ -164,12 +164,12 @@
             "annotation": true,
             "position_x": 219,
             "position_y": 154,
-            "width": 335,
+            "width": 397,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "shadow suit, movesense, pipo_motion / pipo_range,\nvive_tracker / vive_base_stations",
+                    "value": "shadow, shadow_sensor, movesense, pipo_motion / pipo_range,\nvive_tracker / vive_base_stations",
                     "value_type": "str"
                 },
                 "1": {
@@ -179,7 +179,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 327,
+                    "value": 389,
                     "value_type": "int"
                 },
                 "3": {
@@ -193,7 +193,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "shadow suit, movesense, pipo_motion / pipo_range,\nvive_tracker / vive_base_stations",
+            "text": "shadow, shadow_sensor, movesense, pipo_motion / pipo_range,\nvive_tracker / vive_base_stations",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
@@ -228,12 +228,12 @@
             "annotation": true,
             "position_x": 219,
             "position_y": 206,
-            "width": 409,
+            "width": 428,
             "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "magnetometer corrections, cadence_filter, check_burst,\nsensor_to_root / root inference, tracker_align, noise_review,\njson_npz_frame_picker",
+                    "value": "mag_offset, mag_yaw_correct, shadow_arm_correct, cadence_filter,\ncheck_burst, sensor_to_root / root inference, tracker_align,\nnoise_review, json_npz_frame_picker",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,7 +243,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 401,
+                    "value": 420,
                     "value_type": "int"
                 },
                 "3": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "magnetometer corrections, cadence_filter, check_burst,\nsensor_to_root / root inference, tracker_align, noise_review,\njson_npz_frame_picker",
+            "text": "mag_offset, mag_yaw_correct, shadow_arm_correct, cadence_filter,\ncheck_burst, sensor_to_root / root inference, tracker_align,\nnoise_review, json_npz_frame_picker",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,

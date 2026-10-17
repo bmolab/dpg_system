@@ -1,0 +1,373 @@
+{
+    "height": 1490,
+    "width": 1580,
+    "position": [
+        100,
+        100
+    ],
+    "id": 718,
+    "name": "mag_yaw_correct_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mag_yaw_correct_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mag_yaw_correct - turning joints back to true heading",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 660,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mag_yaw_correct - turning joints back to true heading",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mag_yaw_correct - turning joints back to true heading"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 712,
+            "position_y": 45,
+            "width": 828,
+            "height": 1316,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "mag_yaw_correct turns individual joints of a 20-joint pose about the vertical,\nto take out heading errors that a magnetometer has put into the suit data.\n\nTHE SLIDERS:\nEvery joint has two sliders, in degrees:\n  head, neck, spine3 ... r_wrist             the global correction\n  head_cal, neck_cal ... r_wrist_cal         the local correction\n\nThey follow the 20 active joints in order: head is the base of the skull, neck\nthe upper vertebrae, spine3, spine2 and spine1 the mid vertebrae, lower\nvertebrae and spine pelvis, pelvis the pelvis anchor, then hips, knees and\nankles, and l_collar / r_collar the shoulder blades, then shoulders, elbows and\nwrists.\n\nTWO CORRECTIONS, AND THEY ARE DIFFERENT:\nThe global correction turns the joint about the vertical of the room. A value\nof 10 turns it by -10 degrees: you enter the error, and it is taken back out.\nIt is meant for an ongoing magnetometer error - the sensor's heading being wrong\nin the room.\n\nThe local correction turns the joint about its own up axis (its y axis, which\nis vertical in the T-pose), by the value as given. It is meant for an error baked in at calibration - the sensor's idea\nof its T-pose being turned on the limb.\n\nA global error comes from the field around the sensor, so a fixed global\ncorrection may hold in one part of the room and not another; a local one is\nfixed to the limb and holds everywhere.\n\nEACH JOINT ON ITS OWN:\nThe corrections act on each joint's orientation in the room, and the pose is\nthen turned back into joint-to-joint rotations. So correcting one joint does\nnot carry the joints below it: in the example the elbows are turned and the\nwrists keep the direction they had, which shows up as the opposite turn in the\nwrist rows. Each sensor's error is its own, so this is what you want.\n\nsymmetric AND sync:\nBoth are on by default and act when you move a slider.\n'symmetric' copies the value to the same slider on the other side - hip, knee,\nankle, collar, shoulder, elbow, wrist - with the same sign.\n'sync local/global' copies a joint's global value to its local slider and back,\nso the joint gets both turns with the same angle. That is right when the\nmagnetic error is the same at every orientation of the sensor. Note that for a\njoint that is upright and only turned about the vertical, the two then cancel,\nand you will see no change.\n\nWHAT IT TAKES:\nA 20-joint pose, 20 rows of w x y z (or the same 80 numbers in one row), from\nactive_joints, active_pose or a take. A 37-row pose straight from shadow is\nignored - put active_joints in between. With every slider at zero the pose\npasses through unchanged.\n\nSYNTAX:\nmag_yaw_correct\n\nEXAMPLE:\nmag_yaw_correct\n\nINPUTS and PARAMETERS:\n\npose in:\nThe 20-joint pose to correct.\n\nsymmetric:\nCopy each slider move to the other side. On by default.\n\nsync local/global:\nTie each joint's global and local sliders together. On by default.\n\nreset:\nSet every slider back to zero.\n\nhead ... r_wrist:\nThe global corrections, in degrees.\n\nhead_cal ... r_wrist_cal:\nThe local corrections, in degrees.\n\nOUTPUT:\n\npose out:\nThe corrected 20-joint pose.\n\nRELATED:\nmag_offset measures a sensor's magnetic offset.\nshadow_arm_correct fits and corrects a fixed upper-arm error.\npose_adjust applies fixed corrections joint by joint.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 820,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1300,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "mag_yaw_correct turns individual joints of a 20-joint pose about the vertical,\nto take out heading errors that a magnetometer has put into the suit data.\n\nTHE SLIDERS:\nEvery joint has two sliders, in degrees:\n  head, neck, spine3 ... r_wrist             the global correction\n  head_cal, neck_cal ... r_wrist_cal         the local correction\n\nThey follow the 20 active joints in order: head is the base of the skull, neck\nthe upper vertebrae, spine3, spine2 and spine1 the mid vertebrae, lower\nvertebrae and spine pelvis, pelvis the pelvis anchor, then hips, knees and\nankles, and l_collar / r_collar the shoulder blades, then shoulders, elbows and\nwrists.\n\nTWO CORRECTIONS, AND THEY ARE DIFFERENT:\nThe global correction turns the joint about the vertical of the room. A value\nof 10 turns it by -10 degrees: you enter the error, and it is taken back out.\nIt is meant for an ongoing magnetometer error - the sensor's heading being wrong\nin the room.\n\nThe local correction turns the joint about its own up axis (its y axis, which\nis vertical in the T-pose), by the value as given. It is meant for an error baked in at calibration - the sensor's idea\nof its T-pose being turned on the limb.\n\nA global error comes from the field around the sensor, so a fixed global\ncorrection may hold in one part of the room and not another; a local one is\nfixed to the limb and holds everywhere.\n\nEACH JOINT ON ITS OWN:\nThe corrections act on each joint's orientation in the room, and the pose is\nthen turned back into joint-to-joint rotations. So correcting one joint does\nnot carry the joints below it: in the example the elbows are turned and the\nwrists keep the direction they had, which shows up as the opposite turn in the\nwrist rows. Each sensor's error is its own, so this is what you want.\n\nsymmetric AND sync:\nBoth are on by default and act when you move a slider.\n'symmetric' copies the value to the same slider on the other side - hip, knee,\nankle, collar, shoulder, elbow, wrist - with the same sign.\n'sync local/global' copies a joint's global value to its local slider and back,\nso the joint gets both turns with the same angle. That is right when the\nmagnetic error is the same at every orientation of the sensor. Note that for a\njoint that is upright and only turned about the vertical, the two then cancel,\nand you will see no change.\n\nWHAT IT TAKES:\nA 20-joint pose, 20 rows of w x y z (or the same 80 numbers in one row), from\nactive_joints, active_pose or a take. A 37-row pose straight from shadow is\nignored - put active_joints in between. With every slider at zero the pose\npasses through unchanged.\n\nSYNTAX:\nmag_yaw_correct\n\nEXAMPLE:\nmag_yaw_correct\n\nINPUTS and PARAMETERS:\n\npose in:\nThe 20-joint pose to correct.\n\nsymmetric:\nCopy each slider move to the other side. On by default.\n\nsync local/global:\nTie each joint's global and local sliders together. On by default.\n\nreset:\nSet every slider back to zero.\n\nhead ... r_wrist:\nThe global corrections, in degrees.\n\nhead_cal ... r_wrist_cal:\nThe local corrections, in degrees.\n\nOUTPUT:\n\npose out:\nThe corrected 20-joint pose.\n\nRELATED:\nmag_offset measures a sensor's magnetic offset.\nshadow_arm_correct fits and corrects a fixed upper-arm error.\npose_adjust applies fixed corrections joint by joint."
+        },
+        "3": {
+            "name": "button",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment click to send the pose",
+            "name": "comment",
+            "id": 385,
+            "position_x": 377,
+            "position_y": 62,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click to send the pose",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click to send the pose"
+        },
+        "5": {
+            "name": "active_pose",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 321,
+            "height": 350,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "init": "comment every joint at rest",
+            "name": "comment",
+            "id": 459,
+            "position_x": 377,
+            "position_y": 130,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every joint at rest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every joint at rest"
+        },
+        "7": {
+            "name": "mag_yaw_correct",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 144,
+            "height": 644,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "symmetric",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "sync local/global",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "l_elbow",
+                    "value": 30.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "r_elbow",
+                    "value": 30.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "8": {
+            "name": "text_block",
+            "id": 533,
+            "annotation": true,
+            "position_x": 377,
+            "position_y": 500,
+            "width": 305,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "both elbows: a global correction of 30\nsync is off, so only the global turn applies",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 297,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "both elbows: a global correction of 30\nsync is off, so only the global turn applies"
+        },
+        "9": {
+            "name": "quaternion_to_euler",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 1165,
+            "width": 125,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "10": {
+            "name": "vector",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 1230,
+            "width": 160,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 377,
+            "position_y": 1230,
+            "width": 292,
+            "height": 64,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "x y z angles in degrees, one row per joint\nelbow rows: -30 about y (the vertical)\nwrist rows: +30, so the hands keep\nthe direction they had",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 284,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "x y z angles in degrees, one row per joint\nelbow rows: -30 about y (the vertical)\nwrist rows: +30, so the hands keep\nthe direction they had"
+        },
+        "12": {
+            "name": "close",
+            "id": 681,
+            "position_x": 24,
+            "position_y": 1386,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "pose in"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "pose out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "quaternion"
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "euler angles",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

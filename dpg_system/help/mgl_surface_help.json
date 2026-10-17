@@ -1,0 +1,467 @@
+{
+    "height": 1520,
+    "width": 1628,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "mgl_surface_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/mgl_surface_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment mgl_surface - a grid of points as a surface",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 537,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mgl_surface - a grid of points as a surface",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mgl_surface - a grid of points as a surface"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 770,
+            "position_y": 45,
+            "width": 818,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "mgl_surface joins a grid of points into a smooth surface.\n\nWHAT IT TAKES:\n'points' takes a rows by columns by 3 array of positions: neighbours in the\ngrid are joined, two triangles to each square. It needs at least two rows\nand two columns. An n by 3 array is taken as a single row, and so draws\nnothing. A cloud frame from the point cloud nodes works too, using its\n'point_cloud' entry.\n\nIt is a grid of 3D points, not a list of heights: to draw a height field,\nbuild the x and z of each grid point and put the height in y.\n\nPoints can arrive as often as you like and on any thread; the surface is\nrebuilt on the next render.\n\nHOW IT LOOKS:\nThe surface is lit on both sides, with normals averaged at each point so it\nshades smoothly. It is an mgl shape: in the current colour and material. An\nimage sent to 'texture' is stretched once across the whole grid.\n\nSYNTAX:\nmgl_surface\n\nIt takes no arguments.\n\nEXAMPLE:\nmgl_surface\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\npoints:\nThe grid, as above.\n\nmode / cull / point_size / round / texture:\nAs for the other mgl shapes: drawn solid, as wireframe or as points;\nwhether back faces are skipped; the size of points in pixels; whether points\nare round; an image mapped onto the surface.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\nRELATED:\nnp.grid makes a flat grid of points to start from. mgl_mesh draws\ntriangles of any arrangement; mgl_plane is a flat subdivided rectangle.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 810,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "mgl_surface joins a grid of points into a smooth surface.\n\nWHAT IT TAKES:\n'points' takes a rows by columns by 3 array of positions: neighbours in the\ngrid are joined, two triangles to each square. It needs at least two rows\nand two columns. An n by 3 array is taken as a single row, and so draws\nnothing. A cloud frame from the point cloud nodes works too, using its\n'point_cloud' entry.\n\nIt is a grid of 3D points, not a list of heights: to draw a height field,\nbuild the x and z of each grid point and put the height in y.\n\nPoints can arrive as often as you like and on any thread; the surface is\nrebuilt on the next render.\n\nHOW IT LOOKS:\nThe surface is lit on both sides, with normals averaged at each point so it\nshades smoothly. It is an mgl shape: in the current colour and material. An\nimage sent to 'texture' is stretched once across the whole grid.\n\nSYNTAX:\nmgl_surface\n\nIt takes no arguments.\n\nEXAMPLE:\nmgl_surface\n\nINPUTS and PARAMETERS:\n\nmgl chain in:\nThe chain. This triggers the drawing.\n\npoints:\nThe grid, as above.\n\nmode / cull / point_size / round / texture:\nAs for the other mgl shapes: drawn solid, as wireframe or as points;\nwhether back faces are skipped; the size of points in pixels; whether points\nare round; an image mapped onto the surface.\n\nOUTPUTS:\n\nmgl chain out:\nThe chain, continuing.\n\nRELATED:\nnp.grid makes a flat grid of points to start from. mgl_mesh draws\ntriangles of any arrangement; mgl_plane is a flat subdivided rectangle."
+        },
+        "3": {
+            "name": "mgl_context",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 92,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "auto_render",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "node_display_width",
+                    "value": 320,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "node_display_height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "node_mouse_events",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "4": {
+            "init": "comment drag on the picture to orbit",
+            "name": "comment",
+            "id": 385,
+            "position_x": 479,
+            "position_y": 120,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag on the picture to orbit",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag on the picture to orbit"
+        },
+        "5": {
+            "name": "mgl_orbit_camera",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 440,
+            "width": 188,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 630,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "t",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 690,
+            "width": 33,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t bang bang"
+        },
+        "8": {
+            "name": "np.grid",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 760,
+            "width": 160,
+            "height": 140,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.grid -1 1 -1 1 16 16"
+        },
+        "9": {
+            "init": "comment a flat 16 by 16 grid",
+            "name": "comment",
+            "id": 570,
+            "position_x": 479,
+            "position_y": 760,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a flat 16 by 16 grid",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a flat 16 by 16 grid"
+        },
+        "10": {
+            "name": "np.rand",
+            "id": 607,
+            "position_x": 330,
+            "position_y": 760,
+            "width": 123,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": -0.06,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 0.06,
+                    "value_type": "float"
+                }
+            },
+            "init": "np.rand 16 16 3"
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 479,
+            "position_y": 920,
+            "width": 157,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a small random nudge\nfor every point",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 149,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a small random nudge\nfor every point"
+        },
+        "12": {
+            "name": "+",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 1050,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "mgl_surface",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 1140,
+            "width": 124,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "text_block",
+            "id": 755,
+            "annotation": true,
+            "position_x": 479,
+            "position_y": 1420,
+            "width": 261,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a crumpled sheet, lit on both sides;\nset mode to wireframe to see the grid",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 253,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a crumpled sheet, lit on both sides;\nset mode to wireframe to see the grid"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 1296,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl_chain",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "ui",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "ui"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mgl chain out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "mgl chain in"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "bang",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 1,
+            "dest_input_name": "###operand"
+        },
+        "7": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "grid points",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "points"
+        }
+    }
+}

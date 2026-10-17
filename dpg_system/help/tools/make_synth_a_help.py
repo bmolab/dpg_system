@@ -507,47 +507,50 @@ links = [('so', 'length', 'ph', 'period'),
 print(build('sampler_osc~', 'sampler_osc~ - a recording, played as an oscillator',
             body, demo, links, demo_width=590, text_width=800, text_height=1100))
 
-# ----------------------------------------------------------------- vcf~ family
-body = """These shape a sound by what FREQUENCIES it contains, rather than by its level.
+# ------------------------------------------------------------------------ vcf~
+body = """vcf~ is a resonant filter: it shapes a sound by which FREQUENCIES it lets 
+through, rather than by its level.
 
-THE NODES:
+FOUR MODES:
 
-vcf~       a resonant multimode filter, with per-sample cutoff modulation
-formant~   a vowel, as five resonances in parallel
-vowel~     the same node
-vocoder~   one signal's spectrum imposed on another
+lowpass    keeps what is below the cutoff (the default)
+highpass   keeps what is above it
+bandpass   keeps a band around it
+notch      removes a band around it
 
-vcf~ IS THE GENERAL ONE:
-It has two cutoff inlets and the difference matters. 'cutoff' is in Hz. 
-'tracking' is exponential, in octaves - so patching the same signal that drives 
-a vco~'s pitch inlet into a vcf~'s tracking inlet makes the filter follow the 
+TWO WAYS TO MOVE THE CUTOFF:
+'cutoff' is in Hz. 'tracking' is in octaves, and multiplies the cutoff 
+exponentially: 1 is an octave up, -1 an octave down. Patching the same signal 
+that drives a vco~'s 'pitch' inlet into 'tracking' makes the filter follow the 
 oscillator, keeping the same tone at every pitch instead of getting duller as 
-the note rises. That is what tracking is for, and it is why the inlet is 
-separate.
+the note rises. That is why the inlet is separate. It is also the easy way to 
+sweep the filter: an lfo~ swinging -2 to 2 into 'tracking' moves the cutoff 
+across four octaves, where the same lfo~ into 'cutoff' would move it by only 
+2 Hz unless you raise the cutoff depth.
 
-'drive' saturates into the filter rather than after it, which is a dirtier and 
-more instrument-like tone than distorting the output.
+Cutoff changes are applied sample by sample, so even fast modulation does not 
+step.
 
-formant~ SPEAKS:
-Its 'vowel' inlet runs 0 to 1 across a, e, i, o, u - and it RUNS between them 
-rather than switching. The formants are interpolated as ratios, so a slow sweep 
-is a mouth changing shape rather than a crossfade between two recordings of 
-mouths. Patch an envelope, an lfo~, or effort data there and the sound speaks.
+RESONANCE AND DRIVE:
+'resonance' runs 0 to 0.99. At 0 the filter is gentle; as it rises the filter 
+emphasises its own cutoff, and near the top it rings.
 
-vocoder~ IMPOSES ONE THING ON ANOTHER:
-The modulator is split into bands, each band's level is followed, and the 
-carrier is passed through the same bands at those levels. The result has the 
-carrier's pitch and the modulator's shape. Speech through an oscillator is the 
-classic case, but nothing about the node requires either to be speech - a 
-rhythmic modulator makes the carrier articulate.
+'drive' is a gain into a soft clipper placed before the filter, which is a 
+dirtier and more instrument-like tone than distorting the output. At the 
+default of 1 the input passes clean; above 1 it saturates.
+
+STEREO:
+Patch 'right in' and both channels go through one cutoff and one resonance, so 
+they cannot drift apart the way two separately patched vcf~ can. With nothing 
+in 'right in', 'right out' carries the same signal as 'left out'.
 
 SYNTAX:
-vcf~ <cutoff>
-formant~
-vocoder~
+vcf~ <cutoff> <mode>
 
 EXAMPLE:
-vcf~ 800
+vcf~ 800 highpass
+
+The arguments may come in either order. Defaults are 1000 Hz and lowpass.
 
 INPUTS and PARAMETERS:
 
@@ -555,57 +558,260 @@ left in / right in:
 The signal to filter.
 
 cutoff:
-Where the filter acts, in Hz.
+Where the filter acts, in Hz. Default 1000, or the argument.
 
 tracking:
-The same, exponentially in octaves, for following a pitch.
+Octaves added to the cutoff. Default 0.
 
 resonance:
-How much the filter emphasises its own cutoff. High enough and it rings.
+0 to 0.99. Default 0.
 
 drive:
-Saturation into the filter.
+Gain into the soft clipper. Default 1, which is clean.
 
 mode:
-Low pass, high pass, band pass and so on.
+lowpass, highpass, bandpass or notch.
 
-vowel / shift / q (formant~):
-Which vowel, how the formants are shifted overall, and how sharp each 
-resonance is.
+bypass:
+Ticked, the input passes through untouched and the filter stops computing.
 
-modulator / left carrier / right carrier (vocoder~):
-The signal whose shape is taken, and the signal it is imposed on.
-
-attack / release / sibilance (vocoder~):
-How quickly the band followers move, and how much of the modulator's high end 
-is passed straight through - which is what makes consonants intelligible.
-
-freeze:
-Holds the current spectrum, so the shape stops following the modulator.
+Each knob takes a number or a patched signal; the narrow box beside it is a 
+depth that scales whatever is patched in, and the knob's value is added to it.
 
 OUTPUTS: 
 
 left out / right out:
 The filtered signal.
 
-bands (vocoder~):
-The band levels, as data."""
+RELATED:
+formant~ is five resonances tuned to a vowel. vocoder~ is a whole bank of 
+them, set by another sound."""
 
 demo = [
     {'key': 'vco', 'init': 'vco~ 110', 'pos': (30, 62), 'w': 220, 'h': 200},
-    {'key': 'c0', 'comment': True, 'text': 'a bright source to filter', 'pos': (30, 272)},
-    {'key': 'lfo', 'init': 'lfo~ 0.3', 'pos': (300, 62), 'w': 200, 'h': 160},
-    {'key': 'vcf', 'init': 'vcf~ 600', 'pos': (30, 315), 'w': 240, 'h': 220},
-    {'key': 'c1', 'comment': True, 'text': 'the lfo sweeps the cutoff\nraise resonance until it rings', 'pos': (30, 545)},
+    {'key': 'c0', 'comment': True, 'text': 'a bright saw to filter', 'pos': (30, 272)},
+    {'key': 'lfo', 'init': 'lfo~ 0.3', 'pos': (300, 62), 'w': 200, 'h': 160,
+     'props': {'depth': 2.0}},
+    {'key': 'c2', 'comment': True, 'text': 'swings -2 to 2 octaves', 'pos': (300, 232)},
+    {'key': 'vcf', 'init': 'vcf~ 600', 'pos': (30, 315), 'w': 240, 'h': 220,
+     'props': {'resonance': 0.7}},
+    {'key': 'c1', 'comment': True, 'text': 'the lfo sweeps the cutoff through tracking\nraise resonance until it rings', 'pos': (30, 545)},
     {'key': 'sc', 'init': 'scope~', 'pos': (320, 315), 'w': 260, 'h': 220},
-    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 615), 'w': 220, 'h': 220},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 615), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
+    {'key': 'c3', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 850)},
 ]
 links = [('vco', 'left out', 'vcf', 'left in'),
-         ('lfo', 'signal', 'vcf', 'cutoff'),
+         ('lfo', 'signal', 'vcf', 'tracking'),
          ('vcf', 'left out', 'sc', 'in'),
-         ('vcf', 'left out', 'fo', 'left')]
+         ('vcf', 'left out', 'fo', 'left'),
+         ('vcf', 'right out', 'fo', 'right')]
 print(build('vcf~', 'vcf~ - shaping by frequency', body, demo, links,
-            demo_width=610, text_width=820, text_height=760))
+            demo_width=610, text_width=820, text_height=900))
+
+# --------------------------------------------------------------------- formant~
+body = """formant~ makes a sound into a vowel, by passing it through five 
+resonances at the frequencies a throat would put them.
+
+vowel~ is the same node.
+
+THE VOWEL MOVES:
+The 'vowel' inlet runs 0 to 1 across a, e, i, o, u - and it RUNS between them 
+rather than switching. The three formants that identify each vowel are 
+interpolated as ratios, so a slow sweep is a mouth changing shape rather than 
+a crossfade between two mouths. Patch an envelope, an lfo~, or effort data 
+there and the sound speaks. Two more resonances, fixed at 3300 and 3850 Hz, 
+add the air that keeps it sounding like a throat rather than a filter.
+
+The vowel, shift and q are read once per audio block, which is quick enough 
+for a mouth but not for audio-rate modulation.
+
+SHIFT AND Q:
+'shift' multiplies every formant frequency at once: the size of the head 
+making the sound. Below 1 is larger, above 1 smaller. 'q' is how sharp the 
+resonances are - low is a vowel-ish colour, high rings, and past about 20 the 
+bank sings on its own with whatever the input gives it. Each resonance is 
+scaled for its own sharpness, so raising q sharpens the vowel rather than 
+simply making it louder.
+
+WHAT TO FEED IT:
+Something with plenty of harmonics. A saw works, a detuned vco~ stack works 
+better, noise~ gives you a whisper. A sine has nothing at the formant 
+frequencies for the bank to find.
+
+Patch 'right in' for stereo; both channels share one set of resonances.
+
+SYNTAX:
+formant~ <vowel> <q>
+
+EXAMPLE:
+formant~ o 12
+
+The vowel can be a letter (a e i o u) or a position from 0 to 1. Defaults 
+are 'a' and 8.
+
+INPUTS and PARAMETERS:
+
+left in / right in:
+The signal to shape.
+
+vowel:
+0 to 1 across a, e, i, o, u. Default 0, or the argument. The narrow box 
+beside it is a depth scaling whatever is patched in.
+
+shift:
+Multiplies every formant. Default 1.
+
+q:
+Sharpness of the resonances, 0.5 and up. Default 8.
+
+A signal patched to shift or q is added to the knob's value.
+
+formants:
+A readout: the vowel nearest the vowel KNOB, then the three formant 
+frequencies the bank is actually using. With a signal driving the vowel the 
+frequencies move but the letter stays where the knob is.
+
+bypass:
+Ticked, the input passes through untouched.
+
+OUTPUTS: 
+
+left out / right out:
+The shaped signal.
+
+RELATED:
+vcf~ is a single resonant filter. vocoder~ takes its shape from another 
+sound instead of a vowel table."""
+
+demo = [
+    {'key': 'vco', 'init': 'vco~ 110', 'pos': (30, 62), 'w': 220, 'h': 200},
+    {'key': 'c0', 'comment': True, 'text': 'a saw: plenty of harmonics', 'pos': (30, 272)},
+    {'key': 'lfo', 'init': 'lfo~ 0.1', 'pos': (300, 62), 'w': 200, 'h': 160,
+     'props': {'bipolar': False}},
+    {'key': 'c2', 'comment': True, 'text': 'bipolar off: 0 to 1', 'pos': (300, 232)},
+    {'key': 'fm', 'init': 'formant~', 'pos': (30, 315), 'w': 240, 'h': 220},
+    {'key': 'c1', 'comment': True, 'text': 'the lfo walks the vowel a e i o u and back',
+     'pos': (30, 545)},
+    {'key': 'sc', 'init': 'scope~', 'pos': (320, 315), 'w': 260, 'h': 220},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 615), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
+    {'key': 'c3', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 850)},
+]
+links = [('vco', 'left out', 'fm', 'left in'),
+         ('lfo', 'signal', 'fm', 'vowel'),
+         ('fm', 'left out', 'sc', 'in'),
+         ('fm', 'left out', 'fo', 'left'),
+         ('fm', 'right out', 'fo', 'right')]
+print(build('formant~', 'formant~ - a vowel, as five resonances', body, demo, links,
+            demo_width=610, text_width=820, text_height=1000))
+
+# --------------------------------------------------------------------- vocoder~
+body = """vocoder~ imposes the shape of one sound on another.
+
+TWO INPUTS:
+The 'modulator' is split into bands, and each band's level is followed. The 
+carrier is passed through the same bands, each turned up and down by those 
+levels. The result has the carrier's pitch and the modulator's shape. Speech 
+through an oscillator is the classic case, but nothing requires either to be 
+speech - a rhythmic modulator makes the carrier articulate.
+
+Give the carrier plenty to filter: a saw is good, a detuned vco~ stack 
+better. A single sine has nothing in most bands to let through.
+
+THE BANDS:
+By default 16 bands, spaced evenly in pitch (not in Hz) from 120 to 8000 Hz, 
+which is how hearing is spaced. The 'bands', 'low', 'high' and 'q' options 
+change the layout; q is how narrow each band is.
+
+THE FOLLOWERS:
+'attack' and 'release' are how fast each band's level rises and falls, in 
+seconds. Fast attack with a slower release is what lets consonants arrive 
+intact while vowels hold; long releases smear the modulator into a wash. 
+'freeze' stops the followers where they are, turning the current spectrum 
+into a fixed filter that keeps its shape after the modulator stops.
+
+'sibilance' mixes noise into the carrier for the top third of the bands only, 
+which is what lets 's' and 't' through without the whole voice going breathy.
+
+PLAYING THE BANDS DIRECTLY:
+The 'bands' outlet reports the band levels as a list. Set the 'band source' 
+option to 'list' and the analysis is ignored: a list sent to 'gains' sets 
+the bands instead, one number per band, lowest first. That turns the bank 
+into a spectral surface for effort data, a sequencer or a hand. Until a list 
+arrives every gain is 0, so it is silent.
+
+SYNTAX:
+vocoder~ <bands> <low Hz> <high Hz>
+
+EXAMPLE:
+vocoder~ 24 80 10000
+
+INPUTS and PARAMETERS:
+
+modulator:
+The signal whose shape is taken. Mono.
+
+left carrier / right carrier:
+The signal the shape is imposed on. With nothing in 'right carrier', 
+'right out' carries the same as 'left out'.
+
+attack / release:
+Follower times in seconds. Defaults 0.002 and 0.04.
+
+sibilance:
+0 to 1. Default 0.
+
+level:
+Output gain. Default 1.
+
+These four take a number or a patched signal, which is added to the knob's 
+value. They are read once per audio block.
+
+gains:
+A list of band gains, used when 'band source' is 'list'.
+
+freeze:
+Holds the band levels where they are.
+
+bypass:
+Ticked, the left carrier passes through untouched.
+
+OPTIONS:
+bands (2 to 32, default 16), low (default 120), high (default 8000), q 
+(default 6), band source (modulator or list), report bands (default on).
+
+OUTPUTS: 
+
+left out / right out:
+The carrier, shaped.
+
+bands:
+The band levels as a list, sent each frame they change, while 'report 
+bands' is on."""
+
+demo = [
+    {'key': 'nz', 'init': 'noise~', 'pos': (30, 62), 'w': 240, 'h': 260,
+     'props': {'sputter': 0.8, 'rate': 4.0}},
+    {'key': 'c0', 'comment': True, 'text': 'the modulator: noise\nbroken up by sputter', 'pos': (30, 332)},
+    {'key': 'vco', 'init': 'vco~ 110', 'pos': (300, 62), 'w': 220, 'h': 200},
+    {'key': 'c1', 'comment': True, 'text': 'the carrier: a saw', 'pos': (300, 272)},
+    {'key': 'vc', 'init': 'vocoder~', 'pos': (30, 390), 'w': 260, 'h': 300},
+    {'key': 'pl', 'init': 'plot', 'pos': (320, 390), 'w': 220, 'h': 160,
+     'props': dict(PLOT(0.0, 2.0, count=16, style='bar'),
+                   **{'update style': 'buffer holds one sample of input'})},
+    {'key': 'c2', 'comment': True, 'text': 'the band levels, low to high', 'pos': (320, 560)},
+    {'key': 'fo', 'init': 'fader_out~ 1 2', 'pos': (30, 720), 'w': 220, 'h': 220,
+     'props': {'fader': 0.0}},
+    {'key': 'c3', 'comment': True, 'text': 'raise the fader to hear it', 'pos': (30, 955)},
+]
+links = [('nz', 'out', 'vc', 'modulator'),
+         ('vco', 'left out', 'vc', 'left carrier'),
+         ('vc', 'bands', 'pl', 'y'),
+         ('vc', 'left out', 'fo', 'left'),
+         ('vc', 'right out', 'fo', 'right')]
+print(build('vocoder~', 'vocoder~ - one sound shaped by another', body, demo, links,
+            demo_width=610, text_width=820, text_height=1150))
 
 # ------------------------------------------------------------ levels, routing
 body = """These set how loud things are and where they sit.

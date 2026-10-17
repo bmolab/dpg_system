@@ -1,11 +1,11 @@
 {
     "height": 1057,
-    "width": 1770,
+    "width": 1844,
     "position": [
         100,
         100
     ],
-    "id": 644,
+    "id": 718,
     "name": "vcf~_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/vcf~_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 902,
+            "position_x": 976,
             "position_y": 45,
             "width": 828,
-            "height": 776,
+            "height": 916,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These shape a sound by what FREQUENCIES it contains, rather than by its level.\n\nTHE NODES:\n\nvcf~       a resonant multimode filter, with per-sample cutoff modulation\nformant~   a vowel, as five resonances in parallel\nvowel~     the same node\nvocoder~   one signal's spectrum imposed on another\n\nvcf~ IS THE GENERAL ONE:\nIt has two cutoff inlets and the difference matters. 'cutoff' is in Hz. \n'tracking' is exponential, in octaves - so patching the same signal that drives \na vco~'s pitch inlet into a vcf~'s tracking inlet makes the filter follow the \noscillator, keeping the same tone at every pitch instead of getting duller as \nthe note rises. That is what tracking is for, and it is why the inlet is \nseparate.\n\n'drive' saturates into the filter rather than after it, which is a dirtier and \nmore instrument-like tone than distorting the output.\n\nformant~ SPEAKS:\nIts 'vowel' inlet runs 0 to 1 across a, e, i, o, u - and it RUNS between them \nrather than switching. The formants are interpolated as ratios, so a slow sweep \nis a mouth changing shape rather than a crossfade between two recordings of \nmouths. Patch an envelope, an lfo~, or effort data there and the sound speaks.\n\nvocoder~ IMPOSES ONE THING ON ANOTHER:\nThe modulator is split into bands, each band's level is followed, and the \ncarrier is passed through the same bands at those levels. The result has the \ncarrier's pitch and the modulator's shape. Speech through an oscillator is the \nclassic case, but nothing about the node requires either to be speech - a \nrhythmic modulator makes the carrier articulate.\n\nSYNTAX:\nvcf~ <cutoff>\nformant~\nvocoder~\n\nEXAMPLE:\nvcf~ 800\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal to filter.\n\ncutoff:\nWhere the filter acts, in Hz.\n\ntracking:\nThe same, exponentially in octaves, for following a pitch.\n\nresonance:\nHow much the filter emphasises its own cutoff. High enough and it rings.\n\ndrive:\nSaturation into the filter.\n\nmode:\nLow pass, high pass, band pass and so on.\n\nvowel / shift / q (formant~):\nWhich vowel, how the formants are shifted overall, and how sharp each \nresonance is.\n\nmodulator / left carrier / right carrier (vocoder~):\nThe signal whose shape is taken, and the signal it is imposed on.\n\nattack / release / sibilance (vocoder~):\nHow quickly the band followers move, and how much of the modulator's high end \nis passed straight through - which is what makes consonants intelligible.\n\nfreeze:\nHolds the current spectrum, so the shape stops following the modulator.\n\nOUTPUTS: \n\nleft out / right out:\nThe filtered signal.\n\nbands (vocoder~):\nThe band levels, as data.",
+                    "value": "vcf~ is a resonant filter: it shapes a sound by which FREQUENCIES it lets \nthrough, rather than by its level.\n\nFOUR MODES:\n\nlowpass    keeps what is below the cutoff (the default)\nhighpass   keeps what is above it\nbandpass   keeps a band around it\nnotch      removes a band around it\n\nTWO WAYS TO MOVE THE CUTOFF:\n'cutoff' is in Hz. 'tracking' is in octaves, and multiplies the cutoff \nexponentially: 1 is an octave up, -1 an octave down. Patching the same signal \nthat drives a vco~'s 'pitch' inlet into 'tracking' makes the filter follow the \noscillator, keeping the same tone at every pitch instead of getting duller as \nthe note rises. That is why the inlet is separate. It is also the easy way to \nsweep the filter: an lfo~ swinging -2 to 2 into 'tracking' moves the cutoff \nacross four octaves, where the same lfo~ into 'cutoff' would move it by only \n2 Hz unless you raise the cutoff depth.\n\nCutoff changes are applied sample by sample, so even fast modulation does not \nstep.\n\nRESONANCE AND DRIVE:\n'resonance' runs 0 to 0.99. At 0 the filter is gentle; as it rises the filter \nemphasises its own cutoff, and near the top it rings.\n\n'drive' is a gain into a soft clipper placed before the filter, which is a \ndirtier and more instrument-like tone than distorting the output. At the \ndefault of 1 the input passes clean; above 1 it saturates.\n\nSTEREO:\nPatch 'right in' and both channels go through one cutoff and one resonance, so \nthey cannot drift apart the way two separately patched vcf~ can. With nothing \nin 'right in', 'right out' carries the same signal as 'left out'.\n\nSYNTAX:\nvcf~ <cutoff> <mode>\n\nEXAMPLE:\nvcf~ 800 highpass\n\nThe arguments may come in either order. Defaults are 1000 Hz and lowpass.\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal to filter.\n\ncutoff:\nWhere the filter acts, in Hz. Default 1000, or the argument.\n\ntracking:\nOctaves added to the cutoff. Default 0.\n\nresonance:\n0 to 0.99. Default 0.\n\ndrive:\nGain into the soft clipper. Default 1, which is clean.\n\nmode:\nlowpass, highpass, bandpass or notch.\n\nbypass:\nTicked, the input passes through untouched and the filter stops computing.\n\nEach knob takes a number or a patched signal; the narrow box beside it is a \ndepth that scales whatever is patched in, and the knob's value is added to it.\n\nOUTPUTS: \n\nleft out / right out:\nThe filtered signal.\n\nRELATED:\nformant~ is five resonances tuned to a vowel. vocoder~ is a whole bank of \nthem, set by another sound.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 760,
+                    "value": 900,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "These shape a sound by what FREQUENCIES it contains, rather than by its level.\n\nTHE NODES:\n\nvcf~       a resonant multimode filter, with per-sample cutoff modulation\nformant~   a vowel, as five resonances in parallel\nvowel~     the same node\nvocoder~   one signal's spectrum imposed on another\n\nvcf~ IS THE GENERAL ONE:\nIt has two cutoff inlets and the difference matters. 'cutoff' is in Hz. \n'tracking' is exponential, in octaves - so patching the same signal that drives \na vco~'s pitch inlet into a vcf~'s tracking inlet makes the filter follow the \noscillator, keeping the same tone at every pitch instead of getting duller as \nthe note rises. That is what tracking is for, and it is why the inlet is \nseparate.\n\n'drive' saturates into the filter rather than after it, which is a dirtier and \nmore instrument-like tone than distorting the output.\n\nformant~ SPEAKS:\nIts 'vowel' inlet runs 0 to 1 across a, e, i, o, u - and it RUNS between them \nrather than switching. The formants are interpolated as ratios, so a slow sweep \nis a mouth changing shape rather than a crossfade between two recordings of \nmouths. Patch an envelope, an lfo~, or effort data there and the sound speaks.\n\nvocoder~ IMPOSES ONE THING ON ANOTHER:\nThe modulator is split into bands, each band's level is followed, and the \ncarrier is passed through the same bands at those levels. The result has the \ncarrier's pitch and the modulator's shape. Speech through an oscillator is the \nclassic case, but nothing about the node requires either to be speech - a \nrhythmic modulator makes the carrier articulate.\n\nSYNTAX:\nvcf~ <cutoff>\nformant~\nvocoder~\n\nEXAMPLE:\nvcf~ 800\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal to filter.\n\ncutoff:\nWhere the filter acts, in Hz.\n\ntracking:\nThe same, exponentially in octaves, for following a pitch.\n\nresonance:\nHow much the filter emphasises its own cutoff. High enough and it rings.\n\ndrive:\nSaturation into the filter.\n\nmode:\nLow pass, high pass, band pass and so on.\n\nvowel / shift / q (formant~):\nWhich vowel, how the formants are shifted overall, and how sharp each \nresonance is.\n\nmodulator / left carrier / right carrier (vocoder~):\nThe signal whose shape is taken, and the signal it is imposed on.\n\nattack / release / sibilance (vocoder~):\nHow quickly the band followers move, and how much of the modulator's high end \nis passed straight through - which is what makes consonants intelligible.\n\nfreeze:\nHolds the current spectrum, so the shape stops following the modulator.\n\nOUTPUTS: \n\nleft out / right out:\nThe filtered signal.\n\nbands (vocoder~):\nThe band levels, as data."
+            "text": "vcf~ is a resonant filter: it shapes a sound by which FREQUENCIES it lets \nthrough, rather than by its level.\n\nFOUR MODES:\n\nlowpass    keeps what is below the cutoff (the default)\nhighpass   keeps what is above it\nbandpass   keeps a band around it\nnotch      removes a band around it\n\nTWO WAYS TO MOVE THE CUTOFF:\n'cutoff' is in Hz. 'tracking' is in octaves, and multiplies the cutoff \nexponentially: 1 is an octave up, -1 an octave down. Patching the same signal \nthat drives a vco~'s 'pitch' inlet into 'tracking' makes the filter follow the \noscillator, keeping the same tone at every pitch instead of getting duller as \nthe note rises. That is why the inlet is separate. It is also the easy way to \nsweep the filter: an lfo~ swinging -2 to 2 into 'tracking' moves the cutoff \nacross four octaves, where the same lfo~ into 'cutoff' would move it by only \n2 Hz unless you raise the cutoff depth.\n\nCutoff changes are applied sample by sample, so even fast modulation does not \nstep.\n\nRESONANCE AND DRIVE:\n'resonance' runs 0 to 0.99. At 0 the filter is gentle; as it rises the filter \nemphasises its own cutoff, and near the top it rings.\n\n'drive' is a gain into a soft clipper placed before the filter, which is a \ndirtier and more instrument-like tone than distorting the output. At the \ndefault of 1 the input passes clean; above 1 it saturates.\n\nSTEREO:\nPatch 'right in' and both channels go through one cutoff and one resonance, so \nthey cannot drift apart the way two separately patched vcf~ can. With nothing \nin 'right in', 'right out' carries the same signal as 'left out'.\n\nSYNTAX:\nvcf~ <cutoff> <mode>\n\nEXAMPLE:\nvcf~ 800 highpass\n\nThe arguments may come in either order. Defaults are 1000 Hz and lowpass.\n\nINPUTS and PARAMETERS:\n\nleft in / right in:\nThe signal to filter.\n\ncutoff:\nWhere the filter acts, in Hz. Default 1000, or the argument.\n\ntracking:\nOctaves added to the cutoff. Default 0.\n\nresonance:\n0 to 0.99. Default 0.\n\ndrive:\nGain into the soft clipper. Default 1, which is clean.\n\nmode:\nlowpass, highpass, bandpass or notch.\n\nbypass:\nTicked, the input passes through untouched and the filter stops computing.\n\nEach knob takes a number or a patched signal; the narrow box beside it is a \ndepth that scales whatever is patched in, and the knob's value is added to it.\n\nOUTPUTS: \n\nleft out / right out:\nThe filtered signal.\n\nRELATED:\nformant~ is five resonances tuned to a vowel. vocoder~ is a whole bank of \nthem, set by another sound."
         },
         "3": {
             "name": "vco~",
@@ -106,12 +106,12 @@
             "init": "vco~ 110"
         },
         "4": {
-            "init": "comment a bright source to filter",
+            "init": "comment a bright saw to filter",
             "name": "comment",
             "id": 385,
             "position_x": 654,
             "position_y": 272,
-            "width": 162,
+            "width": 144,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -119,7 +119,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "a bright source to filter",
+                    "value": "a bright saw to filter",
                     "value_type": "str"
                 },
                 "1": {
@@ -128,7 +128,7 @@
                     "value_type": "str"
                 }
             },
-            "comment": "a bright source to filter"
+            "comment": "a bright saw to filter"
         },
         "5": {
             "name": "lfo~",
@@ -140,12 +140,43 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
+            "properties": {
+                "0": {
+                    "name": "depth",
+                    "value": 2.0,
+                    "value_type": "float"
+                }
+            },
             "init": "lfo~ 0.3"
         },
         "6": {
-            "name": "vcf~",
+            "init": "comment swings -2 to 2 octaves",
+            "name": "comment",
             "id": 459,
+            "position_x": 654,
+            "position_y": 232,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "swings -2 to 2 octaves",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "swings -2 to 2 octaves"
+        },
+        "7": {
+            "name": "vcf~",
+            "id": 496,
             "position_x": 30,
             "position_y": 315,
             "width": 199,
@@ -153,16 +184,22 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
+            "properties": {
+                "0": {
+                    "name": "resonance",
+                    "value": 0.7,
+                    "value_type": "float"
+                }
+            },
             "init": "vcf~ 600"
         },
-        "7": {
+        "8": {
             "name": "text_block",
-            "id": 496,
+            "id": 533,
             "annotation": true,
             "position_x": 654,
             "position_y": 545,
-            "width": 218,
+            "width": 292,
             "height": 40,
             "visibility": "show_all",
             "draggable": true,
@@ -170,7 +207,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "the lfo sweeps the cutoff\nraise resonance until it rings",
+                    "value": "the lfo sweeps the cutoff through tracking\nraise resonance until it rings",
                     "value_type": "str"
                 },
                 "1": {
@@ -180,7 +217,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 210,
+                    "value": 284,
                     "value_type": "int"
                 },
                 "3": {
@@ -194,11 +231,11 @@
                     "value_type": "str"
                 }
             },
-            "text": "the lfo sweeps the cutoff\nraise resonance until it rings"
+            "text": "the lfo sweeps the cutoff through tracking\nraise resonance until it rings"
         },
-        "8": {
+        "9": {
             "name": "scope~",
-            "id": 533,
+            "id": 570,
             "position_x": 320,
             "position_y": 315,
             "width": 308,
@@ -208,9 +245,9 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "9": {
+        "10": {
             "name": "fader_out~",
-            "id": 570,
+            "id": 607,
             "position_x": 30,
             "position_y": 615,
             "width": 70,
@@ -218,12 +255,43 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
+            "properties": {
+                "0": {
+                    "name": "fader",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            },
             "init": "fader_out~ 1 2"
         },
-        "10": {
+        "11": {
+            "init": "comment raise the fader to hear it",
+            "name": "comment",
+            "id": 644,
+            "position_x": 654,
+            "position_y": 850,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "raise the fader to hear it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "raise the fader to hear it"
+        },
+        "12": {
             "name": "close",
-            "id": 607,
+            "id": 681,
             "position_x": 24,
             "position_y": 953,
             "width": 88,
@@ -246,7 +314,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "left out",
-            "dest_node": 459,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "left in"
@@ -256,30 +324,40 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "signal",
-            "dest_node": 459,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "cutoff"
+            "dest_input_name": "tracking"
         },
         "2": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "left out",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "3": {
-            "source_node": 459,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "left out",
             "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "left out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
             "dest_input_name": "left"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "right out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "right"
         }
     }
 }
