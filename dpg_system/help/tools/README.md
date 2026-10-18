@@ -301,7 +301,8 @@ totals in a column beside it and the column totals in a strip under it);
 `make_numpy_reduce_help.py` builds neither now. `np.mean_help.json` follows
 the same layout (a toggled glitch of 30 shows the mean jump and the median
 hold); `np.median_help.json` and `np.nanmean_help.json` are David's own
-reworks. `make_numpy_average_help.py` builds none of the three. Use `relayout.py --minimal`
+reworks, and `np.nanmedian_help.json` is np.nanmean's layout with the median
+nodes. `make_numpy_average_help.py` builds none of the four. Use `relayout.py --minimal`
 on these, never plain relayout.
 
 To hand-edit any generated page: open it, rework it, save over the same file

@@ -1,12 +1,10 @@
 """np averages and spread: one page per node.
 
-np.nanmedian, np.std, np.var and np.robust_mean (the np.mean, np.median and
-np.nanmean pages are hand-made). These were part of the np_stats family page;
+np.std, np.var and np.robust_mean (the np.mean, np.median, np.nanmean and
+np.nanmedian pages are hand-made). These were part of the np_stats family page;
 each now has its own page whose demo shows how its statistic DIFFERS from its
-neighbours - an
-outlier that drags the mean but not the median, a spread that std follows
-and var follows squared, a missing reading that turns mean into nan - with a
-SEE ALSO row under it.
+neighbours - a spread that std follows and var follows squared, an outlier
+that robust_mean leaves out - with a SEE ALSO row under it.
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -59,32 +57,6 @@ def readings_vector(key='vec', pos=(30, 130)):
     return {'key': key, 'init': 'vector 9', 'pos': pos, 'w': 120, 'h': 300,
             'props': props}
 
-
-# A missing reading: the same kind of numbers with a nan where one was lost.
-GAP_MSG = '4.8 5.1 4.9 nan 5.0 4.7 5.3'
-FULL_MSG = '4.8 5.1 4.9 5.2 5.0 4.7 5.3'
-
-# Inside make_gap: a 5 x 4 table of noise with one cell knocked out to nan,
-# like a sensor (column 1) that dropped one frame (row 2).
-GAP_SUB = {
-    'name': 'make_gap',
-    'host': 'gap',
-    'demo': [
-        {'key': 'in', 'init': 'in new', 'pos': (40, 40), 'w': 150, 'h': 80},
-        {'key': 'rnd', 'init': 'np.rand 5 4', 'pos': (40, 140), 'w': 160, 'h': 160,
-         'props': {'min': 0.0, 'max': 1.0, 'dim 0': 5, 'dim 1': 4, 'dtype': 'float32'}},
-        {'key': 'cr', 'init': 'comment 5 frames (rows) of 4 sensors (columns)',
-         'pos': (230, 150), 'w': 400, 'h': 30},
-        {'key': 'ed', 'init': 'np.edit 2, 1', 'pos': (40, 330), 'w': 200, 'h': 100,
-         'props': {'indices': '2, 1', 'values': 'nan'}},
-        {'key': 'ce', 'init': 'comment row 2, column 1 becomes nan - a lost reading',
-         'pos': (260, 345), 'w': 440, 'h': 30},
-        {'key': 'out', 'init': 'out table', 'pos': (40, 460), 'w': 150, 'h': 80},
-    ],
-    'links': [('in', 'new', 'rnd', ''),
-              ('rnd', 'random array', 'ed', 'array in'),
-              ('ed', 'output', 'out', 'table')],
-}
 
 # Inside make_noise: 64 random values scaled so their mean is exactly 0 and
 # their std exactly 1, then multiplied by 'spread' and moved by 'shift'.
@@ -180,132 +152,7 @@ the 2-D arrays that follow from being averaged along axis 1."""
 
 # np.median: its page is hand-made now (see tools/README.md).
 
-# ================================================================== nan pages
-def nan_page(stem, plain, title, first, why, related, see):
-    """np.nanmean and np.nanmedian: the same demos, each against its plain twin."""
-    op = stem.split('.')[1]          # nanmean
-    pl = plain.split('.')[1]         # mean
-    body = first + """
-
-Real data has holes. A dropped frame, a sensor that lost tracking or a
-division by zero arrives as nan ("not a number"), and any arithmetic that
-touches a nan gives nan - so """ + plain + """ of an array with a single
-nan in it is nan, which is correct and useless. """ + stem + """ leaves
-the nan values out and works on the values that are actually there.
-""" + why + """
-
-WITH NO HOLES IT IS THE SAME:
-If the array has no nan in it, """ + stem + """ gives exactly what
-""" + plain + """ gives. If EVERY value of the array (or of one column or
-row, along an axis) is nan there is nothing left to work on: the answer
-for it is nan, and numpy prints a RuntimeWarning in the console.
-
-""" + AXIS_TEXT + """
-Along an axis the holes are skipped per column (or per row), so a
-column with one nan still gets a sensible answer from the others.
-
-SYNTAX:
-""" + stem + """ <axis: int>
-With no argument there is no axis: the whole array becomes one number.
-
-EXAMPLE:
-""" + stem + """ 0
-
-INPUTS and PARAMETERS:
-
-in:
-The array (a list or a single number is turned into one). Every array
-that arrives is reduced and the result sent - the only inlet that makes
-the node send. A message such as 4.8 nan 5.0 makes a list with a nan in
-it: the word nan is read as the number.
-
-""" + AXIS_INLET.replace('np.mean 1', stem + ' 1') + """
-
-OUTPUTS:
-
-""" + op + """:
-With no axis, one number. With an axis, an array one dimension smaller:
-one result per column (axis 0) or per row (axis 1).
-
-A MISSING READING (top demo):
-Seven readings, one of them missing. Click the first message (with the
-nan): """ + plain + """ gives nan, """ + stem + """ gives the """ + pl + """
-of the six that are there. Click the second (the missing value filled
-in with 5.2) and the two agree.
-
-A LOST FRAME IN A TABLE (lower demo):
-make_gap makes a 5 by 4 table - 5 frames of 4 sensors - and knocks out
-one cell (row 2, column 1) to nan; click the button for a new table.
-A heat_map has no colour for nan: find the cell labelled nan (row 2,
-column 1). Along axis 0 (one result per
-sensor), """ + plain + """ gives nan for column 1 only - the other
-three columns are fine - while """ + stem + """ gives column 1 a value
-from its four remaining frames.
-
-RELATED:
-""" + related
-
-    demo = [
-        {'key': 'lb', 'init': 'load_bang', 'pos': (30, 62), 'w': 88, 'h': 46},
-        {'key': 'mg', 'init': 'message', 'pos': (30, 130), 'w': 330, 'h': 42,
-         'props': {'text in': GAP_MSG, 'font size': '24', 'width': 310}},
-        {'key': 'cmg', 'comment': True, 'text': 'one reading missing', 'pos': (380, 135)},
-        {'key': 'mf', 'init': 'message', 'pos': (30, 190), 'w': 330, 'h': 42,
-         'props': {'text in': FULL_MSG, 'font size': '24', 'width': 310}},
-        {'key': 'cmf', 'comment': True, 'text': 'the same, filled in', 'pos': (380, 195)},
-        {'key': 'ld', 'init': 'list', 'pos': (30, 260), 'w': 360, 'h': 42, 'props': LIST},
-        {'key': 'pn', 'init': plain, 'pos': (30, 330), 'w': 140, 'h': 70},
-        {'key': 'nn', 'init': stem, 'pos': (230, 330), 'w': 150, 'h': 70},
-        {'key': 'fpn', 'init': 'float', 'pos': (30, 420), 'w': 130, 'h': 42, 'props': FLOATW()},
-        {'key': 'fnn', 'init': 'float', 'pos': (230, 420), 'w': 130, 'h': 42, 'props': FLOATW()},
-        {'key': 'cf', 'comment': True, 'text': 'left: %s. right: %s' % (plain, stem),
-         'pos': (390, 425)},
-
-        {'key': 'btn', 'init': 'button', 'pos': (30, 520), 'w': 88, 'h': 46},
-        {'key': 'cb', 'comment': True, 'text': 'click for a new table', 'pos': (130, 525)},
-        {'key': 'gap', 'init': 'p make_gap', 'pos': (30, 590), 'w': 180, 'h': 70},
-        {'key': 'cg', 'comment': True, 'text': '5 x 4 noise, one cell nan - open it to see how',
-         'pos': (230, 600)},
-        {'key': 'hm', 'init': 'heat_map', 'pos': (30, 690), 'w': 260, 'h': 250,
-         'props': HM(240, 200, 5)},
-        {'key': 'p0', 'init': plain + ' 0', 'pos': (330, 960), 'w': 140, 'h': 70,
-         'props': {'axis': '0'}},
-        {'key': 'h0', 'init': 'heat_map', 'pos': (30, 960), 'w': 260, 'h': 90,
-         'props': HM(240, 40, 1)},
-        {'key': 'n0', 'init': stem + ' 0', 'pos': (330, 1070), 'w': 150, 'h': 70,
-         'props': {'axis': '0'}},
-        {'key': 'hn0', 'init': 'heat_map', 'pos': (30, 1070), 'w': 260, 'h': 90,
-         'props': HM(240, 40, 1)},
-        {'key': 'c0', 'comment': True, 'text': 'one value per column (axis 0):\n%s above, %s below' % (plain, stem),
-         'pos': (30, 1175)},
-    ] + see_also(1250, see)
-    links = [('lb', 'out', 'mg', ''), ('lb', 'out', 'gap', 'new'),
-             ('mg', 'message out', 'ld', ''), ('mf', 'message out', 'ld', ''),
-             ('mg', 'message out', 'pn', 'in'), ('mf', 'message out', 'pn', 'in'),
-             ('mg', 'message out', 'nn', 'in'), ('mf', 'message out', 'nn', 'in'),
-             ('pn', pl, 'fpn', ''), ('nn', op, 'fnn', ''),
-             ('btn', '', 'gap', 'new'),
-             ('gap', 'table', 'hm', 'y'), ('gap', 'table', 'p0', 'in'),
-             ('gap', 'table', 'n0', 'in'),
-             ('p0', pl, 'h0', 'y'), ('n0', op, 'hn0', 'y')]
-    print(build(stem, title, body, demo, links, demo_width=740, text_width=760,
-                text_height=1240, subpatch=GAP_SUB))
-
-
-# np.nanmean: its page is hand-made now (see tools/README.md).
-
-nan_page('np.nanmedian', 'np.median', 'np.nanmedian - the middle value, skipping missing values',
-         """Gives the middle value of an array's values that are actually there,
-skipping any that are nan (missing).""",
-         """The values present are sorted and the middle one taken (halfway
-between the two middle ones when the count is even), exactly as
-np.median does with a complete array.""",
-         """np.median is the same without the skipping. np.nanmean averages the
-values present; np.nansum adds them up. A median already ignores a few
-WRONG values - nanmedian also ignores MISSING ones, so it is the most
-forgiving of the lot. t.nanmedian is the PyTorch version.""",
-         ['np.median', 'np.nanmean', 'np.nansum', 'np.robust_mean', 't.nanmedian'])
-
+# np.nanmean and np.nanmedian: their pages are hand-made now (see tools/README.md).
 
 # ===================================================================== spread pages
 STD_DEMO_TEXT = """THE DEMO:
