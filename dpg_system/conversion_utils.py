@@ -2094,8 +2094,13 @@ def decode_arg(args, index):
         if lower_arg == 'false':
             return False, bool
 
-        # Remove commas for number parsing (e.g., "1,000")
-        num_str = clean_arg.replace(',', '')
+        # Remove commas for number parsing: a separator comma left on a
+        # space-split token ("3," from "3, 4") and thousands separators
+        # ("1,000"). Any other inner comma ("3,7") is not one number, so the
+        # token stays a string rather than silently becoming 37.
+        num_str = clean_arg.strip(',')
+        if ',' in num_str and re.fullmatch(r'[-+]?\d{1,3}(,\d{3})+(\.\d*)?', num_str):
+            num_str = num_str.replace(',', '')
 
         # B. Try Integer
         try:

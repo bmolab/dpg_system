@@ -91,10 +91,8 @@ optional: [2:5, 4:8] and 2:5, 4:8 mean the same.
 
 SYNTAX:
 np.[] <index string>
-Default ':', the whole array. The arguments are joined with no space
-between them: np.[] 2:5, 4:8 works, but np.[] [0 3 7] becomes [037] and
-fails - write [0;3;7], or type the string into the field after the node
-is made.
+Default ':', the whole array. The arguments are joined back together
+with spaces, so np.[] 2:5, 4:8 and np.[] [0 3 7] both work as typed.
 
 EXAMPLE:
 np.[] 2:5,4:8
@@ -242,7 +240,7 @@ demo = numbered_source('met', 'metro 100',
     {'key': 'shp', 'init': 'np.shape', 'pos': (490, 730), 'w': 110, 'h': 70},
     {'key': 'l1', 'init': 'list', 'pos': (490, 820), 'w': 150, 'h': 42, 'props': LIST},
     {'key': 'c3', 'comment': True, 'text': '(rows, columns) kept', 'pos': (490, 825)},
-] + see_also(910, ['np.[]', 'np_clip', 'np.edit', 'pc_crop'])
+] + see_also(910, ['np.[]', 'np.clip', 'np.edit', 'pc_crop'])
 links = [('met', '', 'ls', '')] + SOURCE_LINKS + [
     ('rs', 'output', 'cr', 'image in'),
     ('cr', 'out array', 'hout', 'y'), ('cr', 'out array', 'shp', 'np in'),
@@ -333,7 +331,7 @@ demo = [
     {'key': 'c2', 'comment': True, 'text': 'drag 0.75: the radius of the disc',
      'pos': (30, 570)},
     {'key': 'hm', 'init': 'heat_map', 'pos': (30, 840), 'w': 208, 'h': 250,
-     'props': HM(200, 200, 10, 0.0, 1.0, fmt='none', color='greys')},
+     'props': HM(200, 200, 10, 0.0, 1.0, fmt='none', color='hot')},
     {'key': 'c3', 'comment': True, 'text': 'the condition: true inside the disc',
      'pos': (30, 850)},
     {'key': 'wh', 'init': 'np.where', 'pos': (470, 840), 'w': 160, 'h': 100},
@@ -341,7 +339,7 @@ demo = [
      'props': HM(200, 200, 10, -1.0, 1.0, fmt='none')},
     {'key': 'c4', 'comment': True, 'text': 'x inside the disc, y outside it',
      'pos': (470, 970)},
-] + see_also(1240, ['np.argwhere', 'greater', 'np_clip', 't.index_select', 'np.[]'])
+] + see_also(1240, ['np.argwhere', 'greater', 'np.clip', 't.index_select', 'np.[]'])
 links = [('met', '', 'gr', ''), ('gr', 'grid points', 'tr', ''),
          ('tr', 'array', 'sx', 'tensor in', 1), ('tr', 'array', 'sy', 'tensor in', 1),
          ('sx', 'output', 'hx', 'y'), ('sy', 'output', 'hy', 'y'),
@@ -410,7 +408,7 @@ demo = [
     {'key': 'c1', 'comment': True, 'text': 'true where the noise is above 0.85',
      'pos': (30, 320)},
     {'key': 'hm', 'init': 'heat_map', 'pos': (30, 400), 'w': 268, 'h': 300,
-     'props': HM(240, 240, 8, 0.0, 1.0, fmt='none', color='greys')},
+     'props': HM(240, 240, 8, 0.0, 1.0, fmt='none', color='hot')},
     {'key': 'c2', 'comment': True, 'text': 'the mask: white cells are found',
      'pos': (30, 410)},
     {'key': 'aw', 'init': 'np.argwhere', 'pos': (330, 400), 'w': 130, 'h': 70},

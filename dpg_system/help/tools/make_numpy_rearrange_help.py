@@ -116,8 +116,8 @@ axis (int box, also an inlet):
 Which axis to reverse. Changing it does NOT send by itself; the next array
 uses it. In the demo a metro inside make_F re-sends the F ten times a
 second, so the picture follows your edits.
-A negative axis is treated as 0 - NOT as counting from the end, as
-in numpy - and an axis past the last one is treated as the last.
+A negative axis counts from the end, as in numpy (-1 is the last
+axis), and an axis past the last one is treated as the last.
 
 OUTPUTS:
 
@@ -183,15 +183,13 @@ axis 0, right for axis 1); negative the other way. A shift larger than
 the axis just goes round again: on 6 columns, 7 is the same as 1.
 Changing it does NOT send by itself - in the demo a metro inside make_F
 re-sends the F ten times a second, so the picture follows your edits.
-A negative shift typed into the box works, but a patch saved with one
-reopens with 0 (a bug: the box's lower limit is applied on load). To
-keep a backwards roll in a saved patch, use the forward equivalent: on 6
-columns, 5 instead of -1.
+A negative shift rolls the other way: -1 moves everything one place
+back, the first column wrapping round to the end.
 
 axis (int box, also an inlet):
 Which axis to roll along: 0 moves rows, 1 moves columns. For a 1-D
-array only 0 means anything. A negative axis is treated as 0 - not as
-counting from the end - and an axis past the last one as the last.
+array only 0 means anything. A negative axis counts from the end (-1
+is the last axis), and an axis past the last one is treated as the last.
 
 OUTPUTS:
 
@@ -268,8 +266,9 @@ axis 1 / axis 2 (int boxes, also inlets):
 The plane to turn in: the turn goes FROM axis 1 TOWARDS axis 2. Swapping
 them reverses the direction. For a 2-D array leave them at 0 and 1; they
 matter for 3-D arrays, where they choose which pair of axes turns. A
-negative axis is treated as 0, one past the last as the last; if the two
-end up the same, nothing is sent.
+negative axis counts from the end (-1 is the last), one past the last
+is treated as the last; if the two end up the same, nothing is sent
+(a message says so).
 
 OUTPUTS:
 
@@ -337,7 +336,7 @@ repeated and sent; only this inlet makes the node send.
 
 repeats (int box, also an inlet):
 How many copies of each element. 1 passes the array through; 0 gives an
-empty array; a negative number is an error and nothing is sent.
+empty array; a negative number prints a message and nothing is sent.
 Changing it does NOT send by itself - in the demo a metro re-sends the
 row ten times a second.
 
@@ -346,8 +345,8 @@ Which axis to repeat along. On a 2-D array, 0 repeats each row and 1
 each column. Set it to the number of dimensions the array has (1 for a
 row) and the node first ADDS a new axis there, so each value is copied
 into a new dimension: a row of 4 becomes 4 rows of copies (4 by
-repeats). A negative axis is treated as 0; anything past that is
-treated as the last axis.
+repeats). A negative axis counts from the end (-1 is the last axis);
+anything past one-beyond-the-last is treated as the last axis.
 
 OUTPUTS:
 
@@ -688,8 +687,8 @@ axis, use np.stack.)
 THE SHAPES MUST FIT:
 The two arrays must match in every dimension except the one being joined
 along: two 7 by 6 arrays join along axis 0 into 14 by 6, or along axis 1
-into 7 by 12. If they do not fit, numpy refuses, an error is printed and
-nothing is sent.
+into 7 by 12. If they do not fit, a message naming both shapes is
+printed and nothing is sent.
 
 SYNTAX:
 np.concatenate <axis: int>
@@ -789,16 +788,15 @@ stack and send.
 
 in 2:
 The second array. It is only stored, so it must arrive BEFORE in. It
-must have exactly the same shape as the first, or numpy refuses, an error
-is printed and nothing is sent.
+must have exactly the same shape as the first; if it does not, a
+message naming both shapes is printed and nothing is sent.
 
 axis (menu, also an inlet):
 Where the new axis goes. 0 (the default) puts it first: the arrays become
-the rows (for 1-D inputs) or the layers (for 2-D inputs). The menu only
-lists the axes the inputs ALREADY have, so the new axis cannot be put
-last - for two 1-D rows only 0 is offered, which is the useful one. Do
-not choose None: np.stack has no flattened form, and the node prints an
-error and sends nothing.
+the rows (for 1-D inputs) or the layers (for 2-D inputs). The menu
+lists the inputs' axes plus one more, so the new axis can also go last:
+for two rows of 8, axis 1 gives 8 rows of 2 - the two arrays become the
+columns. There is no None: np.stack has no flattened form.
 
 OUTPUTS:
 

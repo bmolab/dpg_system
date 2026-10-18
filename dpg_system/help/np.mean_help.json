@@ -1,0 +1,1015 @@
+{
+    "height": 1281,
+    "width": 1919,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1458,
+    "name": "np.mean_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.mean_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.mean - the average",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 267,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.mean - the average",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.mean - the average"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1111,
+            "position_y": 45,
+            "width": 768,
+            "height": 1176,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Averages the values of an array: adds them up and divides by how many\nthere are.\n\nThe mean is the everyday \"typical value\", the balance point of the data.\nReach for it to smooth a set of readings into one number, to find the\ncentre of a cloud of points, or to average each sensor over a window of\nframes. It uses every value equally - which is its strength, and its\nweakness: one wild value pulls it a long way (see THE OUTLIER below).\n\nTHE axis MENU:\nWith no axis (the default) the whole array is reduced to one number.\nWith axis 0 the reduction runs DOWN each column, giving one result per\ncolumn; with axis 1 it runs ALONG each row, giving one result per row.\nFor a table of 5 frames (rows) of 4 sensors (columns), axis 0 answers\n\"what did each sensor read on average\", axis 1 \"what did all the sensors\nread on average at each frame\". The axis named is the one that\ndisappears: a 5 by 4 array gives 4 values on axis 0, 5 on axis 1.\n\nSYNTAX:\nnp.mean <axis: int>\nWith no argument there is no axis: the whole array becomes one number.\n\nEXAMPLE:\nnp.mean 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list or a single number is turned into one). Every array\nthat arrives is averaged and the result sent - this is the only inlet\nthat makes the node send.\n\naxis (menu, also an inlet):\nWhich way to reduce - see THE axis MENU. Changing it does NOT send by\nitself; the next array uses it. The menu offers None (the whole array)\nand the axes the last array had (None and 0 for a 1-D array); a message\nNone into the axis inlet also returns to the whole array. An axis the\narray does not have is treated as its last axis for that array only:\nthe choice is kept, so one 1-D array through np.mean 1 does not stop\nthe 2-D arrays that follow from being averaged along axis 1.\n\nOUTPUTS:\n\nmean:\nWith no axis, one number. With an axis, an array one dimension smaller:\na 4 by 6 array gives 6 means on axis 0, 4 on axis 1. A list or array of\nwhole numbers still gives a fractional mean.\n\nTHE OUTLIER (top demo):\nNine readings, eight of them close to 5 and one glitch of 20. Their mean\nis 6.68 - higher than eight of the nine readings, so not \"typical\" of\nanything. The median (the middle value once sorted) is 5.1 and barely\nnotices the glitch. Drag the 20 down to 5 and the two agree; drag it to\n100 and the mean follows it while the median does not move. Drag any\nother value a little and both shift a little.\n\nALONG AN AXIS (lower demo):\nnp.rand makes a 4 by 6 table of random values from 0 to 1; click its\nbutton (top left of the node) for a new one. np.mean with no axis gives\none number for the whole table. np.mean 0 averages each column: its\nstrip of 6 sits under the table, one cell under each column. np.mean 1\naverages each row: np.expand_dims stands its 4 values up as a column so\neach sits beside its own row. All three use the same colours as the\ntable, 0 dark purple to 1 yellow.\n\nRELATED:\nnp.median is the outlier-proof middle value. np.robust_mean averages\nonly the values near the median. np.nanmean skips missing (nan) values,\nwhich make np.mean give nan. np.sum is the total before dividing.\nnp.std measures how far values sit from the mean. t.mean is the PyTorch\nversion.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1160,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Averages the values of an array: adds them up and divides by how many\nthere are.\n\nThe mean is the everyday \"typical value\", the balance point of the data.\nReach for it to smooth a set of readings into one number, to find the\ncentre of a cloud of points, or to average each sensor over a window of\nframes. It uses every value equally - which is its strength, and its\nweakness: one wild value pulls it a long way (see THE OUTLIER below).\n\nTHE axis MENU:\nWith no axis (the default) the whole array is reduced to one number.\nWith axis 0 the reduction runs DOWN each column, giving one result per\ncolumn; with axis 1 it runs ALONG each row, giving one result per row.\nFor a table of 5 frames (rows) of 4 sensors (columns), axis 0 answers\n\"what did each sensor read on average\", axis 1 \"what did all the sensors\nread on average at each frame\". The axis named is the one that\ndisappears: a 5 by 4 array gives 4 values on axis 0, 5 on axis 1.\n\nSYNTAX:\nnp.mean <axis: int>\nWith no argument there is no axis: the whole array becomes one number.\n\nEXAMPLE:\nnp.mean 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list or a single number is turned into one). Every array\nthat arrives is averaged and the result sent - this is the only inlet\nthat makes the node send.\n\naxis (menu, also an inlet):\nWhich way to reduce - see THE axis MENU. Changing it does NOT send by\nitself; the next array uses it. The menu offers None (the whole array)\nand the axes the last array had (None and 0 for a 1-D array); a message\nNone into the axis inlet also returns to the whole array. An axis the\narray does not have is treated as its last axis for that array only:\nthe choice is kept, so one 1-D array through np.mean 1 does not stop\nthe 2-D arrays that follow from being averaged along axis 1.\n\nOUTPUTS:\n\nmean:\nWith no axis, one number. With an axis, an array one dimension smaller:\na 4 by 6 array gives 6 means on axis 0, 4 on axis 1. A list or array of\nwhole numbers still gives a fractional mean.\n\nTHE OUTLIER (top demo):\nNine readings, eight of them close to 5 and one glitch of 20. Their mean\nis 6.68 - higher than eight of the nine readings, so not \"typical\" of\nanything. The median (the middle value once sorted) is 5.1 and barely\nnotices the glitch. Drag the 20 down to 5 and the two agree; drag it to\n100 and the mean follows it while the median does not move. Drag any\nother value a little and both shift a little.\n\nALONG AN AXIS (lower demo):\nnp.rand makes a 4 by 6 table of random values from 0 to 1; click its\nbutton (top left of the node) for a new one. np.mean with no axis gives\none number for the whole table. np.mean 0 averages each column: its\nstrip of 6 sits under the table, one cell under each column. np.mean 1\naverages each row: np.expand_dims stands its 4 values up as a column so\neach sits beside its own row. All three use the same colours as the\ntable, 0 dark purple to 1 yellow.\n\nRELATED:\nnp.median is the outlier-proof middle value. np.robust_mean averages\nonly the values near the median. np.nanmean skips missing (nan) values,\nwhich make np.mean give nan. np.sum is the total before dividing.\nnp.std measures how far values sit from the mean. t.mean is the PyTorch\nversion."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "vector",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 160,
+            "height": 196,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "[0]",
+                    "value": 4.8,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "[1]",
+                    "value": 5.1,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "[2]",
+                    "value": 4.9,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "[3]",
+                    "value": 5.2,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "[4]",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "[5]",
+                    "value": 4.7,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "[6]",
+                    "value": 5.3,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "[7]",
+                    "value": 5.1,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "[8]",
+                    "value": 20.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "component count",
+                    "value": 9,
+                    "value_type": "int"
+                },
+                "10": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "11": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "str"
+                },
+                "12": {
+                    "name": "width",
+                    "value": 90,
+                    "value_type": "int"
+                }
+            },
+            "init": "vector 9"
+        },
+        "5": {
+            "name": "text_block",
+            "id": 422,
+            "annotation": true,
+            "position_x": 833,
+            "position_y": 440,
+            "width": 231,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "nine readings - drag any of them\nthe last one, 20, is a glitch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 223,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "nine readings - drag any of them\nthe last one, 20, is a glitch"
+        },
+        "6": {
+            "name": "np.mean",
+            "id": 459,
+            "position_x": 240,
+            "position_y": 130,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "name": "float",
+            "id": 496,
+            "position_x": 240,
+            "position_y": 210,
+            "width": 140,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "init": "comment mean: pulled up by the glitch",
+            "name": "comment",
+            "id": 533,
+            "position_x": 833,
+            "position_y": 215,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "mean: pulled up by the glitch",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "mean: pulled up by the glitch"
+        },
+        "9": {
+            "name": "np.median",
+            "id": 570,
+            "position_x": 240,
+            "position_y": 290,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 240,
+            "position_y": 370,
+            "width": 140,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment median: stays with the eight",
+            "name": "comment",
+            "id": 644,
+            "position_x": 833,
+            "position_y": 375,
+            "width": 181,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "median: stays with the eight",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "median: stays with the eight"
+        },
+        "12": {
+            "name": "np.rand",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 530,
+            "width": 123,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "dim 1",
+                    "value": 6,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.rand 4 6"
+        },
+        "13": {
+            "init": "comment click for a new 4 x 6 table",
+            "name": "comment",
+            "id": 718,
+            "position_x": 833,
+            "position_y": 700,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click for a new 4 x 6 table",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click for a new 4 x 6 table"
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 755,
+            "position_x": 230,
+            "position_y": 530,
+            "width": 268,
+            "height": 210,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "name": "np.mean",
+            "id": 792,
+            "position_x": 540,
+            "position_y": 445,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": "1",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.mean 1"
+        },
+        "16": {
+            "name": "np.expand_dims",
+            "id": 829,
+            "position_x": 690,
+            "position_y": 445,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "np.expand_dims 1"
+        },
+        "17": {
+            "name": "heat_map",
+            "id": 866,
+            "position_x": 540,
+            "position_y": 530,
+            "width": 64,
+            "height": 210,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 56,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 160,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment axis 1: one mean per row",
+            "name": "comment",
+            "id": 903,
+            "position_x": 833,
+            "position_y": 600,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axis 1: one mean per row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "axis 1: one mean per row"
+        },
+        "19": {
+            "name": "np.mean",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 760,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": "0",
+                    "value_type": "str"
+                }
+            },
+            "init": "np.mean 0"
+        },
+        "20": {
+            "name": "heat_map",
+            "id": 977,
+            "position_x": 230,
+            "position_y": 770,
+            "width": 268,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 40,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "21": {
+            "init": "comment axis 0: one mean per column",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 833,
+            "position_y": 870,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "axis 0: one mean per column",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "axis 0: one mean per column"
+        },
+        "22": {
+            "name": "np.mean",
+            "id": 1051,
+            "position_x": 30,
+            "position_y": 900,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "23": {
+            "name": "float",
+            "id": 1088,
+            "position_x": 30,
+            "position_y": 980,
+            "width": 140,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 110,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "24": {
+            "init": "comment no axis: one number for the whole table",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 833,
+            "position_y": 985,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "no axis: one number for the whole table",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "no axis: one number for the whole table"
+        },
+        "25": {
+            "name": "help_link",
+            "id": 1162,
+            "position_x": 30,
+            "position_y": 1060,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.median"
+        },
+        "26": {
+            "name": "help_link",
+            "id": 1199,
+            "position_x": 143,
+            "position_y": 1060,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.robust_mean"
+        },
+        "27": {
+            "name": "help_link",
+            "id": 1236,
+            "position_x": 294,
+            "position_y": 1060,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.nanmean"
+        },
+        "28": {
+            "name": "help_link",
+            "id": 1273,
+            "position_x": 415,
+            "position_y": 1060,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.sum"
+        },
+        "29": {
+            "name": "help_link",
+            "id": 1310,
+            "position_x": 505,
+            "position_y": 1060,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.std"
+        },
+        "30": {
+            "name": "help_link",
+            "id": 1347,
+            "position_x": 595,
+            "position_y": 1060,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.mean"
+        },
+        "31": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1384,
+            "position_x": 833,
+            "position_y": 1060,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "32": {
+            "name": "close",
+            "id": 1421,
+            "position_x": 24,
+            "position_y": 1134,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mean",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "median",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "9": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 1051,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "10": {
+            "source_node": 940,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mean",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "11": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mean",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "input"
+        },
+        "12": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "array out",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "13": {
+            "source_node": 1051,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mean",
+            "dest_node": 1088,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

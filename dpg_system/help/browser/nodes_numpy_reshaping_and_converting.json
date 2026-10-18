@@ -5,7 +5,7 @@
         100,
         100
     ],
-    "id": 1314,
+    "id": 1277,
     "name": "nodes_numpy_reshaping_and_converting",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_reshaping_and_converting.json",
     "nodes": {
@@ -643,46 +643,6 @@
                 }
             },
             "id": 1240,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "20": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 256,
-            "position_y": 518,
-            "width": 218,
-            "height": 28,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "brightness as a fourth channel",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 210,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "brightness as a fourth channel",
-            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

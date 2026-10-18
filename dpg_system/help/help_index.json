@@ -797,6 +797,24 @@
   "np.add_alpha": [
     "np.add_alpha"
   ],
+  "np.all": [
+    "np.all"
+  ],
+  "np.amax": [
+    "np.amax"
+  ],
+  "np.amin": [
+    "np.amin"
+  ],
+  "np.any": [
+    "np.any"
+  ],
+  "np.argmax": [
+    "np.argmax"
+  ],
+  "np.argmin": [
+    "np.argmin"
+  ],
   "np.argsort": [
     "np.argsort"
   ],
@@ -806,11 +824,32 @@
   "np.astype": [
     "np.astype"
   ],
+  "np.clip": [
+    "np.clip"
+  ],
   "np.concatenate": [
     "np.concatenate"
   ],
   "np.crop": [
     "np.crop"
+  ],
+  "np.cross": [
+    "np.cross"
+  ],
+  "np.cumprod": [
+    "np.cumprod"
+  ],
+  "np.cumsum": [
+    "np.cumsum"
+  ],
+  "np.diff": [
+    "np.diff"
+  ],
+  "np.distance_from_target": [
+    "np.distance_from_target"
+  ],
+  "np.dot": [
+    "np.dot"
   ],
   "np.edit": [
     "np.edit"
@@ -825,6 +864,25 @@
   "np.grid": [
     "np.grid"
   ],
+  "np.inner": [
+    "np.inner"
+  ],
+  "np.linalg.det": [
+    "np.linalg.det"
+  ],
+  "np.linalg.inv": [
+    "np.linalg.inv"
+  ],
+  "np.linalg.matrix_rank": [
+    "np.linalg.matrix_rank"
+  ],
+  "np.linalg.norm": [
+    "np.linalg.norm",
+    "euclidean_distance"
+  ],
+  "np.linalg.solve": [
+    "np.linalg.solve"
+  ],
   "np.line_intersection": [
     "np.line_intersection"
   ],
@@ -834,8 +892,38 @@
   "np.load": [
     "np.load"
   ],
+  "np.matmul": [
+    "np.matmul"
+  ],
+  "np.max": [
+    "np.max"
+  ],
+  "np.mean": [
+    "np.mean"
+  ],
+  "np.median": [
+    "np.median"
+  ],
+  "np.min": [
+    "np.min"
+  ],
+  "np.nanmean": [
+    "np.nanmean"
+  ],
+  "np.nanmedian": [
+    "np.nanmedian"
+  ],
+  "np.nansum": [
+    "np.nansum"
+  ],
   "np.ones": [
     "np.ones"
+  ],
+  "np.outer": [
+    "np.outer"
+  ],
+  "np.proximity_to_target": [
+    "np.proximity_to_target"
   ],
   "np.rand": [
     "np.rand"
@@ -845,6 +933,9 @@
   ],
   "np.reshape": [
     "np.reshape"
+  ],
+  "np.robust_mean": [
+    "np.robust_mean"
   ],
   "np.roll": [
     "np.roll"
@@ -874,8 +965,17 @@
   "np.stack": [
     "np.stack"
   ],
+  "np.std": [
+    "np.std"
+  ],
+  "np.sum": [
+    "np.sum"
+  ],
   "np.transpose": [
     "np.transpose"
+  ],
+  "np.var": [
+    "np.var"
   ],
   "np.where": [
     "np.where"
@@ -883,49 +983,7 @@
   "np.zeros": [
     "np.zeros"
   ],
-  "np_clip": [
-    "np.clip",
-    "np.max",
-    "np.min"
-  ],
-  "np_cumulative": [
-    "np.cumsum",
-    "np.cumprod",
-    "np.diff"
-  ],
-  "np_linalg": [
-    "np.linalg.det",
-    "np.linalg.inv",
-    "np.linalg.matrix_rank",
-    "np.linalg.solve",
-    "np.linalg.norm",
-    "euclidean_distance",
-    "np.dot",
-    "np.inner",
-    "np.outer",
-    "np.cross",
-    "np.matmul"
-  ],
-  "np_stats": [
-    "np.amax",
-    "np.amin",
-    "np.argmax",
-    "np.argmin",
-    "np.mean",
-    "np.median",
-    "np.nanmean",
-    "np.nanmedian",
-    "np.nansum",
-    "np.std",
-    "np.sum",
-    "np.var",
-    "np.any",
-    "np.all",
-    "np.robust_mean"
-  ],
-  "np_target": [
-    "np.distance_from_target",
-    "np.proximity_to_target",
+  "proximity_trigger": [
     "proximity_trigger"
   ],
   "rotate_position": [
@@ -1642,6 +1700,14 @@
     "t.linalg.qr",
     "t.linalg.eig",
     "t.linalg.pca_low_rank"
+  ],
+  "t.mean": [
+    "t.mean",
+    "t.median",
+    "t.nanmean",
+    "t.nanmedian",
+    "t.sum",
+    "t.nansum"
   ],
   "t.normalize": [
     "t.normalize"

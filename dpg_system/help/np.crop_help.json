@@ -507,7 +507,7 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "help_link np_clip"
+            "init": "help_link np.clip"
         },
         "18": {
             "name": "help_link",

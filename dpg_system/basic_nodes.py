@@ -1344,15 +1344,17 @@ class GateNode(Node):
             self.state = any_to_int(self.choice_input())
 
     def execute(self):
+        # Read (and so un-fresh) every arrival, open or shut: a value that
+        # arrived while shut is dropped, not re-sent when the gate reopens.
+        if not self.gated_input.fresh_input:
+            return
+        value = self.gated_input()
         if self.num_gates == 1:
             if self.bool_state:
-                if self.gated_input.fresh_input:
-                    self.outputs[0].send(self.gated_input())
+                self.outputs[0].send(value)
         else:
             if self.num_gates >= self.state > 0:
-                if self.gated_input.fresh_input:
-                    value = self.gated_input()
-                    self.outputs[self.state - 1].send(self.gated_input())
+                self.outputs[self.state - 1].send(value)
 
 
 class SwitchNode(Node):

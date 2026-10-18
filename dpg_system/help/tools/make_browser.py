@@ -142,7 +142,11 @@ TREE = {
         ('Reshaping and converting', ['np.reshape', 'np.shape', 'flatten', 'np.expand_dims', 'np.squeeze', 'np.transpose', 'np.astype', 'np.add_alpha']),
         ('Rearranging and joining', ['np.flip', 'np.roll', 'np.rot90', 'np.repeat', 'np.sort', 'np.argsort', 'np.split', 'np.concatenate', 'np.stack']),
         ('Selecting and editing', ['np.[]', 'np.crop', 'np.where', 'np.argwhere', 'np.edit']),
-        ('Calculating', ['np_clip', 'np_stats', 'np_cumulative', 'np.rolling_buffer', 'np_linalg', 'np_target', 'np.line_intersection', 'rotate_position']),
+        ('Limiting values', ['np.clip', 'np.min', 'np.max']),
+        ('Reducing to an answer', ['np.amax', 'np.amin', 'np.argmax', 'np.argmin', 'np.sum', 'np.nansum', 'np.mean', 'np.median', 'np.nanmean', 'np.nanmedian', 'np.robust_mean', 'np.std', 'np.var', 'np.any', 'np.all']),
+        ('Running totals and history', ['np.cumsum', 'np.cumprod', 'np.diff', 'np.rolling_buffer']),
+        ('Linear algebra', ['np.dot', 'np.inner', 'np.outer', 'np.cross', 'np.matmul', 'np.linalg.norm', 'np.linalg.det', 'np.linalg.matrix_rank', 'np.linalg.inv', 'np.linalg.solve']),
+        ('Geometry and targets', ['np.distance_from_target', 'np.proximity_to_target', 'proximity_trigger', 'np.line_intersection', 'rotate_position']),
     ]),
     'nodes_torch': ('PyTorch', 't. nodes work on torch tensors; k. and tv. nodes are under Video and images.', [
         ('', [
@@ -228,8 +232,7 @@ LABELS = {
     'mgl_sphere': 'mgl shapes', 'mgl_transform': 'mgl transforms',
     'midi_control_in': 'MIDI controllers / programs', 'midi_note_in': 'MIDI notes',
     'midi_pitchbend_in': 'MIDI bend / aftertouch', 'modal~': 'struck models',
-    'momentary': 'momentary sliders', 'np_cumulative': 'np cumulative',
-    'np_linalg': 'np linear algebra', 'np_stats': 'np statistics', 'np_target': 'np targets',
+    'momentary': 'momentary sliders',
     'osc_float': 'OSC widgets', 'osc_source': 'OSC connections',
     'param_widgets': 'param_ widgets',
     'polyphonic_sampler': 'polyphonic / granular / scratch',

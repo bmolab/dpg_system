@@ -230,7 +230,7 @@
             "properties": {
                 "0": {
                     "name": "color",
-                    "value": "greys",
+                    "value": "hot",
                     "value_type": "str"
                 },
                 "1": {

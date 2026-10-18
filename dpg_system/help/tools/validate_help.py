@@ -32,6 +32,57 @@ def names(iface, label, kinds, strip=True):
             for e in v['elements'] if e['kind'] in ks]
 
 
+def ordered_ports(iface, label, kind):
+    """A node's inlets (or outlets) in construction order, as (label,
+    conditional) with labels unstripped; conditional marks a port added in a
+    branch or loop the extractor could not decide. None if any label is
+    computed at runtime (then indices mean nothing here)."""
+    v = iface.get(label)
+    if v is None:
+        return None
+    ports = [(e['label'], e.get('conditional', False))
+             for e in v['elements'] if e['kind'] == kind]
+    return None if any(p == '<dynamic>' for p, _ in ports) else ports
+
+
+def ambiguous_port(ports, name, index, what):
+    """How the loader resolves a link end, and whether that can be trusted.
+
+    An empty name is resolved by index alone, and a name by the indexed port
+    if its label matches, else the first port with that label. build_help
+    writes index 0 when the link tuple gives none, so index 0 cannot tell
+    'meant inlet 0' from 'forgot the index' -- a cord aimed at an unnamed
+    second inlet (np.reshape's shape, == operand) lands on inlet 0 and still
+    looks fine. Returns (errors, warnings).
+
+    Ports in an undecided branch (== adds '' or 'operand' depending on its
+    argument) may not exist, so they never count towards a duplicate, and
+    once there are any the static indices are only approximate."""
+    if ports is None or not ports:
+        return [], []
+    labels = [p for p, _ in ports]
+    if index >= len(ports) and not any(c for _, c in ports):
+        return [], [f"{what} index {index} is past the {len(ports)} the node declares {labels}"
+                    f" - the loader drops such a cord without a message"]
+    if name == '':
+        unnamed = [i for i, p in enumerate(labels) if p == '']
+        first, first_cond = ports[0]
+        if index == 0 and first != '' and not first_cond and unnamed:
+            return [f"{what} not named and no index, so it lands on {what} 0 "
+                    f"'{first}', not the unnamed {what} at {unnamed}: give its index, "
+                    f"or name '{first}' if that is meant"], []
+        if index == 0 and sum(1 for p, c in ports if p == '' and not c) > 1:
+            return [], [f"{what} not named and index 0, with unnamed {what}s at {unnamed}:"
+                        f" {what} 0 is used - give an index if a later one is meant"]
+        return [], []
+    matches = [i for i, (p, c) in enumerate(ports) if p == name and not c]
+    if len(matches) > 1 and not (index in matches and index != 0):
+        used = index if index in matches else matches[0]
+        return [], [f"{what} name '{name}' matches {what}s {matches}; the loader uses {used}"
+                    f" - give an index if another is meant"]
+    return [], []
+
+
 def check(path, iface, strict_props=True):
     doc = json.load(open(path))
     # A patcher and its subpatches share one file under 'patches'. Check every
@@ -120,6 +171,13 @@ def check_one(p, iface, strict_props=True):
                 and '<dynamic>' not in ins:
             problems.append(f"link {k}: '{dl}' inlet not named, and it has no "
                             f"unnamed inlet to fall back to: {ins}")
+        for end, nl, kind, nm, ix in (
+                ('from', sl, 'output', so, lc.get('source_output_index', 0)),
+                ('to', dl, 'input', di, lc.get('dest_input_index', 0))):
+            what = 'outlet' if kind == 'output' else 'inlet'
+            er, wn = ambiguous_port(ordered_ports(iface, nl, kind), nm, ix, what)
+            problems += [f"link {k} {end} '{nl}': {x}" for x in er]
+            warn += [f"link {k} {end} '{nl}': {x}" for x in wn]
     return problems, warn
 
 

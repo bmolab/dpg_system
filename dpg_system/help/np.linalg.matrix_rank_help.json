@@ -1,0 +1,999 @@
+{
+    "name": "np.linalg.matrix_rank_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.linalg.matrix_rank_help.json",
+    "patches": {
+        "0": {
+            "height": 610,
+            "width": 790,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1199,
+            "name": "make_outer",
+            "parent_node_uuid": 607,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1236,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "load_bang",
+                    "init": "load_bang",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 88,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment once, when the patch opens",
+                    "id": 1310,
+                    "position_x": 150,
+                    "position_y": 50,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "once, when the patch opens",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "once, when the patch opens"
+                },
+                "3": {
+                    "name": "np.linspace",
+                    "init": "np.linspace 0.2 1 8",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 110,
+                    "width": 190,
+                    "height": 150,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "start",
+                            "value": 0.2,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "stop",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "steps",
+                            "value": 8,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "t",
+                    "init": "t array array",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 280,
+                    "width": 140,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "5": {
+                    "name": "np.outer",
+                    "init": "np.outer",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 350,
+                    "width": 150,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment a ramp outer itself: every row a scaled copy of one row",
+                    "id": 1458,
+                    "position_x": 210,
+                    "position_y": 365,
+                    "width": 500,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a ramp outer itself: every row a scaled copy of one row",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a ramp outer itself: every row a scaled copy of one row"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out outer",
+                    "id": 1495,
+                    "position_x": 40,
+                    "position_y": 450,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "array",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "3": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "4": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "outer_product",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "outer"
+                }
+            }
+        },
+        "1": {
+            "height": 1358,
+            "width": 1750,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1162,
+            "name": "np.linalg.matrix_rank_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/np.linalg.matrix_rank_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment np.linalg.matrix_rank - how many independent directions",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 684,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "np.linalg.matrix_rank - how many independent directions",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "np.linalg.matrix_rank - how many independent directions"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 942,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 876,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Counts how many genuinely independent directions a matrix has - its\nrank.\n\nEach row of a matrix is a direction. If one row can be made by adding up\nmultiples of the others, it adds nothing new, and the rank is less than\nthe number of rows. A 3 x 3 matrix of rank 3 reaches every point in 3-D\nspace; rank 2 flattens everything onto a plane, rank 1 onto a line, rank\n0 (all zeros) onto a single point.\n\nReach for it to check whether data is really as many-dimensional as it\nlooks - three sensors that always move together are rank 1, not 3 - or\nwhether a square matrix can be inverted (only at full rank).\n\nLOOKS CAN DECEIVE:\nA smooth picture can have rank 1: every row of an outer product is the\nsame row scaled, however many rows there are. Random noise of the same\nsize has full rank.\n\nSYNTAX:\nnp.linalg.matrix_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nAny 2-D array - it need not be square. Each one that arrives is measured\nand sent. A 1-D list gives 1 (or 0 if it is all zeros). A stack of\nmatrices gives one rank each.\n\nNEARLY DEPENDENT ROWS:\nThe count uses a small tolerance scaled to the matrix (numpy's singular\nvalue test), so rows that are almost but not exactly parallel still\ncount as independent. Rows that are exact multiples count as one.\n\nOUTPUTS:\n\nmatrix rank:\nThe rank, a whole number.\n\nREADING THE DEMO:\nTop: a 3 x 3 matrix to edit, starting as the identity - rank 3. Type\n1 0 0 into its second row so it copies the first: rank 2. Make all three\nrows the same: rank 1. Press zero on the vector: rank 0.\nBottom left: an 8 x 8 outer product of two ramps (made in make_outer) -\na full picture, but rank 1. Bottom right: 8 x 8 random noise - rank 8.\nClick np.rand for new noise; the rank stays 8.\n\nRELATED:\nnp.linalg.det is 0 exactly when a square matrix is below full rank.\nnp.outer always makes rank-1 matrices. np.linalg.solve needs full rank.\nt.linalg.svd gives the singular values the rank is counted from.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 860,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Counts how many genuinely independent directions a matrix has - its\nrank.\n\nEach row of a matrix is a direction. If one row can be made by adding up\nmultiples of the others, it adds nothing new, and the rank is less than\nthe number of rows. A 3 x 3 matrix of rank 3 reaches every point in 3-D\nspace; rank 2 flattens everything onto a plane, rank 1 onto a line, rank\n0 (all zeros) onto a single point.\n\nReach for it to check whether data is really as many-dimensional as it\nlooks - three sensors that always move together are rank 1, not 3 - or\nwhether a square matrix can be inverted (only at full rank).\n\nLOOKS CAN DECEIVE:\nA smooth picture can have rank 1: every row of an outer product is the\nsame row scaled, however many rows there are. Random noise of the same\nsize has full rank.\n\nSYNTAX:\nnp.linalg.matrix_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nAny 2-D array - it need not be square. Each one that arrives is measured\nand sent. A 1-D list gives 1 (or 0 if it is all zeros). A stack of\nmatrices gives one rank each.\n\nNEARLY DEPENDENT ROWS:\nThe count uses a small tolerance scaled to the matrix (numpy's singular\nvalue test), so rows that are almost but not exactly parallel still\ncount as independent. Rows that are exact multiples count as one.\n\nOUTPUTS:\n\nmatrix rank:\nThe rank, a whole number.\n\nREADING THE DEMO:\nTop: a 3 x 3 matrix to edit, starting as the identity - rank 3. Type\n1 0 0 into its second row so it copies the first: rank 2. Make all three\nrows the same: rank 1. Press zero on the vector: rank 0.\nBottom left: an 8 x 8 outer product of two ramps (made in make_outer) -\na full picture, but rank 1. Bottom right: 8 x 8 random noise - rank 8.\nClick np.rand for new noise; the rank stays 8.\n\nRELATED:\nnp.linalg.det is 0 exactly when a square matrix is below full rank.\nnp.outer always makes rank-1 matrices. np.linalg.solve needs full rank.\nt.linalg.svd gives the singular values the rank is counted from."
+                },
+                "3": {
+                    "name": "load_bang",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 88,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "vector",
+                    "id": 385,
+                    "position_x": 30,
+                    "position_y": 130,
+                    "width": 170,
+                    "height": 112,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "output type",
+                            "value": "numpy",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "component count",
+                            "value": 3,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "column count",
+                            "value": 3,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "number format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "[0]",
+                            "value": [
+                                1.0,
+                                0.0,
+                                0.0
+                            ],
+                            "value_type": "list"
+                        },
+                        "5": {
+                            "name": "[1]",
+                            "value": [
+                                0.0,
+                                1.0,
+                                0.0
+                            ],
+                            "value_type": "list"
+                        },
+                        "6": {
+                            "name": "[2]",
+                            "value": [
+                                0.0,
+                                0.0,
+                                1.0
+                            ],
+                            "value_type": "list"
+                        }
+                    },
+                    "init": "vector 3 3"
+                },
+                "5": {
+                    "init": "comment a 3 x 3 matrix: edit its rows",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 584,
+                    "position_y": 135,
+                    "width": 187,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a 3 x 3 matrix: edit its rows",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a 3 x 3 matrix: edit its rows"
+                },
+                "6": {
+                    "name": "heat_map",
+                    "id": 459,
+                    "position_x": 280,
+                    "position_y": 175,
+                    "width": 188,
+                    "height": 180,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 130,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 3,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "7": {
+                    "name": "np.linalg.matrix_rank",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 380,
+                    "width": 138,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "8": {
+                    "name": "int",
+                    "id": 533,
+                    "position_x": 30,
+                    "position_y": 470,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%d",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment its rank: 3, 2, 1 or 0",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 584,
+                    "position_y": 475,
+                    "width": 144,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "its rank: 3, 2, 1 or 0",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "its rank: 3, 2, 1 or 0"
+                },
+                "10": {
+                    "name": "p",
+                    "id": 607,
+                    "position_x": 30,
+                    "position_y": 560,
+                    "width": 78,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_outer",
+                    "patcher id": 1199
+                },
+                "11": {
+                    "name": "np.rand",
+                    "id": 644,
+                    "position_x": 330,
+                    "position_y": 540,
+                    "width": 123,
+                    "height": 98,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "dim 0",
+                            "value": 8,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "dim 1",
+                            "value": 8,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "np.rand 8 8"
+                },
+                "12": {
+                    "name": "heat_map",
+                    "id": 681,
+                    "position_x": 30,
+                    "position_y": 720,
+                    "width": 228,
+                    "height": 250,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 220,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 8,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "13": {
+                    "name": "heat_map",
+                    "id": 718,
+                    "position_x": 330,
+                    "position_y": 720,
+                    "width": 228,
+                    "height": 250,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 220,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 8,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "14": {
+                    "name": "np.linalg.matrix_rank",
+                    "id": 755,
+                    "position_x": 30,
+                    "position_y": 990,
+                    "width": 138,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "15": {
+                    "name": "np.linalg.matrix_rank",
+                    "id": 792,
+                    "position_x": 330,
+                    "position_y": 990,
+                    "width": 138,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "16": {
+                    "name": "int",
+                    "id": 829,
+                    "position_x": 30,
+                    "position_y": 1080,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%d",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "17": {
+                    "name": "int",
+                    "id": 866,
+                    "position_x": 330,
+                    "position_y": 1080,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%d",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "18": {
+                    "init": "comment left: a smooth picture, rank 1. right: noise, rank 8",
+                    "name": "comment",
+                    "id": 903,
+                    "position_x": 584,
+                    "position_y": 1135,
+                    "width": 328,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "left: a smooth picture, rank 1. right: noise, rank 8",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "left: a smooth picture, rank 1. right: noise, rank 8"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 30,
+                    "position_y": 1180,
+                    "width": 96,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.linalg.det"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 174,
+                    "position_y": 1180,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.outer"
+                },
+                "21": {
+                    "name": "help_link",
+                    "id": 1014,
+                    "position_x": 279,
+                    "position_y": 1180,
+                    "width": 109,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.linalg.solve"
+                },
+                "22": {
+                    "name": "help_link",
+                    "id": 1051,
+                    "position_x": 438,
+                    "position_y": 1180,
+                    "width": 90,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.linalg.svd"
+                },
+                "23": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1088,
+                    "position_x": 584,
+                    "position_y": 1180,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "24": {
+                    "name": "close",
+                    "id": 1125,
+                    "position_x": 24,
+                    "position_y": 1254,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 385,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "1": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "2": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "3": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "matrix rank",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "4": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "outer",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "5": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "outer",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "6": {
+                    "source_node": 755,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "matrix rank",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "7": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "8": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random array",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "9": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random array",
+                    "dest_node": 792,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "10": {
+                    "source_node": 792,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "matrix rank",
+                    "dest_node": 866,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

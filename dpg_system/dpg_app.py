@@ -1830,7 +1830,7 @@ class App:
     def vector_handler(self):
         if self.not_focussed_on_widget():
             if self.get_current_editor() is not None and not self.get_current_editor().presenting:
-                node = interface_nodes.VectorNode.factory("vector", None, args=['4'])
+                node = interface_nodes.Vector2DNode.factory("vector", None, args=['4'])
                 self.place_node(node)
                 self.set_widget_focus(node.uuid)
 

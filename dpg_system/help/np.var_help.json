@@ -1,0 +1,1216 @@
+{
+    "name": "np.var_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.var_help.json",
+    "patches": {
+        "0": {
+            "height": 990,
+            "width": 870,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1162,
+            "name": "make_noise",
+            "parent_node_uuid": 496,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1199,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "load_bang",
+                    "init": "load_bang",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 88,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment once, when the patch opens",
+                    "id": 1273,
+                    "position_x": 150,
+                    "position_y": 50,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "once, when the patch opens",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "once, when the patch opens"
+                },
+                "3": {
+                    "name": "np.rand",
+                    "init": "np.rand 64",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 110,
+                    "width": 160,
+                    "height": 140,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "dim 0",
+                            "value": 64,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "t",
+                    "init": "t array array array",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 280,
+                    "width": 200,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "5": {
+                    "name": "comment",
+                    "init": "comment right to left: std, then mean, then the values",
+                    "id": 1384,
+                    "position_x": 260,
+                    "position_y": 285,
+                    "width": 440,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "right to left: std, then mean, then the values",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "right to left: std, then mean, then the values"
+                },
+                "6": {
+                    "name": "np.std",
+                    "init": "np.std",
+                    "id": 1421,
+                    "position_x": 420,
+                    "position_y": 340,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "7": {
+                    "name": "np.mean",
+                    "init": "np.mean",
+                    "id": 1458,
+                    "position_x": 260,
+                    "position_y": 340,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "8": {
+                    "name": "-",
+                    "init": "- 0.0",
+                    "id": 1495,
+                    "position_x": 40,
+                    "position_y": 440,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "9": {
+                    "name": "/",
+                    "init": "/ 1.0",
+                    "id": 1532,
+                    "position_x": 40,
+                    "position_y": 510,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "10": {
+                    "name": "comment",
+                    "init": "comment now mean 0, std 1",
+                    "id": 1569,
+                    "position_x": 180,
+                    "position_y": 515,
+                    "width": 240,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "now mean 0, std 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "now mean 0, std 1"
+                },
+                "11": {
+                    "name": "var",
+                    "init": "var np_spread_help_noise",
+                    "id": 1606,
+                    "position_x": 40,
+                    "position_y": 580,
+                    "width": 240,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "name",
+                            "value": "np_spread_help_noise",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "name": "in",
+                    "init": "in spread",
+                    "id": 1643,
+                    "position_x": 460,
+                    "position_y": 440,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "13": {
+                    "name": "in",
+                    "init": "in shift",
+                    "id": 1680,
+                    "position_x": 640,
+                    "position_y": 440,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "14": {
+                    "name": "t",
+                    "init": "t bang float",
+                    "id": 1717,
+                    "position_x": 460,
+                    "position_y": 540,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "15": {
+                    "name": "t",
+                    "init": "t bang float",
+                    "id": 1754,
+                    "position_x": 640,
+                    "position_y": 540,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "16": {
+                    "name": "*",
+                    "init": "* 1.0",
+                    "id": 1791,
+                    "position_x": 40,
+                    "position_y": 680,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "17": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1828,
+                    "position_x": 40,
+                    "position_y": 750,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "18": {
+                    "name": "comment",
+                    "init": "comment times spread, plus shift",
+                    "id": 1865,
+                    "position_x": 180,
+                    "position_y": 715,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "times spread, plus shift",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "times spread, plus shift"
+                },
+                "19": {
+                    "name": "out",
+                    "init": "out data",
+                    "id": 1902,
+                    "position_x": 40,
+                    "position_y": 830,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "random array",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 2,
+                    "source_output_name": "array",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "3": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "array",
+                    "dest_node": 1458,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "5": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "std",
+                    "dest_node": 1532,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "6": {
+                    "source_node": 1458,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "mean",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "7": {
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1532,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 1532,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "9": {
+                    "source_node": 1643,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "spread",
+                    "dest_node": 1717,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "10": {
+                    "source_node": 1680,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "shift",
+                    "dest_node": 1754,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "11": {
+                    "source_node": 1717,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "12": {
+                    "source_node": 1717,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bang",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "13": {
+                    "source_node": 1754,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float",
+                    "dest_node": 1828,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "14": {
+                    "source_node": 1754,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bang",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "15": {
+                    "source_node": 1606,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1791,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "16": {
+                    "source_node": 1791,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1828,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "17": {
+                    "source_node": 1828,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1902,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "data"
+                }
+            }
+        },
+        "1": {
+            "height": 1321,
+            "width": 1620,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1125,
+            "name": "np.var_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/np.var_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment np.var - variance, the spread squared",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 463,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "np.var - variance, the spread squared",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "np.var - variance, the spread squared"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 812,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1216,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Gives the variance of an array: the average of the squared distances\nof its values from their mean.\n\nThe variance is the standard deviation squared. It carries the same\ninformation as np.std - how spread out the values are - but in squared\nunits, so it grows much faster: double the spread and the variance goes\nup four times. Reach for it where the maths wants it: variances of\nindependent noises add (stds do not), so combining or comparing noise\nlevels, weighting by 1 / variance, or fitting is done in variance. For\na number to read or a threshold to set, np.std, in the data's own units,\nis usually easier.\n\nHOW IT IS WORKED OUT:\nTake the mean; take each value's distance from it; square the distances\nand average them. It divides by the number of values N (the \"population\"\nvariance); some tools divide by N - 1, which gives a larger answer for\nsmall arrays: for 1 2 3 4 np.var gives 1.25, a spreadsheet's VAR 1.667.\n\nTHE axis MENU:\nWith no axis (the default) the whole array is reduced to one number.\nWith axis 0 the reduction runs DOWN each column, giving one result per\ncolumn; with axis 1 it runs ALONG each row, giving one result per row.\nFor a table of 5 frames (rows) of 4 sensors (columns), axis 0 answers\n\"what did each sensor read on average\", axis 1 \"what did all the sensors\nread on average at each frame\". The axis named is the one that\ndisappears: a 5 by 4 array gives 4 values on axis 0, 5 on axis 1.\n\nSYNTAX:\nnp.var <axis: int>\nWith no argument there is no axis: one variance for the whole array.\n\nEXAMPLE:\nnp.var\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list or a single number is turned into one). Every array\nthat arrives is measured and the result sent - the only inlet that makes\nthe node send.\n\naxis (menu, also an inlet):\nWhich way to reduce - see THE axis MENU. Changing it does NOT send by\nitself; the next array uses it. The menu offers None (the whole array)\nand the axes the last array had (None and 0 for a 1-D array); a message\nNone into the axis inlet also returns to the whole array. An axis the\narray does not have is treated as its last axis for that array only:\nthe choice is kept, so one 1-D array through np.var 1 does not stop\nthe 2-D arrays that follow from being averaged along axis 1.\n\nOUTPUTS:\n\nvar:\nWith no axis, one number, never negative. With an axis, an array one\ndimension smaller: one variance per column (axis 0) or per row (axis 1).\n\nTHE DEMO:\nmake_noise makes 64 random values, scaled so that at spread 1 and shift\n0 their mean is exactly 0 and their standard deviation exactly 1. The\nspread slider multiplies them all; the shift slider adds to them all.\nThe plot shows the 64 values as points.\n\nREADING THE DEMO:\nnp.var and np.std watch the same 64 values. Drag spread to 2: the std\nreads 2 and the variance 4. Spread 3: std 3, variance 9. The std through\npow 2 (squared) reads the same as np.var, always. Below spread 1 the\nvariance is the SMALLER of the two (0.5 squared is 0.25). Drag shift and\nneither moves - moving all the values together does not spread them.\n\nRELATED:\nnp.std is the square root of the variance, in the data's own units.\nnp.mean is the centre the distances are measured from. pow raises a\nnumber to a power - pow 2 squares, pow 0.5 takes the square root, which\nturns a variance back into a std.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1200,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Gives the variance of an array: the average of the squared distances\nof its values from their mean.\n\nThe variance is the standard deviation squared. It carries the same\ninformation as np.std - how spread out the values are - but in squared\nunits, so it grows much faster: double the spread and the variance goes\nup four times. Reach for it where the maths wants it: variances of\nindependent noises add (stds do not), so combining or comparing noise\nlevels, weighting by 1 / variance, or fitting is done in variance. For\na number to read or a threshold to set, np.std, in the data's own units,\nis usually easier.\n\nHOW IT IS WORKED OUT:\nTake the mean; take each value's distance from it; square the distances\nand average them. It divides by the number of values N (the \"population\"\nvariance); some tools divide by N - 1, which gives a larger answer for\nsmall arrays: for 1 2 3 4 np.var gives 1.25, a spreadsheet's VAR 1.667.\n\nTHE axis MENU:\nWith no axis (the default) the whole array is reduced to one number.\nWith axis 0 the reduction runs DOWN each column, giving one result per\ncolumn; with axis 1 it runs ALONG each row, giving one result per row.\nFor a table of 5 frames (rows) of 4 sensors (columns), axis 0 answers\n\"what did each sensor read on average\", axis 1 \"what did all the sensors\nread on average at each frame\". The axis named is the one that\ndisappears: a 5 by 4 array gives 4 values on axis 0, 5 on axis 1.\n\nSYNTAX:\nnp.var <axis: int>\nWith no argument there is no axis: one variance for the whole array.\n\nEXAMPLE:\nnp.var\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list or a single number is turned into one). Every array\nthat arrives is measured and the result sent - the only inlet that makes\nthe node send.\n\naxis (menu, also an inlet):\nWhich way to reduce - see THE axis MENU. Changing it does NOT send by\nitself; the next array uses it. The menu offers None (the whole array)\nand the axes the last array had (None and 0 for a 1-D array); a message\nNone into the axis inlet also returns to the whole array. An axis the\narray does not have is treated as its last axis for that array only:\nthe choice is kept, so one 1-D array through np.var 1 does not stop\nthe 2-D arrays that follow from being averaged along axis 1.\n\nOUTPUTS:\n\nvar:\nWith no axis, one number, never negative. With an axis, an array one\ndimension smaller: one variance per column (axis 0) or per row (axis 1).\n\nTHE DEMO:\nmake_noise makes 64 random values, scaled so that at spread 1 and shift\n0 their mean is exactly 0 and their standard deviation exactly 1. The\nspread slider multiplies them all; the shift slider adds to them all.\nThe plot shows the 64 values as points.\n\nREADING THE DEMO:\nnp.var and np.std watch the same 64 values. Drag spread to 2: the std\nreads 2 and the variance 4. Spread 3: std 3, variance 9. The std through\npow 2 (squared) reads the same as np.var, always. Below spread 1 the\nvariance is the SMALLER of the two (0.5 squared is 0.25). Drag shift and\nneither moves - moving all the values together does not spread them.\n\nRELATED:\nnp.std is the square root of the variance, in the data's own units.\nnp.mean is the centre the distances are measured from. pow raises a\nnumber to a power - pow 2 squares, pow 0.5 takes the square root, which\nturns a variance back into a std."
+                },
+                "3": {
+                    "name": "slider",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 230,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 3.0,
+                            "value_type": "float"
+                        },
+                        "3": {
+                            "name": "format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "width",
+                            "value": 200,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "init": "comment spread: how far the values scatter",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 546,
+                    "position_y": 125,
+                    "width": 217,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "spread: how far the values scatter",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "spread: how far the values scatter"
+                },
+                "5": {
+                    "name": "slider",
+                    "id": 422,
+                    "position_x": 290,
+                    "position_y": 62,
+                    "width": 230,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": -3.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 3.0,
+                            "value_type": "float"
+                        },
+                        "3": {
+                            "name": "format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "width",
+                            "value": 200,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "6": {
+                    "init": "comment shift: moves them all up or down",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 546,
+                    "position_y": 165,
+                    "width": 205,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "shift: moves them all up or down",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "shift: moves them all up or down"
+                },
+                "7": {
+                    "name": "p",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 170,
+                    "width": 78,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_noise",
+                    "patcher id": 1162
+                },
+                "8": {
+                    "init": "comment 64 random values - open it to see how",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 546,
+                    "position_y": 205,
+                    "width": 236,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "64 random values - open it to see how",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "64 random values - open it to see how"
+                },
+                "9": {
+                    "name": "plot",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 270,
+                    "width": 488,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 480,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "scatter",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 64,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 64.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -6.0,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 6.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "10": {
+                    "name": "np.var",
+                    "id": 607,
+                    "position_x": 30,
+                    "position_y": 560,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "np.std",
+                    "id": 644,
+                    "position_x": 290,
+                    "position_y": 560,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "12": {
+                    "name": "float",
+                    "id": 681,
+                    "position_x": 30,
+                    "position_y": 650,
+                    "width": 140,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 110,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "13": {
+                    "name": "float",
+                    "id": 718,
+                    "position_x": 290,
+                    "position_y": 650,
+                    "width": 140,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 110,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "14": {
+                    "init": "comment variance",
+                    "name": "comment",
+                    "id": 755,
+                    "position_x": 546,
+                    "position_y": 700,
+                    "width": 58,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "variance",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "variance"
+                },
+                "15": {
+                    "init": "comment standard deviation",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 546,
+                    "position_y": 740,
+                    "width": 119,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "standard deviation",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "standard deviation"
+                },
+                "16": {
+                    "name": "pow",
+                    "id": 829,
+                    "position_x": 290,
+                    "position_y": 740,
+                    "width": 88,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "pow 2"
+                },
+                "17": {
+                    "name": "float",
+                    "id": 866,
+                    "position_x": 290,
+                    "position_y": 810,
+                    "width": 140,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 110,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "18": {
+                    "init": "comment std squared - the same as var",
+                    "name": "comment",
+                    "id": 903,
+                    "position_x": 546,
+                    "position_y": 815,
+                    "width": 187,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "std squared - the same as var",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "std squared - the same as var"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 30,
+                    "position_y": 890,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.std"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 120,
+                    "position_y": 890,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.mean"
+                },
+                "21": {
+                    "name": "help_link",
+                    "id": 1014,
+                    "position_x": 217,
+                    "position_y": 890,
+                    "width": 35,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link pow"
+                },
+                "22": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1051,
+                    "position_x": 546,
+                    "position_y": 890,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "23": {
+                    "name": "close",
+                    "id": 1088,
+                    "position_x": 24,
+                    "position_y": 964,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "spread"
+                },
+                "1": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "shift"
+                },
+                "2": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "data",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "3": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "data",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "data",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "5": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "var",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "6": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "std",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "7": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "std",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "8": {
+                    "source_node": 829,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 866,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

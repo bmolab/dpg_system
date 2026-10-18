@@ -1,0 +1,1041 @@
+{
+    "name": "np.matmul_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.matmul_help.json",
+    "patches": {
+        "0": {
+            "height": 490,
+            "width": 630,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1088,
+            "name": "make_F",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1125,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment re-sends the F ten times a second",
+                    "id": 1199,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends the F ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends the F ten times a second"
+                },
+                "3": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 290,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "1 1 1 1 1 1  1 1 0 0 0 0  1 1 0 0 0 0  1 1 1 1 0 0  1 1 0 0 0 0  1 1 0 0 0 0  1 1 0 0 0 0",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 260,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment the letter F as 42 numbers, 1 = letter, 0 = background",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 185,
+                    "width": 480,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the letter F as 42 numbers, 1 = letter, 0 = background",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the letter F as 42 numbers, 1 = letter, 0 = background"
+                },
+                "5": {
+                    "name": "np.reshape",
+                    "init": "np.reshape 7 6",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 230,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment folded into 7 rows of 6",
+                    "id": 1347,
+                    "position_x": 290,
+                    "position_y": 245,
+                    "width": 260,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "folded into 7 rows of 6",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "folded into 7 rows of 6"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out F",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 330,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "F"
+                }
+            }
+        },
+        "1": {
+            "height": 490,
+            "width": 650,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1421,
+            "name": "make_identity",
+            "parent_node_uuid": 385,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1458,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1495,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment re-sends it ten times a second",
+                    "id": 1532,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends it ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends it ten times a second"
+                },
+                "3": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1569,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 290,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "1 0 0 0 0 0  0 1 0 0 0 0  0 0 1 0 0 0  0 0 0 1 0 0  0 0 0 0 1 0  0 0 0 0 0 1",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 260,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 36 numbers: 1 on the diagonal, 0 elsewhere",
+                    "id": 1606,
+                    "position_x": 40,
+                    "position_y": 185,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "36 numbers: 1 on the diagonal, 0 elsewhere",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "36 numbers: 1 on the diagonal, 0 elsewhere"
+                },
+                "5": {
+                    "name": "np.reshape",
+                    "init": "np.reshape 6 6",
+                    "id": 1643,
+                    "position_x": 40,
+                    "position_y": 230,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment the 6 x 6 identity matrix",
+                    "id": 1680,
+                    "position_x": 290,
+                    "position_y": 245,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the 6 x 6 identity matrix",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the 6 x 6 identity matrix"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out identity",
+                    "id": 1717,
+                    "position_x": 40,
+                    "position_y": 330,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1569,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1569,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 1643,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1643,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1717,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "identity"
+                }
+            }
+        },
+        "2": {
+            "height": 1188,
+            "width": 1769,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1051,
+            "name": "np.matmul_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/np.matmul_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment np.matmul - apply one matrix to another",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 488,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "np.matmul - apply one matrix to another",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "np.matmul - apply one matrix to another"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 961,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 924,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Multiplies two matrices: each value of the result is a row of in 1\ndotted with a column of in 2.\n\nThis is how a matrix is APPLIED. A matrix times a set of points moves\nthe points (turns, stretches, shears them); two transformation matrices\nmultiplied together make one matrix that does both. In the result, row\ni column j is row i of in 1 times column j of in 2, added up - so each\ncolumn of the result is a MIX of in 1's columns, in the proportions\ngiven by that column of in 2.\n\nTHE SHAPES MUST FIT:\n(rows x n) times (n x columns) gives (rows x columns): the columns of in\n1 must equal the rows of in 2, or an error is printed and nothing is\nsent. Order matters - in 1 x in 2 is generally not in 2 x in 1, and may\nnot even fit. A 1-D list is treated as a single vector: on the left it\nis a row, on the right a column, and that dimension is dropped from the\nresult. Stacks of matrices (3-D arrays) are multiplied pair by pair.\nPlain numbers are refused - use * to scale.\n\nSYNTAX:\nnp.matmul\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe left matrix (a list of lists is turned into an array). Receiving it\ncalculates and sends.\n\nin 2:\nThe right matrix. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has.\n\nOUTPUTS:\n\nmat mul result:\nThe product.\n\nREADING THE DEMO:\nin 1 is the F, 7 by 6 (made in make_F). in 2 is a 6 x 6 matrix with a\nsingle 1 in each column: the identity matrix (from make_identity),\nrolled sideways by np.roll. Column j of the result takes the column of\nthe F that column j of the matrix has its 1 in. At shifts 0 the matrix\nis the identity and the F comes out unchanged; step shifts and the\ndiagonal of 1s slides over, and the F slides with it, wrapping round.\nThe (7 x 6) times (6 x 6) gives 7 x 6 again. Any 6 x 6 matrix would do:\na column holding 0.5 and 0.5 would blend two columns of the F.\n\nRELATED:\nnp.dot does the same for 2-D arrays. np.linalg.inv gives the matrix that\nundoes another (their product is the identity). np.transpose swaps rows\nand columns, often needed to make shapes fit. np.outer is the product of\na column and a row. np.roll, used here to build the matrix, does the\nsame shift directly.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 908,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Multiplies two matrices: each value of the result is a row of in 1\ndotted with a column of in 2.\n\nThis is how a matrix is APPLIED. A matrix times a set of points moves\nthe points (turns, stretches, shears them); two transformation matrices\nmultiplied together make one matrix that does both. In the result, row\ni column j is row i of in 1 times column j of in 2, added up - so each\ncolumn of the result is a MIX of in 1's columns, in the proportions\ngiven by that column of in 2.\n\nTHE SHAPES MUST FIT:\n(rows x n) times (n x columns) gives (rows x columns): the columns of in\n1 must equal the rows of in 2, or an error is printed and nothing is\nsent. Order matters - in 1 x in 2 is generally not in 2 x in 1, and may\nnot even fit. A 1-D list is treated as a single vector: on the left it\nis a row, on the right a column, and that dimension is dropped from the\nresult. Stacks of matrices (3-D arrays) are multiplied pair by pair.\nPlain numbers are refused - use * to scale.\n\nSYNTAX:\nnp.matmul\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe left matrix (a list of lists is turned into an array). Receiving it\ncalculates and sends.\n\nin 2:\nThe right matrix. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has.\n\nOUTPUTS:\n\nmat mul result:\nThe product.\n\nREADING THE DEMO:\nin 1 is the F, 7 by 6 (made in make_F). in 2 is a 6 x 6 matrix with a\nsingle 1 in each column: the identity matrix (from make_identity),\nrolled sideways by np.roll. Column j of the result takes the column of\nthe F that column j of the matrix has its 1 in. At shifts 0 the matrix\nis the identity and the F comes out unchanged; step shifts and the\ndiagonal of 1s slides over, and the F slides with it, wrapping round.\nThe (7 x 6) times (6 x 6) gives 7 x 6 again. Any 6 x 6 matrix would do:\na column holding 0.5 and 0.5 would blend two columns of the F.\n\nRELATED:\nnp.dot does the same for 2-D arrays. np.linalg.inv gives the matrix that\nundoes another (their product is the identity). np.transpose swaps rows\nand columns, often needed to make shapes fit. np.outer is the product of\na column and a row. np.roll, used here to build the matrix, does the\nsame shift directly."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 53,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_F",
+                    "patcher id": 1088
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 330,
+                    "position_y": 62,
+                    "width": 96,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_identity",
+                    "patcher id": 1421
+                },
+                "5": {
+                    "name": "np.roll",
+                    "id": 422,
+                    "position_x": 330,
+                    "position_y": 160,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shifts",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "axis",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    },
+                    "init": "np.roll 0 1"
+                },
+                "6": {
+                    "init": "comment step shifts",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 591,
+                    "position_y": 165,
+                    "width": 76,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "step shifts",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "step shifts"
+                },
+                "7": {
+                    "name": "heat_map",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 290,
+                    "width": 188,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 7,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "8": {
+                    "name": "heat_map",
+                    "id": 533,
+                    "position_x": 330,
+                    "position_y": 290,
+                    "width": 188,
+                    "height": 230,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "greys",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 6,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment in 1: the F, 7 x 6       in 2: 6 x 6, one 1 per column",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 591,
+                    "position_y": 560,
+                    "width": 340,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "in 1: the F, 7 x 6       in 2: 6 x 6, one 1 per column",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "in 1: the F, 7 x 6       in 2: 6 x 6, one 1 per column"
+                },
+                "10": {
+                    "name": "np.matmul",
+                    "id": 607,
+                    "position_x": 30,
+                    "position_y": 600,
+                    "width": 95,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "heat_map",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 690,
+                    "width": 188,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 7,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "name": "np.shape",
+                    "id": 681,
+                    "position_x": 330,
+                    "position_y": 690,
+                    "width": 58,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "13": {
+                    "name": "list",
+                    "id": 718,
+                    "position_x": 330,
+                    "position_y": 780,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "14": {
+                    "init": "comment F x matrix: the F with its columns moved",
+                    "name": "comment",
+                    "id": 755,
+                    "position_x": 591,
+                    "position_y": 960,
+                    "width": 254,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "F x matrix: the F with its columns moved",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "F x matrix: the F with its columns moved"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 30,
+                    "position_y": 1010,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.dot"
+                },
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 120,
+                    "position_y": 1010,
+                    "width": 96,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.linalg.inv"
+                },
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 264,
+                    "position_y": 1010,
+                    "width": 90,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.transpose"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 400,
+                    "position_y": 1010,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.outer"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 505,
+                    "position_y": 1010,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.roll"
+                },
+                "20": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 977,
+                    "position_x": 591,
+                    "position_y": 1010,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "21": {
+                    "name": "close",
+                    "id": 1014,
+                    "position_x": 24,
+                    "position_y": 1084,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "identity",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "1": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "rolled array",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "2": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "rolled array",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "3": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "F",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "4": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "F",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "5": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "mat mul result",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "6": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "mat mul result",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "np in"
+                },
+                "7": {
+                    "source_node": 681,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "shape",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

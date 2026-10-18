@@ -1,0 +1,595 @@
+{
+    "height": 1045,
+    "width": 1652,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1051,
+    "name": "np.linalg.solve_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.linalg.solve_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.linalg.solve - find the x that gives b",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 512,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.linalg.solve - find the x that gives b",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.linalg.solve - find the x that gives b"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 844,
+            "position_y": 45,
+            "width": 768,
+            "height": 940,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Solves A x = b: given a matrix A and a result b, finds the x that A\nturns into b.\n\nIt answers \"which input gives this output?\" for any linear relation, and\nit answers a set of simultaneous equations in one step. If 2 apples and 1\npear cost 5, and 1 apple and 3 pears cost 10, then A is the table of\nquantities [2 1] [1 3], b is the prices [5 10], and x - the price of one\napple and one pear - comes out as [1 3].\n\nIt gives the same answer as np.linalg.inv of A times b, but faster and\nmore accurately, because it never forms the inverse.\n\nSYNTAX:\nnp.linalg.solve\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nA matrix:\nThe square matrix A - one row per equation, one column per unknown.\nReceiving it solves and sends. It must be square; a matrix that is not\nsends nothing.\n\nb:\nThe right-hand side: a list with one number per row of A. It is only\nstored, so it must arrive BEFORE A, and nothing is sent until it has.\nb may also be a matrix with one column per separate problem, all solved\nat once against the same A.\n\nIf A is singular (its determinant is 0 - the equations contradict or\nrepeat each other) there is no single answer and nothing is sent; nor\nis anything sent if b does not match A's size. The reason is printed\nonly in verbose mode.\n\nOUTPUTS:\n\nx:\nThe solution, the same shape as b.\n\nREADING THE DEMO:\nThe left vector node is A, the right one b; drag any number in either.\nx is the answer, and the check underneath multiplies A by x\n(np.matmul) - it always gives b back. Make A's rows parallel (bottom row\n4 2) and no x is sent: those two equations say the same thing twice and\ncannot pin down two unknowns. x keeps the last answer, and the check,\nmultiplying the new A by that old x, no longer matches b.\nWiring: b's 't bang array' stores b first, then bangs A so it re-sends.\nA's 't array array' reaches np.linalg.solve first, so x is waiting in\nnp.matmul's second inlet when A arrives at its first.\n\nRELATED:\nnp.linalg.inv gives the undoing matrix itself. np.matmul applies a\nmatrix - here, to check the answer. np.linalg.det tells you in advance\nwhether there is a unique answer. np.dot is matrix multiplication for\n2-D arrays too.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 924,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Solves A x = b: given a matrix A and a result b, finds the x that A\nturns into b.\n\nIt answers \"which input gives this output?\" for any linear relation, and\nit answers a set of simultaneous equations in one step. If 2 apples and 1\npear cost 5, and 1 apple and 3 pears cost 10, then A is the table of\nquantities [2 1] [1 3], b is the prices [5 10], and x - the price of one\napple and one pear - comes out as [1 3].\n\nIt gives the same answer as np.linalg.inv of A times b, but faster and\nmore accurately, because it never forms the inverse.\n\nSYNTAX:\nnp.linalg.solve\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nA matrix:\nThe square matrix A - one row per equation, one column per unknown.\nReceiving it solves and sends. It must be square; a matrix that is not\nsends nothing.\n\nb:\nThe right-hand side: a list with one number per row of A. It is only\nstored, so it must arrive BEFORE A, and nothing is sent until it has.\nb may also be a matrix with one column per separate problem, all solved\nat once against the same A.\n\nIf A is singular (its determinant is 0 - the equations contradict or\nrepeat each other) there is no single answer and nothing is sent; nor\nis anything sent if b does not match A's size. The reason is printed\nonly in verbose mode.\n\nOUTPUTS:\n\nx:\nThe solution, the same shape as b.\n\nREADING THE DEMO:\nThe left vector node is A, the right one b; drag any number in either.\nx is the answer, and the check underneath multiplies A by x\n(np.matmul) - it always gives b back. Make A's rows parallel (bottom row\n4 2) and no x is sent: those two equations say the same thing twice and\ncannot pin down two unknowns. x keeps the last answer, and the check,\nmultiplying the new A by that old x, no longer matches b.\nWiring: b's 't bang array' stores b first, then bangs A so it re-sends.\nA's 't array array' reaches np.linalg.solve first, so x is waiting in\nnp.matmul's second inlet when A arrives at its first.\n\nRELATED:\nnp.linalg.inv gives the undoing matrix itself. np.matmul applies a\nmatrix - here, to check the answer. np.linalg.det tells you in advance\nwhether there is a unique answer. np.dot is matrix multiplication for\n2-D arrays too."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "vector",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 160,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "component count",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "column count",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "[0]",
+                    "value": [
+                        2.0,
+                        1.0
+                    ],
+                    "value_type": "list"
+                },
+                "5": {
+                    "name": "[1]",
+                    "value": [
+                        1.0,
+                        3.0
+                    ],
+                    "value_type": "list"
+                }
+            },
+            "init": "vector 2 2"
+        },
+        "5": {
+            "init": "comment A: 2 apples + 1 pear, 1 apple + 3 pears",
+            "name": "comment",
+            "id": 422,
+            "position_x": 566,
+            "position_y": 290,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "A: 2 apples + 1 pear, 1 apple + 3 pears",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "A: 2 apples + 1 pear, 1 apple + 3 pears"
+        },
+        "6": {
+            "name": "vector",
+            "id": 459,
+            "position_x": 380,
+            "position_y": 130,
+            "width": 160,
+            "height": 98,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "component count",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "column count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "[0]",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "[1]",
+                    "value": 10.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "vector 2"
+        },
+        "7": {
+            "init": "comment b: the prices, 5 and 10",
+            "name": "comment",
+            "id": 496,
+            "position_x": 566,
+            "position_y": 330,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "b: the prices, 5 and 10",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "b: the prices, 5 and 10"
+        },
+        "8": {
+            "name": "t",
+            "id": 533,
+            "position_x": 380,
+            "position_y": 330,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t bang array"
+        },
+        "9": {
+            "name": "t",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t array array"
+        },
+        "10": {
+            "name": "np.linalg.solve",
+            "id": 607,
+            "position_x": 240,
+            "position_y": 470,
+            "width": 101,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "name": "list",
+            "id": 644,
+            "position_x": 240,
+            "position_y": 560,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment x: one apple costs 1, one pear 3",
+            "name": "comment",
+            "id": 681,
+            "position_x": 566,
+            "position_y": 610,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "x: one apple costs 1, one pear 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "x: one apple costs 1, one pear 3"
+        },
+        "13": {
+            "name": "np.matmul",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 95,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 750,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment check: A times x gives b back",
+            "name": "comment",
+            "id": 792,
+            "position_x": 566,
+            "position_y": 800,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "check: A times x gives b back",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "check: A times x gives b back"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 850,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.linalg.inv"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 174,
+            "position_y": 850,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.matmul"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 287,
+            "position_y": 850,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.linalg.det"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 431,
+            "position_y": 850,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.dot"
+        },
+        "20": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 977,
+            "position_x": 566,
+            "position_y": 850,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
+            "position_x": 24,
+            "position_y": 924,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "array",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "b"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "array",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "A matrix"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "x",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "7": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "x",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "8": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "array",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "9": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "mat mul result",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

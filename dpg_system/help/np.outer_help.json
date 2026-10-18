@@ -1,0 +1,845 @@
+{
+    "name": "np.outer_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.outer_help.json",
+    "patches": {
+        "0": {
+            "height": 540,
+            "width": 720,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1088,
+            "name": "make_hump",
+            "parent_node_uuid": 533,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1125,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "load_bang",
+                    "init": "load_bang",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 88,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment once, when the patch opens",
+                    "id": 1199,
+                    "position_x": 150,
+                    "position_y": 50,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "once, when the patch opens",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "once, when the patch opens"
+                },
+                "3": {
+                    "name": "np.linspace",
+                    "init": "np.linspace 0 180 16",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 110,
+                    "width": 190,
+                    "height": 150,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "start",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "stop",
+                            "value": 180.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "steps",
+                            "value": 16,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 280,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "degrees",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "5": {
+                    "name": "comment",
+                    "init": "comment sin of 0 to 180 degrees: 0 up to 1 and back to 0",
+                    "id": 1310,
+                    "position_x": 180,
+                    "position_y": 295,
+                    "width": 460,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "sin of 0 to 180 degrees: 0 up to 1 and back to 0",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "sin of 0 to 180 degrees: 0 up to 1 and back to 0"
+                },
+                "6": {
+                    "name": "out",
+                    "init": "out hump",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 380,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1273,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "hump"
+                }
+            }
+        },
+        "1": {
+            "height": 1368,
+            "width": 1743,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1051,
+            "name": "np.outer_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/np.outer_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment np.outer - every element times every element",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 549,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "np.outer - every element times every element",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "np.outer - every element times every element"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 935,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 892,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Multiplies every element of one array by every element of another,\ngiving a table: row i, column j holds in 1's value i times in 2's value\nj.\n\nTwo lists of 12 and 16 values give a 12 x 16 array. Nothing is added up -\nthat is the difference from the dot or inner product, which collapse the\nsame multiplications into one number. Every row of the result is in 2\nscaled by one value of in 1, and every column is in 1 scaled by one value\nof in 2.\n\nReach for it to build a 2-D picture from two 1-D profiles - a vignette\nfrom a horizontal and a vertical fall-off, a gradient, a separable\nfilter kernel - or a table of every pairing of two sets of weights.\nAny outer product has rank 1 (see np.linalg.matrix_rank): however\ndetailed it looks, it is made of one row pattern.\n\nSYNTAX:\nnp.outer\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe values for the rows (a list is turned into an array). Receiving it\ncalculates and sends.\n\nin 2:\nThe values for the columns. It is only stored, so it must arrive BEFORE\nin 1; nothing is sent until it has.\nArrays of more than one dimension are flattened first, so the result is\nalways 2-D: (length of in 1) x (length of in 2). The two need not be the\nsame length.\n\nOUTPUTS:\n\nouter_product:\nThe 2-D table of products.\n\nREADING THE DEMO:\nin 1 is a ramp of 12 values from -1 to 1 (drag start and stop on its\nnp.linspace - a metro re-sends it); in 2 is a hump of 16 values, rising\nfrom 0 to 1 and back (sin of 0 to 180 degrees, made once in make_hump).\nThe picture is the outer product, 12 rows by 16 columns: every row is\nthe hump, scaled by that row's ramp value - red (negative) at the top,\npale through the middle row, blue at the bottom. Drag stop to -1 and\nthe picture turns over; set start and stop both to 1 and every row is\nthe same hump.\n\nRELATED:\nnp.inner and np.dot multiply AND add up, giving a number. np.matmul of a\ncolumn (12 x 1) and a row (1 x 16) gives the same table. np.linalg.matrix_rank\nof any outer product is 1.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 876,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Multiplies every element of one array by every element of another,\ngiving a table: row i, column j holds in 1's value i times in 2's value\nj.\n\nTwo lists of 12 and 16 values give a 12 x 16 array. Nothing is added up -\nthat is the difference from the dot or inner product, which collapse the\nsame multiplications into one number. Every row of the result is in 2\nscaled by one value of in 1, and every column is in 1 scaled by one value\nof in 2.\n\nReach for it to build a 2-D picture from two 1-D profiles - a vignette\nfrom a horizontal and a vertical fall-off, a gradient, a separable\nfilter kernel - or a table of every pairing of two sets of weights.\nAny outer product has rank 1 (see np.linalg.matrix_rank): however\ndetailed it looks, it is made of one row pattern.\n\nSYNTAX:\nnp.outer\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe values for the rows (a list is turned into an array). Receiving it\ncalculates and sends.\n\nin 2:\nThe values for the columns. It is only stored, so it must arrive BEFORE\nin 1; nothing is sent until it has.\nArrays of more than one dimension are flattened first, so the result is\nalways 2-D: (length of in 1) x (length of in 2). The two need not be the\nsame length.\n\nOUTPUTS:\n\nouter_product:\nThe 2-D table of products.\n\nREADING THE DEMO:\nin 1 is a ramp of 12 values from -1 to 1 (drag start and stop on its\nnp.linspace - a metro re-sends it); in 2 is a hump of 16 values, rising\nfrom 0 to 1 and back (sin of 0 to 180 degrees, made once in make_hump).\nThe picture is the outer product, 12 rows by 16 columns: every row is\nthe hump, scaled by that row's ramp value - red (negative) at the top,\npale through the middle row, blue at the bottom. Drag stop to -1 and\nthe picture turns over; set start and stop both to 1 and every row is\nthe same hump.\n\nRELATED:\nnp.inner and np.dot multiply AND add up, giving a number. np.matmul of a\ncolumn (12 x 1) and a row (1 x 16) gives the same table. np.linalg.matrix_rank\nof any outer product is 1."
+                },
+                "3": {
+                    "name": "metro",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "metro 100"
+                },
+                "4": {
+                    "name": "np.linspace",
+                    "id": 385,
+                    "position_x": 30,
+                    "position_y": 150,
+                    "width": 123,
+                    "height": 98,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "start",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "stop",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "steps",
+                            "value": 12,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "np.linspace -1 1 12"
+                },
+                "5": {
+                    "init": "comment in 1: drag start and stop",
+                    "name": "comment",
+                    "id": 422,
+                    "position_x": 626,
+                    "position_y": 155,
+                    "width": 162,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "in 1: drag start and stop",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "in 1: drag start and stop"
+                },
+                "6": {
+                    "name": "heat_map",
+                    "id": 459,
+                    "position_x": 30,
+                    "position_y": 320,
+                    "width": 548,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 540,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 60,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "7": {
+                    "init": "comment in 1: 12 values, -1 to 1",
+                    "name": "comment",
+                    "id": 496,
+                    "position_x": 626,
+                    "position_y": 440,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "in 1: 12 values, -1 to 1",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "in 1: 12 values, -1 to 1"
+                },
+                "8": {
+                    "name": "p",
+                    "id": 533,
+                    "position_x": 30,
+                    "position_y": 480,
+                    "width": 72,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_hump",
+                    "patcher id": 1088
+                },
+                "9": {
+                    "name": "heat_map",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 570,
+                    "width": 548,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 540,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 60,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "10": {
+                    "init": "comment in 2: 16 values, a hump from 0 to 1 and back",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 626,
+                    "position_y": 690,
+                    "width": 279,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "in 2: 16 values, a hump from 0 to 1 and back",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "in 2: 16 values, a hump from 0 to 1 and back"
+                },
+                "11": {
+                    "name": "np.outer",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 730,
+                    "width": 88,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "12": {
+                    "name": "heat_map",
+                    "id": 681,
+                    "position_x": 30,
+                    "position_y": 820,
+                    "width": 408,
+                    "height": 340,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 400,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 290,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 12,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "13": {
+                    "init": "comment in 1 x in 2: 12 rows by 16 columns",
+                    "name": "comment",
+                    "id": 718,
+                    "position_x": 626,
+                    "position_y": 825,
+                    "width": 217,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "in 1 x in 2: 12 rows by 16 columns",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "in 1 x in 2: 12 rows by 16 columns"
+                },
+                "14": {
+                    "name": "np.shape",
+                    "id": 755,
+                    "position_x": 470,
+                    "position_y": 880,
+                    "width": 58,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "15": {
+                    "name": "list",
+                    "id": 792,
+                    "position_x": 470,
+                    "position_y": 970,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 30,
+                    "position_y": 1190,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.inner"
+                },
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 135,
+                    "position_y": 1190,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.dot"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 225,
+                    "position_y": 1190,
+                    "width": 72,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.matmul"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 338,
+                    "position_y": 1190,
+                    "width": 146,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.linalg.matrix_rank"
+                },
+                "20": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 977,
+                    "position_x": 626,
+                    "position_y": 1190,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "21": {
+                    "name": "close",
+                    "id": 1014,
+                    "position_x": 24,
+                    "position_y": 1264,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 385,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 459,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "2": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "hump",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "3": {
+                    "source_node": 533,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "hump",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "4": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "5": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "outer_product",
+                    "dest_node": 681,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "6": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "outer_product",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "np in"
+                },
+                "7": {
+                    "source_node": 755,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "shape",
+                    "dest_node": 792,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

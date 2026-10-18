@@ -8,6 +8,14 @@ import traceback
 import numpy as np
 from scipy.stats import median_abs_deviation
 
+
+def clamp_axis(axis, ndim):
+    # negative counts from the end, as in numpy; anything still out of range
+    # is clamped to the first or last axis
+    if axis < 0:
+        axis += ndim
+    return min(max(axis, 0), max(ndim - 1, 0))
+
 # add random, linspace, ones, zeros
 def register_numpy_nodes():
     Node.app.register_node('np.linalg.norm', NumpyLinalgNormNode.factory)
@@ -38,7 +46,6 @@ def register_numpy_nodes():
     Node.app.register_node('np.nansum', NumpyUnaryNode.factory)
     Node.app.register_node('np.nanmean', NumpyUnaryNode.factory)
     Node.app.register_node('np.nanmedian', NumpyUnaryNode.factory)
-    Node.app.register_node('np.linalg.det', NumpyUnaryNode.factory)
     Node.app.register_node('np.shape', NumpyShapeNode.factory)
     Node.app.register_node('np.matmul', NumpyMatMulNode.factory)
     Node.app.register_node('np.stack', NumpyBinaryNode.factory)
@@ -235,7 +242,11 @@ class NumpyLinSpaceNode(Node):
             self.dtype = self.dtype_dict[dtype]
 
     def execute(self):
-        out_array = self.op(any_to_float(self.start()), any_to_float(self.stop()), any_to_int(self.steps()), dtype=self.dtype)
+        steps = any_to_int(self.steps())
+        if steps < 0:
+            print(f'{self.label}: steps must be 0 or more, got {steps}')
+            return
+        out_array = self.op(any_to_float(self.start()), any_to_float(self.stop()), steps, dtype=self.dtype)
         self.output.send(out_array)
 
 
@@ -309,34 +320,52 @@ class NumpyNodeWithAxisNode(Node):
         self.current_axis_count = 2
         self.dim_option = None
         self.first_dim_option = 0
+        # np.stack can put its new axis after the last one: axis == ndim
+        self.extra_axis = 0
+        # the axis this call uses: self.axis clamped to the array in hand.
+        # self.axis itself is the user's choice and is never lowered.
+        self.call_axis = None
 
-    def add_dim_option(self, none_allowed=True):
+    def add_dim_option(self, none_allowed=True, extra_axis=0):
         self.dim_option = self.add_input('axis', widget_type='combo', default_value=str(self.axis),
                                          callback=self.axis_changed)
-
-        if none_allowed:
-            self.first_dim_option = 0
-            self.dim_option.widget.combo_items = ['None', '0', '1']
-        else:
-            self.first_dim_option = 1
-            self.dim_option.widget.combo_items = ['0', '1']
+        self.extra_axis = extra_axis
+        self.first_dim_option = 0 if none_allowed else 1
+        # the menu for current_axis_count dims, until an array shows the real count
+        self.dim_option.widget.combo_items = NumpyNodeWithAxisNode.full_axis_items[
+            self.first_dim_option:self.current_axis_count + 1 + extra_axis]
 
     def axis_changed(self):
         if self.dim_option is not None:
-            axis_string = self.dim_option()
-            if axis_string in self.axis_dict:
-                self.axis = self.axis_dict[axis_string]
+            axis = self.dim_option()
+            # a message ('None', 1) arrives as a list
+            if isinstance(axis, (list, tuple)):
+                axis = axis[0] if len(axis) > 0 else None
+            if axis is None or (isinstance(axis, str) and axis.strip() == 'None'):
+                if self.first_dim_option == 0:
+                    self.axis = None
+            else:
+                try:
+                    self.axis = int(float(axis))
+                except (TypeError, ValueError):
+                    return
+            self.dim_option.set(str(self.axis))
 
     def adjust_dim_option(self, data):
         dims = len(data.shape)
         if dims != self.current_axis_count and self.dim_option is not None:
-            dpg.configure_item(self.dim_option.widget.uuid, items=NumpyNodeWithAxisNode.full_axis_items[self.first_dim_option:dims + 1])
+            dpg.configure_item(self.dim_option.widget.uuid, items=NumpyNodeWithAxisNode.full_axis_items[self.first_dim_option:dims + 1 + self.extra_axis])
             self.current_axis_count = dims
-            if self.axis is not None and self.axis >= self.current_axis_count:
-                self.axis = self.current_axis_count - 1
-                num_str = NumpyNodeWithAxisNode.full_axis_items[self.axis + 1]
-                self.dim_option.set(num_str)
-        if self.axis is None or dims > self.axis:
+        # clamp for this call only, so a 1-D array through 'axis 1' does not
+        # leave the axis at 0 for the 2-D arrays that follow
+        self.call_axis = self.axis
+        if self.axis is not None:
+            last = dims - 1 + self.extra_axis
+            if self.axis > last:
+                self.call_axis = max(last, 0)
+            elif self.axis < -dims - self.extra_axis:
+                return False
+        if self.call_axis is None or dims + self.extra_axis > self.call_axis:
             return True
         return False
 
@@ -360,7 +389,8 @@ class NumpyUnaryNode(NumpyNodeWithAxisNode):
                 self.axis = d
         output_name = label.split('.')[-1]
         self.input = self.add_input('in', triggers_execution=True)
-        self.add_dim_option(none_allowed=False)
+        # None reduces the whole array to one value
+        self.add_dim_option()
         self.output = self.add_output(output_name)
         # patches saved before the fix carry the old mistaken outlet name
         self.output.name_archive.append('np')
@@ -368,17 +398,11 @@ class NumpyUnaryNode(NumpyNodeWithAxisNode):
     def execute(self):
         input_value = any_to_array(self.input())
         if self.adjust_dim_option(input_value):
-            if self.axis is None or len(input_value.shape) > self.axis:
-                output_value = self.op(input_value, axis=self.axis)
-                self.output.send(output_value)
+            output_value = self.op(input_value, axis=self.call_axis)
+            self.output.send(output_value)
         else:
             if self.app.verbose:
                 print(self.label, 'dim =', self.axis, 'out of range', 'for shape', input_value.shape)
-
-    def axis_changed(self):
-        axis_string = self.dim_option()
-        if axis_string in self.axis_dict:
-            self.axis = self.axis_dict[axis_string]
 
 
 class NumpyBinaryNode(NumpyNodeWithAxisNode):
@@ -400,7 +424,12 @@ class NumpyBinaryNode(NumpyNodeWithAxisNode):
         output_name = label.split('.')[-1]
         self.input = self.add_input('in', triggers_execution=True)
         self.input_2 = self.add_input('in 2')
-        self.add_dim_option()
+        if label == 'np.stack':
+            # np.stack has no flattened (None) form, and its new axis may go
+            # after the last one (axis == ndim)
+            self.add_dim_option(none_allowed=False, extra_axis=1)
+        else:
+            self.add_dim_option()
         self.output = self.add_output(output_name)
         # patches saved before the fix carry the old mistaken outlet name
         self.output.name_archive.append('np')
@@ -412,7 +441,13 @@ class NumpyBinaryNode(NumpyNodeWithAxisNode):
         input_value = any_to_array(self.input())
         if self.adjust_dim_option(input_value):
             if self.input_2_vector is not None:
-                self.output.send(self.op((input_value, self.input_2_vector), axis=self.axis))
+                try:
+                    joined = self.op((input_value, self.input_2_vector), axis=self.call_axis)
+                except ValueError as e:
+                    print(f'{self.label}: cannot join shapes {input_value.shape} and '
+                          f'{self.input_2_vector.shape} on axis {self.call_axis}: {e}')
+                    return
+                self.output.send(joined)
 
 
 class NumpyDotProductNode(Node):
@@ -543,7 +578,8 @@ class NumpySqueezeNode(Node):
         if self.input.fresh_input:
             data = any_to_array(self.input())
             axis = self.axis()
-            if 0 <= axis < len(data.shape):
+            # negative counts from the end, as in numpy
+            if -len(data.shape) <= axis < len(data.shape):
                 if data.shape[axis] == 1:
                     data = np.squeeze(data, axis=axis)
                     self.output.send(data)
@@ -577,10 +613,12 @@ class NumpyExpandDimsNode(Node):
         if self.input.fresh_input:
             data = any_to_array(self.input())
             axis = self.axis()
-            if axis < 0:
+            # the result has one more axis: -1 appends a new last axis, as in numpy
+            out_dims = len(data.shape) + 1
+            if axis < -out_dims:
                 axis = 0
-            elif axis > len(data.shape):
-                axis = len(data.shape)
+            elif axis >= out_dims:
+                axis = out_dims - 1
             data = np.expand_dims(data, axis=axis)
             self.output.send(data)
 
@@ -613,19 +651,21 @@ class NumpyRepeatNode(Node):
         self.output = self.add_output('array out')
 
     def execute(self):
-        repeated_data = None
         data = any_to_array(self.input())
+        repeats = self.repeats()
+        if repeats < 0:
+            print(f'{self.label}: repeats must be 0 or more, got {repeats}')
+            return
         axis = self.axis()
         if axis < 0:
-            axis = 0
-        elif axis >= len(data.shape):
-            if axis == len(data.shape):
-                repeated_data = np.repeat(np.expand_dims(data, axis), repeats=self.repeats(), axis=axis)
-            else:
-                axis = len(data.shape) - 1
-                repeated_data = np.repeat(data, repeats=self.repeats(), axis=axis)
-        else:
-            repeated_data = np.repeat(data, repeats=self.repeats(), axis=axis)
+            # negative counts from the end, as in numpy
+            axis = max(axis + len(data.shape), 0)
+        if axis == len(data.shape):
+            # one past the last axis: repeat along a new last axis
+            data = np.expand_dims(data, axis)
+        elif axis > len(data.shape):
+            axis = max(len(data.shape) - 1, 0)
+        repeated_data = np.repeat(data, repeats=repeats, axis=axis)
         self.output.send(repeated_data)
 
 
@@ -727,10 +767,16 @@ class NumpyClipNode(Node):
         self.input = self.add_input('input', triggers_execution=True)
         self.min = 0.0
         self.max = 1.0
-        if len(args) > 0:
-            self.min = any_to_float(args[0])
-        if len(args) > 1:
-            self.max = any_to_float(args[1])
+        if self.label == 'np.max':
+            # np.max has only its 'max' limit (the floor): the first argument sets it
+            if len(args) > 0:
+                self.max = any_to_float(args[0])
+        else:
+            # np.clip: min max.  np.min has only its 'min' limit (the ceiling)
+            if len(args) > 0:
+                self.min = any_to_float(args[0])
+            if len(args) > 1:
+                self.max = any_to_float(args[1])
         # print(self.min, self.max)
         self.min_property = None
         self.max_property = None
@@ -793,11 +839,7 @@ class NumpyRollNode(Node):
     def execute(self):
         if self.input.fresh_input:
             data = any_to_array(self.input())
-            axis = self.axis()
-            if axis < 0:
-                axis = 0
-            elif axis >= len(data.shape):
-                axis = len(data.shape) - 1
+            axis = clamp_axis(self.axis(), len(data.shape))
             repeated_data = np.roll(data, shift=self.shifts(), axis=axis)
             self.output.send(repeated_data)
 
@@ -826,8 +868,7 @@ class NumpyAddAlphaNode(Node):
                 data = np.append(data, mean, axis=2)
                 self.output.send(data)
             else:
-                if self.app.verbose:
-                    print(f'{self.label}: expected 3-D input (H, W, C), got shape {data.shape}')
+                print(f'{self.label}: expected 3-D input (H, W, C), got shape {data.shape}')
 
 
 
@@ -944,11 +985,7 @@ class NumpyFlipNode(Node):
     def execute(self):
         if self.input.fresh_input:
             data = any_to_array(self.input())
-            axis = self.axis()
-            if axis < 0:
-                axis = 0
-            elif axis >= len(data.shape):
-                axis = len(data.shape) - 1
+            axis = clamp_axis(self.axis(), len(data.shape))
             flipped_data = np.flip(data, axis=axis)
             self.output.send(flipped_data)
 
@@ -961,25 +998,30 @@ class NumpyTransposeNode(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        axis = 0
-        if len(args) > 0:
-            v, t = decode_arg(args, 0)
-            if t in [int, float]:
-                axis = int(v)
+        # optional new order of the axes, e.g. np.transpose 1 0 2;
+        # empty reverses them all (numpy's default)
+        order = ' '.join(args) if args else ''
         self.input = self.add_input('input', triggers_execution=True)
-        # self.axis_input = self.add_input('axis', widget_type='input_int', default_value=axis)
+        self.axes_input = self.add_input('axes', widget_type='text_input', widget_width=80, default_value=order)
 
         self.output = self.add_output('transposed array')
 
     def execute(self):
         if self.input.fresh_input:
             data = any_to_array(self.input())
-            # axis = self.axis_input()
-            # if axis < 0:
-            #     axis = 0
-            # elif axis >= len(data.shape):
-            #     axis = len(data.shape) - 1
-            transposed_data = np.transpose(data)
+            order = self.axes_input()
+            if not isinstance(order, str):
+                order = ' '.join(str(v) for v in np.ravel(np.asarray(order, dtype=object)))
+            axes = [int(v) for v in re.findall(r'[-+]?\d+', order)]
+            if len(axes) == 0:
+                transposed_data = np.transpose(data)
+            else:
+                try:
+                    transposed_data = np.transpose(data, axes)
+                except ValueError as e:
+                    print(f'{self.label}: axes {axes} do not fit shape {data.shape} '
+                          f'(give each axis once): {e}')
+                    return
             self.output.send(transposed_data)
 
 
@@ -1064,6 +1106,11 @@ class NumpyReshapeNode(Node):
 
     def shape_changed(self):
         shape_text = self.shape_input()
+        if not isinstance(shape_text, str):
+            # a list, array or single number of dims arriving at the inlet
+            dims = [any_to_int(v) for v in np.ravel(np.asarray(shape_text, dtype=object))]
+            shape_text = str(dims)
+            self.shape_input.set(shape_text)
         shape_list = re.findall(r'[-+]?\d+', shape_text)
         shape = []
         for dim_text in shape_list:
@@ -1080,7 +1127,6 @@ class NumpyReshapeNode(Node):
                 print(f'{self.label}: reshape to {self.shape} failed for '
                       f'shape {getattr(input_array, "shape", "?")}: '
                       f'{type(e).__name__}: {e}')
-                traceback.print_exc()
 
 class NumpyUnaryLinearAlgebraNode(Node):
     operations = {
@@ -1101,15 +1147,17 @@ class NumpyUnaryLinearAlgebraNode(Node):
         if label in self.operations:
             self.op = self.operations[label]
         self.input = self.add_input('input', triggers_execution=True)
-        out_name = 'determiner'
+        out_name = 'determinant'
 
         if self.label == 'np.linalg.det':
-            out_name = 'determiner'
+            out_name = 'determinant'
         elif self.label == 'np.linalg.matrix_rank':
             out_name = 'matrix rank'
         elif self.label == 'np.linalg.inv':
             out_name = 'inverse matrix'
         self.output = self.add_output(out_name)
+        # patches saved before the rename carry the old outlet name
+        self.output.name_archive.append('determiner')
 
     def execute(self):
         if self.input.fresh_input:
@@ -1199,7 +1247,7 @@ class NumpyDistanceFromTargetNode(NumpyNodeWithAxisNode):
                           f'with target shape {self.target.shape}: {e}')
                 return
             if self.adjust_dim_option(input_value):
-                self.output.send(np.linalg.norm(diff, axis=self.axis))
+                self.output.send(np.linalg.norm(diff, axis=self.call_axis))
 
 
 class NumpyProximityToTargetNode(Node):
@@ -1340,9 +1388,12 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
 
     def reset_counter(self):
         self.counter = 0
+        self.count_out.send(self.counter)
 
     def arm(self):
         self.counter = 0
+        if not self.in_loading_process:
+            self.count_out.send(self.counter)
 
     def set_the_target(self):
         target = self.input()
@@ -1377,7 +1428,7 @@ class NumpyProximityTriggerNode(NumpyNodeWithAxisNode):
                               f'with target shape {self.target.shape}: {e}')
                     return
                 if self.adjust_dim_option(input_value):
-                    distance = np.linalg.norm(diff, axis=self.axis)
+                    distance = np.linalg.norm(diff, axis=self.call_axis)
                     self.prox_out.send(distance)
                     # with an axis the distance is per row: the nearest one triggers
                     # (any row inside threshold) and releases (all rows beyond release)
@@ -1411,7 +1462,7 @@ class NumpyLinalgNormNode(NumpyNodeWithAxisNode):
         input_value = any_to_array(self.input())
 
         if self.adjust_dim_option(input_value):
-            self.output.send(np.linalg.norm(input_value, axis=self.axis))
+            self.output.send(np.linalg.norm(input_value, axis=self.call_axis))
 
 
 class NumpyShapeNode(Node):
@@ -1474,21 +1525,15 @@ class NumpyRotateNode(Node):
             if len(data.shape) == 1:
                 data = np.expand_dims(data, axis=0)
 
-            axis1 = self.axis1()
-            if axis1 < 0:
-                axis1 = 0
-            elif axis1 >= len(data.shape):
-                axis1 = len(data.shape) - 1
-
-            axis2 = self.axis2()
-            if axis2 < 0:
-                axis2 = 0
-            elif axis2 >= len(data.shape):
-                axis2 = len(data.shape) - 1
+            axis1 = clamp_axis(self.axis1(), len(data.shape))
+            axis2 = clamp_axis(self.axis2(), len(data.shape))
 
             if axis1 != axis2:
                 rotated_data = np.rot90(data, k=self.k(), axes=(axis1, axis2))
                 self.output.send(rotated_data)
+            else:
+                print(f'{self.label}: axis 1 and axis 2 are both axis {axis1} of a '
+                      f'{len(data.shape)}-D array - a turn needs two different axes')
 
 
 class NumpyRobustMeanNode(Node):
@@ -1524,11 +1569,19 @@ class NumpyRobustMeanNode(Node):
         self.reset_button = self.add_property('reset', widget_type='button',
                                               callback=self.reset)
 
+        # shows how many samples are held; editing it just snaps back to the count
         self.count_display = self.add_property('samples', widget_type='drag_int',
-                                               default_value=0)
+                                               default_value=0, callback=self.show_count)
 
         self.output = self.add_output('robust mean')
         self.inlier_output = self.add_output('inlier count')
+        # the oldest samples are dropped beyond this, so the estimate follows
+        # the recent past and the store cannot grow without limit (0 keeps all)
+        self.max_samples_option = self.add_option('max samples', widget_type='drag_int',
+                                                  default_value=1000, min=0)
+
+    def show_count(self):
+        self.count_display.set(len(self.samples))
 
     def reset(self):
         self.samples = []
@@ -1550,8 +1603,18 @@ class NumpyRobustMeanNode(Node):
                 self.samples = [arr[i] for i in range(arr.shape[0])]
             else:
                 # Single sample: accumulate
-                self.samples.append(arr.flatten())
+                sample = arr.flatten()
+                if len(self.samples) > 0 and self.samples[-1].shape != sample.shape:
+                    # a different kind of estimate: mixing lengths means nothing, start over
+                    print(f'{self.label}: sample length changed from {self.samples[-1].shape[0]} '
+                          f'to {sample.shape[0]} - starting a new set of samples')
+                    self.samples = []
+                self.samples.append(sample)
 
+            # keep at most 'max samples', dropping the oldest (0 keeps all)
+            max_samples = any_to_int(self.max_samples_option())
+            if max_samples > 0 and len(self.samples) > max_samples:
+                self.samples = self.samples[-max_samples:]
             self.count_display.set(len(self.samples))
 
         if len(self.samples) < 2:
@@ -1661,7 +1724,8 @@ class NumpySubtensorNode(Node):
         self.slice_obj = (slice(None),)
 
         # Default string
-        index_string = ''.join(args) if args else ':'
+        # joined with spaces: [0 3 7] arrives as '[0', '3', '7]' and must stay a list
+        index_string = ' '.join(args) if args else ':'
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.indices_input = self.add_input(
@@ -2010,8 +2074,10 @@ class NumpyEditNode(Node):
                             self.edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3]] = value_array
                         elif len(value_array.shape) > 0 and value_array.shape[0] == 1:
                             self.edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3]] = value_array[0]
+                        else:
+                            self.report_bad_size(source_shape, target_shape)
                     else:
-                        print('bad_size in np.edit')
+                        self.report_bad_size(source_shape, target_shape)
                 elif len(dim_list_now) == 6:
                     target_shape = [dim_list_now[1] - dim_list_now[0], dim_list_now[3] - dim_list_now[2], dim_list_now[5] - dim_list_now[4]]
                     source_shape = list(value_array.shape)
@@ -2023,8 +2089,10 @@ class NumpyEditNode(Node):
                             self.edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]] = value_array
                         elif len(value_array.shape) > 0 and value_array.shape[0] == 1:
                             self.edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5]] = value_array[0]
+                        else:
+                            self.report_bad_size(source_shape, target_shape)
                     else:
-                        print('bad_size in np.edit')
+                        self.report_bad_size(source_shape, target_shape)
                 elif len(dim_list_now) == 8:
                     target_shape = [dim_list_now[1] - dim_list_now[0], dim_list_now[3] - dim_list_now[2], dim_list_now[5] - dim_list_now[4], dim_list_now[7] - dim_list_now[6]]
                     source_shape = list(value_array.shape)
@@ -2036,9 +2104,16 @@ class NumpyEditNode(Node):
                             self.edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]] = value_array
                         elif len(value_array.shape) > 0 and value_array.shape[-1] == 1:
                             self.edited_array[dim_list_now[0]:dim_list_now[1], dim_list_now[2]:dim_list_now[3], dim_list_now[4]:dim_list_now[5], dim_list_now[6]:dim_list_now[7]] = value_array[0]
+                        else:
+                            self.report_bad_size(source_shape, target_shape)
                     else:
-                        print('bad_size in np.edit')
+                        self.report_bad_size(source_shape, target_shape)
             self.output.send(self.edited_array)
+
+    def report_bad_size(self, source_shape, target_shape):
+        # the array still goes out, unedited
+        print(f'{self.label}: values of shape {tuple(source_shape)} do not fit the '
+              f'selected part {tuple(target_shape)} - array sent unedited')
 
 
 class NumpySequenceNode(Node):

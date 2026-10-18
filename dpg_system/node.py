@@ -1405,11 +1405,13 @@ class SliderInt(IntWidget):
 
 class InputInt(IntWidget):
     def _draw_widget(self):
-        if self.min is None: self.min = 0
-        if self.max is None: self.max = 2 ** 31 - 1
+        # The dpg limits here are not clamped, so typing below them works; keep
+        # self.min/max None unless given, or set()/load() would clamp to them
+        # (a saved -1 reopening as 0).
+        mn, mx = self._get_limits(-2 ** 31, 2 ** 31 - 1)
         dpg.add_input_int(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid,
                           user_data=self.node, default_value=self.default_value,
-                          step=self.step, min_value=self.min, max_value=self.max)
+                          step=self.step, min_value=mn, max_value=mx)
 
     def set_format(self, format: str) -> None:
         pass

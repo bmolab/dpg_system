@@ -445,7 +445,7 @@
             "properties": {
                 "0": {
                     "name": "color",
-                    "value": "greys",
+                    "value": "hot",
                     "value_type": "str"
                 },
                 "1": {
@@ -637,7 +637,7 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "help_link np_clip"
+            "init": "help_link np.clip"
         },
         "23": {
             "name": "help_link",
