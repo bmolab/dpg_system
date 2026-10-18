@@ -304,7 +304,8 @@ hold); `np.median_help.json` and `np.nanmean_help.json` are David's own
 reworks, and `np.nanmedian_help.json` is np.nanmean's layout with the median
 nodes. `np.std_help.json` is laid out the same way (spread and shift
 sliders into make_noise, and a make_jitter table whose np.std 0 strip sits
-under its columns). `make_numpy_average_help.py` builds none of the five. Use `relayout.py --minimal`
+under its columns), and `np.robust_mean_help.json` is David's rework.
+`make_numpy_average_help.py` now builds only np.var. Use `relayout.py --minimal`
 on these, never plain relayout.
 
 To hand-edit any generated page: open it, rework it, save over the same file

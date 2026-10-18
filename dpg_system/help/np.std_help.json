@@ -1,27 +1,27 @@
 {
     "name": "np.std_help",
-    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/nansum/out/np.std_help.json",
     "patches": {
         "0": {
-            "height": 990,
-            "width": 870,
+            "height": 1195,
+            "width": 1638,
             "position": [
-                160,
-                160
+                100,
+                67
             ],
-            "id": 1347,
+            "id": 4625,
+            "parent_node_uuid": 5173,
             "name": "make_noise",
-            "parent_node_uuid": 533,
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 1384,
+                    "id": 4653,
+                    "sid": 1,
                     "position_x": 0,
                     "position_y": 0,
-                    "width": 9,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "hidden",
+                    "draggable": false,
                     "protected": true,
                     "presentation_state": "hidden",
                     "properties": {
@@ -34,25 +34,32 @@
                 },
                 "1": {
                     "name": "load_bang",
-                    "init": "load_bang",
-                    "id": 1421,
+                    "id": 4671,
+                    "sid": 2,
                     "position_x": 40,
                     "position_y": 40,
-                    "width": 88,
-                    "height": 46,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "trigger",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
                 },
                 "2": {
-                    "name": "comment",
                     "init": "comment once, when the patch opens",
-                    "id": 1458,
+                    "name": "comment",
+                    "id": 4678,
+                    "sid": 3,
                     "position_x": 150,
                     "position_y": 50,
-                    "width": 280,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -60,66 +67,100 @@
                         "0": {
                             "name": "text",
                             "value": "once, when the patch opens",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "once, when the patch opens"
                 },
                 "3": {
-                    "name": "np.rand",
                     "init": "np.rand 64",
-                    "id": 1495,
+                    "name": "np.rand",
+                    "id": 4689,
+                    "sid": 4,
                     "position_x": 40,
                     "position_y": 110,
-                    "width": 160,
-                    "height": 140,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
                             "name": "min",
                             "value": -1.0,
                             "value_type": "float"
                         },
-                        "1": {
+                        "2": {
                             "name": "max",
                             "value": 1.0,
                             "value_type": "float"
                         },
-                        "2": {
+                        "3": {
                             "name": "dim 0",
                             "value": 64,
                             "value_type": "int"
                         },
-                        "3": {
+                        "4": {
                             "name": "dtype",
                             "value": "float32",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     }
                 },
                 "4": {
-                    "name": "t",
                     "init": "t array array array",
-                    "id": 1532,
+                    "name": "t",
+                    "id": 4708,
+                    "sid": 5,
                     "position_x": 40,
                     "position_y": 280,
-                    "width": 200,
-                    "height": 46,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "trigger 0",
+                            "value": "array",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "trigger 1",
+                            "value": "array",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "trigger 2",
+                            "value": "array",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "5": {
-                    "name": "comment",
                     "init": "comment right to left: std, then mean, then the values",
-                    "id": 1569,
+                    "name": "comment",
+                    "id": 4728,
+                    "sid": 6,
                     "position_x": 260,
                     "position_y": 285,
-                    "width": 440,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -127,71 +168,103 @@
                         "0": {
                             "name": "text",
                             "value": "right to left: std, then mean, then the values",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "right to left: std, then mean, then the values"
                 },
                 "6": {
                     "name": "np.std",
-                    "init": "np.std",
-                    "id": 1606,
+                    "id": 4739,
+                    "sid": 7,
                     "position_x": 420,
                     "position_y": 340,
-                    "width": 120,
-                    "height": 70,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": "None",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "7": {
                     "name": "np.mean",
-                    "init": "np.mean",
-                    "id": 1643,
+                    "id": 4749,
+                    "sid": 8,
                     "position_x": 260,
                     "position_y": 340,
-                    "width": 120,
-                    "height": 70,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": "None",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "8": {
-                    "name": "-",
                     "init": "- 0.0",
-                    "id": 1680,
+                    "name": "-",
+                    "id": 4759,
+                    "sid": 9,
                     "position_x": 40,
                     "position_y": 440,
-                    "width": 120,
-                    "height": 46,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": -0.0821826234459877,
+                            "value_type": "float"
+                        }
+                    }
                 },
                 "9": {
-                    "name": "/",
                     "init": "/ 1.0",
-                    "id": 1717,
+                    "name": "/",
+                    "id": 4769,
+                    "sid": 10,
                     "position_x": 40,
                     "position_y": 510,
-                    "width": 120,
-                    "height": 46,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.5820488929748535,
+                            "value_type": "float"
+                        }
+                    }
                 },
                 "10": {
-                    "name": "comment",
                     "init": "comment now mean 0, std 1",
-                    "id": 1754,
+                    "name": "comment",
+                    "id": 4779,
+                    "sid": 11,
                     "position_x": 180,
                     "position_y": 515,
-                    "width": 240,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -199,19 +272,25 @@
                         "0": {
                             "name": "text",
                             "value": "now mean 0, std 1",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "now mean 0, std 1"
                 },
                 "11": {
-                    "name": "var",
                     "init": "var np_spread_help_noise",
-                    "id": 1791,
+                    "name": "var",
+                    "id": 4790,
+                    "sid": 12,
                     "position_x": 40,
                     "position_y": 580,
-                    "width": 240,
-                    "height": 70,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -219,96 +298,169 @@
                         "0": {
                             "name": "name",
                             "value": "np_spread_help_noise",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     }
                 },
                 "12": {
-                    "name": "in",
                     "init": "in spread",
-                    "id": 1828,
+                    "name": "in",
+                    "id": 4800,
+                    "sid": 13,
                     "position_x": 460,
                     "position_y": 440,
-                    "width": 150,
-                    "height": 80,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "source",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "input name",
+                            "value": "spread",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "13": {
-                    "name": "in",
                     "init": "in shift",
-                    "id": 1865,
+                    "name": "in",
+                    "id": 4810,
+                    "sid": 14,
                     "position_x": 640,
                     "position_y": 440,
-                    "width": 150,
-                    "height": 80,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "source",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "input name",
+                            "value": "shift",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "14": {
-                    "name": "t",
                     "init": "t bang float",
-                    "id": 1902,
+                    "name": "t",
+                    "id": 4820,
+                    "sid": 15,
                     "position_x": 460,
                     "position_y": 540,
-                    "width": 120,
-                    "height": 46,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "trigger 0",
+                            "value": "bang",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "trigger 1",
+                            "value": "float",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "15": {
-                    "name": "t",
                     "init": "t bang float",
-                    "id": 1939,
+                    "name": "t",
+                    "id": 4835,
+                    "sid": 16,
                     "position_x": 640,
                     "position_y": 540,
-                    "width": 120,
-                    "height": 46,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "trigger 0",
+                            "value": "bang",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "trigger 1",
+                            "value": "float",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "16": {
-                    "name": "*",
                     "init": "* 1.0",
-                    "id": 1976,
+                    "name": "*",
+                    "id": 4850,
+                    "sid": 17,
                     "position_x": 40,
                     "position_y": 680,
-                    "width": 120,
-                    "height": 46,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 1.0,
+                            "value_type": "float"
+                        }
+                    }
                 },
                 "17": {
-                    "name": "+",
                     "init": "+ 0.0",
-                    "id": 2013,
+                    "name": "+",
+                    "id": 4860,
+                    "sid": 18,
                     "position_x": 40,
                     "position_y": 750,
-                    "width": 120,
-                    "height": 46,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
                 },
                 "18": {
-                    "name": "comment",
                     "init": "comment times spread, plus shift",
-                    "id": 2050,
+                    "name": "comment",
+                    "id": 4870,
+                    "sid": 19,
                     "position_x": 180,
                     "position_y": 715,
-                    "width": 280,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -316,228 +468,246 @@
                         "0": {
                             "name": "text",
                             "value": "times spread, plus shift",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "times spread, plus shift"
                 },
                 "19": {
-                    "name": "out",
                     "init": "out data",
-                    "id": 2087,
+                    "name": "out",
+                    "id": 4881,
+                    "sid": 20,
                     "position_x": 40,
                     "position_y": 830,
-                    "width": 150,
-                    "height": 80,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "dest",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "output name",
+                            "value": "data",
+                            "value_type": "string"
+                        }
+                    }
                 }
             },
             "links": {
                 "0": {
-                    "source_node": 1421,
-                    "source_node_name": "",
+                    "source_node": 4671,
+                    "source_node_name": "load_bang",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 1495,
-                    "dest_node_name": "",
+                    "dest_node": 4689,
+                    "dest_node_name": "np.rand",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "1": {
-                    "source_node": 1495,
-                    "source_node_name": "",
+                    "source_node": 4689,
+                    "source_node_name": "np.rand",
                     "source_output_index": 0,
                     "source_output_name": "random array",
-                    "dest_node": 1532,
-                    "dest_node_name": "",
+                    "dest_node": 4708,
+                    "dest_node_name": "t",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "2": {
-                    "source_node": 1532,
-                    "source_node_name": "",
-                    "source_output_index": 2,
+                    "source_node": 4708,
+                    "source_node_name": "t",
+                    "source_output_index": 0,
                     "source_output_name": "array",
-                    "dest_node": 1606,
-                    "dest_node_name": "",
+                    "dest_node": 4759,
+                    "dest_node_name": "-",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "3": {
-                    "source_node": 1532,
-                    "source_node_name": "",
+                    "source_node": 4708,
+                    "source_node_name": "t",
                     "source_output_index": 1,
                     "source_output_name": "array",
-                    "dest_node": 1643,
-                    "dest_node_name": "",
+                    "dest_node": 4749,
+                    "dest_node_name": "np.mean",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "4": {
-                    "source_node": 1532,
-                    "source_node_name": "",
-                    "source_output_index": 0,
+                    "source_node": 4708,
+                    "source_node_name": "t",
+                    "source_output_index": 2,
                     "source_output_name": "array",
-                    "dest_node": 1680,
-                    "dest_node_name": "",
+                    "dest_node": 4739,
+                    "dest_node_name": "np.std",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "5": {
-                    "source_node": 1606,
-                    "source_node_name": "",
+                    "source_node": 4739,
+                    "source_node_name": "np.std",
                     "source_output_index": 0,
                     "source_output_name": "std",
-                    "dest_node": 1717,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "operand"
+                    "dest_node": 4769,
+                    "dest_node_name": "/",
+                    "dest_input_index": 1,
+                    "dest_input_name": "###operand"
                 },
                 "6": {
-                    "source_node": 1643,
-                    "source_node_name": "",
+                    "source_node": 4749,
+                    "source_node_name": "np.mean",
                     "source_output_index": 0,
                     "source_output_name": "mean",
-                    "dest_node": 1680,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "operand"
+                    "dest_node": 4759,
+                    "dest_node_name": "-",
+                    "dest_input_index": 1,
+                    "dest_input_name": "###operand"
                 },
                 "7": {
-                    "source_node": 1680,
-                    "source_node_name": "",
+                    "source_node": 4759,
+                    "source_node_name": "-",
                     "source_output_index": 0,
                     "source_output_name": "result",
-                    "dest_node": 1717,
-                    "dest_node_name": "",
+                    "dest_node": 4769,
+                    "dest_node_name": "/",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "8": {
-                    "source_node": 1717,
-                    "source_node_name": "",
+                    "source_node": 4769,
+                    "source_node_name": "/",
                     "source_output_index": 0,
                     "source_output_name": "result",
-                    "dest_node": 1791,
-                    "dest_node_name": "",
+                    "dest_node": 4790,
+                    "dest_node_name": "var",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "9": {
-                    "source_node": 1828,
-                    "source_node_name": "",
+                    "source_node": 4790,
+                    "source_node_name": "var",
                     "source_output_index": 0,
-                    "source_output_name": "spread",
-                    "dest_node": 1902,
-                    "dest_node_name": "",
+                    "source_output_name": "out",
+                    "dest_node": 4850,
+                    "dest_node_name": "*",
                     "dest_input_index": 0,
-                    "dest_input_name": ""
+                    "dest_input_name": "in"
                 },
                 "10": {
-                    "source_node": 1865,
-                    "source_node_name": "",
+                    "source_node": 4800,
+                    "source_node_name": "in",
                     "source_output_index": 0,
-                    "source_output_name": "shift",
-                    "dest_node": 1939,
-                    "dest_node_name": "",
+                    "source_output_name": "spread",
+                    "dest_node": 4820,
+                    "dest_node_name": "t",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "11": {
-                    "source_node": 1902,
-                    "source_node_name": "",
+                    "source_node": 4810,
+                    "source_node_name": "in",
                     "source_output_index": 0,
-                    "source_output_name": "float",
-                    "dest_node": 1976,
-                    "dest_node_name": "",
+                    "source_output_name": "shift",
+                    "dest_node": 4835,
+                    "dest_node_name": "t",
                     "dest_input_index": 0,
-                    "dest_input_name": "operand"
+                    "dest_input_name": ""
                 },
                 "12": {
-                    "source_node": 1902,
-                    "source_node_name": "",
+                    "source_node": 4820,
+                    "source_node_name": "t",
                     "source_output_index": 0,
                     "source_output_name": "bang",
-                    "dest_node": 1791,
-                    "dest_node_name": "",
+                    "dest_node": 4790,
+                    "dest_node_name": "var",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "13": {
-                    "source_node": 1939,
-                    "source_node_name": "",
-                    "source_output_index": 0,
+                    "source_node": 4820,
+                    "source_node_name": "t",
+                    "source_output_index": 1,
                     "source_output_name": "float",
-                    "dest_node": 2013,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "operand"
+                    "dest_node": 4850,
+                    "dest_node_name": "*",
+                    "dest_input_index": 1,
+                    "dest_input_name": "###operand"
                 },
                 "14": {
-                    "source_node": 1939,
-                    "source_node_name": "",
+                    "source_node": 4835,
+                    "source_node_name": "t",
                     "source_output_index": 0,
                     "source_output_name": "bang",
-                    "dest_node": 1791,
-                    "dest_node_name": "",
+                    "dest_node": 4790,
+                    "dest_node_name": "var",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "15": {
-                    "source_node": 1791,
-                    "source_node_name": "",
-                    "source_output_index": 0,
-                    "source_output_name": "out",
-                    "dest_node": 1976,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "in"
+                    "source_node": 4835,
+                    "source_node_name": "t",
+                    "source_output_index": 1,
+                    "source_output_name": "float",
+                    "dest_node": 4860,
+                    "dest_node_name": "+",
+                    "dest_input_index": 1,
+                    "dest_input_name": "###operand"
                 },
                 "16": {
-                    "source_node": 1976,
-                    "source_node_name": "",
+                    "source_node": 4850,
+                    "source_node_name": "*",
                     "source_output_index": 0,
                     "source_output_name": "result",
-                    "dest_node": 2013,
-                    "dest_node_name": "",
+                    "dest_node": 4860,
+                    "dest_node_name": "+",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "17": {
-                    "source_node": 2013,
-                    "source_node_name": "",
+                    "source_node": 4860,
+                    "source_node_name": "+",
                     "source_output_index": 0,
                     "source_output_name": "result",
-                    "dest_node": 2087,
-                    "dest_node_name": "",
+                    "dest_node": 4881,
+                    "dest_node_name": "out",
                     "dest_input_index": 0,
                     "dest_input_name": "data"
                 }
             }
         },
         "1": {
-            "height": 630,
-            "width": 879,
+            "height": 1195,
+            "width": 1638,
             "position": [
-                160,
-                160
+                100,
+                67
             ],
-            "id": 2124,
+            "id": 4577,
+            "parent_node_uuid": 5474,
             "name": "make_jitter",
-            "parent_node_uuid": 903,
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 2161,
+                    "id": 4605,
+                    "sid": 1,
                     "position_x": 0,
                     "position_y": 0,
-                    "width": 9,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "hidden",
+                    "draggable": false,
                     "protected": true,
                     "presentation_state": "hidden",
                     "properties": {
@@ -549,39 +719,58 @@
                     }
                 },
                 "1": {
-                    "name": "in",
                     "init": "in new",
-                    "id": 2198,
+                    "name": "in",
+                    "id": 4892,
+                    "sid": 2,
                     "position_x": 40,
                     "position_y": 40,
-                    "width": 150,
-                    "height": 80,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "source",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "input name",
+                            "value": "new",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "2": {
                     "name": "load_bang",
-                    "init": "load_bang",
-                    "id": 2235,
+                    "id": 4902,
+                    "sid": 3,
                     "position_x": 240,
                     "position_y": 40,
-                    "width": 88,
-                    "height": 46,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "trigger",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
                 },
                 "3": {
-                    "name": "comment",
                     "init": "comment and once when the page opens",
-                    "id": 2272,
+                    "name": "comment",
+                    "id": 4909,
+                    "sid": 4,
                     "position_x": 350,
                     "position_y": 50,
-                    "width": 235,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -589,32 +778,55 @@
                         "0": {
                             "name": "text",
                             "value": "and once when the page opens",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "and once when the page opens"
                 },
                 "4": {
-                    "name": "t",
                     "init": "t bang bang",
-                    "id": 2309,
+                    "name": "t",
+                    "id": 4920,
+                    "sid": 5,
                     "position_x": 240,
                     "position_y": 100,
-                    "width": 150,
-                    "height": 46,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "trigger 0",
+                            "value": "bang",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "trigger 1",
+                            "value": "bang",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "5": {
-                    "name": "comment",
                     "init": "comment right to left: the amounts first, then the table",
-                    "id": 2346,
+                    "name": "comment",
+                    "id": 4935,
+                    "sid": 6,
                     "position_x": 410,
                     "position_y": 110,
-                    "width": 389,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -622,58 +834,70 @@
                         "0": {
                             "name": "text",
                             "value": "right to left: the amounts first, then the table",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "right to left: the amounts first, then the table"
                 },
                 "6": {
-                    "name": "np.rand",
                     "init": "np.rand 16 4",
-                    "id": 2383,
+                    "name": "np.rand",
+                    "id": 4946,
+                    "sid": 7,
                     "position_x": 40,
                     "position_y": 140,
-                    "width": 160,
-                    "height": 160,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
                             "name": "min",
                             "value": -1.0,
                             "value_type": "float"
                         },
-                        "1": {
+                        "2": {
                             "name": "max",
                             "value": 1.0,
                             "value_type": "float"
                         },
-                        "2": {
+                        "3": {
                             "name": "dim 0",
                             "value": 16,
                             "value_type": "int"
                         },
-                        "3": {
+                        "4": {
                             "name": "dim 1",
                             "value": 4,
                             "value_type": "int"
                         },
-                        "4": {
+                        "5": {
                             "name": "dtype",
                             "value": "float32",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     }
                 },
                 "7": {
-                    "name": "comment",
                     "init": "comment 16 frames (rows) of 4 sensors (columns), -1 to 1",
-                    "id": 2420,
+                    "name": "comment",
+                    "id": 4968,
+                    "sid": 8,
                     "position_x": 230,
                     "position_y": 180,
-                    "width": 389,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -681,48 +905,69 @@
                         "0": {
                             "name": "text",
                             "value": "16 frames (rows) of 4 sensors (columns), -1 to 1",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "16 frames (rows) of 4 sensors (columns), -1 to 1"
                 },
                 "8": {
                     "name": "message",
-                    "init": "message",
-                    "id": 2457,
+                    "id": 4979,
+                    "sid": 9,
                     "position_x": 440,
                     "position_y": 300,
-                    "width": 200,
-                    "height": 42,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
                             "name": "text in",
-                            "value": "0.1 0.3 0.6 1.0",
-                            "value_type": "str"
+                            "value": "[0.1, 0.3, 0.6, 1.0]",
+                            "value_type": "string"
                         },
                         "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
+                            "name": "adapt_width",
+                            "value": "grow_to_fit",
+                            "value_type": "string"
                         },
                         "2": {
+                            "name": "bind to",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "3": {
                             "name": "width",
                             "value": 180,
                             "value_type": "int"
+                        },
+                        "4": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        },
+                        "5": {
+                            "name": "hide_title_bar",
+                            "value": false,
+                            "value_type": "bool"
                         }
                     }
                 },
                 "9": {
-                    "name": "comment",
                     "init": "comment how much each sensor jitters",
-                    "id": 2494,
+                    "name": "comment",
+                    "id": 5003,
+                    "sid": 10,
                     "position_x": 440,
                     "position_y": 350,
-                    "width": 235,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -730,32 +975,44 @@
                         "0": {
                             "name": "text",
                             "value": "how much each sensor jitters",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "how much each sensor jitters"
                 },
                 "10": {
                     "name": "*",
-                    "init": "*",
-                    "id": 2531,
+                    "id": 5014,
+                    "sid": 11,
                     "position_x": 40,
                     "position_y": 330,
-                    "width": 130,
-                    "height": 70,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
                 },
                 "11": {
-                    "name": "comment",
                     "init": "comment each column times its own amount",
-                    "id": 2568,
+                    "name": "comment",
+                    "id": 5024,
+                    "sid": 12,
                     "position_x": 40,
                     "position_y": 410,
-                    "width": 266,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -763,118 +1020,135 @@
                         "0": {
                             "name": "text",
                             "value": "each column times its own amount",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "each column times its own amount"
                 },
                 "12": {
-                    "name": "out",
                     "init": "out table",
-                    "id": 2605,
+                    "name": "out",
+                    "id": 5035,
+                    "sid": 13,
                     "position_x": 40,
                     "position_y": 470,
-                    "width": 150,
-                    "height": 80,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "dest",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "output name",
+                            "value": "table",
+                            "value_type": "string"
+                        }
+                    }
                 }
             },
             "links": {
                 "0": {
-                    "source_node": 2198,
-                    "source_node_name": "",
+                    "source_node": 4892,
+                    "source_node_name": "in",
                     "source_output_index": 0,
                     "source_output_name": "new",
-                    "dest_node": 2383,
-                    "dest_node_name": "",
+                    "dest_node": 4946,
+                    "dest_node_name": "np.rand",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "1": {
-                    "source_node": 2235,
-                    "source_node_name": "",
+                    "source_node": 4902,
+                    "source_node_name": "load_bang",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 2309,
-                    "dest_node_name": "",
+                    "dest_node": 4920,
+                    "dest_node_name": "t",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "2": {
-                    "source_node": 2309,
-                    "source_node_name": "",
-                    "source_output_index": 1,
+                    "source_node": 4920,
+                    "source_node_name": "t",
+                    "source_output_index": 0,
                     "source_output_name": "bang",
-                    "dest_node": 2457,
-                    "dest_node_name": "",
+                    "dest_node": 4946,
+                    "dest_node_name": "np.rand",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "3": {
-                    "source_node": 2309,
-                    "source_node_name": "",
-                    "source_output_index": 0,
+                    "source_node": 4920,
+                    "source_node_name": "t",
+                    "source_output_index": 1,
                     "source_output_name": "bang",
-                    "dest_node": 2383,
-                    "dest_node_name": "",
+                    "dest_node": 4979,
+                    "dest_node_name": "message",
                     "dest_input_index": 0,
-                    "dest_input_name": ""
+                    "dest_input_name": "###text in"
                 },
                 "4": {
-                    "source_node": 2457,
-                    "source_node_name": "",
-                    "source_output_index": 0,
-                    "source_output_name": "message out",
-                    "dest_node": 2531,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "operand"
-                },
-                "5": {
-                    "source_node": 2383,
-                    "source_node_name": "",
+                    "source_node": 4946,
+                    "source_node_name": "np.rand",
                     "source_output_index": 0,
                     "source_output_name": "random array",
-                    "dest_node": 2531,
-                    "dest_node_name": "",
+                    "dest_node": 5014,
+                    "dest_node_name": "*",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
+                "5": {
+                    "source_node": 4979,
+                    "source_node_name": "message",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 5014,
+                    "dest_node_name": "*",
+                    "dest_input_index": 1,
+                    "dest_input_name": "###operand"
+                },
                 "6": {
-                    "source_node": 2531,
-                    "source_node_name": "",
+                    "source_node": 5014,
+                    "source_node_name": "*",
                     "source_output_index": 0,
                     "source_output_name": "result",
-                    "dest_node": 2605,
-                    "dest_node_name": "",
+                    "dest_node": 5035,
+                    "dest_node_name": "out",
                     "dest_input_index": 0,
                     "dest_input_name": "table"
                 }
             }
         },
         "2": {
-            "height": 1394,
-            "width": 1642,
+            "height": 1195,
+            "width": 1638,
             "position": [
                 100,
-                100
+                67
             ],
-            "id": 1310,
+            "id": 4529,
             "name": "np.std_help",
-            "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/nansum/out/np.std_help.json",
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 237,
+                    "id": 4557,
+                    "sid": 1,
                     "position_x": 0,
                     "position_y": 0,
                     "width": 9,
                     "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
+                    "visibility": "hidden",
+                    "draggable": false,
                     "protected": true,
                     "presentation_state": "hidden",
                     "properties": {
@@ -888,10 +1162,11 @@
                 "1": {
                     "init": "comment np.std - how spread out the values are",
                     "name": "comment",
-                    "id": 274,
+                    "id": 5046,
+                    "sid": 2,
                     "position_x": 24,
                     "position_y": -4,
-                    "width": 456,
+                    "width": 475,
                     "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
@@ -900,19 +1175,20 @@
                         "0": {
                             "name": "text",
                             "value": "np.std - how spread out the values are",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "48",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "np.std - how spread out the values are"
                 },
                 "2": {
                     "name": "text_block",
-                    "id": 311,
+                    "id": 5057,
+                    "sid": 3,
                     "position_x": 882,
                     "position_y": 45,
                     "width": 728,
@@ -924,7 +1200,7 @@
                         "0": {
                             "name": "block",
                             "value": "Measures how spread out the values of an array are: the standard deviation, the typical distance of a value from the mean.\n\nValues packed tightly together give a small std; values scattered widely give a large one; values all the same give 0. It is in the same units as the data, so a std of 0.2 on readings in metres means they typically sit about 20 cm either side of their average. Reach for it to tell a steady signal from a jittery one, to measure noise, or to set a threshold in \"how many std from the mean\".\n\nHOW IT IS WORKED OUT:\nTake the mean; take each value's distance from it; square those distances and average them (that average is the variance, np.var); take the square root to get back to the data's units. The average divides by the number of values N - the \"population\" std. Some tools (a spreadsheet's STDEV, for one) divide by N - 1 instead, which gives a slightly larger answer for small arrays: for 1 2 3 4 np.std gives 1.118, STDEV 1.291.\n\nTHE axis MENU:\nWith no axis (the default) the whole array is reduced to one number. With axis 0 the reduction runs DOWN each column, giving one result per column; with axis 1 it runs ALONG each row, giving one result per row. For a table of 5 frames (rows) of 4 sensors (columns), axis 0 answers \"how much did each sensor jitter\", axis 1 \"how far apart were the sensors at each frame\". The axis named is the one that disappears: a 5 by 4 array gives 4 values on axis 0, 5 on axis 1.\n\nSYNTAX:\nnp.std <axis: int>\nWith no argument there is no axis: one std for the whole array.\n\nEXAMPLE:\nnp.std 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list or a single number is turned into one). Every array that arrives is measured and the result sent - the only inlet that makes the node send.\n\naxis (menu, also an inlet):\nWhich way to reduce - see THE axis MENU. Changing it does NOT send by itself; the next array uses it. The menu offers None (the whole array) and the axes the last array had (None and 0 for a 1-D array); a message None into the axis inlet also returns to the whole array. An axis the array does not have is treated as its last axis for that array only: the choice is kept, so one 1-D array through np.std 1 does not stop the 2-D arrays that follow from being measured along axis 1.\n\nOUTPUTS:\n\nstd:\nWith no axis, one number, never negative. With an axis, an array one dimension smaller: one std per column (axis 0) or per row (axis 1).\n\nSPREAD AND SHIFT (top demo):\nmake_noise makes 64 random values, scaled so that at spread 1 and shift 0 their mean is exactly 0 and their std exactly 1; the plot shows them as points. Drag spread: the cloud widens and np.std follows it exactly - spread 2, std 2. Drag shift: the whole cloud moves up or down, np.mean follows it, and np.std does not change at all. The mean says WHERE the values are, the std how SPREAD they are; the two are independent. At spread 0 every value is the same and the std is 0.\n\nONE STD PER SENSOR (lower demo):\nmake_jitter makes 16 frames of 4 sensors, each sensor jittering more than the one before (its values times 0.1, 0.3, 0.6 and 1.0); click the button for new frames. np.std 0 measures down each column: the strip under the table gives one std per sensor, each under its column, rising from left to right - about 0.06, 0.17, 0.35 and 0.58 (a value spread evenly from -1 to 1 has a std of about 0.58).\n\nRELATED:\nnp.var is the std squared - same information, squared units. np.mean is the centre the std is measured from. np.robust_mean uses a sturdier measure of spread (the median distance from the median) to reject outliers. np.amax and np.amin give the extremes rather than the typical spread.",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "lock",
@@ -944,7 +1220,7 @@
                         "4": {
                             "name": "text_size",
                             "value": "30",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "text": "Measures how spread out the values of an array are: the standard deviation, the typical distance of a value from the mean.\n\nValues packed tightly together give a small std; values scattered widely give a large one; values all the same give 0. It is in the same units as the data, so a std of 0.2 on readings in metres means they typically sit about 20 cm either side of their average. Reach for it to tell a steady signal from a jittery one, to measure noise, or to set a threshold in \"how many std from the mean\".\n\nHOW IT IS WORKED OUT:\nTake the mean; take each value's distance from it; square those distances and average them (that average is the variance, np.var); take the square root to get back to the data's units. The average divides by the number of values N - the \"population\" std. Some tools (a spreadsheet's STDEV, for one) divide by N - 1 instead, which gives a slightly larger answer for small arrays: for 1 2 3 4 np.std gives 1.118, STDEV 1.291.\n\nTHE axis MENU:\nWith no axis (the default) the whole array is reduced to one number. With axis 0 the reduction runs DOWN each column, giving one result per column; with axis 1 it runs ALONG each row, giving one result per row. For a table of 5 frames (rows) of 4 sensors (columns), axis 0 answers \"how much did each sensor jitter\", axis 1 \"how far apart were the sensors at each frame\". The axis named is the one that disappears: a 5 by 4 array gives 4 values on axis 0, 5 on axis 1.\n\nSYNTAX:\nnp.std <axis: int>\nWith no argument there is no axis: one std for the whole array.\n\nEXAMPLE:\nnp.std 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list or a single number is turned into one). Every array that arrives is measured and the result sent - the only inlet that makes the node send.\n\naxis (menu, also an inlet):\nWhich way to reduce - see THE axis MENU. Changing it does NOT send by itself; the next array uses it. The menu offers None (the whole array) and the axes the last array had (None and 0 for a 1-D array); a message None into the axis inlet also returns to the whole array. An axis the array does not have is treated as its last axis for that array only: the choice is kept, so one 1-D array through np.std 1 does not stop the 2-D arrays that follow from being measured along axis 1.\n\nOUTPUTS:\n\nstd:\nWith no axis, one number, never negative. With an axis, an array one dimension smaller: one std per column (axis 0) or per row (axis 1).\n\nSPREAD AND SHIFT (top demo):\nmake_noise makes 64 random values, scaled so that at spread 1 and shift 0 their mean is exactly 0 and their std exactly 1; the plot shows them as points. Drag spread: the cloud widens and np.std follows it exactly - spread 2, std 2. Drag shift: the whole cloud moves up or down, np.mean follows it, and np.std does not change at all. The mean says WHERE the values are, the std how SPREAD they are; the two are independent. At spread 0 every value is the same and the std is 0.\n\nONE STD PER SENSOR (lower demo):\nmake_jitter makes 16 frames of 4 sensors, each sensor jittering more than the one before (its values times 0.1, 0.3, 0.6 and 1.0); click the button for new frames. np.std 0 measures down each column: the strip under the table gives one std per sensor, each under its column, rising from left to right - about 0.06, 0.17, 0.35 and 0.58 (a value spread evenly from -1 to 1 has a std of about 0.58).\n\nRELATED:\nnp.var is the std squared - same information, squared units. np.mean is the centre the std is measured from. np.robust_mean uses a sturdier measure of spread (the median distance from the median) to reject outliers. np.amax and np.amin give the extremes rather than the typical spread."
@@ -952,10 +1228,11 @@
                 "3": {
                     "init": "comment spread: how far the values scatter",
                     "name": "comment",
-                    "id": 348,
+                    "id": 5074,
+                    "sid": 4,
                     "position_x": 30,
-                    "position_y": 53,
-                    "width": 238,
+                    "position_y": 47,
+                    "width": 217,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -964,23 +1241,24 @@
                         "0": {
                             "name": "text",
                             "value": "spread: how far the values scatter",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "spread: how far the values scatter"
                 },
                 "4": {
                     "name": "slider",
-                    "id": 385,
+                    "id": 5085,
+                    "sid": 5,
                     "position_x": 30,
-                    "position_y": 90,
-                    "width": 220,
-                    "height": 60,
+                    "position_y": 84,
+                    "width": 230,
+                    "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -1003,22 +1281,43 @@
                         "3": {
                             "name": "format",
                             "value": "%.2f",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "4": {
+                            "name": "power",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "bind to",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "6": {
                             "name": "width",
                             "value": 200,
                             "value_type": "int"
+                        },
+                        "7": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        },
+                        "8": {
+                            "name": "hide_title_bar",
+                            "value": false,
+                            "value_type": "bool"
                         }
                     }
                 },
                 "5": {
                     "init": "comment shift: moves them all up or down",
                     "name": "comment",
-                    "id": 422,
-                    "position_x": 290,
-                    "position_y": 53,
-                    "width": 224,
+                    "id": 5118,
+                    "sid": 6,
+                    "position_x": 32,
+                    "position_y": 125,
+                    "width": 205,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1027,23 +1326,24 @@
                         "0": {
                             "name": "text",
                             "value": "shift: moves them all up or down",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "shift: moves them all up or down"
                 },
                 "6": {
                     "name": "slider",
-                    "id": 459,
-                    "position_x": 290,
-                    "position_y": 90,
-                    "width": 220,
-                    "height": 60,
+                    "id": 5129,
+                    "sid": 7,
+                    "position_x": 31,
+                    "position_y": 156,
+                    "width": 230,
+                    "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -1066,22 +1366,43 @@
                         "3": {
                             "name": "format",
                             "value": "%.2f",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "4": {
+                            "name": "power",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "bind to",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "6": {
                             "name": "width",
                             "value": 200,
                             "value_type": "int"
+                        },
+                        "7": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
+                        },
+                        "8": {
+                            "name": "hide_title_bar",
+                            "value": false,
+                            "value_type": "bool"
                         }
                     }
                 },
                 "7": {
                     "init": "comment 64 random values - open it to see how",
                     "name": "comment",
-                    "id": 496,
-                    "position_x": 540,
-                    "position_y": 53,
-                    "width": 259,
+                    "id": 5162,
+                    "sid": 8,
+                    "position_x": 292,
+                    "position_y": 66,
+                    "width": 236,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1090,36 +1411,93 @@
                         "0": {
                             "name": "text",
                             "value": "64 random values - open it to see how",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "64 random values - open it to see how"
                 },
                 "8": {
+                    "init": "p make_noise",
                     "name": "p",
-                    "id": 533,
-                    "position_x": 540,
-                    "position_y": 90,
-                    "width": 72,
+                    "id": 5173,
+                    "sid": 9,
+                    "position_x": 318,
+                    "position_y": 98,
+                    "width": 78,
                     "height": 70,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "p make_noise",
-                    "patcher id": 1347
+                    "properties": {
+                        "0": {
+                            "name": "make_noise",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "patcher name",
+                            "value": "make_noise",
+                            "value_type": "string"
+                        }
+                    },
+                    "show inputs": [
+                        true,
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "show outputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "patcher id": 4625
                 },
                 "9": {
                     "name": "plot",
-                    "id": 570,
-                    "position_x": 30,
-                    "position_y": 180,
-                    "width": 500,
+                    "id": 5281,
+                    "sid": 10,
+                    "position_x": 29,
+                    "position_y": 215,
+                    "width": 488,
                     "height": 260,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1128,7 +1506,7 @@
                         "0": {
                             "name": "color",
                             "value": "none",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "width",
@@ -1143,12 +1521,12 @@
                         "3": {
                             "name": "style",
                             "value": "scatter",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "4": {
                             "name": "update style",
                             "value": "buffer holds one sample of input",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "5": {
                             "name": "sample count",
@@ -1180,10 +1558,11 @@
                 "10": {
                     "init": "comment np.std follows spread",
                     "name": "comment",
-                    "id": 607,
-                    "position_x": 560,
-                    "position_y": 180,
-                    "width": 147,
+                    "id": 5327,
+                    "sid": 11,
+                    "position_x": 567,
+                    "position_y": 60,
+                    "width": 138,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1192,33 +1571,41 @@
                         "0": {
                             "name": "text",
                             "value": "np.std follows spread",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "np.std follows spread"
                 },
                 "11": {
                     "name": "np.std",
-                    "id": 644,
-                    "position_x": 560,
-                    "position_y": 215,
+                    "id": 5338,
+                    "sid": 12,
+                    "position_x": 567,
+                    "position_y": 95,
                     "width": 117,
                     "height": 56,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": "None",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "12": {
                     "name": "float",
-                    "id": 681,
-                    "position_x": 700,
-                    "position_y": 220,
+                    "id": 5348,
+                    "sid": 13,
+                    "position_x": 707,
+                    "position_y": 100,
                     "width": 140,
                     "height": 42,
                     "visibility": "show_all",
@@ -1226,29 +1613,60 @@
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
-                            "name": "format",
-                            "value": "%.3f",
-                            "value_type": "str"
+                            "name": "",
+                            "value": 0.9999999403953552,
+                            "value_type": "float"
                         },
                         "1": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "3": {
+                            "name": "speed_property",
+                            "value": 0.009999999776482582,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "string"
+                        },
+                        "5": {
+                            "name": "bind to",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "6": {
                             "name": "width",
                             "value": 110,
                             "value_type": "int"
                         },
-                        "2": {
+                        "7": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "8": {
+                            "name": "hide_title_bar",
+                            "value": false,
+                            "value_type": "bool"
                         }
                     }
                 },
                 "13": {
                     "init": "comment np.mean follows shift",
                     "name": "comment",
-                    "id": 718,
-                    "position_x": 560,
-                    "position_y": 310,
-                    "width": 147,
+                    "id": 5381,
+                    "sid": 14,
+                    "position_x": 566,
+                    "position_y": 167,
+                    "width": 138,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1257,33 +1675,41 @@
                         "0": {
                             "name": "text",
                             "value": "np.mean follows shift",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "np.mean follows shift"
                 },
                 "14": {
                     "name": "np.mean",
-                    "id": 755,
-                    "position_x": 560,
-                    "position_y": 345,
+                    "id": 5392,
+                    "sid": 15,
+                    "position_x": 566,
+                    "position_y": 202,
                     "width": 117,
                     "height": 56,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": "None",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "15": {
                     "name": "float",
-                    "id": 792,
-                    "position_x": 700,
-                    "position_y": 350,
+                    "id": 5402,
+                    "sid": 16,
+                    "position_x": 706,
+                    "position_y": 207,
                     "width": 140,
                     "height": 42,
                     "visibility": "show_all",
@@ -1291,29 +1717,60 @@
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
-                            "name": "format",
-                            "value": "%.3f",
-                            "value_type": "str"
+                            "name": "",
+                            "value": -6.938893903907228e-18,
+                            "value_type": "float"
                         },
                         "1": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "3": {
+                            "name": "speed_property",
+                            "value": 0.009999999776482582,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "string"
+                        },
+                        "5": {
+                            "name": "bind to",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "6": {
                             "name": "width",
                             "value": 110,
                             "value_type": "int"
                         },
-                        "2": {
+                        "7": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "8": {
+                            "name": "hide_title_bar",
+                            "value": false,
+                            "value_type": "bool"
                         }
                     }
                 },
                 "16": {
                     "init": "comment 16 frames of 4 sensors, each jittering more than the last - click for new",
                     "name": "comment",
-                    "id": 829,
+                    "id": 5435,
+                    "sid": 17,
                     "position_x": 30,
                     "position_y": 480,
-                    "width": 511,
+                    "width": 457,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1322,19 +1779,20 @@
                         "0": {
                             "name": "text",
                             "value": "16 frames of 4 sensors, each jittering more than the last - click for new",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "16 frames of 4 sensors, each jittering more than the last - click for new"
                 },
                 "17": {
                     "name": "button",
-                    "id": 866,
+                    "id": 5446,
+                    "sid": 18,
                     "position_x": 32,
                     "position_y": 520,
                     "width": 45,
@@ -1342,27 +1800,130 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "bind to",
+                            "value": "",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "message",
+                            "value": "bang",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 14,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "height",
+                            "value": 14,
+                            "value_type": "int"
+                        },
+                        "5": {
+                            "name": "flash_duration",
+                            "value": 0.10000000149011612,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "color",
+                            "value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "value_type": "list"
+                        },
+                        "7": {
+                            "name": "hide_title_bar",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
                 },
                 "18": {
+                    "init": "p make_jitter",
                     "name": "p",
-                    "id": 903,
+                    "id": 5474,
+                    "sid": 19,
                     "position_x": 94,
                     "position_y": 520,
-                    "width": 72,
-                    "height": 70,
+                    "width": 84,
+                    "height": 56,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "p make_jitter",
-                    "patcher id": 2124
+                    "properties": {
+                        "0": {
+                            "name": "make_jitter",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "patcher name",
+                            "value": "make_jitter",
+                            "value_type": "string"
+                        }
+                    },
+                    "show inputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "show outputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "patcher id": 4577
                 },
                 "19": {
                     "name": "heat_map",
-                    "id": 940,
-                    "position_x": 180,
-                    "position_y": 518,
+                    "id": 5582,
+                    "sid": 20,
+                    "position_x": 204,
+                    "position_y": 520,
                     "width": 220,
                     "height": 250,
                     "visibility": "show_all",
@@ -1372,7 +1933,7 @@
                         "0": {
                             "name": "color",
                             "value": "viridis",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "width",
@@ -1402,22 +1963,23 @@
                         "6": {
                             "name": "update_mode",
                             "value": "heat_map",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "7": {
                             "name": "number format",
-                            "value": "%.2f",
-                            "value_type": "str"
+                            "value": "",
+                            "value_type": "string"
                         }
                     }
                 },
                 "20": {
                     "init": "comment axis 0: one std per sensor",
                     "name": "comment",
-                    "id": 977,
+                    "id": 5619,
+                    "sid": 21,
                     "position_x": 33,
                     "position_y": 785,
-                    "width": 182,
+                    "width": 168,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1426,19 +1988,21 @@
                         "0": {
                             "name": "text",
                             "value": "axis 0: one std per sensor",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "axis 0: one std per sensor"
                 },
                 "21": {
+                    "init": "np.std 0",
                     "name": "np.std",
-                    "id": 1014,
+                    "id": 5630,
+                    "sid": 22,
                     "position_x": 33,
                     "position_y": 820,
                     "width": 117,
@@ -1450,18 +2014,18 @@
                         "0": {
                             "name": "axis",
                             "value": "0",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
-                    },
-                    "init": "np.std 0"
+                    }
                 },
                 "22": {
                     "name": "heat_map",
-                    "id": 1051,
-                    "position_x": 180,
-                    "position_y": 815,
+                    "id": 5640,
+                    "sid": 23,
+                    "position_x": 205,
+                    "position_y": 810,
                     "width": 220,
-                    "height": 86,
+                    "height": 87,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -1469,7 +2033,7 @@
                         "0": {
                             "name": "color",
                             "value": "viridis",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "width",
@@ -1493,80 +2057,149 @@
                         },
                         "5": {
                             "name": "max y",
-                            "value": 0.6,
+                            "value": 0.6000000238418579,
                             "value_type": "float"
                         },
                         "6": {
                             "name": "update_mode",
                             "value": "heat_map",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "7": {
                             "name": "number format",
                             "value": "%.2f",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     }
                 },
                 "23": {
+                    "init": "help_link np.var",
                     "name": "help_link",
-                    "id": 1088,
+                    "id": 5677,
+                    "sid": 24,
                     "position_x": 30,
-                    "position_y": 974,
-                    "width": 54,
-                    "height": 30,
+                    "position_y": 964,
+                    "width": 53,
+                    "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "help_link np.var"
+                    "properties": {
+                        "0": {
+                            "name": "np.var",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "24": {
+                    "init": "help_link np.mean",
                     "name": "help_link",
-                    "id": 1125,
+                    "id": 5688,
+                    "sid": 25,
                     "position_x": 100,
-                    "position_y": 974,
+                    "position_y": 964,
                     "width": 60,
-                    "height": 30,
+                    "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "help_link np.mean"
+                    "properties": {
+                        "0": {
+                            "name": "np.mean",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "25": {
+                    "init": "help_link np.robust_mean",
                     "name": "help_link",
-                    "id": 1162,
+                    "id": 5699,
+                    "sid": 26,
                     "position_x": 176,
-                    "position_y": 974,
-                    "width": 104,
-                    "height": 30,
+                    "position_y": 964,
+                    "width": 103,
+                    "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "help_link np.robust_mean"
+                    "properties": {
+                        "0": {
+                            "name": "np.robust_mean",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "26": {
+                    "init": "help_link np.amax",
                     "name": "help_link",
-                    "id": 1199,
+                    "id": 5710,
+                    "sid": 27,
                     "position_x": 296,
-                    "position_y": 974,
+                    "position_y": 964,
                     "width": 60,
-                    "height": 30,
+                    "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "help_link np.amax"
+                    "properties": {
+                        "0": {
+                            "name": "np.amax",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
                 },
                 "27": {
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
-                    "id": 1236,
+                    "id": 5721,
+                    "sid": 28,
                     "position_x": 30,
-                    "position_y": 940,
-                    "width": 168,
+                    "position_y": 930,
+                    "width": 156,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1575,21 +2208,22 @@
                         "0": {
                             "name": "text",
                             "value": "SEE ALSO - click to open",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "SEE ALSO - click to open"
                 },
                 "28": {
                     "name": "close",
-                    "id": 1273,
-                    "position_x": 24,
-                    "position_y": 1084,
+                    "id": 5732,
+                    "sid": 29,
+                    "position_x": 29,
+                    "position_y": 1042,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",
@@ -1606,112 +2240,112 @@
             },
             "links": {
                 "0": {
-                    "source_node": 385,
-                    "source_node_name": "",
+                    "source_node": 5085,
+                    "source_node_name": "slider",
                     "source_output_index": 0,
-                    "source_output_name": "",
-                    "dest_node": 533,
-                    "dest_node_name": "",
+                    "source_output_name": "float out",
+                    "dest_node": 5173,
+                    "dest_node_name": "p",
                     "dest_input_index": 0,
                     "dest_input_name": "spread"
                 },
                 "1": {
-                    "source_node": 459,
-                    "source_node_name": "",
+                    "source_node": 5129,
+                    "source_node_name": "slider",
                     "source_output_index": 0,
-                    "source_output_name": "",
-                    "dest_node": 533,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
+                    "source_output_name": "float out",
+                    "dest_node": 5173,
+                    "dest_node_name": "p",
+                    "dest_input_index": 1,
                     "dest_input_name": "shift"
                 },
                 "2": {
-                    "source_node": 533,
-                    "source_node_name": "",
+                    "source_node": 5173,
+                    "source_node_name": "p",
                     "source_output_index": 0,
                     "source_output_name": "data",
-                    "dest_node": 570,
-                    "dest_node_name": "",
+                    "dest_node": 5281,
+                    "dest_node_name": "plot",
                     "dest_input_index": 0,
                     "dest_input_name": "y"
                 },
                 "3": {
-                    "source_node": 533,
-                    "source_node_name": "",
+                    "source_node": 5173,
+                    "source_node_name": "p",
                     "source_output_index": 0,
                     "source_output_name": "data",
-                    "dest_node": 644,
-                    "dest_node_name": "",
+                    "dest_node": 5338,
+                    "dest_node_name": "np.std",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "4": {
-                    "source_node": 533,
-                    "source_node_name": "",
+                    "source_node": 5173,
+                    "source_node_name": "p",
                     "source_output_index": 0,
                     "source_output_name": "data",
-                    "dest_node": 755,
-                    "dest_node_name": "",
+                    "dest_node": 5392,
+                    "dest_node_name": "np.mean",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "5": {
-                    "source_node": 644,
-                    "source_node_name": "",
+                    "source_node": 5338,
+                    "source_node_name": "np.std",
                     "source_output_index": 0,
                     "source_output_name": "std",
-                    "dest_node": 681,
-                    "dest_node_name": "",
+                    "dest_node": 5348,
+                    "dest_node_name": "float",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "6": {
-                    "source_node": 755,
-                    "source_node_name": "",
+                    "source_node": 5392,
+                    "source_node_name": "np.mean",
                     "source_output_index": 0,
                     "source_output_name": "mean",
-                    "dest_node": 792,
-                    "dest_node_name": "",
+                    "dest_node": 5402,
+                    "dest_node_name": "float",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "7": {
-                    "source_node": 866,
-                    "source_node_name": "",
+                    "source_node": 5446,
+                    "source_node_name": "button",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 903,
-                    "dest_node_name": "",
+                    "dest_node": 5474,
+                    "dest_node_name": "p",
                     "dest_input_index": 0,
                     "dest_input_name": "new"
                 },
                 "8": {
-                    "source_node": 903,
-                    "source_node_name": "",
+                    "source_node": 5474,
+                    "source_node_name": "p",
                     "source_output_index": 0,
                     "source_output_name": "table",
-                    "dest_node": 940,
-                    "dest_node_name": "",
+                    "dest_node": 5582,
+                    "dest_node_name": "heat_map",
                     "dest_input_index": 0,
                     "dest_input_name": "y"
                 },
                 "9": {
-                    "source_node": 903,
-                    "source_node_name": "",
+                    "source_node": 5474,
+                    "source_node_name": "p",
                     "source_output_index": 0,
                     "source_output_name": "table",
-                    "dest_node": 1014,
-                    "dest_node_name": "",
+                    "dest_node": 5630,
+                    "dest_node_name": "np.std",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "10": {
-                    "source_node": 1014,
-                    "source_node_name": "",
+                    "source_node": 5630,
+                    "source_node_name": "np.std",
                     "source_output_index": 0,
                     "source_output_name": "std",
-                    "dest_node": 1051,
-                    "dest_node_name": "",
+                    "dest_node": 5640,
+                    "dest_node_name": "heat_map",
                     "dest_input_index": 0,
                     "dest_input_name": "y"
                 }
