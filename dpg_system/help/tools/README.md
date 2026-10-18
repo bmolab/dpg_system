@@ -273,7 +273,15 @@ a `make_roving_circle` subpatcher so the page shows np.sequence itself.
 build_help.py does not write subpatchers, so `make_numpy_b_help.py` no longer
 builds it. `np.add_alpha_help.json` is hand-made too (an mgl_sphere behind
 each image shows the transparency), and `make_numpy_c_help.py` no longer
-builds it. Use `relayout.py --minimal` on these, never plain relayout.
+builds it. `np.sum_help.json` was redesigned by hand (2026-10-18), and
+`np.nansum_help.json` was rebuilt after it (the array's heat_map with the row
+totals in a column beside it and the column totals in a strip under it);
+`make_numpy_reduce_help.py` builds neither now. Use `relayout.py --minimal`
+on these, never plain relayout.
+
+To hand-edit any generated page: open it, rework it, save over the same file
+in dpg_system/help, then remove its build() call from its generator (and add
+it here) so rebuild.py cannot write over it.
 
 ## arithmetic: a hand-made template, one page per operation
 

@@ -1,6 +1,6 @@
 {
     "name": "np.nansum_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.nansum_help.json",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/nansum/out/np.nansum_help.json",
     "patches": {
         "0": {
             "height": 850,
@@ -9,13 +9,13 @@
                 160,
                 160
             ],
-            "id": 1421,
+            "id": 1310,
             "name": "make_hole",
             "parent_node_uuid": 533,
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 1458,
+                    "id": 1347,
                     "position_x": 0,
                     "position_y": 0,
                     "width": 9,
@@ -35,7 +35,7 @@
                 "1": {
                     "name": "in",
                     "init": "in array",
-                    "id": 1495,
+                    "id": 1384,
                     "position_x": 40,
                     "position_y": 40,
                     "width": 150,
@@ -48,7 +48,7 @@
                 "2": {
                     "name": "in",
                     "init": "in hole",
-                    "id": 1532,
+                    "id": 1421,
                     "position_x": 240,
                     "position_y": 40,
                     "width": 150,
@@ -61,7 +61,7 @@
                 "3": {
                     "name": "load_bang",
                     "init": "load_bang",
-                    "id": 1569,
+                    "id": 1458,
                     "position_x": 440,
                     "position_y": 40,
                     "width": 88,
@@ -74,7 +74,7 @@
                 "4": {
                     "name": "message",
                     "init": "message",
-                    "id": 1606,
+                    "id": 1495,
                     "position_x": 440,
                     "position_y": 110,
                     "width": 100,
@@ -103,7 +103,7 @@
                 "5": {
                     "name": "comment",
                     "init": "comment the NaN that fills the hole",
-                    "id": 1643,
+                    "id": 1532,
                     "position_x": 560,
                     "position_y": 115,
                     "width": 227,
@@ -123,7 +123,7 @@
                 "6": {
                     "name": "metro",
                     "init": "metro 100",
-                    "id": 1680,
+                    "id": 1569,
                     "position_x": 40,
                     "position_y": 150,
                     "width": 129,
@@ -152,7 +152,7 @@
                 "7": {
                     "name": "np.zeros",
                     "init": "np.zeros 6 8",
-                    "id": 1717,
+                    "id": 1606,
                     "position_x": 40,
                     "position_y": 240,
                     "width": 170,
@@ -181,7 +181,7 @@
                 "8": {
                     "name": "np.edit",
                     "init": "np.edit 2,3",
-                    "id": 1754,
+                    "id": 1643,
                     "position_x": 40,
                     "position_y": 370,
                     "width": 170,
@@ -205,7 +205,7 @@
                 "9": {
                     "name": "comment",
                     "init": "comment a 1 at row 2, column 3: where the hole goes",
-                    "id": 1791,
+                    "id": 1680,
                     "position_x": 230,
                     "position_y": 375,
                     "width": 351,
@@ -225,7 +225,7 @@
                 "10": {
                     "name": "*",
                     "init": "*",
-                    "id": 1828,
+                    "id": 1717,
                     "position_x": 40,
                     "position_y": 480,
                     "width": 130,
@@ -238,7 +238,7 @@
                 "11": {
                     "name": "comment",
                     "init": "comment times the toggle: no hole when it is off",
-                    "id": 1865,
+                    "id": 1754,
                     "position_x": 230,
                     "position_y": 485,
                     "width": 328,
@@ -258,7 +258,7 @@
                 "12": {
                     "name": "np.where",
                     "init": "np.where",
-                    "id": 1902,
+                    "id": 1791,
                     "position_x": 40,
                     "position_y": 570,
                     "width": 150,
@@ -271,7 +271,7 @@
                 "13": {
                     "name": "comment",
                     "init": "comment NaN at the hole, the array everywhere else",
-                    "id": 1939,
+                    "id": 1828,
                     "position_x": 230,
                     "position_y": 575,
                     "width": 343,
@@ -291,7 +291,7 @@
                 "14": {
                     "name": "out",
                     "init": "out holed",
-                    "id": 1976,
+                    "id": 1865,
                     "position_x": 40,
                     "position_y": 690,
                     "width": 160,
@@ -304,91 +304,91 @@
             },
             "links": {
                 "0": {
-                    "source_node": 1569,
+                    "source_node": 1458,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 1606,
+                    "dest_node": 1495,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "1": {
-                    "source_node": 1606,
+                    "source_node": 1495,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "message out",
-                    "dest_node": 1902,
+                    "dest_node": 1791,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "if true"
                 },
                 "2": {
-                    "source_node": 1495,
+                    "source_node": 1384,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "array",
-                    "dest_node": 1902,
+                    "dest_node": 1791,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "if false"
                 },
                 "3": {
-                    "source_node": 1532,
+                    "source_node": 1421,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "hole",
-                    "dest_node": 1828,
+                    "dest_node": 1717,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "operand"
                 },
                 "4": {
-                    "source_node": 1680,
+                    "source_node": 1569,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 1717,
+                    "dest_node": 1606,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "5": {
-                    "source_node": 1717,
+                    "source_node": 1606,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "array of zeros",
-                    "dest_node": 1754,
+                    "dest_node": 1643,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "array in"
                 },
                 "6": {
-                    "source_node": 1754,
+                    "source_node": 1643,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "output",
-                    "dest_node": 1828,
+                    "dest_node": 1717,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "7": {
-                    "source_node": 1828,
+                    "source_node": 1717,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "result",
-                    "dest_node": 1902,
+                    "dest_node": 1791,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "condition"
                 },
                 "8": {
-                    "source_node": 1902,
+                    "source_node": 1791,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "selected",
-                    "dest_node": 1976,
+                    "dest_node": 1865,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "holed"
@@ -396,15 +396,15 @@
             }
         },
         "1": {
-            "height": 1141,
-            "width": 1939,
+            "height": 1214,
+            "width": 1605,
             "position": [
                 100,
                 100
             ],
-            "id": 1384,
+            "id": 1273,
             "name": "np.nansum_help",
-            "path": "/Users/drokeby/dpg_system/dpg_system/help/np.nansum_help.json",
+            "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/nansum/out/np.nansum_help.json",
             "nodes": {
                 "0": {
                     "name": "",
@@ -431,7 +431,7 @@
                     "id": 274,
                     "position_x": 24,
                     "position_y": -4,
-                    "width": 402,
+                    "width": 384,
                     "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
@@ -453,17 +453,17 @@
                 "2": {
                     "name": "text_block",
                     "id": 311,
-                    "position_x": 1131,
+                    "position_x": 805,
                     "position_y": 45,
                     "width": 768,
-                    "height": 1036,
+                    "height": 1120,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Adds up the values in an array as np.sum does, but skips any NaN\n(not-a-number) values instead of letting them spoil the total.\n\nReal data has holes in it - a dropped frame, a sensor that lost\ntracking, a division by zero upstream - and those often arrive as NaN.\nNaN plus anything is NaN, so ONE missing value turns an np.sum total\ninto NaN. np.nansum treats each NaN as 0 and adds up what is actually\nthere. Reach for it whenever an array might contain gaps you would\nrather ignore than propagate.\n\nWHAT IT GIVES FOR A ROW OF NOTHING BUT NaN:\n0 - an empty total, not NaN. If you need to know that a row had no data\nat all, count the NaNs separately.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.nansum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.nansum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into\nan array. An empty array sums to 0. With no NaN in it, the answer is\nexactly what np.sum gives.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.nansum 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\nnansum:\nWith axis None, one number; with an axis, an array of totals, one per\nrow or column, never NaN.\n\nREADING THE DEMO:\nnp.rand makes 6 by 8 whole numbers 0 to 3; click its button for new\nones. make_hole passes them through untouched until you click the\ntoggle: then the cell at row 2, column 3 becomes NaN (the heat_map\nshows its number as nan). With the toggle off, np.sum and np.nansum\nagree everywhere. With it on, np.sum's whole total turns to nan, and so\ndoes its total for row 2 in the left column - every other row is\nunaffected. np.nansum's totals stay numbers: row 2's total simply\nleaves the hole out.\n\nRELATED:\nnp.sum is the plain version. np.nanmean and np.nanmedian skip NaNs the\nsame way for the average and the middle value. np.mean and np.median\ndo not. np.where can replace NaNs (or anything else) with a chosen\nvalue before an ordinary reduction.",
+                            "value": "Adds up the values in an array as np.sum does, but skips any NaN\n(not-a-number) values instead of letting them spoil the total.\n\nReal data has holes in it - a dropped frame, a sensor that lost\ntracking, a division by zero upstream - and those often arrive as NaN.\nNaN plus anything is NaN, so ONE missing value turns an np.sum total\ninto NaN. np.nansum treats each NaN as 0 and adds up what is actually\nthere. Reach for it whenever an array might contain gaps you would\nrather ignore than pass on.\n\nWHAT IT GIVES FOR A ROW OF NOTHING BUT NaN:\n0 - an empty total, not NaN. If you need to know that a row had no data\nat all, count the NaNs separately.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.nansum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.nansum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into\nan array. An empty array sums to 0. With no NaN in it, the answer is\nexactly what np.sum gives.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.nansum 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\nnansum:\nWith axis None, one number; with an axis, an array of totals, one per\nrow or column, never NaN.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in\nthe cells; click its button for new ones. The page opens with a hole:\nload_bang switches the toggle on, and make_hole puts a NaN into the\ncell at row 2, column 3 (third row down, fourth column across), where\nthe heat_map writes nan. Click the toggle off to fill the hole again.\nAt the top right np.sum and np.nansum each add up all 48 cells. With\nthe hole, np.sum gives nan and np.nansum gives the total of the other\n47; with the toggle off they agree.\nnp.nansum 1 adds along each ROW: the 6 totals stand in the column to\nthe right, each beside its row (np.expand_dims only turns them into a\ncolumn). np.nansum 0 adds down each COLUMN: the 8 totals in the strip\nunderneath, each under its column. The row and the column that run\nthrough the hole drop by the value that was there, but neither total\nturns into nan - with np.sum, both would be nan.\n\nRELATED:\nnp.sum is the plain version. np.nanmean and np.nanmedian skip NaNs the\nsame way for the average and the middle value; np.mean and np.median\ndo not. np.where can replace NaNs (or anything else) with a chosen\nvalue before an ordinary reduction.",
                             "value_type": "str"
                         },
                         "1": {
@@ -478,7 +478,7 @@
                         },
                         "3": {
                             "name": "height",
-                            "value": 1020,
+                            "value": 1104,
                             "value_type": "int"
                         },
                         "4": {
@@ -487,13 +487,38 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Adds up the values in an array as np.sum does, but skips any NaN\n(not-a-number) values instead of letting them spoil the total.\n\nReal data has holes in it - a dropped frame, a sensor that lost\ntracking, a division by zero upstream - and those often arrive as NaN.\nNaN plus anything is NaN, so ONE missing value turns an np.sum total\ninto NaN. np.nansum treats each NaN as 0 and adds up what is actually\nthere. Reach for it whenever an array might contain gaps you would\nrather ignore than propagate.\n\nWHAT IT GIVES FOR A ROW OF NOTHING BUT NaN:\n0 - an empty total, not NaN. If you need to know that a row had no data\nat all, count the NaNs separately.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.nansum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.nansum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into\nan array. An empty array sums to 0. With no NaN in it, the answer is\nexactly what np.sum gives.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.nansum 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\nnansum:\nWith axis None, one number; with an axis, an array of totals, one per\nrow or column, never NaN.\n\nREADING THE DEMO:\nnp.rand makes 6 by 8 whole numbers 0 to 3; click its button for new\nones. make_hole passes them through untouched until you click the\ntoggle: then the cell at row 2, column 3 becomes NaN (the heat_map\nshows its number as nan). With the toggle off, np.sum and np.nansum\nagree everywhere. With it on, np.sum's whole total turns to nan, and so\ndoes its total for row 2 in the left column - every other row is\nunaffected. np.nansum's totals stay numbers: row 2's total simply\nleaves the hole out.\n\nRELATED:\nnp.sum is the plain version. np.nanmean and np.nanmedian skip NaNs the\nsame way for the average and the middle value. np.mean and np.median\ndo not. np.where can replace NaNs (or anything else) with a chosen\nvalue before an ordinary reduction."
+                    "text": "Adds up the values in an array as np.sum does, but skips any NaN\n(not-a-number) values instead of letting them spoil the total.\n\nReal data has holes in it - a dropped frame, a sensor that lost\ntracking, a division by zero upstream - and those often arrive as NaN.\nNaN plus anything is NaN, so ONE missing value turns an np.sum total\ninto NaN. np.nansum treats each NaN as 0 and adds up what is actually\nthere. Reach for it whenever an array might contain gaps you would\nrather ignore than pass on.\n\nWHAT IT GIVES FOR A ROW OF NOTHING BUT NaN:\n0 - an empty total, not NaN. If you need to know that a row had no data\nat all, count the NaNs separately.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.nansum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.nansum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into\nan array. An empty array sums to 0. With no NaN in it, the answer is\nexactly what np.sum gives.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.nansum 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\nnansum:\nWith axis None, one number; with an axis, an array of totals, one per\nrow or column, never NaN.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in\nthe cells; click its button for new ones. The page opens with a hole:\nload_bang switches the toggle on, and make_hole puts a NaN into the\ncell at row 2, column 3 (third row down, fourth column across), where\nthe heat_map writes nan. Click the toggle off to fill the hole again.\nAt the top right np.sum and np.nansum each add up all 48 cells. With\nthe hole, np.sum gives nan and np.nansum gives the total of the other\n47; with the toggle off they agree.\nnp.nansum 1 adds along each ROW: the 6 totals stand in the column to\nthe right, each beside its row (np.expand_dims only turns them into a\ncolumn). np.nansum 0 adds down each COLUMN: the 8 totals in the strip\nunderneath, each under its column. The row and the column that run\nthrough the hole drop by the value that was there, but neither total\nturns into nan - with np.sum, both would be nan.\n\nRELATED:\nnp.sum is the plain version. np.nanmean and np.nanmedian skip NaNs the\nsame way for the average and the middle value; np.mean and np.median\ndo not. np.where can replace NaNs (or anything else) with a chosen\nvalue before an ordinary reduction."
                 },
                 "3": {
-                    "name": "load_bang",
+                    "init": "comment an array of whole numbers 0 to 3 - click to refresh",
+                    "name": "comment",
                     "id": 348,
-                    "position_x": 30,
-                    "position_y": 62,
+                    "position_x": 24,
+                    "position_y": 53,
+                    "width": 357,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "an array of whole numbers 0 to 3 - click to refresh",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "an array of whole numbers 0 to 3 - click to refresh"
+                },
+                "4": {
+                    "name": "load_bang",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
                     "width": 88,
                     "height": 42,
                     "visibility": "show_all",
@@ -501,11 +526,11 @@
                     "presentation_state": "show_all",
                     "properties": {}
                 },
-                "4": {
+                "5": {
                     "name": "np.rand",
-                    "id": 385,
-                    "position_x": 30,
-                    "position_y": 130,
+                    "id": 422,
+                    "position_x": 138,
+                    "position_y": 91,
                     "width": 123,
                     "height": 98,
                     "visibility": "show_all",
@@ -540,13 +565,13 @@
                     },
                     "init": "np.rand 6 8"
                 },
-                "5": {
-                    "init": "comment whole numbers 0 to 3 - click its button for new ones",
+                "6": {
+                    "init": "comment a NaN at row 2, column 3 - toggle it off",
                     "name": "comment",
-                    "id": 422,
-                    "position_x": 773,
-                    "position_y": 135,
-                    "width": 328,
+                    "id": 459,
+                    "position_x": 24,
+                    "position_y": 205,
+                    "width": 280,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -554,7 +579,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "whole numbers 0 to 3 - click its button for new ones",
+                            "value": "a NaN at row 2, column 3 - toggle it off",
                             "value_type": "str"
                         },
                         "1": {
@@ -563,13 +588,13 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "whole numbers 0 to 3 - click its button for new ones"
+                    "comment": "a NaN at row 2, column 3 - toggle it off"
                 },
-                "6": {
+                "7": {
                     "name": "toggle",
-                    "id": 459,
-                    "position_x": 240,
-                    "position_y": 200,
+                    "id": 496,
+                    "position_x": 28,
+                    "position_y": 244,
                     "width": 45,
                     "height": 42,
                     "visibility": "show_all",
@@ -577,36 +602,11 @@
                     "presentation_state": "show_all",
                     "properties": {}
                 },
-                "7": {
-                    "init": "comment click: put a NaN at row 2, column 3",
-                    "name": "comment",
-                    "id": 496,
-                    "position_x": 773,
-                    "position_y": 205,
-                    "width": 224,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "click: put a NaN at row 2, column 3",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "click: put a NaN at row 2, column 3"
-                },
                 "8": {
                     "name": "p",
                     "id": 533,
-                    "position_x": 30,
-                    "position_y": 320,
+                    "position_x": 138,
+                    "position_y": 238,
                     "width": 72,
                     "height": 70,
                     "visibility": "show_all",
@@ -614,13 +614,13 @@
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "p make_hole",
-                    "patcher id": 1421
+                    "patcher id": 1310
                 },
                 "9": {
                     "name": "heat_map",
                     "id": 570,
-                    "position_x": 30,
-                    "position_y": 440,
+                    "position_x": 29,
+                    "position_y": 330,
                     "width": 360,
                     "height": 230,
                     "visibility": "show_all",
@@ -670,12 +670,12 @@
                     }
                 },
                 "10": {
-                    "init": "comment the array, 6 x 8, with or without the hole",
+                    "init": "comment axis None: np.sum turns to nan, np.nansum does not",
                     "name": "comment",
                     "id": 607,
-                    "position_x": 773,
-                    "position_y": 675,
-                    "width": 267,
+                    "position_x": 408,
+                    "position_y": 52,
+                    "width": 350,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -683,7 +683,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "the array, 6 x 8, with or without the hole",
+                            "value": "axis None: np.sum turns to nan, np.nansum does not",
                             "value_type": "str"
                         },
                         "1": {
@@ -692,13 +692,13 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "the array, 6 x 8, with or without the hole"
+                    "comment": "axis None: np.sum turns to nan, np.nansum does not"
                 },
                 "11": {
                     "name": "np.sum",
                     "id": 644,
-                    "position_x": 440,
-                    "position_y": 260,
+                    "position_x": 411,
+                    "position_y": 90,
                     "width": 117,
                     "height": 56,
                     "visibility": "show_all",
@@ -707,91 +707,92 @@
                     "properties": {
                         "0": {
                             "name": "axis",
-                            "value": "1",
+                            "value": "None",
                             "value_type": "str"
                         }
-                    },
-                    "init": "np.sum 1"
+                    }
                 },
                 "12": {
-                    "name": "np.expand_dims",
+                    "name": "float",
                     "id": 681,
-                    "position_x": 440,
-                    "position_y": 350,
-                    "width": 117,
-                    "height": 56,
+                    "position_x": 550,
+                    "position_y": 94,
+                    "width": 130,
+                    "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
-                            "name": "axis",
-                            "value": 1,
-                            "value_type": "int"
-                        }
-                    },
-                    "init": "np.expand_dims 1"
-                },
-                "13": {
-                    "name": "heat_map",
-                    "id": 718,
-                    "position_x": 440,
-                    "position_y": 440,
-                    "width": 68,
-                    "height": 230,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "color",
-                            "value": "viridis",
+                            "name": "format",
+                            "value": "%.0f",
                             "value_type": "str"
                         },
                         "1": {
                             "name": "width",
-                            "value": 60,
+                            "value": 100,
                             "value_type": "int"
                         },
                         "2": {
-                            "name": "height",
-                            "value": 180,
-                            "value_type": "int"
-                        },
-                        "3": {
-                            "name": "sample count",
-                            "value": 6,
-                            "value_type": "int"
-                        },
-                        "4": {
-                            "name": "min y",
-                            "value": 0.0,
-                            "value_type": "float"
-                        },
-                        "5": {
-                            "name": "max y",
-                            "value": 24.0,
-                            "value_type": "float"
-                        },
-                        "6": {
-                            "name": "update_mode",
-                            "value": "heat_map",
+                            "name": "font size",
+                            "value": "24",
                             "value_type": "str"
-                        },
-                        "7": {
-                            "name": "number format",
-                            "value": "%.0f",
+                        }
+                    }
+                },
+                "13": {
+                    "name": "np.nansum",
+                    "id": 718,
+                    "position_x": 411,
+                    "position_y": 150,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "axis",
+                            "value": "None",
                             "value_type": "str"
                         }
                     }
                 },
                 "14": {
-                    "init": "comment np.sum per row",
-                    "name": "comment",
+                    "name": "float",
                     "id": 755,
-                    "position_x": 773,
-                    "position_y": 715,
-                    "width": 95,
+                    "position_x": 550,
+                    "position_y": 154,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "15": {
+                    "init": "comment axis 1: one total per row",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 409,
+                    "position_y": 232,
+                    "width": 175,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -799,7 +800,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "np.sum per row",
+                            "value": "axis 1: one total per row",
                             "value_type": "str"
                         },
                         "1": {
@@ -808,13 +809,13 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "np.sum per row"
+                    "comment": "axis 1: one total per row"
                 },
-                "15": {
+                "16": {
                     "name": "np.nansum",
-                    "id": 792,
-                    "position_x": 630,
-                    "position_y": 260,
+                    "id": 829,
+                    "position_x": 412,
+                    "position_y": 265,
                     "width": 117,
                     "height": 56,
                     "visibility": "show_all",
@@ -829,11 +830,11 @@
                     },
                     "init": "np.nansum 1"
                 },
-                "16": {
+                "17": {
                     "name": "np.expand_dims",
-                    "id": 829,
-                    "position_x": 630,
-                    "position_y": 350,
+                    "id": 866,
+                    "position_x": 548,
+                    "position_y": 265,
                     "width": 117,
                     "height": 56,
                     "visibility": "show_all",
@@ -848,11 +849,11 @@
                     },
                     "init": "np.expand_dims 1"
                 },
-                "17": {
+                "18": {
                     "name": "heat_map",
-                    "id": 866,
-                    "position_x": 630,
-                    "position_y": 440,
+                    "id": 903,
+                    "position_x": 410,
+                    "position_y": 330,
                     "width": 68,
                     "height": 230,
                     "visibility": "show_all",
@@ -901,13 +902,13 @@
                         }
                     }
                 },
-                "18": {
-                    "init": "comment np.nansum per row",
+                "19": {
+                    "init": "comment axis 0: one total per column",
                     "name": "comment",
-                    "id": 903,
-                    "position_x": 773,
-                    "position_y": 755,
-                    "width": 113,
+                    "id": 940,
+                    "position_x": 29,
+                    "position_y": 580,
+                    "width": 196,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -915,7 +916,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "np.nansum per row",
+                            "value": "axis 0: one total per column",
                             "value_type": "str"
                         },
                         "1": {
@@ -924,84 +925,13 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "np.nansum per row"
-                },
-                "19": {
-                    "name": "np.sum",
-                    "id": 940,
-                    "position_x": 30,
-                    "position_y": 720,
-                    "width": 117,
-                    "height": 56,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "axis",
-                            "value": "None",
-                            "value_type": "str"
-                        }
-                    }
+                    "comment": "axis 0: one total per column"
                 },
                 "20": {
-                    "name": "float",
-                    "id": 977,
-                    "position_x": 30,
-                    "position_y": 810,
-                    "width": 130,
-                    "height": 42,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "format",
-                            "value": "%.3f",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "width",
-                            "value": 100,
-                            "value_type": "int"
-                        },
-                        "2": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    }
-                },
-                "21": {
-                    "init": "comment np.sum of everything",
-                    "name": "comment",
-                    "id": 1014,
-                    "position_x": 773,
-                    "position_y": 860,
-                    "width": 131,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "np.sum of everything",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "np.sum of everything"
-                },
-                "22": {
                     "name": "np.nansum",
-                    "id": 1051,
-                    "position_x": 260,
-                    "position_y": 720,
+                    "id": 977,
+                    "position_x": 33,
+                    "position_y": 614,
                     "width": 117,
                     "height": 56,
                     "visibility": "show_all",
@@ -1010,123 +940,124 @@
                     "properties": {
                         "0": {
                             "name": "axis",
-                            "value": "None",
+                            "value": "0",
                             "value_type": "str"
                         }
-                    }
+                    },
+                    "init": "np.nansum 0"
                 },
-                "23": {
-                    "name": "float",
-                    "id": 1088,
-                    "position_x": 260,
-                    "position_y": 810,
-                    "width": 130,
-                    "height": 42,
+                "21": {
+                    "name": "heat_map",
+                    "id": 1014,
+                    "position_x": 29,
+                    "position_y": 684,
+                    "width": 360,
+                    "height": 95,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
-                            "name": "format",
-                            "value": "%.3f",
+                            "name": "color",
+                            "value": "viridis",
                             "value_type": "str"
                         },
                         "1": {
                             "name": "width",
-                            "value": 100,
+                            "value": 352,
                             "value_type": "int"
                         },
                         "2": {
-                            "name": "font size",
-                            "value": "24",
+                            "name": "height",
+                            "value": 45,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 18.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
                             "value_type": "str"
                         }
                     }
                 },
-                "24": {
-                    "init": "comment np.nansum of everything",
-                    "name": "comment",
-                    "id": 1125,
-                    "position_x": 773,
-                    "position_y": 900,
-                    "width": 150,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "np.nansum of everything",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "np.nansum of everything"
-                },
-                "25": {
+                "22": {
                     "name": "help_link",
-                    "id": 1162,
+                    "id": 1051,
                     "position_x": 30,
-                    "position_y": 910,
-                    "width": 53,
-                    "height": 44,
+                    "position_y": 808,
+                    "width": 76,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "help_link np.sum"
                 },
-                "26": {
+                "23": {
                     "name": "help_link",
-                    "id": 1199,
+                    "id": 1088,
                     "position_x": 120,
-                    "position_y": 910,
-                    "width": 78,
-                    "height": 44,
+                    "position_y": 808,
+                    "width": 107,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "help_link np.nanmean"
                 },
-                "27": {
+                "24": {
                     "name": "help_link",
-                    "id": 1236,
+                    "id": 1125,
                     "position_x": 241,
-                    "position_y": 910,
-                    "width": 90,
-                    "height": 44,
+                    "position_y": 808,
+                    "width": 122,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "help_link np.nanmedian"
                 },
-                "28": {
+                "25": {
                     "name": "help_link",
-                    "id": 1273,
+                    "id": 1162,
                     "position_x": 377,
-                    "position_y": 910,
-                    "width": 66,
-                    "height": 44,
+                    "position_y": 808,
+                    "width": 91,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "help_link np.where"
                 },
-                "29": {
+                "26": {
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
-                    "id": 1310,
-                    "position_x": 773,
-                    "position_y": 940,
-                    "width": 156,
+                    "id": 1199,
+                    "position_x": 482,
+                    "position_y": 808,
+                    "width": 168,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1145,11 +1076,11 @@
                     },
                     "comment": "SEE ALSO - click to open"
                 },
-                "30": {
+                "27": {
                     "name": "close",
-                    "id": 1347,
+                    "id": 1236,
                     "position_x": 24,
-                    "position_y": 984,
+                    "position_y": 918,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",
@@ -1166,11 +1097,11 @@
             },
             "links": {
                 "0": {
-                    "source_node": 348,
+                    "source_node": 385,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 385,
+                    "dest_node": 422,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": ""
@@ -1179,14 +1110,24 @@
                     "source_node": 385,
                     "source_node_name": "",
                     "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
                     "source_output_name": "random array",
                     "dest_node": 533,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "array"
                 },
-                "2": {
-                    "source_node": 459,
+                "3": {
+                    "source_node": 496,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "",
@@ -1195,7 +1136,7 @@
                     "dest_input_index": 0,
                     "dest_input_name": "hole"
                 },
-                "3": {
+                "4": {
                     "source_node": 533,
                     "source_node_name": "",
                     "source_output_index": 0,
@@ -1205,7 +1146,7 @@
                     "dest_input_index": 0,
                     "dest_input_name": "y"
                 },
-                "4": {
+                "5": {
                     "source_node": 533,
                     "source_node_name": "",
                     "source_output_index": 0,
@@ -1215,7 +1156,7 @@
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
-                "5": {
+                "6": {
                     "source_node": 644,
                     "source_node_name": "",
                     "source_output_index": 0,
@@ -1223,87 +1164,77 @@
                     "dest_node": 681,
                     "dest_node_name": "",
                     "dest_input_index": 0,
-                    "dest_input_name": "input"
-                },
-                "6": {
-                    "source_node": 681,
-                    "source_node_name": "",
-                    "source_output_index": 0,
-                    "source_output_name": "array out",
-                    "dest_node": 718,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "y"
+                    "dest_input_name": ""
                 },
                 "7": {
                     "source_node": 533,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "holed",
-                    "dest_node": 792,
+                    "dest_node": 718,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "8": {
-                    "source_node": 792,
+                    "source_node": 718,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "nansum",
-                    "dest_node": 829,
+                    "dest_node": 755,
                     "dest_node_name": "",
                     "dest_input_index": 0,
-                    "dest_input_name": "input"
+                    "dest_input_name": ""
                 },
                 "9": {
-                    "source_node": 829,
-                    "source_node_name": "",
-                    "source_output_index": 0,
-                    "source_output_name": "array out",
-                    "dest_node": 866,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "y"
-                },
-                "10": {
                     "source_node": 533,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "holed",
-                    "dest_node": 940,
+                    "dest_node": 829,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
-                "11": {
-                    "source_node": 940,
+                "10": {
+                    "source_node": 829,
                     "source_node_name": "",
                     "source_output_index": 0,
-                    "source_output_name": "sum",
-                    "dest_node": 977,
+                    "source_output_name": "nansum",
+                    "dest_node": 866,
                     "dest_node_name": "",
                     "dest_input_index": 0,
-                    "dest_input_name": ""
+                    "dest_input_name": "input"
+                },
+                "11": {
+                    "source_node": 866,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "array out",
+                    "dest_node": 903,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
                 },
                 "12": {
                     "source_node": 533,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "holed",
-                    "dest_node": 1051,
+                    "dest_node": 977,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "13": {
-                    "source_node": 1051,
+                    "source_node": 977,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "nansum",
-                    "dest_node": 1088,
+                    "dest_node": 1014,
                     "dest_node_name": "",
                     "dest_input_index": 0,
-                    "dest_input_name": ""
+                    "dest_input_name": "y"
                 }
             }
         }

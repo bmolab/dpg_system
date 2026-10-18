@@ -169,7 +169,13 @@ class BasePlotNode(Node):
     # --- End of Refactored Section ---
 
     def reallocate_buffer(self):
-        self.y_data = RollingBuffer((self.sample_count, self.rows), roll_along_x=False)
+        if self.update_style == 'buffer holds one sample of input':
+            # a fill holds the array itself, (curves, samples); RollingBuffer
+            # reads a fill shape that way round, so a plot of several rows
+            # gets one curve per row (heat_map passes its array shape as is)
+            self.y_data = RollingBuffer((self.rows, self.sample_count), roll_along_x=False)
+        else:
+            self.y_data = RollingBuffer((self.sample_count, self.rows), roll_along_x=False)
         self.y_data.owner = self
         self.y_data.buffer_changed_callback = self.buffer_changed
         self.y_data.set_update_style(self.update_style)
