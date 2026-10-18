@@ -185,11 +185,19 @@ class RollingBuffer:
             if self.update_style == t_BufferCircularVertical:
                 return
             self.update_style = t_BufferCircularVertical
-        self.allocate((self.sample_count, self.breadth), self.roll_along_x)
+        self.allocate(self._style_shape(), self.roll_along_x)
 
     def set_update_style_code(self, style_code):
         self.update_style = style_code
-        self.allocate((self.sample_count, self.breadth), self.roll_along_x)
+        self.allocate(self._style_shape(), self.roll_along_x)
+
+    def _style_shape(self):
+        # allocate() reads a fill shape as the array itself: (rows, samples)
+        # when not rolling along x. Passing (samples, rows) made a plot of
+        # several rows think it had one row per sample.
+        if self.update_style == t_BufferFill and not self.roll_along_x:
+            return (self.breadth, self.sample_count)
+        return (self.sample_count, self.breadth)
 
     def get_value(self, x):
         if self.buffer.shape[1] > x >= 0:

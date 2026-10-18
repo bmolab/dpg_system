@@ -254,33 +254,35 @@ class BasePlotNode(Node):
 
     def change_sample_count(self):
         self.lock.acquire(blocking=True)
-        if self.sample_count_option is not None:
-            self.sample_count = self.sample_count_option()
-        if self.sample_count < 1:
-            self.sample_count = 1
+        try:
             if self.sample_count_option is not None:
-                self.sample_count_option.set(self.sample_count)
-        del self.x_data
-        del self.y_data
-        self.x_data = np.linspace(0, self.sample_count, self.sample_count)
-        self.reallocate_buffer()
+                self.sample_count = self.sample_count_option()
+            if self.sample_count < 1:
+                self.sample_count = 1
+                if self.sample_count_option is not None:
+                    self.sample_count_option.set(self.sample_count)
+            del self.x_data
+            del self.y_data
+            self.x_data = np.linspace(0, self.sample_count, self.sample_count)
+            self.reallocate_buffer()
 
-        if self.min_x_option is not None:
-            self.min_x_option.set(0)
-        self.min_x = 0
-        if self.max_x_option is not None:
-            self.max_x_option.set(self.sample_count)
-        self.max_x = self.sample_count
+            if self.min_x_option is not None:
+                self.min_x_option.set(0)
+            self.min_x = 0
+            if self.max_x_option is not None:
+                self.max_x_option.set(self.sample_count)
+            self.max_x = self.sample_count
 
-        for i in range(len(self.plot_data_tag)):
-            if dpg.does_item_exist(self.plot_data_tag[i]):
-                dpg.delete_item(self.plot_data_tag[i])
+            for i in range(len(self.plot_data_tag)):
+                if dpg.does_item_exist(self.plot_data_tag[i]):
+                    dpg.delete_item(self.plot_data_tag[i])
 
-        self.adjust_to_sample_count_change()
+            self.adjust_to_sample_count_change()
 
-        self.pending_sample_count = self.sample_count
-        self.change_range()
-        self.lock.release()
+            self.pending_sample_count = self.sample_count
+            self.change_range()
+        finally:
+            self.lock.release()
 
     def adjust_to_sample_count_change(self):
         pass
@@ -454,6 +456,19 @@ class PlotNode(BasePlotNode):
                         if len(data_array.shape) == 1 and data_array.shape[0] != 1:
                             if self.sample_count != data_array.shape[0]:
                                 self.pending_sample_count = data_array.shape[0]
+                                return
+                            if self.rows != 1:   # back to one curve: drop the others
+                                self.rows = 1
+                                self.pending_breadth = 1
+                                return
+                        elif len(data_array.shape) == 2 and data_array.shape[0] > 1:
+                            # several rows: one curve each. Resize first (the
+                            # next frame rebuilds the series), as for one row.
+                            rows, sample_count = data_array.shape
+                            if rows != self.rows or sample_count != self.sample_count:
+                                self.rows = rows
+                                self.pending_breadth = rows
+                                self.pending_sample_count = sample_count
                                 return
                         self.y_data.update(data_array)
 
@@ -762,35 +777,37 @@ class ProfileNode(BasePlotNode):
     def change_sample_count(self):
         """Override base class to use integer x positions for bar centering."""
         self.lock.acquire(blocking=True)
-        if self.sample_count_option is not None:
-            self.sample_count = self.sample_count_option()
-        if self.sample_count < 1:
-            self.sample_count = 1
+        try:
             if self.sample_count_option is not None:
-                self.sample_count_option.set(self.sample_count)
-        del self.x_data
-        del self.y_data
-        # Use integer positions so bars are centered on 0, 1, 2, ..., N-1
-        self.x_data = np.arange(self.sample_count, dtype=float)
-        self.reallocate_buffer()
+                self.sample_count = self.sample_count_option()
+            if self.sample_count < 1:
+                self.sample_count = 1
+                if self.sample_count_option is not None:
+                    self.sample_count_option.set(self.sample_count)
+            del self.x_data
+            del self.y_data
+            # Use integer positions so bars are centered on 0, 1, 2, ..., N-1
+            self.x_data = np.arange(self.sample_count, dtype=float)
+            self.reallocate_buffer()
 
-        # Pad axis limits by 0.5 so first and last bars are fully visible
-        if self.min_x_option is not None:
-            self.min_x_option.set(-0.5)
-        self.min_x = -0.5
-        if self.max_x_option is not None:
-            self.max_x_option.set(self.sample_count - 0.5)
-        self.max_x = self.sample_count - 0.5
+            # Pad axis limits by 0.5 so first and last bars are fully visible
+            if self.min_x_option is not None:
+                self.min_x_option.set(-0.5)
+            self.min_x = -0.5
+            if self.max_x_option is not None:
+                self.max_x_option.set(self.sample_count - 0.5)
+            self.max_x = self.sample_count - 0.5
 
-        for i in range(len(self.plot_data_tag)):
-            if dpg.does_item_exist(self.plot_data_tag[i]):
-                dpg.delete_item(self.plot_data_tag[i])
+            for i in range(len(self.plot_data_tag)):
+                if dpg.does_item_exist(self.plot_data_tag[i]):
+                    dpg.delete_item(self.plot_data_tag[i])
 
-        self.adjust_to_sample_count_change()
+            self.adjust_to_sample_count_change()
 
-        self.pending_sample_count = self.sample_count
-        self.change_range()
-        self.lock.release()
+            self.pending_sample_count = self.sample_count
+            self.change_range()
+        finally:
+            self.lock.release()
 
     def custom_create(self, from_file):
         self.reallocate_buffer()

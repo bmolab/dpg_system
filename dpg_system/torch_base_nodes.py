@@ -15,6 +15,8 @@ class TorchNode(Node):
             input_tensor = self.input()
             if input_tensor is None:
                 return input_tensor
+            if allow_empty and isinstance(input_tensor, (list, tuple)) and len(input_tensor) == 0:
+                return torch.zeros(0)   # any_to_tensor turns an empty list into None
             if not isinstance(input_tensor, torch.Tensor):
                 input_tensor = any_to_tensor(input_tensor, validate=True)
             # Treat empty tensors as "no data" — most downstream nodes call

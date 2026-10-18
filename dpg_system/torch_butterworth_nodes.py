@@ -2293,7 +2293,8 @@ class TorchSmartClampQuaternionKFNode(TorchDeviceDtypeNode):
             input_tensor = any_to_tensor(input_tensor, device=self.device, dtype=self.dtype)
 
             # Check Shape (Expect Nx4)
-            if input_tensor.dim() == 1 and input_tensor.shape[0] == 4:
+            single = input_tensor.dim() == 1 and input_tensor.shape[0] == 4
+            if single:
                 input_tensor = input_tensor.unsqueeze(0)
 
             if input_tensor.dim() != 2 or input_tensor.shape[-1] != 4:
@@ -2326,7 +2327,7 @@ class TorchSmartClampQuaternionKFNode(TorchDeviceDtypeNode):
             self.filter.predict()
             filtered_q = self.filter.update(input_tensor)
 
-            self.output.send(filtered_q)
+            self.output.send(filtered_q[0] if single else filtered_q)   # [4] in, [4] out
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')
             traceback.print_exc()
@@ -2428,7 +2429,8 @@ class TorchHybridQuaternionKFNode(TorchDeviceDtypeNode):
             if input_tensor is None: return
 
             # Ensure 2D [S, 4]
-            if input_tensor.dim() == 1: input_tensor = input_tensor.unsqueeze(0)
+            single = input_tensor.dim() == 1
+            if single: input_tensor = input_tensor.unsqueeze(0)
             if input_tensor.dim() != 2 or input_tensor.shape[-1] != 4: return
 
             num_streams = input_tensor.shape[0]
@@ -2499,8 +2501,8 @@ class TorchHybridQuaternionKFNode(TorchDeviceDtypeNode):
             self.filter.predict()
             filtered_q = self.filter.update(input_tensor)
 
-            self.output_port.send(filtered_q)
-            self.alphas_output.send(self.blended_alphas)
+            self.output_port.send(filtered_q[0] if single else filtered_q)   # [4] in, [4] out
+            self.alphas_output.send(self.blended_alphas[0] if single else self.blended_alphas)
             self.last_input_quat = input_tensor.clone()
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')
@@ -2657,7 +2659,8 @@ class TorchPersistenceKFNode(TorchSmartClampQuaternionKFNode):
             if input_tensor is None: return
 
             input_tensor = any_to_tensor(input_tensor, device=self.device, dtype=self.dtype)
-            if input_tensor.dim() == 1 and input_tensor.shape[0] == 4:
+            single = input_tensor.dim() == 1 and input_tensor.shape[0] == 4
+            if single:
                 input_tensor = input_tensor.unsqueeze(0)
 
             num_streams = input_tensor.shape[0]
@@ -2683,7 +2686,7 @@ class TorchPersistenceKFNode(TorchSmartClampQuaternionKFNode):
             self.filter.predict()
             filtered_pos = self.filter.update(input_tensor)
 
-            self.output.send(filtered_pos)
+            self.output.send(filtered_pos[0] if single else filtered_pos)   # [4] in, [4] out
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')
             traceback.print_exc()
@@ -3517,7 +3520,8 @@ class TorchJerkAwareQuatKFNode(TorchDeviceDtypeNode):
             input_tensor = any_to_tensor(input_tensor, device=self.device, dtype=self.dtype)
 
             # Handle 1D input (single quaternion)
-            if input_tensor.dim() == 1 and input_tensor.shape[0] == 4:
+            single = input_tensor.dim() == 1 and input_tensor.shape[0] == 4
+            if single:
                 input_tensor = input_tensor.unsqueeze(0)
 
             # Validate shape
@@ -3554,7 +3558,7 @@ class TorchJerkAwareQuatKFNode(TorchDeviceDtypeNode):
             # Filter
             filtered = self.filter.filter(input_tensor)
 
-            self.output.send(filtered)
+            self.output.send(filtered[0] if single else filtered)   # [4] in, [4] out
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')
             traceback.print_exc()

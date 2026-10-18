@@ -320,8 +320,8 @@ The tensor. Every tensor that arrives is reported. A list or NumPy array
 is turned into a float32 cpu tensor first and that is what is reported -
 so t.info on a NumPy array always says float32, whatever the array's own
 type. An empty tensor is reported like any other: its shape has a 0 in
-it ([0] for an empty 1-D tensor). An empty list is not turned into a
-tensor at all, so it is ignored.
+it ([0] for an empty 1-D tensor). An empty list is reported the same
+way, as [0].
 
 OUTPUTS (sent right to left - grad first, shape last):
 
@@ -392,8 +392,7 @@ INPUTS and PARAMETERS:
 tensor in:
 The tensor. Every tensor that arrives is counted. A list or NumPy array
 is turned into a tensor first, so t.numel counts a list's numbers too.
-An empty tensor gives 0. An empty list is ignored (it is not turned into
-a tensor).
+An empty tensor or an empty list gives 0.
 
 OUTPUTS:
 

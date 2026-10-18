@@ -230,6 +230,11 @@ class TorchDistributionNode(TorchNode):
     def safe_params_changed(self):
         # torch validates distribution arguments (a scale of 0, a probability
         # above 1...) by raising; keep the last good distribution instead
+        # a value arriving at an inlet is returned raw on its first read; the
+        # widget has already clamped it to its limits, so read that instead
+        for an_input in self.inputs:
+            if an_input is not self.input and an_input.widget is not None:
+                an_input.fresh_input = False
         try:
             self.params_changed()
         except Exception as e:

@@ -187,11 +187,13 @@ class TorchDistributionTensorOneParamNode(TorchNode):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
             out_tensor = input_tensor.clone()
+            # get_data: the widget's value, clamped to its limits (a raw 0 sent
+            # to the inlet would otherwise reach torch once)
             try:
                 if self.label == 't.exponential':
-                    out_tensor.exponential_(self.param_1())
+                    out_tensor.exponential_(self.param_1.get_data())
                 elif self.label == 't.geometric':
-                    out_tensor.geometric_(self.param_1())
+                    out_tensor.geometric_(self.param_1.get_data())
             except Exception as e:
                 print(f'{self.label}: {type(e).__name__}: {e}')
                 return
@@ -264,7 +266,13 @@ class TorchCDistanceNode(TorchNode):
         # each of those. A single vector still gives its length, as it always did
         # (this node used to do only that, and raised on more than one row).
         if self.input2.fresh_input:
-            self.points_2 = self.data_to_tensor(self.input2())
+            data = self.input2()
+            # 'clear' (or an empty list) lets go of the held points
+            if isinstance(data, str) or (isinstance(data, (list, tuple))
+                                         and (len(data) == 0 or isinstance(data[0], str))):
+                self.points_2 = None
+            else:
+                self.points_2 = self.data_to_tensor(data)
         input_tensor = self.input_to_tensor()
         if input_tensor is None:
             return

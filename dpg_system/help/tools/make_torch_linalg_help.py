@@ -335,9 +335,9 @@ turned into a float32 tensor). Receiving it measures and sends.
 points 2:
 A second set of points, one per row, with the same number of columns
 as the input. It is only stored: send it before the input, and it is
-then used for every input that follows. A 1-D list is one point. Once
-something has been sent here there is no way to empty it again - for
-the all-pairs table use a separate t.cdist. Points with a different
+then used for every input that follows. A 1-D list is one point.
+'clear' (or an empty list) empties it, and the input goes back to the
+all-pairs table. Points with a different
 number of columns print an error and send nothing.
 
 OUTPUTS:

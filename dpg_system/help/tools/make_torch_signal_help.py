@@ -1290,7 +1290,7 @@ print(build('t.smart_clamp_kf', 't.smart_clamp_kf - a Kalman filter that caps ea
 # -------------------------------------------------------- t.smart_clamp_quat_kf
 SMART_QUAT_PARAMS = """input:
 [joints, 4], w first; a single quaternion [4] is accepted and comes back
-as [1, 4]. Anything else is ignored. Each arrival runs one step and sends.
+as [4]. Anything else is ignored. Each arrival runs one step and sends.
 
 responsiveness (float, default 1.0):
 The process noise: how freely the turning speed may change. Higher
@@ -1500,7 +1500,7 @@ flip in the input is not mistaken for a turn.
 
 """ + PARALLEL + """
 """ + QUAT_IN + """ A single quaternion [4] is accepted and
-comes back as [1, 4].
+comes back as [4] (and its alphas as [3]).
 
 SYNTAX:
 t.hybrid_quat_kf
@@ -1629,7 +1629,7 @@ glitch_transition_frames instead of being held.
 
 """ + PARALLEL + """
 """ + QUAT_IN + """ A single quaternion [4] is accepted and
-comes back as [1, 4].
+comes back as [4].
 
 SYNTAX:
 t.jerk_aware_quat_kf
