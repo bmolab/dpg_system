@@ -519,7 +519,7 @@
             }
         },
         "1": {
-            "height": 1321,
+            "height": 1355,
             "width": 1620,
             "position": [
                 100,
@@ -586,7 +586,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Measures how spread out the values of an array are: the standard\ndeviation, the typical distance of a value from the mean.\n\nValues packed tightly together give a small std; values scattered widely\ngive a large one; values all the same give 0. It is in the same units as\nthe data, so a std of 0.2 on readings in metres means they typically sit\nabout 20 cm either side of their average. Reach for it to tell a steady\nsignal from a jittery one, to measure noise, or to set a threshold in\n\"how many std from the mean\".\n\nHOW IT IS WORKED OUT:\nTake the mean; take each value's distance from it; square those\ndistances and average them (that average is the variance, np.var); take\nthe square root to get back to the data's units. The average divides by\nthe number of values N - the \"population\" std. Some tools (a\nspreadsheet's STDEV, for one) divide by N - 1 instead, which gives a\nslightly larger answer for small arrays: for 1 2 3 4 np.std gives 1.118,\nSTDEV 1.291.\n\nTHE axis MENU:\nWith no axis (the default) the whole array is reduced to one number.\nWith axis 0 the reduction runs DOWN each column, giving one result per\ncolumn; with axis 1 it runs ALONG each row, giving one result per row.\nFor a table of 5 frames (rows) of 4 sensors (columns), axis 0 answers\n\"what did each sensor read on average\", axis 1 \"what did all the sensors\nread on average at each frame\". The axis named is the one that\ndisappears: a 5 by 4 array gives 4 values on axis 0, 5 on axis 1.\n\nSYNTAX:\nnp.std <axis: int>\nWith no argument there is no axis: one std for the whole array.\n\nEXAMPLE:\nnp.std\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list or a single number is turned into one). Every array\nthat arrives is measured and the result sent - the only inlet that makes\nthe node send.\n\naxis (menu, also an inlet):\nWhich way to reduce - see THE axis MENU. Changing it does NOT send by\nitself; the next array uses it. The menu offers None (the whole array)\nand the axes the last array had (None and 0 for a 1-D array); a message\nNone into the axis inlet also returns to the whole array. An axis the\narray does not have is treated as its last axis for that array only:\nthe choice is kept, so one 1-D array through np.std 1 does not stop\nthe 2-D arrays that follow from being averaged along axis 1.\n\nOUTPUTS:\n\nstd:\nWith no axis, one number, never negative. With an axis, an array one\ndimension smaller: one std per column (axis 0) or per row (axis 1).\n\nTHE DEMO:\nmake_noise makes 64 random values, scaled so that at spread 1 and shift\n0 their mean is exactly 0 and their standard deviation exactly 1. The\nspread slider multiplies them all; the shift slider adds to them all.\nThe plot shows the 64 values as points.\n\nREADING THE DEMO:\nDrag spread: the cloud of points widens and np.std follows it exactly -\nspread 2, std 2. Drag shift: the whole cloud moves up or down, np.mean\nfollows it, and np.std does not change at all. The mean says WHERE the\nvalues are, the std how SPREAD they are; the two are independent. At\nspread 0 every value is the same and the std is 0.\n\nRELATED:\nnp.var is the std squared - same information, squared units. np.mean is\nthe centre the std is measured from. np.robust_mean uses a sturdier\nmeasure of spread (the median distance from the median) to reject\noutliers. np.amax and np.amin give the extremes rather than the typical\nspread.",
+                            "value": "Measures how spread out the values of an array are: the standard deviation, the typical distance of a value from the mean.\n\nValues packed tightly together give a small std; values scattered widely give a large one; values all the same give 0. It is in the same units as the data, so a std of 0.2 on readings in metres means they typically sit about 20 cm either side of their average. Reach for it to tell a steady signal from a jittery one, to measure noise, or to set a threshold in \"how many std from the mean\".\n\nHOW IT IS WORKED OUT:\nTake the mean; take each value's distance from it; square those distances and average them (that average is the variance, np.var); take the square root to get back to the data's units. The average divides by the number of values N - the \"population\" std. Some tools (a spreadsheet's STDEV, for one) divide by N - 1 instead, which gives a slightly larger answer for small arrays: for 1 2 3 4 np.std gives 1.118, STDEV 1.291.\n\nTHE axis MENU:\nWith no axis (the default) the whole array is reduced to one number. With axis 0 the reduction runs DOWN each column, giving one result per column; with axis 1 it runs ALONG each row, giving one result per row. For a table of 5 frames (rows) of 4 sensors (columns), axis 0 answers \"what did each sensor read on average\", axis 1 \"what did all the sensors read on average at each frame\". The axis named is the one that disappears: a 5 by 4 array gives 4 values on axis 0, 5 on axis 1.\n\nSYNTAX:\nnp.std <axis: int>\nWith no argument there is no axis: one std for the whole array.\n\nEXAMPLE:\nnp.std\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list or a single number is turned into one). Every array that arrives is measured and the result sent - the only inlet that makes the node send.\n\naxis (menu, also an inlet):\nWhich way to reduce - see THE axis MENU. Changing it does NOT send by itself; the next array uses it. The menu offers None (the whole array) and the axes the last array had (None and 0 for a 1-D array); a message None into the axis inlet also returns to the whole array. An axis the array does not have is treated as its last axis for that array only: the choice is kept, so one 1-D array through np.std 1 does not stop the 2-D arrays that follow from being averaged along axis 1.\n\nOUTPUTS:\n\nstd:\nWith no axis, one number, never negative. With an axis, an array one dimension smaller: one std per column (axis 0) or per row (axis 1).\n\nTHE DEMO:\nmake_noise makes 64 random values, scaled so that at spread 1 and shift 0 their mean is exactly 0 and their standard deviation exactly 1. The spread slider multiplies them all; the shift slider adds to them all. The plot shows the 64 values as points.\n\nREADING THE DEMO:\nDrag spread: the cloud of points widens and np.std follows it exactly - spread 2, std 2. Drag shift: the whole cloud moves up or down, np.mean follows it, and np.std does not change at all. The mean says WHERE the values are, the std how SPREAD they are; the two are independent. At spread 0 every value is the same and the std is 0.\n\nRELATED:\nnp.var is the std squared - same information, squared units. np.mean is the centre the std is measured from. np.robust_mean uses a sturdier measure of spread (the median distance from the median) to reject outliers. np.amax and np.amin give the extremes rather than the typical spread.",
                             "value_type": "str"
                         },
                         "1": {
@@ -610,7 +610,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Measures how spread out the values of an array are: the standard\ndeviation, the typical distance of a value from the mean.\n\nValues packed tightly together give a small std; values scattered widely\ngive a large one; values all the same give 0. It is in the same units as\nthe data, so a std of 0.2 on readings in metres means they typically sit\nabout 20 cm either side of their average. Reach for it to tell a steady\nsignal from a jittery one, to measure noise, or to set a threshold in\n\"how many std from the mean\".\n\nHOW IT IS WORKED OUT:\nTake the mean; take each value's distance from it; square those\ndistances and average them (that average is the variance, np.var); take\nthe square root to get back to the data's units. The average divides by\nthe number of values N - the \"population\" std. Some tools (a\nspreadsheet's STDEV, for one) divide by N - 1 instead, which gives a\nslightly larger answer for small arrays: for 1 2 3 4 np.std gives 1.118,\nSTDEV 1.291.\n\nTHE axis MENU:\nWith no axis (the default) the whole array is reduced to one number.\nWith axis 0 the reduction runs DOWN each column, giving one result per\ncolumn; with axis 1 it runs ALONG each row, giving one result per row.\nFor a table of 5 frames (rows) of 4 sensors (columns), axis 0 answers\n\"what did each sensor read on average\", axis 1 \"what did all the sensors\nread on average at each frame\". The axis named is the one that\ndisappears: a 5 by 4 array gives 4 values on axis 0, 5 on axis 1.\n\nSYNTAX:\nnp.std <axis: int>\nWith no argument there is no axis: one std for the whole array.\n\nEXAMPLE:\nnp.std\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list or a single number is turned into one). Every array\nthat arrives is measured and the result sent - the only inlet that makes\nthe node send.\n\naxis (menu, also an inlet):\nWhich way to reduce - see THE axis MENU. Changing it does NOT send by\nitself; the next array uses it. The menu offers None (the whole array)\nand the axes the last array had (None and 0 for a 1-D array); a message\nNone into the axis inlet also returns to the whole array. An axis the\narray does not have is treated as its last axis for that array only:\nthe choice is kept, so one 1-D array through np.std 1 does not stop\nthe 2-D arrays that follow from being averaged along axis 1.\n\nOUTPUTS:\n\nstd:\nWith no axis, one number, never negative. With an axis, an array one\ndimension smaller: one std per column (axis 0) or per row (axis 1).\n\nTHE DEMO:\nmake_noise makes 64 random values, scaled so that at spread 1 and shift\n0 their mean is exactly 0 and their standard deviation exactly 1. The\nspread slider multiplies them all; the shift slider adds to them all.\nThe plot shows the 64 values as points.\n\nREADING THE DEMO:\nDrag spread: the cloud of points widens and np.std follows it exactly -\nspread 2, std 2. Drag shift: the whole cloud moves up or down, np.mean\nfollows it, and np.std does not change at all. The mean says WHERE the\nvalues are, the std how SPREAD they are; the two are independent. At\nspread 0 every value is the same and the std is 0.\n\nRELATED:\nnp.var is the std squared - same information, squared units. np.mean is\nthe centre the std is measured from. np.robust_mean uses a sturdier\nmeasure of spread (the median distance from the median) to reject\noutliers. np.amax and np.amin give the extremes rather than the typical\nspread."
+                    "text": "Measures how spread out the values of an array are: the standard deviation, the typical distance of a value from the mean.\n\nValues packed tightly together give a small std; values scattered widely give a large one; values all the same give 0. It is in the same units as the data, so a std of 0.2 on readings in metres means they typically sit about 20 cm either side of their average. Reach for it to tell a steady signal from a jittery one, to measure noise, or to set a threshold in \"how many std from the mean\".\n\nHOW IT IS WORKED OUT:\nTake the mean; take each value's distance from it; square those distances and average them (that average is the variance, np.var); take the square root to get back to the data's units. The average divides by the number of values N - the \"population\" std. Some tools (a spreadsheet's STDEV, for one) divide by N - 1 instead, which gives a slightly larger answer for small arrays: for 1 2 3 4 np.std gives 1.118, STDEV 1.291.\n\nTHE axis MENU:\nWith no axis (the default) the whole array is reduced to one number. With axis 0 the reduction runs DOWN each column, giving one result per column; with axis 1 it runs ALONG each row, giving one result per row. For a table of 5 frames (rows) of 4 sensors (columns), axis 0 answers \"what did each sensor read on average\", axis 1 \"what did all the sensors read on average at each frame\". The axis named is the one that disappears: a 5 by 4 array gives 4 values on axis 0, 5 on axis 1.\n\nSYNTAX:\nnp.std <axis: int>\nWith no argument there is no axis: one std for the whole array.\n\nEXAMPLE:\nnp.std\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list or a single number is turned into one). Every array that arrives is measured and the result sent - the only inlet that makes the node send.\n\naxis (menu, also an inlet):\nWhich way to reduce - see THE axis MENU. Changing it does NOT send by itself; the next array uses it. The menu offers None (the whole array) and the axes the last array had (None and 0 for a 1-D array); a message None into the axis inlet also returns to the whole array. An axis the array does not have is treated as its last axis for that array only: the choice is kept, so one 1-D array through np.std 1 does not stop the 2-D arrays that follow from being averaged along axis 1.\n\nOUTPUTS:\n\nstd:\nWith no axis, one number, never negative. With an axis, an array one dimension smaller: one std per column (axis 0) or per row (axis 1).\n\nTHE DEMO:\nmake_noise makes 64 random values, scaled so that at spread 1 and shift 0 their mean is exactly 0 and their standard deviation exactly 1. The spread slider multiplies them all; the shift slider adds to them all. The plot shows the 64 values as points.\n\nREADING THE DEMO:\nDrag spread: the cloud of points widens and np.std follows it exactly - spread 2, std 2. Drag shift: the whole cloud moves up or down, np.mean follows it, and np.std does not change at all. The mean says WHERE the values are, the std how SPREAD they are; the two are independent. At spread 0 every value is the same and the std is 0.\n\nRELATED:\nnp.var is the std squared - same information, squared units. np.mean is the centre the std is measured from. np.robust_mean uses a sturdier measure of spread (the median distance from the median) to reject outliers. np.amax and np.amin give the extremes rather than the typical spread."
                 },
                 "3": {
                     "name": "slider",
@@ -974,8 +974,8 @@
                     "name": "help_link",
                     "id": 829,
                     "position_x": 30,
-                    "position_y": 770,
-                    "width": 53,
+                    "position_y": 804,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -986,8 +986,8 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 120,
-                    "position_y": 770,
+                    "position_x": 100,
+                    "position_y": 804,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -999,9 +999,9 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 217,
-                    "position_y": 770,
-                    "width": 103,
+                    "position_x": 176,
+                    "position_y": 804,
+                    "width": 104,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1012,8 +1012,8 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 368,
-                    "position_y": 770,
+                    "position_x": 296,
+                    "position_y": 804,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -1026,7 +1026,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 977,
-                    "position_x": 546,
+                    "position_x": 30,
                     "position_y": 770,
                     "width": 156,
                     "height": 30,
@@ -1051,7 +1051,7 @@
                     "name": "close",
                     "id": 1014,
                     "position_x": 24,
-                    "position_y": 844,
+                    "position_y": 878,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

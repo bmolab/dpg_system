@@ -1,5 +1,5 @@
 {
-    "height": 1262,
+    "height": 1296,
     "width": 1696,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Passes positive values unchanged and bends negative values along an\nexponential curve that levels off at minus alpha: alpha times (e to the x,\nminus 1).\n\nWhere relu cuts every negative value to exactly 0, elu lets them through\nin a compressed form that never goes below -alpha. It is relu with the\nnegative side softened and given a floor you choose.\n\nTHE CURVE:\nOn the right, the input itself. On the left, a curve that starts at 0 and\nsinks towards -alpha: with the default alpha 1, -1 gives -0.63, -2 gives\n-0.86, -4 gives -0.98. Just left of zero its slope is alpha, so at alpha 1\nthe two sides join smoothly, and at any other alpha there is a corner at\n0 (t.nn.celu is the version that never has one). Alpha 0 is exactly relu.\n\nSYNTAX:\nt.nn.elu\nNo arguments; default alpha 1.0.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn INTEGER tensor (t.arange with whole numbers makes one) is refused: the\nconsole reports \"not implemented for 'Long'\" and nothing is sent. Put a\nt.to float32 in front of it.\n\nalpha (drag float on the node, and an inlet):\nThe depth of the floor: very negative inputs come out as minus alpha.\nDefault 1.0. It does not trigger the node: the next tensor uses it. In the\ndemo the metro re-sends the ramp ten times a second, so the curve follows\nthe slider.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.celu is elu reshaped so it has no corner at any alpha. t.nn.selu is\nelu with fixed constants and a scale. t.nn.relu is alpha 0.\nt.nn.leaky_relu runs straight below zero instead of levelling off.",
+                    "value": "Passes positive values unchanged and bends negative values along an exponential curve that levels off at minus alpha: alpha times (e to the x, minus 1).\n\nWhere relu cuts every negative value to exactly 0, elu lets them through in a compressed form that never goes below -alpha. It is relu with the negative side softened and given a floor you choose.\n\nTHE CURVE:\nOn the right, the input itself. On the left, a curve that starts at 0 and sinks towards -alpha: with the default alpha 1, -1 gives -0.63, -2 gives -0.86, -4 gives -0.98. Just left of zero its slope is alpha, so at alpha 1 the two sides join smoothly, and at any other alpha there is a corner at 0 (t.nn.celu is the version that never has one). Alpha 0 is exactly relu.\n\nSYNTAX:\nt.nn.elu\nNo arguments; default alpha 1.0.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An INTEGER tensor (t.arange with whole numbers makes one) is refused: the console reports \"not implemented for 'Long'\" and nothing is sent. Put a t.to float32 in front of it.\n\nalpha (drag float on the node, and an inlet):\nThe depth of the floor: very negative inputs come out as minus alpha. Default 1.0. It does not trigger the node: the next tensor uses it. In the demo the metro re-sends the ramp ten times a second, so the curve follows the slider.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -4 to 4; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.celu is elu reshaped so it has no corner at any alpha. t.nn.selu is elu with fixed constants and a scale. t.nn.relu is alpha 0. t.nn.leaky_relu runs straight below zero instead of levelling off.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Passes positive values unchanged and bends negative values along an\nexponential curve that levels off at minus alpha: alpha times (e to the x,\nminus 1).\n\nWhere relu cuts every negative value to exactly 0, elu lets them through\nin a compressed form that never goes below -alpha. It is relu with the\nnegative side softened and given a floor you choose.\n\nTHE CURVE:\nOn the right, the input itself. On the left, a curve that starts at 0 and\nsinks towards -alpha: with the default alpha 1, -1 gives -0.63, -2 gives\n-0.86, -4 gives -0.98. Just left of zero its slope is alpha, so at alpha 1\nthe two sides join smoothly, and at any other alpha there is a corner at\n0 (t.nn.celu is the version that never has one). Alpha 0 is exactly relu.\n\nSYNTAX:\nt.nn.elu\nNo arguments; default alpha 1.0.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn INTEGER tensor (t.arange with whole numbers makes one) is refused: the\nconsole reports \"not implemented for 'Long'\" and nothing is sent. Put a\nt.to float32 in front of it.\n\nalpha (drag float on the node, and an inlet):\nThe depth of the floor: very negative inputs come out as minus alpha.\nDefault 1.0. It does not trigger the node: the next tensor uses it. In the\ndemo the metro re-sends the ramp ten times a second, so the curve follows\nthe slider.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.celu is elu reshaped so it has no corner at any alpha. t.nn.selu is\nelu with fixed constants and a scale. t.nn.relu is alpha 0.\nt.nn.leaky_relu runs straight below zero instead of levelling off."
+            "text": "Passes positive values unchanged and bends negative values along an exponential curve that levels off at minus alpha: alpha times (e to the x, minus 1).\n\nWhere relu cuts every negative value to exactly 0, elu lets them through in a compressed form that never goes below -alpha. It is relu with the negative side softened and given a floor you choose.\n\nTHE CURVE:\nOn the right, the input itself. On the left, a curve that starts at 0 and sinks towards -alpha: with the default alpha 1, -1 gives -0.63, -2 gives -0.86, -4 gives -0.98. Just left of zero its slope is alpha, so at alpha 1 the two sides join smoothly, and at any other alpha there is a corner at 0 (t.nn.celu is the version that never has one). Alpha 0 is exactly relu.\n\nSYNTAX:\nt.nn.elu\nNo arguments; default alpha 1.0.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An INTEGER tensor (t.arange with whole numbers makes one) is refused: the console reports \"not implemented for 'Long'\" and nothing is sent. Put a t.to float32 in front of it.\n\nalpha (drag float on the node, and an inlet):\nThe depth of the floor: very negative inputs come out as minus alpha. Default 1.0. It does not trigger the node: the next tensor uses it. In the demo the metro re-sends the ramp ten times a second, so the curve follows the slider.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -4 to 4; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.celu is elu reshaped so it has no corner at any alpha. t.nn.selu is elu with fixed constants and a scale. t.nn.relu is alpha 0. t.nn.leaky_relu runs straight below zero instead of levelling off."
         },
         "3": {
             "name": "metro",
@@ -442,8 +442,8 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 1040,
-            "width": 72,
+            "position_y": 1074,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -454,9 +454,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 143,
-            "position_y": 1040,
-            "width": 72,
+            "position_x": 119,
+            "position_y": 1074,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -467,9 +467,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 256,
-            "position_y": 1040,
-            "width": 72,
+            "position_x": 208,
+            "position_y": 1074,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -480,9 +480,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 369,
-            "position_y": 1040,
-            "width": 109,
+            "position_x": 297,
+            "position_y": 1074,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -494,7 +494,7 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1084,
+            "position_y": 1118,
             "width": 96,
             "height": 44,
             "visibility": "show_all",
@@ -507,8 +507,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 504,
-            "position_y": 1084,
+            "position_x": 30,
+            "position_y": 1040,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -532,7 +532,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 1158,
+            "position_y": 1192,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

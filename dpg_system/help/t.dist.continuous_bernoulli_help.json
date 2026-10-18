@@ -1,5 +1,5 @@
 {
-    "height": 1316,
+    "height": 1350,
     "width": 1829,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor of random samples between 0 and 1 whose density slopes\nup towards 1 or down towards 0, set by one probability.\n\nIt is the smooth relative of the Bernoulli coin flip: instead of\nexactly 0 or 1, any value in between, leaning towards 1 when the\nprobability is above 0.5 and towards 0 when it is below. At 0.5 it is\nflat (uniform). It was introduced for neural networks whose outputs are\ngrey levels rather than strict black and white.\n\nSYNTAX:\nt.dist.continuous_bernoulli <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.continuous_bernoulli 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.continuous_bernoulli 64 64); with none it is [1], a single sample.\nA list or tensor of numbers, or a single number, sent into the inlet\nworks too. A new shape does not send by itself - the next click uses\nit.\n\nprobability (drag float, also an inlet):\nWhich way and how steeply the shape leans: above 0.5 towards 1, below\n0.5 towards 0, 0.5 flat. The drag float stays within 0..1, and a\nnumber outside it sent to the inlet acts as the nearer end. It is NOT\nthe mean - a probability of\n0.9 gives a mean of about 0.67. Default 0.5.\n\nTHE logits FORM:\nt.dist.continuous_bernoulli logits (any word after the name other than\nprobs) takes the lean as a 'logits' parameter instead, default 1, where\n0 is flat.\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A parameter that must be above 0\nhas a drag float that stops at 0.000001. A value the distribution\ncannot take (see each parameter) - 0 or below sent into such an inlet,\nsay - prints a message in the console, and the node goes on sampling\nwith the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. At 0.5 the heat_map (0 dark, 1 bright) is even noise and the histogram\nflat. Drag probability up and the bars on the right grow while those on\nthe left shrink - a sloping curve; drag it down and the slope reverses.\nUnlike t.dist.bernoulli, there is never a pile of exact 0s and 1s.\n\nRELATED:\nt.dist.bernoulli gives exact 0s and 1s. t.dist.beta and\nt.dist.kumaraswamy make more varied shapes on 0..1; t.dist.uniform is\nthe flat case.",
+                    "value": "Makes a tensor of random samples between 0 and 1 whose density slopes up towards 1 or down towards 0, set by one probability.\n\nIt is the smooth relative of the Bernoulli coin flip: instead of exactly 0 or 1, any value in between, leaning towards 1 when the probability is above 0.5 and towards 0 when it is below. At 0.5 it is flat (uniform). It was introduced for neural networks whose outputs are grey levels rather than strict black and white.\n\nSYNTAX:\nt.dist.continuous_bernoulli <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.continuous_bernoulli 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.continuous_bernoulli 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nprobability (drag float, also an inlet):\nWhich way and how steeply the shape leans: above 0.5 towards 1, below 0.5 towards 0, 0.5 flat. The drag float stays within 0..1, and a number outside it sent to the inlet acts as the nearer end. It is NOT the mean - a probability of\n0.9 gives a mean of about 0.67. Default 0.5.\n\nTHE logits FORM:\nt.dist.continuous_bernoulli logits (any word after the name other than probs) takes the lean as a 'logits' parameter instead, default 1, where 0 is flat.\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. At 0.5 the heat_map (0 dark, 1 bright) is even noise and the histogram flat. Drag probability up and the bars on the right grow while those on the left shrink - a sloping curve; drag it down and the slope reverses. Unlike t.dist.bernoulli, there is never a pile of exact 0s and 1s.\n\nRELATED:\nt.dist.bernoulli gives exact 0s and 1s. t.dist.beta and t.dist.kumaraswamy make more varied shapes on 0..1; t.dist.uniform is the flat case.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor of random samples between 0 and 1 whose density slopes\nup towards 1 or down towards 0, set by one probability.\n\nIt is the smooth relative of the Bernoulli coin flip: instead of\nexactly 0 or 1, any value in between, leaning towards 1 when the\nprobability is above 0.5 and towards 0 when it is below. At 0.5 it is\nflat (uniform). It was introduced for neural networks whose outputs are\ngrey levels rather than strict black and white.\n\nSYNTAX:\nt.dist.continuous_bernoulli <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.continuous_bernoulli 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.continuous_bernoulli 64 64); with none it is [1], a single sample.\nA list or tensor of numbers, or a single number, sent into the inlet\nworks too. A new shape does not send by itself - the next click uses\nit.\n\nprobability (drag float, also an inlet):\nWhich way and how steeply the shape leans: above 0.5 towards 1, below\n0.5 towards 0, 0.5 flat. The drag float stays within 0..1, and a\nnumber outside it sent to the inlet acts as the nearer end. It is NOT\nthe mean - a probability of\n0.9 gives a mean of about 0.67. Default 0.5.\n\nTHE logits FORM:\nt.dist.continuous_bernoulli logits (any word after the name other than\nprobs) takes the lean as a 'logits' parameter instead, default 1, where\n0 is flat.\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A parameter that must be above 0\nhas a drag float that stops at 0.000001. A value the distribution\ncannot take (see each parameter) - 0 or below sent into such an inlet,\nsay - prints a message in the console, and the node goes on sampling\nwith the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. At 0.5 the heat_map (0 dark, 1 bright) is even noise and the histogram\nflat. Drag probability up and the bars on the right grow while those on\nthe left shrink - a sloping curve; drag it down and the slope reverses.\nUnlike t.dist.bernoulli, there is never a pile of exact 0s and 1s.\n\nRELATED:\nt.dist.bernoulli gives exact 0s and 1s. t.dist.beta and\nt.dist.kumaraswamy make more varied shapes on 0..1; t.dist.uniform is\nthe flat case."
+            "text": "Makes a tensor of random samples between 0 and 1 whose density slopes up towards 1 or down towards 0, set by one probability.\n\nIt is the smooth relative of the Bernoulli coin flip: instead of exactly 0 or 1, any value in between, leaning towards 1 when the probability is above 0.5 and towards 0 when it is below. At 0.5 it is flat (uniform). It was introduced for neural networks whose outputs are grey levels rather than strict black and white.\n\nSYNTAX:\nt.dist.continuous_bernoulli <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.continuous_bernoulli 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.continuous_bernoulli 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nprobability (drag float, also an inlet):\nWhich way and how steeply the shape leans: above 0.5 towards 1, below 0.5 towards 0, 0.5 flat. The drag float stays within 0..1, and a number outside it sent to the inlet acts as the nearer end. It is NOT the mean - a probability of\n0.9 gives a mean of about 0.67. Default 0.5.\n\nTHE logits FORM:\nt.dist.continuous_bernoulli logits (any word after the name other than probs) takes the lean as a 'logits' parameter instead, default 1, where 0 is flat.\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. At 0.5 the heat_map (0 dark, 1 bright) is even noise and the histogram flat. Drag probability up and the bars on the right grow while those on the left shrink - a sloping curve; drag it down and the slope reverses. Unlike t.dist.bernoulli, there is never a pile of exact 0s and 1s.\n\nRELATED:\nt.dist.bernoulli gives exact 0s and 1s. t.dist.beta and t.dist.kumaraswamy make more varied shapes on 0..1; t.dist.uniform is the flat case."
         },
         "3": {
             "name": "load_bang",
@@ -422,8 +422,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 1090,
-            "width": 115,
+            "position_y": 1124,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -434,9 +434,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 197,
-            "position_y": 1090,
-            "width": 84,
+            "position_x": 163,
+            "position_y": 1124,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -447,9 +447,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 325,
-            "position_y": 1090,
-            "width": 127,
+            "position_x": 264,
+            "position_y": 1124,
+            "width": 129,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -460,9 +460,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 507,
-            "position_y": 1090,
-            "width": 103,
+            "position_x": 409,
+            "position_y": 1124,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -473,9 +473,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 658,
-            "position_y": 1090,
-            "width": 53,
+            "position_x": 529,
+            "position_y": 1124,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -487,7 +487,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 940,
-            "position_x": 737,
+            "position_x": 30,
             "position_y": 1090,
             "width": 156,
             "height": 30,
@@ -512,7 +512,7 @@
             "name": "close",
             "id": 977,
             "position_x": 24,
-            "position_y": 1164,
+            "position_y": 1198,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

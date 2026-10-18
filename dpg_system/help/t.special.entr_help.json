@@ -1,5 +1,5 @@
 {
-    "height": 1018,
+    "height": 1052,
     "width": 1720,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Computes minus x times the natural log of x for every element of a\ntensor - one term of an entropy.\n\nSummed over a probability distribution (t.sum after this node) it gives\nthe distribution's entropy in nats: how spread out, or how unpredictable,\nit is.\n\nTHE CURVE:\nOver 0 to 1 it is a hump: 0 at 0, rising to its peak of 1/e (0.368) at\nx = 1/e (0.368), back to 0 at 1, and negative beyond 1. A probability of 0\ncontributes nothing and so does a certainty of 1; middling probabilities\ncontribute most.\n\nSYNTAX:\nt.special.entr\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives exactly 0 (not the NaN you get computing 0 times log 0 by hand).\nNegative inputs give minus infinity.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (0 to 1 here), and the\nupper plot draws them: a straight ramp. The lower plot is entr of each\nof those 200 values, so it is the graph of the function from 0 to 1,\ndrawn from -0.05 (bottom) to 0.4 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.special.xlogy computes x times log y with the same care at 0 -\nentr(p) is minus xlogy(p, p). t.nn.softmax turns scores into the\nprobabilities you would take the entropy of.",
+                    "value": "Computes minus x times the natural log of x for every element of a tensor - one term of an entropy.\n\nSummed over a probability distribution (t.sum after this node) it gives the distribution's entropy in nats: how spread out, or how unpredictable, it is.\n\nTHE CURVE:\nOver 0 to 1 it is a hump: 0 at 0, rising to its peak of 1/e (0.368) at x = 1/e (0.368), back to 0 at 1, and negative beyond 1. A probability of 0 contributes nothing and so does a certainty of 1; middling probabilities contribute most.\n\nSYNTAX:\nt.special.entr\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives exactly 0 (not the NaN you get computing 0 times log 0 by hand). Negative inputs give minus infinity.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (0 to 1 here), and the upper plot draws them: a straight ramp. The lower plot is entr of each of those 200 values, so it is the graph of the function from 0 to 1, drawn from -0.05 (bottom) to 0.4 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.special.xlogy computes x times log y with the same care at 0 - entr(p) is minus xlogy(p, p). t.nn.softmax turns scores into the probabilities you would take the entropy of.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Computes minus x times the natural log of x for every element of a\ntensor - one term of an entropy.\n\nSummed over a probability distribution (t.sum after this node) it gives\nthe distribution's entropy in nats: how spread out, or how unpredictable,\nit is.\n\nTHE CURVE:\nOver 0 to 1 it is a hump: 0 at 0, rising to its peak of 1/e (0.368) at\nx = 1/e (0.368), back to 0 at 1, and negative beyond 1. A probability of 0\ncontributes nothing and so does a certainty of 1; middling probabilities\ncontribute most.\n\nSYNTAX:\nt.special.entr\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives exactly 0 (not the NaN you get computing 0 times log 0 by hand).\nNegative inputs give minus infinity.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (0 to 1 here), and the\nupper plot draws them: a straight ramp. The lower plot is entr of each\nof those 200 values, so it is the graph of the function from 0 to 1,\ndrawn from -0.05 (bottom) to 0.4 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.special.xlogy computes x times log y with the same care at 0 -\nentr(p) is minus xlogy(p, p). t.nn.softmax turns scores into the\nprobabilities you would take the entropy of."
+            "text": "Computes minus x times the natural log of x for every element of a tensor - one term of an entropy.\n\nSummed over a probability distribution (t.sum after this node) it gives the distribution's entropy in nats: how spread out, or how unpredictable, it is.\n\nTHE CURVE:\nOver 0 to 1 it is a hump: 0 at 0, rising to its peak of 1/e (0.368) at x = 1/e (0.368), back to 0 at 1, and negative beyond 1. A probability of 0 contributes nothing and so does a certainty of 1; middling probabilities contribute most.\n\nSYNTAX:\nt.special.entr\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives exactly 0 (not the NaN you get computing 0 times log 0 by hand). Negative inputs give minus infinity.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (0 to 1 here), and the upper plot draws them: a straight ramp. The lower plot is entr of each of those 200 values, so it is the graph of the function from 0 to 1, drawn from -0.05 (bottom) to 0.4 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.special.xlogy computes x times log y with the same care at 0 - entr(p) is minus xlogy(p, p). t.nn.softmax turns scores into the probabilities you would take the entropy of."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 109,
+            "position_y": 874,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 189,
-            "position_y": 840,
-            "width": 115,
+            "position_x": 156,
+            "position_y": 874,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -457,9 +457,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 356,
-            "position_y": 840,
-            "width": 90,
+            "position_x": 289,
+            "position_y": 874,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -470,9 +470,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 492,
-            "position_y": 840,
-            "width": 47,
+            "position_x": 397,
+            "position_y": 874,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -484,8 +484,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 565,
-            "position_y": 884,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -509,7 +509,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 914,
+            "position_y": 948,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

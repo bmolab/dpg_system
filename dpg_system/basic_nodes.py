@@ -331,6 +331,9 @@ class TextBlockNode(Node):
 
     def width_changed(self):
         dpg.configure_item(self.text_block.widget.uuid, width=self.width_option())
+        # the wrap is worked out from the width: without this a narrower or
+        # wider box kept the old line breaks
+        self.text_block.widget.rewrap()
 
     def height_changed(self):
         dpg.configure_item(self.text_block.widget.uuid, height=self.height_option())

@@ -1,5 +1,5 @@
 {
-    "height": 698,
+    "height": 732,
     "width": 1481,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes an array filled with ones, in the shape you give it.\n\nMultiplying by one changes nothing, which makes ones the neutral start for\nmany things: times a number they become an array full of that number (a\nconstant of any shape), and as weights or a mask they let everything\nthrough until you change some of them.\n\nSYNTAX:\nnp.ones <dim 0: int> <dim 1: int> ...\nOne number per dimension: np.ones 8 is a row of 8, np.ones 4 4 a 4 by 4\narray. With no arguments you get a 1-element array. The NUMBER of\ndimensions is fixed when the node is made - retype it to change that.\n\nEXAMPLE:\nnp.ones 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to send the array. Nothing is sent until\nthen; each click sends a fresh copy.\n\ndim 0, dim 1, ... (properties):\nThe size of each dimension, used on the next click.\n\ndtype (option):\nfloat32 (the default), float, double, int64, uint8 or bool (all true).\n\nOUTPUTS:\n\narray of ones:\nThe array.\n\nREADING THE DEMO:\nThe top list is the array itself. Below, '*' scales it by the float: drag\nthe float and 't bang float' sets the multiplier first, then clicks\nnp.ones, so you get a row of whatever number you drag to.\n\nRELATED:\nnp.zeros is the same with every value 0. t.ones is the PyTorch version\n(and t.full makes a constant array in one step). np.edit changes part of\nan array, for a mask that is mostly ones.",
+                    "value": "Makes an array filled with ones, in the shape you give it.\n\nMultiplying by one changes nothing, which makes ones the neutral start for many things: times a number they become an array full of that number (a constant of any shape), and as weights or a mask they let everything through until you change some of them.\n\nSYNTAX:\nnp.ones <dim 0: int> <dim 1: int> ...\nOne number per dimension: np.ones 8 is a row of 8, np.ones 4 4 a 4 by 4\narray. With no arguments you get a 1-element array. The NUMBER of\ndimensions is fixed when the node is made - retype it to change that.\n\nEXAMPLE:\nnp.ones 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to send the array. Nothing is sent until then; each click sends a fresh copy.\n\ndim 0, dim 1, ... (properties):\nThe size of each dimension, used on the next click.\n\ndtype (option):\nfloat32 (the default), float, double, int64, uint8 or bool (all true).\n\nOUTPUTS:\n\narray of ones:\nThe array.\n\nREADING THE DEMO:\nThe top list is the array itself. Below, '*' scales it by the float: drag the float and 't bang float' sets the multiplier first, then clicks np.ones, so you get a row of whatever number you drag to.\n\nRELATED:\nnp.zeros is the same with every value 0. t.ones is the PyTorch version (and t.full makes a constant array in one step). np.edit changes part of an array, for a mask that is mostly ones.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes an array filled with ones, in the shape you give it.\n\nMultiplying by one changes nothing, which makes ones the neutral start for\nmany things: times a number they become an array full of that number (a\nconstant of any shape), and as weights or a mask they let everything\nthrough until you change some of them.\n\nSYNTAX:\nnp.ones <dim 0: int> <dim 1: int> ...\nOne number per dimension: np.ones 8 is a row of 8, np.ones 4 4 a 4 by 4\narray. With no arguments you get a 1-element array. The NUMBER of\ndimensions is fixed when the node is made - retype it to change that.\n\nEXAMPLE:\nnp.ones 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to send the array. Nothing is sent until\nthen; each click sends a fresh copy.\n\ndim 0, dim 1, ... (properties):\nThe size of each dimension, used on the next click.\n\ndtype (option):\nfloat32 (the default), float, double, int64, uint8 or bool (all true).\n\nOUTPUTS:\n\narray of ones:\nThe array.\n\nREADING THE DEMO:\nThe top list is the array itself. Below, '*' scales it by the float: drag\nthe float and 't bang float' sets the multiplier first, then clicks\nnp.ones, so you get a row of whatever number you drag to.\n\nRELATED:\nnp.zeros is the same with every value 0. t.ones is the PyTorch version\n(and t.full makes a constant array in one step). np.edit changes part of\nan array, for a mask that is mostly ones."
+            "text": "Makes an array filled with ones, in the shape you give it.\n\nMultiplying by one changes nothing, which makes ones the neutral start for many things: times a number they become an array full of that number (a constant of any shape), and as weights or a mask they let everything through until you change some of them.\n\nSYNTAX:\nnp.ones <dim 0: int> <dim 1: int> ...\nOne number per dimension: np.ones 8 is a row of 8, np.ones 4 4 a 4 by 4\narray. With no arguments you get a 1-element array. The NUMBER of\ndimensions is fixed when the node is made - retype it to change that.\n\nEXAMPLE:\nnp.ones 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to send the array. Nothing is sent until then; each click sends a fresh copy.\n\ndim 0, dim 1, ... (properties):\nThe size of each dimension, used on the next click.\n\ndtype (option):\nfloat32 (the default), float, double, int64, uint8 or bool (all true).\n\nOUTPUTS:\n\narray of ones:\nThe array.\n\nREADING THE DEMO:\nThe top list is the array itself. Below, '*' scales it by the float: drag the float and 't bang float' sets the multiplier first, then clicks np.ones, so you get a row of whatever number you drag to.\n\nRELATED:\nnp.zeros is the same with every value 0. t.ones is the PyTorch version (and t.full makes a constant array in one step). np.edit changes part of an array, for a mask that is mostly ones."
         },
         "3": {
             "name": "load_bang",
@@ -311,7 +311,7 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 520,
+            "position_y": 554,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -323,9 +323,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 135,
-            "position_y": 520,
-            "width": 53,
+            "position_x": 112,
+            "position_y": 554,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -336,9 +336,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 225,
-            "position_y": 520,
-            "width": 53,
+            "position_x": 182,
+            "position_y": 554,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -349,8 +349,8 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 315,
-            "position_y": 520,
+            "position_x": 252,
+            "position_y": 554,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -363,7 +363,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 401,
+            "position_x": 30,
             "position_y": 520,
             "width": 156,
             "height": 30,
@@ -388,7 +388,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 594,
+            "position_y": 628,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

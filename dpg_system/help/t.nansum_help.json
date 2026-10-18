@@ -430,7 +430,7 @@
             }
         },
         "1": {
-            "height": 1708,
+            "height": 1742,
             "width": 1834,
             "position": [
                 100,
@@ -497,7 +497,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Adds up the values of a tensor as t.sum does, but skips any NaN\n(not-a-number) values instead of letting them spoil the total.\n\nNaN plus anything is NaN, so ONE missing value - a dropped frame, a\nlost sensor - turns a t.sum total into NaN. t.nansum treats each NaN\nas 0 and adds up what is actually there.\n\nA ROW OF NOTHING BUT NaN:\ngives 0 - an empty total, not NaN. If you need to know that a row had\nno data at all, count its NaNs separately.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number\ntyped after the name (t.nansum 0) chooses a dim to reduce along and adds a\ndim inlet and a keep_dims checkbox - the argument creates them, so\na node made without one cannot be given a dim later. For a table,\ndim 0 gives one answer per column, dim 1 one per row; -1 is the last\ndim.\n\nSYNTAX:\nt.nansum <dim: int>\nDefault: no dim - the whole tensor.\n\nEXAMPLE:\nt.nansum 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is added up and the answer sent - this\nis the only inlet that makes the node send. A list or a NumPy array is\nfirst turned into a float32 tensor on the cpu; a tensor is used as it\nis, on its own device, and the answer stays there. An empty tensor is\nignored: nothing is sent.\nWith no NaN in it the answer is exactly what t.sum gives.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor\nuses it. A dim the tensor does not have (2 or more for a table, or 1\nfor a 1-D tensor) is an error: the console prints \"Dimension out of\nrange\" and nothing is sent.\n\nkeep_dims (checkbox, only when an argument was given; default off):\nOff, the reduced dim is removed: 6 by 8 reduced on dim 0 has shape [8].\nOn, it is kept with length 1: shape [1, 8] on dim 0, [6, 1] on dim 1.\nKeep it when the answer must line up against the original again - to\nsubtract each row's total from that row, for instance.\n\nOUTPUTS:\n\noutput:\nWith no dim, one number; with a dim, a tensor of totals with that dim\nremoved (or kept at length 1), never NaN.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of whole numbers 0 to 3; click its\nbutton for new ones. make_hole passes the tensor through untouched until you click the\ntoggle: then the cell at row 2, column 3 becomes NaN (the heat_map\nwrites it as nan). The slider starts at dim 1 - one answer per row -\nand goes through 't bang int' to both dim nodes, re-sending the held\ntensor. With the toggle off, t.sum and\nt.nansum agree everywhere. With it on, t.sum of everything turns to\nnan, and so does its total for row 2 (the third cell of its strip);\nevery other row is unaffected. t.nansum's totals stay numbers: row 2's\nsimply leaves the hole out.\n\nRELATED:\nt.sum is the plain version. t.nanmean and t.nanmedian skip NaN the same\nway for the average and the middle value. np.nansum is the NumPy\nversion.",
+                            "value": "Adds up the values of a tensor as t.sum does, but skips any NaN (not-a-number) values instead of letting them spoil the total.\n\nNaN plus anything is NaN, so ONE missing value - a dropped frame, a lost sensor - turns a t.sum total into NaN. t.nansum treats each NaN as 0 and adds up what is actually there.\n\nA ROW OF NOTHING BUT NaN:\ngives 0 - an empty total, not NaN. If you need to know that a row had no data at all, count its NaNs separately.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number typed after the name (t.nansum 0) chooses a dim to reduce along and adds a dim inlet and a keep_dims checkbox - the argument creates them, so a node made without one cannot be given a dim later. For a table, dim 0 gives one answer per column, dim 1 one per row; -1 is the last dim.\n\nSYNTAX:\nt.nansum <dim: int>\nDefault: no dim - the whole tensor.\n\nEXAMPLE:\nt.nansum 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is added up and the answer sent - this is the only inlet that makes the node send. A list or a NumPy array is first turned into a float32 tensor on the cpu; a tensor is used as it is, on its own device, and the answer stays there. An empty tensor is ignored: nothing is sent.\nWith no NaN in it the answer is exactly what t.sum gives.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor uses it. A dim the tensor does not have (2 or more for a table, or 1 for a 1-D tensor) is an error: the console prints \"Dimension out of range\" and nothing is sent.\n\nkeep_dims (checkbox, only when an argument was given; default off):\nOff, the reduced dim is removed: 6 by 8 reduced on dim 0 has shape [8]. On, it is kept with length 1: shape [1, 8] on dim 0, [6, 1] on dim 1. Keep it when the answer must line up against the original again - to subtract each row's total from that row, for instance.\n\nOUTPUTS:\n\noutput:\nWith no dim, one number; with a dim, a tensor of totals with that dim removed (or kept at length 1), never NaN.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of whole numbers 0 to 3; click its button for new ones. make_hole passes the tensor through untouched until you click the toggle: then the cell at row 2, column 3 becomes NaN (the heat_map writes it as nan). The slider starts at dim 1 - one answer per row - and goes through 't bang int' to both dim nodes, re-sending the held tensor. With the toggle off, t.sum and\nt.nansum agree everywhere. With it on, t.sum of everything turns to nan, and so does its total for row 2 (the third cell of its strip);\nevery other row is unaffected. t.nansum's totals stay numbers: row 2's simply leaves the hole out.\n\nRELATED:\nt.sum is the plain version. t.nanmean and t.nanmedian skip NaN the same way for the average and the middle value. np.nansum is the NumPy version.",
                             "value_type": "str"
                         },
                         "1": {
@@ -521,7 +521,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Adds up the values of a tensor as t.sum does, but skips any NaN\n(not-a-number) values instead of letting them spoil the total.\n\nNaN plus anything is NaN, so ONE missing value - a dropped frame, a\nlost sensor - turns a t.sum total into NaN. t.nansum treats each NaN\nas 0 and adds up what is actually there.\n\nA ROW OF NOTHING BUT NaN:\ngives 0 - an empty total, not NaN. If you need to know that a row had\nno data at all, count its NaNs separately.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number\ntyped after the name (t.nansum 0) chooses a dim to reduce along and adds a\ndim inlet and a keep_dims checkbox - the argument creates them, so\na node made without one cannot be given a dim later. For a table,\ndim 0 gives one answer per column, dim 1 one per row; -1 is the last\ndim.\n\nSYNTAX:\nt.nansum <dim: int>\nDefault: no dim - the whole tensor.\n\nEXAMPLE:\nt.nansum 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is added up and the answer sent - this\nis the only inlet that makes the node send. A list or a NumPy array is\nfirst turned into a float32 tensor on the cpu; a tensor is used as it\nis, on its own device, and the answer stays there. An empty tensor is\nignored: nothing is sent.\nWith no NaN in it the answer is exactly what t.sum gives.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor\nuses it. A dim the tensor does not have (2 or more for a table, or 1\nfor a 1-D tensor) is an error: the console prints \"Dimension out of\nrange\" and nothing is sent.\n\nkeep_dims (checkbox, only when an argument was given; default off):\nOff, the reduced dim is removed: 6 by 8 reduced on dim 0 has shape [8].\nOn, it is kept with length 1: shape [1, 8] on dim 0, [6, 1] on dim 1.\nKeep it when the answer must line up against the original again - to\nsubtract each row's total from that row, for instance.\n\nOUTPUTS:\n\noutput:\nWith no dim, one number; with a dim, a tensor of totals with that dim\nremoved (or kept at length 1), never NaN.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of whole numbers 0 to 3; click its\nbutton for new ones. make_hole passes the tensor through untouched until you click the\ntoggle: then the cell at row 2, column 3 becomes NaN (the heat_map\nwrites it as nan). The slider starts at dim 1 - one answer per row -\nand goes through 't bang int' to both dim nodes, re-sending the held\ntensor. With the toggle off, t.sum and\nt.nansum agree everywhere. With it on, t.sum of everything turns to\nnan, and so does its total for row 2 (the third cell of its strip);\nevery other row is unaffected. t.nansum's totals stay numbers: row 2's\nsimply leaves the hole out.\n\nRELATED:\nt.sum is the plain version. t.nanmean and t.nanmedian skip NaN the same\nway for the average and the middle value. np.nansum is the NumPy\nversion."
+                    "text": "Adds up the values of a tensor as t.sum does, but skips any NaN (not-a-number) values instead of letting them spoil the total.\n\nNaN plus anything is NaN, so ONE missing value - a dropped frame, a lost sensor - turns a t.sum total into NaN. t.nansum treats each NaN as 0 and adds up what is actually there.\n\nA ROW OF NOTHING BUT NaN:\ngives 0 - an empty total, not NaN. If you need to know that a row had no data at all, count its NaNs separately.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number typed after the name (t.nansum 0) chooses a dim to reduce along and adds a dim inlet and a keep_dims checkbox - the argument creates them, so a node made without one cannot be given a dim later. For a table, dim 0 gives one answer per column, dim 1 one per row; -1 is the last dim.\n\nSYNTAX:\nt.nansum <dim: int>\nDefault: no dim - the whole tensor.\n\nEXAMPLE:\nt.nansum 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is added up and the answer sent - this is the only inlet that makes the node send. A list or a NumPy array is first turned into a float32 tensor on the cpu; a tensor is used as it is, on its own device, and the answer stays there. An empty tensor is ignored: nothing is sent.\nWith no NaN in it the answer is exactly what t.sum gives.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor uses it. A dim the tensor does not have (2 or more for a table, or 1 for a 1-D tensor) is an error: the console prints \"Dimension out of range\" and nothing is sent.\n\nkeep_dims (checkbox, only when an argument was given; default off):\nOff, the reduced dim is removed: 6 by 8 reduced on dim 0 has shape [8]. On, it is kept with length 1: shape [1, 8] on dim 0, [6, 1] on dim 1. Keep it when the answer must line up against the original again - to subtract each row's total from that row, for instance.\n\nOUTPUTS:\n\noutput:\nWith no dim, one number; with a dim, a tensor of totals with that dim removed (or kept at length 1), never NaN.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of whole numbers 0 to 3; click its button for new ones. make_hole passes the tensor through untouched until you click the toggle: then the cell at row 2, column 3 becomes NaN (the heat_map writes it as nan). The slider starts at dim 1 - one answer per row - and goes through 't bang int' to both dim nodes, re-sending the held tensor. With the toggle off, t.sum and\nt.nansum agree everywhere. With it on, t.sum of everything turns to nan, and so does its total for row 2 (the third cell of its strip);\nevery other row is unaffected. t.nansum's totals stay numbers: row 2's simply leaves the hole out.\n\nRELATED:\nt.sum is the plain version. t.nanmean and t.nanmedian skip NaN the same way for the average and the middle value. np.nansum is the NumPy version."
                 },
                 "3": {
                     "name": "load_bang",
@@ -1220,8 +1220,8 @@
                     "name": "help_link",
                     "id": 1347,
                     "position_x": 30,
-                    "position_y": 1530,
-                    "width": 72,
+                    "position_y": 1564,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1232,9 +1232,9 @@
                 "31": {
                     "name": "help_link",
                     "id": 1384,
-                    "position_x": 143,
-                    "position_y": 1530,
-                    "width": 47,
+                    "position_x": 119,
+                    "position_y": 1564,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1245,9 +1245,9 @@
                 "32": {
                     "name": "help_link",
                     "id": 1421,
-                    "position_x": 225,
-                    "position_y": 1530,
-                    "width": 72,
+                    "position_x": 183,
+                    "position_y": 1564,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1258,9 +1258,9 @@
                 "33": {
                     "name": "help_link",
                     "id": 1458,
-                    "position_x": 338,
-                    "position_y": 1530,
-                    "width": 84,
+                    "position_x": 272,
+                    "position_y": 1564,
+                    "width": 85,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1272,7 +1272,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1495,
-                    "position_x": 686,
+                    "position_x": 30,
                     "position_y": 1530,
                     "width": 156,
                     "height": 30,
@@ -1297,7 +1297,7 @@
                     "name": "close",
                     "id": 1532,
                     "position_x": 24,
-                    "position_y": 1604,
+                    "position_y": 1638,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 881,
+    "height": 915,
     "width": 1604,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a 1-D array of evenly spaced values running from start to stop.\n\nReach for it whenever you need a regular series rather than a measured one:\nan x axis to evaluate something across, evenly spaced positions, the steps\nof a fade, or a smooth path from one state to another.\n\nBOTH ENDS ARE INCLUDED:\nsteps is the number of VALUES, so there is one gap fewer than there are\nvalues. With start 0, stop 1 and 9 steps the gap is (1 - 0) / 8 = 0.125,\nand you get 0, 0.125, 0.25 ... 0.875, 1. In general the gap is\n(stop - start) / (steps - 1). Start can be larger than stop: the values\nthen count down.\n\nSYNTAX:\nnp.linspace <start: float> <stop: float> <steps: int>\nDefaults: 0.0, 1.0 and 50.\n\nEXAMPLE:\nnp.linspace 0 1 9\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the array. This is the only thing\nthat makes the node send. Changing start, stop or steps does NOT send by\nitself - in the demo a metro clicks the node 20 times a second, so the\nstrip follows your drags.\n\nstart / stop (drag floats):\nThe first and last values.\n\nsteps (drag int):\nHow many values. 1 gives just start; 0 sends an empty array (the\nheat_map keeps its last picture); a negative count is an error and\nnothing is sent.\n\ndtype (combo):\nfloat32 (the default), float or double (both 64-bit), int64 or uint8.\nThe integer types cut each value down to a whole number, so\nnp.linspace 0 1 9 as int64 is eight 0s and a single 1.\n\nOUTPUTS:\n\nlinspace out:\nThe 1-D array, steps values long.\n\nREADING THE DEMO:\nThe heat_map shows the ramp as a strip of cells, start on the left and\nstop on the right, each coloured from the heat_map's min y (dark purple)\nto its max y (yellow) - set here to 0 and 1, the default range. Lower stop\nto 0.5 and the ramp only gets half way to yellow; swap start and stop and\nit runs the other way; drag steps and the strip divides more finely.\n\nA heat_map draws a 1-D array as one row like this. A 2-D array it\ndraws as it would print: row 0 at the top, columns left to right.\n\nThe heat_map's min y and max y are the scale, not the data: values outside\nthem saturate. If you change the range of the ramp a lot, change them too.\n\nRELATED:\nnp.grid crosses two linspaces into a 2-D grid of points. t.linspace is the\nPyTorch version. np.rand is the irregular counterpart - values anywhere in\na range rather than evenly spaced. np.reshape folds a long ramp into a 2-D\narray, which is a quick way to make a gradient image.",
+                    "value": "Makes a 1-D array of evenly spaced values running from start to stop.\n\nReach for it whenever you need a regular series rather than a measured one:\nan x axis to evaluate something across, evenly spaced positions, the steps of a fade, or a smooth path from one state to another.\n\nBOTH ENDS ARE INCLUDED:\nsteps is the number of VALUES, so there is one gap fewer than there are values. With start 0, stop 1 and 9 steps the gap is (1 - 0) / 8 = 0.125, and you get 0, 0.125, 0.25 ... 0.875, 1. In general the gap is (stop - start) / (steps - 1). Start can be larger than stop: the values then count down.\n\nSYNTAX:\nnp.linspace <start: float> <stop: float> <steps: int>\nDefaults: 0.0, 1.0 and 50.\n\nEXAMPLE:\nnp.linspace 0 1 9\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the array. This is the only thing that makes the node send. Changing start, stop or steps does NOT send by itself - in the demo a metro clicks the node 20 times a second, so the strip follows your drags.\n\nstart / stop (drag floats):\nThe first and last values.\n\nsteps (drag int):\nHow many values. 1 gives just start; 0 sends an empty array (the heat_map keeps its last picture); a negative count is an error and nothing is sent.\n\ndtype (combo):\nfloat32 (the default), float or double (both 64-bit), int64 or uint8. The integer types cut each value down to a whole number, so np.linspace 0 1 9 as int64 is eight 0s and a single 1.\n\nOUTPUTS:\n\nlinspace out:\nThe 1-D array, steps values long.\n\nREADING THE DEMO:\nThe heat_map shows the ramp as a strip of cells, start on the left and stop on the right, each coloured from the heat_map's min y (dark purple) to its max y (yellow) - set here to 0 and 1, the default range. Lower stop to 0.5 and the ramp only gets half way to yellow; swap start and stop and it runs the other way; drag steps and the strip divides more finely.\n\nA heat_map draws a 1-D array as one row like this. A 2-D array it draws as it would print: row 0 at the top, columns left to right.\n\nThe heat_map's min y and max y are the scale, not the data: values outside them saturate. If you change the range of the ramp a lot, change them too.\n\nRELATED:\nnp.grid crosses two linspaces into a 2-D grid of points. t.linspace is the PyTorch version. np.rand is the irregular counterpart - values anywhere in a range rather than evenly spaced. np.reshape folds a long ramp into a 2-D array, which is a quick way to make a gradient image.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a 1-D array of evenly spaced values running from start to stop.\n\nReach for it whenever you need a regular series rather than a measured one:\nan x axis to evaluate something across, evenly spaced positions, the steps\nof a fade, or a smooth path from one state to another.\n\nBOTH ENDS ARE INCLUDED:\nsteps is the number of VALUES, so there is one gap fewer than there are\nvalues. With start 0, stop 1 and 9 steps the gap is (1 - 0) / 8 = 0.125,\nand you get 0, 0.125, 0.25 ... 0.875, 1. In general the gap is\n(stop - start) / (steps - 1). Start can be larger than stop: the values\nthen count down.\n\nSYNTAX:\nnp.linspace <start: float> <stop: float> <steps: int>\nDefaults: 0.0, 1.0 and 50.\n\nEXAMPLE:\nnp.linspace 0 1 9\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the array. This is the only thing\nthat makes the node send. Changing start, stop or steps does NOT send by\nitself - in the demo a metro clicks the node 20 times a second, so the\nstrip follows your drags.\n\nstart / stop (drag floats):\nThe first and last values.\n\nsteps (drag int):\nHow many values. 1 gives just start; 0 sends an empty array (the\nheat_map keeps its last picture); a negative count is an error and\nnothing is sent.\n\ndtype (combo):\nfloat32 (the default), float or double (both 64-bit), int64 or uint8.\nThe integer types cut each value down to a whole number, so\nnp.linspace 0 1 9 as int64 is eight 0s and a single 1.\n\nOUTPUTS:\n\nlinspace out:\nThe 1-D array, steps values long.\n\nREADING THE DEMO:\nThe heat_map shows the ramp as a strip of cells, start on the left and\nstop on the right, each coloured from the heat_map's min y (dark purple)\nto its max y (yellow) - set here to 0 and 1, the default range. Lower stop\nto 0.5 and the ramp only gets half way to yellow; swap start and stop and\nit runs the other way; drag steps and the strip divides more finely.\n\nA heat_map draws a 1-D array as one row like this. A 2-D array it\ndraws as it would print: row 0 at the top, columns left to right.\n\nThe heat_map's min y and max y are the scale, not the data: values outside\nthem saturate. If you change the range of the ramp a lot, change them too.\n\nRELATED:\nnp.grid crosses two linspaces into a 2-D grid of points. t.linspace is the\nPyTorch version. np.rand is the irregular counterpart - values anywhere in\na range rather than evenly spaced. np.reshape folds a long ramp into a 2-D\narray, which is a quick way to make a gradient image."
+            "text": "Makes a 1-D array of evenly spaced values running from start to stop.\n\nReach for it whenever you need a regular series rather than a measured one:\nan x axis to evaluate something across, evenly spaced positions, the steps of a fade, or a smooth path from one state to another.\n\nBOTH ENDS ARE INCLUDED:\nsteps is the number of VALUES, so there is one gap fewer than there are values. With start 0, stop 1 and 9 steps the gap is (1 - 0) / 8 = 0.125, and you get 0, 0.125, 0.25 ... 0.875, 1. In general the gap is (stop - start) / (steps - 1). Start can be larger than stop: the values then count down.\n\nSYNTAX:\nnp.linspace <start: float> <stop: float> <steps: int>\nDefaults: 0.0, 1.0 and 50.\n\nEXAMPLE:\nnp.linspace 0 1 9\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the array. This is the only thing that makes the node send. Changing start, stop or steps does NOT send by itself - in the demo a metro clicks the node 20 times a second, so the strip follows your drags.\n\nstart / stop (drag floats):\nThe first and last values.\n\nsteps (drag int):\nHow many values. 1 gives just start; 0 sends an empty array (the heat_map keeps its last picture); a negative count is an error and nothing is sent.\n\ndtype (combo):\nfloat32 (the default), float or double (both 64-bit), int64 or uint8. The integer types cut each value down to a whole number, so np.linspace 0 1 9 as int64 is eight 0s and a single 1.\n\nOUTPUTS:\n\nlinspace out:\nThe 1-D array, steps values long.\n\nREADING THE DEMO:\nThe heat_map shows the ramp as a strip of cells, start on the left and stop on the right, each coloured from the heat_map's min y (dark purple) to its max y (yellow) - set here to 0 and 1, the default range. Lower stop to 0.5 and the ramp only gets half way to yellow; swap start and stop and it runs the other way; drag steps and the strip divides more finely.\n\nA heat_map draws a 1-D array as one row like this. A 2-D array it draws as it would print: row 0 at the top, columns left to right.\n\nThe heat_map's min y and max y are the scale, not the data: values outside them saturate. If you change the range of the ramp a lot, change them too.\n\nRELATED:\nnp.grid crosses two linspaces into a 2-D grid of points. t.linspace is the PyTorch version. np.rand is the irregular counterpart - values anywhere in a range rather than evenly spaced. np.reshape folds a long ramp into a 2-D array, which is a quick way to make a gradient image."
         },
         "3": {
             "name": "metro",
@@ -360,7 +360,7 @@
             "name": "help_link",
             "id": 681,
             "position_x": 30,
-            "position_y": 530,
+            "position_y": 564,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -372,9 +372,9 @@
         "13": {
             "name": "help_link",
             "id": 718,
-            "position_x": 127,
-            "position_y": 530,
-            "width": 78,
+            "position_x": 106,
+            "position_y": 564,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -385,8 +385,8 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 248,
-            "position_y": 530,
+            "position_x": 201,
+            "position_y": 564,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -398,9 +398,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 345,
-            "position_y": 530,
-            "width": 78,
+            "position_x": 277,
+            "position_y": 564,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -412,7 +412,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 829,
-            "position_x": 524,
+            "position_x": 30,
             "position_y": 530,
             "width": 156,
             "height": 30,
@@ -437,7 +437,7 @@
             "name": "close",
             "id": 866,
             "position_x": 24,
-            "position_y": 604,
+            "position_y": 638,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

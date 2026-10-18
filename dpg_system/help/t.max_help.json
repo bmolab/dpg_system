@@ -1,5 +1,5 @@
 {
-    "height": 1448,
+    "height": 1482,
     "width": 1834,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Finds the largest value in a tensor - in the whole tensor, or in\neach row or each column, together with WHERE it was found.\n\nUse it for the peak of a signal, the loudest band of a spectrum, the\nfastest joint in a frame, the brightest pixel. With a dim it also says\nwhich row or column the peak was in, so \"how big\" and \"which one\" come\nfrom one node and cannot disagree.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number\ntyped after the name (t.max 0) chooses a dim to reduce along and adds a\ndim inlet and a second outlet for the indices to the node - it is the argument that creates them,\nso a node made without one cannot be given a dim later (retype it).\nFor a table of rows and columns, dim 0 reduces DOWN each column (one\nanswer per column) and dim 1 ALONG each row (one answer per row). The\ndim named is the one that disappears: a 6 by 8 tensor gives 8 answers\non dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is\nthe last dim.\n\nNOT THE SAME AS t.maximum:\nt.max REDUCES - a tensor goes in and one value (or one per row or\ncolumn) comes out. t.maximum compares two tensors element by\nelement and keeps the larger at every position.\n\nSYNTAX:\nt.max <dim: int>\nDefault: no dim - the whole tensor, and only one outlet.\n\nEXAMPLE:\nt.max 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is searched and the answer sent - this\nis the only inlet that makes the node send. A list or a NumPy array is\nfirst turned into a float32 tensor on the cpu; a tensor is used as it\nis, on its own device, and the answer stays there. An empty tensor is\nignored: nothing is sent.\nIf the tensor holds a NaN the answer is NaN (a NaN counts as largest).\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor\nuses it. A dim the tensor does not have (2 or more for a table, or 1\nfor a 1-D tensor) is an error: the console prints \"Dimension out of\nrange\" and nothing is sent.\nThere is no keep_dims option on this node.\n\nOUTPUTS:\n\nmax tensor:\nWith no dim, one value (a 0-dimensional tensor). With a dim, a tensor of\nlargest values with that dim removed. Same dtype as the input.\n\nmax indices (only with a dim):\nFor each answer, where along the dim it was found (int64): at dim 0\nthe row of each column's largest, at dim 1 the column. When several\nshare the largest value the first is given. It is sent just before the\nvalues. For the position in the WHOLE tensor use t.argmax.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1, written in\nthe cells; click its button for new ones. The plain t.max gives the\nlargest of all 48. The slider sets the dim of the second node: it goes through\n't bang int', so the number reaches the dim inlet first and the bang\nthen makes the var re-send the held tensor - a dim change alone would\nnot send. t.info shows the shape of the answer: [8] for dim 0, [6]\nfor dim 1. At dim 0 the strip holds\neach column's largest value and the list the row it was found in;\nat dim 1, each row's and the column.\n\nRELATED:\nt.min finds the smallest. t.argmax gives only the position of the\nlargest. t.median and t.mean summarise the middle. t.maximum is the\nelement-wise version. np.amax is the NumPy reduction.",
+                    "value": "Finds the largest value in a tensor - in the whole tensor, or in each row or each column, together with WHERE it was found.\n\nUse it for the peak of a signal, the loudest band of a spectrum, the fastest joint in a frame, the brightest pixel. With a dim it also says which row or column the peak was in, so \"how big\" and \"which one\" come from one node and cannot disagree.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number typed after the name (t.max 0) chooses a dim to reduce along and adds a dim inlet and a second outlet for the indices to the node - it is the argument that creates them, so a node made without one cannot be given a dim later (retype it). For a table of rows and columns, dim 0 reduces DOWN each column (one answer per column) and dim 1 ALONG each row (one answer per row). The dim named is the one that disappears: a 6 by 8 tensor gives 8 answers on dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is the last dim.\n\nNOT THE SAME AS t.maximum:\nt.max REDUCES - a tensor goes in and one value (or one per row or column) comes out. t.maximum compares two tensors element by element and keeps the larger at every position.\n\nSYNTAX:\nt.max <dim: int>\nDefault: no dim - the whole tensor, and only one outlet.\n\nEXAMPLE:\nt.max 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is searched and the answer sent - this is the only inlet that makes the node send. A list or a NumPy array is first turned into a float32 tensor on the cpu; a tensor is used as it is, on its own device, and the answer stays there. An empty tensor is ignored: nothing is sent.\nIf the tensor holds a NaN the answer is NaN (a NaN counts as largest).\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor uses it. A dim the tensor does not have (2 or more for a table, or 1 for a 1-D tensor) is an error: the console prints \"Dimension out of range\" and nothing is sent.\nThere is no keep_dims option on this node.\n\nOUTPUTS:\n\nmax tensor:\nWith no dim, one value (a 0-dimensional tensor). With a dim, a tensor of largest values with that dim removed. Same dtype as the input.\n\nmax indices (only with a dim):\nFor each answer, where along the dim it was found (int64): at dim 0 the row of each column's largest, at dim 1 the column. When several share the largest value the first is given. It is sent just before the values. For the position in the WHOLE tensor use t.argmax.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1, written in the cells; click its button for new ones. The plain t.max gives the largest of all 48. The slider sets the dim of the second node: it goes through 't bang int', so the number reaches the dim inlet first and the bang then makes the var re-send the held tensor - a dim change alone would not send. t.info shows the shape of the answer: [8] for dim 0, [6] for dim 1. At dim 0 the strip holds\neach column's largest value and the list the row it was found in;\nat dim 1, each row's and the column.\n\nRELATED:\nt.min finds the smallest. t.argmax gives only the position of the largest. t.median and t.mean summarise the middle. t.maximum is the element-wise version. np.amax is the NumPy reduction.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Finds the largest value in a tensor - in the whole tensor, or in\neach row or each column, together with WHERE it was found.\n\nUse it for the peak of a signal, the loudest band of a spectrum, the\nfastest joint in a frame, the brightest pixel. With a dim it also says\nwhich row or column the peak was in, so \"how big\" and \"which one\" come\nfrom one node and cannot disagree.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number\ntyped after the name (t.max 0) chooses a dim to reduce along and adds a\ndim inlet and a second outlet for the indices to the node - it is the argument that creates them,\nso a node made without one cannot be given a dim later (retype it).\nFor a table of rows and columns, dim 0 reduces DOWN each column (one\nanswer per column) and dim 1 ALONG each row (one answer per row). The\ndim named is the one that disappears: a 6 by 8 tensor gives 8 answers\non dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is\nthe last dim.\n\nNOT THE SAME AS t.maximum:\nt.max REDUCES - a tensor goes in and one value (or one per row or\ncolumn) comes out. t.maximum compares two tensors element by\nelement and keeps the larger at every position.\n\nSYNTAX:\nt.max <dim: int>\nDefault: no dim - the whole tensor, and only one outlet.\n\nEXAMPLE:\nt.max 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is searched and the answer sent - this\nis the only inlet that makes the node send. A list or a NumPy array is\nfirst turned into a float32 tensor on the cpu; a tensor is used as it\nis, on its own device, and the answer stays there. An empty tensor is\nignored: nothing is sent.\nIf the tensor holds a NaN the answer is NaN (a NaN counts as largest).\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor\nuses it. A dim the tensor does not have (2 or more for a table, or 1\nfor a 1-D tensor) is an error: the console prints \"Dimension out of\nrange\" and nothing is sent.\nThere is no keep_dims option on this node.\n\nOUTPUTS:\n\nmax tensor:\nWith no dim, one value (a 0-dimensional tensor). With a dim, a tensor of\nlargest values with that dim removed. Same dtype as the input.\n\nmax indices (only with a dim):\nFor each answer, where along the dim it was found (int64): at dim 0\nthe row of each column's largest, at dim 1 the column. When several\nshare the largest value the first is given. It is sent just before the\nvalues. For the position in the WHOLE tensor use t.argmax.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1, written in\nthe cells; click its button for new ones. The plain t.max gives the\nlargest of all 48. The slider sets the dim of the second node: it goes through\n't bang int', so the number reaches the dim inlet first and the bang\nthen makes the var re-send the held tensor - a dim change alone would\nnot send. t.info shows the shape of the answer: [8] for dim 0, [6]\nfor dim 1. At dim 0 the strip holds\neach column's largest value and the list the row it was found in;\nat dim 1, each row's and the column.\n\nRELATED:\nt.min finds the smallest. t.argmax gives only the position of the\nlargest. t.median and t.mean summarise the middle. t.maximum is the\nelement-wise version. np.amax is the NumPy reduction."
+            "text": "Finds the largest value in a tensor - in the whole tensor, or in each row or each column, together with WHERE it was found.\n\nUse it for the peak of a signal, the loudest band of a spectrum, the fastest joint in a frame, the brightest pixel. With a dim it also says which row or column the peak was in, so \"how big\" and \"which one\" come from one node and cannot disagree.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number typed after the name (t.max 0) chooses a dim to reduce along and adds a dim inlet and a second outlet for the indices to the node - it is the argument that creates them, so a node made without one cannot be given a dim later (retype it). For a table of rows and columns, dim 0 reduces DOWN each column (one answer per column) and dim 1 ALONG each row (one answer per row). The dim named is the one that disappears: a 6 by 8 tensor gives 8 answers on dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is the last dim.\n\nNOT THE SAME AS t.maximum:\nt.max REDUCES - a tensor goes in and one value (or one per row or column) comes out. t.maximum compares two tensors element by element and keeps the larger at every position.\n\nSYNTAX:\nt.max <dim: int>\nDefault: no dim - the whole tensor, and only one outlet.\n\nEXAMPLE:\nt.max 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is searched and the answer sent - this is the only inlet that makes the node send. A list or a NumPy array is first turned into a float32 tensor on the cpu; a tensor is used as it is, on its own device, and the answer stays there. An empty tensor is ignored: nothing is sent.\nIf the tensor holds a NaN the answer is NaN (a NaN counts as largest).\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor uses it. A dim the tensor does not have (2 or more for a table, or 1 for a 1-D tensor) is an error: the console prints \"Dimension out of range\" and nothing is sent.\nThere is no keep_dims option on this node.\n\nOUTPUTS:\n\nmax tensor:\nWith no dim, one value (a 0-dimensional tensor). With a dim, a tensor of largest values with that dim removed. Same dtype as the input.\n\nmax indices (only with a dim):\nFor each answer, where along the dim it was found (int64): at dim 0 the row of each column's largest, at dim 1 the column. When several share the largest value the first is given. It is sent just before the values. For the position in the WHOLE tensor use t.argmax.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1, written in the cells; click its button for new ones. The plain t.max gives the largest of all 48. The slider sets the dim of the second node: it goes through 't bang int', so the number reaches the dim inlet first and the bang then makes the var re-send the held tensor - a dim change alone would not send. t.info shows the shape of the answer: [8] for dim 0, [6] for dim 1. At dim 0 the strip holds\neach column's largest value and the list the row it was found in;\nat dim 1, each row's and the column.\n\nRELATED:\nt.min finds the smallest. t.argmax gives only the position of the largest. t.median and t.mean summarise the middle. t.maximum is the element-wise version. np.amax is the NumPy reduction."
         },
         "3": {
             "name": "load_bang",
@@ -656,7 +656,7 @@
             "name": "help_link",
             "id": 1162,
             "position_x": 30,
-            "position_y": 1270,
+            "position_y": 1304,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -668,9 +668,9 @@
         "26": {
             "name": "help_link",
             "id": 1199,
-            "position_x": 127,
-            "position_y": 1270,
-            "width": 47,
+            "position_x": 106,
+            "position_y": 1304,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -681,8 +681,8 @@
         "27": {
             "name": "help_link",
             "id": 1236,
-            "position_x": 209,
-            "position_y": 1270,
+            "position_x": 170,
+            "position_y": 1304,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -694,9 +694,9 @@
         "28": {
             "name": "help_link",
             "id": 1273,
-            "position_x": 314,
-            "position_y": 1270,
-            "width": 72,
+            "position_x": 252,
+            "position_y": 1304,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -707,8 +707,8 @@
         "29": {
             "name": "help_link",
             "id": 1310,
-            "position_x": 427,
-            "position_y": 1270,
+            "position_x": 341,
+            "position_y": 1304,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -721,7 +721,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1347,
-            "position_x": 686,
+            "position_x": 30,
             "position_y": 1270,
             "width": 156,
             "height": 30,
@@ -746,7 +746,7 @@
             "name": "close",
             "id": 1384,
             "position_x": 24,
-            "position_y": 1344,
+            "position_y": 1378,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

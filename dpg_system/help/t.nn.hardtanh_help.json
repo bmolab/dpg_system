@@ -1,5 +1,5 @@
 {
-    "height": 1282,
+    "height": 1316,
     "width": 1728,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Holds every value between a minimum and a maximum: values below the\nminimum come out as the minimum, values above the maximum as the maximum,\nand everything between passes unchanged.\n\nDespite the name it is simply a clamp - a straight-line imitation of tanh\nwhen the limits are -1 and 1 (its defaults). Use it wherever a tensor must\nstay inside a range.\n\nTHE CURVE:\nFlat at the minimum, the input itself between the limits, flat at the\nmaximum. Two sharp corners. Drag the limits and the flat stretches move\nup and down.\n\nSYNTAX:\nt.nn.hardtanh\nNo arguments; defaults minimum -1, maximum 1.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nminimum / maximum (drag floats on the node, and inlets):\nThe two limits. Defaults -1 and 1. The minimum must not be above the\nmaximum: the console reports \"min_val cannot be greater than max_val\" and\nnothing is sent until they are put back in order. Neither triggers the\nnode: the next tensor uses them. In the demo the metro re-sends the ramp\nten times a second, so the curve follows the sliders.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.clamp is the general clamp for tensors; np.clip is the numpy one.\nt.nn.tanh is the smooth limiter this imitates. t.nn.relu6 is the same\nshape fixed at 0 and 6.",
+                    "value": "Holds every value between a minimum and a maximum: values below the minimum come out as the minimum, values above the maximum as the maximum, and everything between passes unchanged.\n\nDespite the name it is simply a clamp - a straight-line imitation of tanh when the limits are -1 and 1 (its defaults). Use it wherever a tensor must stay inside a range.\n\nTHE CURVE:\nFlat at the minimum, the input itself between the limits, flat at the maximum. Two sharp corners. Drag the limits and the flat stretches move up and down.\n\nSYNTAX:\nt.nn.hardtanh\nNo arguments; defaults minimum -1, maximum 1.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nminimum / maximum (drag floats on the node, and inlets):\nThe two limits. Defaults -1 and 1. The minimum must not be above the maximum: the console reports \"min_val cannot be greater than max_val\" and nothing is sent until they are put back in order. Neither triggers the node: the next tensor uses them. In the demo the metro re-sends the ramp ten times a second, so the curve follows the sliders.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -4 to 4; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.clamp is the general clamp for tensors; np.clip is the numpy one. t.nn.tanh is the smooth limiter this imitates. t.nn.relu6 is the same shape fixed at 0 and 6.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Holds every value between a minimum and a maximum: values below the\nminimum come out as the minimum, values above the maximum as the maximum,\nand everything between passes unchanged.\n\nDespite the name it is simply a clamp - a straight-line imitation of tanh\nwhen the limits are -1 and 1 (its defaults). Use it wherever a tensor must\nstay inside a range.\n\nTHE CURVE:\nFlat at the minimum, the input itself between the limits, flat at the\nmaximum. Two sharp corners. Drag the limits and the flat stretches move\nup and down.\n\nSYNTAX:\nt.nn.hardtanh\nNo arguments; defaults minimum -1, maximum 1.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nminimum / maximum (drag floats on the node, and inlets):\nThe two limits. Defaults -1 and 1. The minimum must not be above the\nmaximum: the console reports \"min_val cannot be greater than max_val\" and\nnothing is sent until they are put back in order. Neither triggers the\nnode: the next tensor uses them. In the demo the metro re-sends the ramp\nten times a second, so the curve follows the sliders.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.clamp is the general clamp for tensors; np.clip is the numpy one.\nt.nn.tanh is the smooth limiter this imitates. t.nn.relu6 is the same\nshape fixed at 0 and 6."
+            "text": "Holds every value between a minimum and a maximum: values below the minimum come out as the minimum, values above the maximum as the maximum, and everything between passes unchanged.\n\nDespite the name it is simply a clamp - a straight-line imitation of tanh when the limits are -1 and 1 (its defaults). Use it wherever a tensor must stay inside a range.\n\nTHE CURVE:\nFlat at the minimum, the input itself between the limits, flat at the maximum. Two sharp corners. Drag the limits and the flat stretches move up and down.\n\nSYNTAX:\nt.nn.hardtanh\nNo arguments; defaults minimum -1, maximum 1.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nminimum / maximum (drag floats on the node, and inlets):\nThe two limits. Defaults -1 and 1. The minimum must not be above the maximum: the console reports \"min_val cannot be greater than max_val\" and nothing is sent until they are put back in order. Neither triggers the node: the next tensor uses them. In the demo the metro re-sends the ramp ten times a second, so the curve follows the sliders.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -4 to 4; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.clamp is the general clamp for tensors; np.clip is the numpy one. t.nn.tanh is the smooth limiter this imitates. t.nn.relu6 is the same shape fixed at 0 and 6."
         },
         "3": {
             "name": "metro",
@@ -505,7 +505,7 @@
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 1060,
+            "position_y": 1094,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -517,8 +517,8 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 127,
-            "position_y": 1060,
+            "position_x": 106,
+            "position_y": 1094,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -530,9 +530,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 224,
-            "position_y": 1060,
-            "width": 72,
+            "position_x": 182,
+            "position_y": 1094,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -543,9 +543,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 337,
-            "position_y": 1060,
-            "width": 78,
+            "position_x": 271,
+            "position_y": 1094,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -557,7 +557,7 @@
             "name": "help_link",
             "id": 1051,
             "position_x": 30,
-            "position_y": 1104,
+            "position_y": 1138,
             "width": 115,
             "height": 44,
             "visibility": "show_all",
@@ -570,8 +570,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1088,
-            "position_x": 536,
-            "position_y": 1104,
+            "position_x": 30,
+            "position_y": 1060,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -595,7 +595,7 @@
             "name": "close",
             "id": 1125,
             "position_x": 24,
-            "position_y": 1178,
+            "position_y": 1212,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

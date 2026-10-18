@@ -1,5 +1,5 @@
 {
-    "height": 1062,
+    "height": 1096,
     "width": 1519,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Applies the exponentially scaled modified Bessel function of order 1 -\nI1(x) times e to the minus |x| - to every element of a tensor.\n\nIt is I1 for large inputs, where I1 itself would overflow; the ratio\nI1 / I0 is i1e / i0e and stays finite.\n\nTHE CURVE:\n0 at 0 and antisymmetric, rising to a peak of about 0.219 at x = 1.55,\nthen falling slowly back towards 0 (0.12 at 10).\n\nSYNTAX:\nt.special.i1e\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined and finite for every real number.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-10 to 10 here), and the\nupper plot draws them: a straight ramp. The lower plot is I1e(x) of each\nof those 200 values, so it is the graph of the function from -10 to 10,\ndrawn from -0.25 (bottom) to 0.25 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.special.i1 is the unscaled function, t.special.i0e the order-0\nversion.",
+                    "value": "Applies the exponentially scaled modified Bessel function of order 1 - I1(x) times e to the minus |x| - to every element of a tensor.\n\nIt is I1 for large inputs, where I1 itself would overflow; the ratio I1 / I0 is i1e / i0e and stays finite.\n\nTHE CURVE:\n0 at 0 and antisymmetric, rising to a peak of about 0.219 at x = 1.55, then falling slowly back towards 0 (0.12 at 10).\n\nSYNTAX:\nt.special.i1e\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined and finite for every real number.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-10 to 10 here), and the upper plot draws them: a straight ramp. The lower plot is I1e(x) of each of those 200 values, so it is the graph of the function from -10 to 10, drawn from -0.25 (bottom) to 0.25 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.special.i1 is the unscaled function, t.special.i0e the order-0 version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Applies the exponentially scaled modified Bessel function of order 1 -\nI1(x) times e to the minus |x| - to every element of a tensor.\n\nIt is I1 for large inputs, where I1 itself would overflow; the ratio\nI1 / I0 is i1e / i0e and stays finite.\n\nTHE CURVE:\n0 at 0 and antisymmetric, rising to a peak of about 0.219 at x = 1.55,\nthen falling slowly back towards 0 (0.12 at 10).\n\nSYNTAX:\nt.special.i1e\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined and finite for every real number.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-10 to 10 here), and the\nupper plot draws them: a straight ramp. The lower plot is I1e(x) of each\nof those 200 values, so it is the graph of the function from -10 to 10,\ndrawn from -0.25 (bottom) to 0.25 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.special.i1 is the unscaled function, t.special.i0e the order-0\nversion."
+            "text": "Applies the exponentially scaled modified Bessel function of order 1 - I1(x) times e to the minus |x| - to every element of a tensor.\n\nIt is I1 for large inputs, where I1 itself would overflow; the ratio I1 / I0 is i1e / i0e and stays finite.\n\nTHE CURVE:\n0 at 0 and antisymmetric, rising to a peak of about 0.219 at x = 1.55, then falling slowly back towards 0 (0.12 at 10).\n\nSYNTAX:\nt.special.i1e\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined and finite for every real number.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-10 to 10 here), and the upper plot draws them: a straight ramp. The lower plot is I1e(x) of each of those 200 values, so it is the graph of the function from -10 to 10, drawn from -0.25 (bottom) to 0.25 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.special.i1 is the unscaled function, t.special.i0e the order-0 version."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 90,
+            "position_y": 874,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 166,
-            "position_y": 840,
-            "width": 96,
+            "position_x": 138,
+            "position_y": 874,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -458,7 +458,7 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 884,
+            "position_y": 918,
             "width": 232,
             "height": 44,
             "visibility": "show_all",
@@ -471,8 +471,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 829,
-            "position_x": 364,
-            "position_y": 884,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -496,7 +496,7 @@
             "name": "close",
             "id": 866,
             "position_x": 24,
-            "position_y": 958,
+            "position_y": 992,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

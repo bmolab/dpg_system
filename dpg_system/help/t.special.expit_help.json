@@ -1,5 +1,5 @@
 {
-    "height": 1062,
+    "height": 1096,
     "width": 1549,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Applies the logistic sigmoid, 1 / (1 + e to the minus x), to every\nelement of a tensor.\n\nIt squeezes any score into a probability between 0 and 1 - the last step\nof a classifier, or a smooth switch that is off for very negative input and\non for very positive input.\n\nTHE CURVE:\nAn S from 0 to 1, passing 0.5 at x = 0. It is never quite 0 or 1:\nexpit(4) = 0.982, expit(8) = 0.99966. expit(-x) = 1 - expit(x).\n\nSYNTAX:\nt.special.expit\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number and always strictly between 0 and 1 (in\n32-bit floats it reaches exactly 1 near x = 17).\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-8 to 8 here), and the\nupper plot draws them: a straight ramp. The lower plot is expit of each\nof those 200 values, so it is the graph of the function from -8 to 8,\ndrawn from -0.05 (bottom) to 1.05 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.nn.sigmoid gives exactly the same numbers (torch implements expit as\nthe sigmoid) - it is the same curve under its neural-network name.\nt.special.logits undoes it. t.nn.tanh is the same S stretched to -1..1,\nand t.special.ndtr is a similar S with slightly thinner tails.",
+                    "value": "Applies the logistic sigmoid, 1 / (1 + e to the minus x), to every element of a tensor.\n\nIt squeezes any score into a probability between 0 and 1 - the last step of a classifier, or a smooth switch that is off for very negative input and on for very positive input.\n\nTHE CURVE:\nAn S from 0 to 1, passing 0.5 at x = 0. It is never quite 0 or 1:\nexpit(4) = 0.982, expit(8) = 0.99966. expit(-x) = 1 - expit(x).\n\nSYNTAX:\nt.special.expit\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number and always strictly between 0 and 1 (in 32-bit floats it reaches exactly 1 near x = 17).\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-8 to 8 here), and the upper plot draws them: a straight ramp. The lower plot is expit of each of those 200 values, so it is the graph of the function from -8 to 8, drawn from -0.05 (bottom) to 1.05 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.nn.sigmoid gives exactly the same numbers (torch implements expit as the sigmoid) - it is the same curve under its neural-network name. t.special.logits undoes it. t.nn.tanh is the same S stretched to -1..1, and t.special.ndtr is a similar S with slightly thinner tails.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Applies the logistic sigmoid, 1 / (1 + e to the minus x), to every\nelement of a tensor.\n\nIt squeezes any score into a probability between 0 and 1 - the last step\nof a classifier, or a smooth switch that is off for very negative input and\non for very positive input.\n\nTHE CURVE:\nAn S from 0 to 1, passing 0.5 at x = 0. It is never quite 0 or 1:\nexpit(4) = 0.982, expit(8) = 0.99966. expit(-x) = 1 - expit(x).\n\nSYNTAX:\nt.special.expit\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number and always strictly between 0 and 1 (in\n32-bit floats it reaches exactly 1 near x = 17).\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-8 to 8 here), and the\nupper plot draws them: a straight ramp. The lower plot is expit of each\nof those 200 values, so it is the graph of the function from -8 to 8,\ndrawn from -0.05 (bottom) to 1.05 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.nn.sigmoid gives exactly the same numbers (torch implements expit as\nthe sigmoid) - it is the same curve under its neural-network name.\nt.special.logits undoes it. t.nn.tanh is the same S stretched to -1..1,\nand t.special.ndtr is a similar S with slightly thinner tails."
+            "text": "Applies the logistic sigmoid, 1 / (1 + e to the minus x), to every element of a tensor.\n\nIt squeezes any score into a probability between 0 and 1 - the last step of a classifier, or a smooth switch that is off for very negative input and on for very positive input.\n\nTHE CURVE:\nAn S from 0 to 1, passing 0.5 at x = 0. It is never quite 0 or 1:\nexpit(4) = 0.982, expit(8) = 0.99966. expit(-x) = 1 - expit(x).\n\nSYNTAX:\nt.special.expit\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number and always strictly between 0 and 1 (in 32-bit floats it reaches exactly 1 near x = 17).\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-8 to 8 here), and the upper plot draws them: a straight ramp. The lower plot is expit of each of those 200 values, so it is the graph of the function from -8 to 8, drawn from -0.05 (bottom) to 1.05 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.nn.sigmoid gives exactly the same numbers (torch implements expit as the sigmoid) - it is the same curve under its neural-network name. t.special.logits undoes it. t.nn.tanh is the same S stretched to -1..1, and t.special.ndtr is a similar S with slightly thinner tails."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 90,
+            "position_y": 874,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 166,
-            "position_y": 840,
-            "width": 115,
+            "position_x": 138,
+            "position_y": 874,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -457,9 +457,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 333,
-            "position_y": 840,
-            "width": 72,
+            "position_x": 271,
+            "position_y": 874,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -471,7 +471,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 884,
+            "position_y": 918,
             "width": 103,
             "height": 44,
             "visibility": "show_all",
@@ -484,7 +484,7 @@
             "name": "help_link",
             "id": 866,
             "position_x": 181,
-            "position_y": 884,
+            "position_y": 918,
             "width": 90,
             "height": 44,
             "visibility": "show_all",
@@ -497,8 +497,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 431,
-            "position_y": 884,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -522,7 +522,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 958,
+            "position_y": 992,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

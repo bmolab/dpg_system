@@ -1,5 +1,5 @@
 {
-    "height": 1028,
+    "height": 1062,
     "width": 1701,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Adds an axis of length 1 to a tensor's shape, at the position you\nchoose, leaving the numbers alone.\n\nTwelve values as [12] are a list. As [1, 12] they are a table of one\nrow; as [12, 1], a table of one column. Same numbers, but a node that\nwants a 2-D input, or a batch of inputs, needs one of the latter.\nt.unsqueeze makes it.\n\nWHERE THE NEW AXIS GOES:\ndim 0 puts the 1 in front: [12] becomes [1, 12], a single row - the usual\nway to make a \"batch of one\". dim 1 (for a 1-D tensor, the end) puts it\nbehind: [12, 1], a column. A negative dim counts from the end: -1 always\nputs the new axis last, and the most negative one allowed puts it first.\nFor a [7, 6] tensor the choices are 0, 1 and 2 (or -3, -2 and -1),\ngiving [1, 7, 6], [7, 1, 6] and [7, 6, 1]. For a [12] row they are 0\nand 1, or -2 and -1.\n\nSYNTAX:\nt.unsqueeze <dim: int>\nA bare t.unsqueeze always uses dim 0 and has no dim box; give an\nargument to get the box.\n\nEXAMPLE:\nt.unsqueeze 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first).\nReceiving it makes the node send.\n\ndim (int box, also an inlet - only when an argument was given):\nWhere to insert the axis: from minus (the number of axes + 1) up to\nthe number of axes. A dim outside that range sends nothing. Changing it does NOT send by itself; in the demo the metro\nre-sends the ramp, so the picture follows.\n\nOUTPUTS:\n\noutput:\nThe same numbers with one more axis, of length 1.\n\nREADING THE DEMO:\nThe ramp arrives as [12], a row. t.unsqueeze 1 makes it [12, 1]: twelve\nrows of one value, and the heat_map draws a column. Type 0 into dim and\nit is [1, 12] - one row of twelve, which looks like the input again but\nis now 2-D (t.info shows the extra 1). -1 is the same as 1 here, and\n-2 the same as 0.\n\nRELATED:\nt.squeeze removes length-1 axes - the reverse. t.reshape can set any\nshape, including these. t.stack adds a new axis while joining several\ntensors. np.expand_dims (np.unsqueeze) is the numpy version.",
+                    "value": "Adds an axis of length 1 to a tensor's shape, at the position you choose, leaving the numbers alone.\n\nTwelve values as [12] are a list. As [1, 12] they are a table of one row; as [12, 1], a table of one column. Same numbers, but a node that wants a 2-D input, or a batch of inputs, needs one of the latter. t.unsqueeze makes it.\n\nWHERE THE NEW AXIS GOES:\ndim 0 puts the 1 in front: [12] becomes [1, 12], a single row - the usual way to make a \"batch of one\". dim 1 (for a 1-D tensor, the end) puts it behind: [12, 1], a column. A negative dim counts from the end: -1 always puts the new axis last, and the most negative one allowed puts it first. For a [7, 6] tensor the choices are 0, 1 and 2 (or -3, -2 and -1), giving [1, 7, 6], [7, 1, 6] and [7, 6, 1]. For a [12] row they are 0 and 1, or -2 and -1.\n\nSYNTAX:\nt.unsqueeze <dim: int>\nA bare t.unsqueeze always uses dim 0 and has no dim box; give an\nargument to get the box.\n\nEXAMPLE:\nt.unsqueeze 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first). Receiving it makes the node send.\n\ndim (int box, also an inlet - only when an argument was given):\nWhere to insert the axis: from minus (the number of axes + 1) up to the number of axes. A dim outside that range sends nothing. Changing it does NOT send by itself; in the demo the metro re-sends the ramp, so the picture follows.\n\nOUTPUTS:\n\noutput:\nThe same numbers with one more axis, of length 1.\n\nREADING THE DEMO:\nThe ramp arrives as [12], a row. t.unsqueeze 1 makes it [12, 1]: twelve rows of one value, and the heat_map draws a column. Type 0 into dim and it is [1, 12] - one row of twelve, which looks like the input again but is now 2-D (t.info shows the extra 1). -1 is the same as 1 here, and -2 the same as 0.\n\nRELATED:\nt.squeeze removes length-1 axes - the reverse. t.reshape can set any shape, including these. t.stack adds a new axis while joining several tensors. np.expand_dims (np.unsqueeze) is the numpy version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Adds an axis of length 1 to a tensor's shape, at the position you\nchoose, leaving the numbers alone.\n\nTwelve values as [12] are a list. As [1, 12] they are a table of one\nrow; as [12, 1], a table of one column. Same numbers, but a node that\nwants a 2-D input, or a batch of inputs, needs one of the latter.\nt.unsqueeze makes it.\n\nWHERE THE NEW AXIS GOES:\ndim 0 puts the 1 in front: [12] becomes [1, 12], a single row - the usual\nway to make a \"batch of one\". dim 1 (for a 1-D tensor, the end) puts it\nbehind: [12, 1], a column. A negative dim counts from the end: -1 always\nputs the new axis last, and the most negative one allowed puts it first.\nFor a [7, 6] tensor the choices are 0, 1 and 2 (or -3, -2 and -1),\ngiving [1, 7, 6], [7, 1, 6] and [7, 6, 1]. For a [12] row they are 0\nand 1, or -2 and -1.\n\nSYNTAX:\nt.unsqueeze <dim: int>\nA bare t.unsqueeze always uses dim 0 and has no dim box; give an\nargument to get the box.\n\nEXAMPLE:\nt.unsqueeze 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first).\nReceiving it makes the node send.\n\ndim (int box, also an inlet - only when an argument was given):\nWhere to insert the axis: from minus (the number of axes + 1) up to\nthe number of axes. A dim outside that range sends nothing. Changing it does NOT send by itself; in the demo the metro\nre-sends the ramp, so the picture follows.\n\nOUTPUTS:\n\noutput:\nThe same numbers with one more axis, of length 1.\n\nREADING THE DEMO:\nThe ramp arrives as [12], a row. t.unsqueeze 1 makes it [12, 1]: twelve\nrows of one value, and the heat_map draws a column. Type 0 into dim and\nit is [1, 12] - one row of twelve, which looks like the input again but\nis now 2-D (t.info shows the extra 1). -1 is the same as 1 here, and\n-2 the same as 0.\n\nRELATED:\nt.squeeze removes length-1 axes - the reverse. t.reshape can set any\nshape, including these. t.stack adds a new axis while joining several\ntensors. np.expand_dims (np.unsqueeze) is the numpy version."
+            "text": "Adds an axis of length 1 to a tensor's shape, at the position you choose, leaving the numbers alone.\n\nTwelve values as [12] are a list. As [1, 12] they are a table of one row; as [12, 1], a table of one column. Same numbers, but a node that wants a 2-D input, or a batch of inputs, needs one of the latter. t.unsqueeze makes it.\n\nWHERE THE NEW AXIS GOES:\ndim 0 puts the 1 in front: [12] becomes [1, 12], a single row - the usual way to make a \"batch of one\". dim 1 (for a 1-D tensor, the end) puts it behind: [12, 1], a column. A negative dim counts from the end: -1 always puts the new axis last, and the most negative one allowed puts it first. For a [7, 6] tensor the choices are 0, 1 and 2 (or -3, -2 and -1), giving [1, 7, 6], [7, 1, 6] and [7, 6, 1]. For a [12] row they are 0 and 1, or -2 and -1.\n\nSYNTAX:\nt.unsqueeze <dim: int>\nA bare t.unsqueeze always uses dim 0 and has no dim box; give an\nargument to get the box.\n\nEXAMPLE:\nt.unsqueeze 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first). Receiving it makes the node send.\n\ndim (int box, also an inlet - only when an argument was given):\nWhere to insert the axis: from minus (the number of axes + 1) up to the number of axes. A dim outside that range sends nothing. Changing it does NOT send by itself; in the demo the metro re-sends the ramp, so the picture follows.\n\nOUTPUTS:\n\noutput:\nThe same numbers with one more axis, of length 1.\n\nREADING THE DEMO:\nThe ramp arrives as [12], a row. t.unsqueeze 1 makes it [12, 1]: twelve rows of one value, and the heat_map draws a column. Type 0 into dim and it is [1, 12] - one row of twelve, which looks like the input again but is now 2-D (t.info shows the extra 1). -1 is the same as 1 here, and -2 the same as 0.\n\nRELATED:\nt.squeeze removes length-1 axes - the reverse. t.reshape can set any shape, including these. t.stack adds a new axis while joining several tensors. np.expand_dims (np.unsqueeze) is the numpy version."
         },
         "3": {
             "name": "metro",
@@ -449,8 +449,8 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 850,
-            "width": 72,
+            "position_y": 884,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -461,9 +461,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 143,
-            "position_y": 850,
-            "width": 72,
+            "position_x": 119,
+            "position_y": 884,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -474,8 +474,8 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 256,
-            "position_y": 850,
+            "position_x": 208,
+            "position_y": 884,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -487,9 +487,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 353,
-            "position_y": 850,
-            "width": 103,
+            "position_x": 284,
+            "position_y": 884,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -501,7 +501,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 977,
-            "position_x": 584,
+            "position_x": 30,
             "position_y": 850,
             "width": 156,
             "height": 30,
@@ -526,7 +526,7 @@
             "name": "close",
             "id": 1014,
             "position_x": 24,
-            "position_y": 924,
+            "position_y": 958,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

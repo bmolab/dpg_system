@@ -395,7 +395,7 @@
             }
         },
         "1": {
-            "height": 1582,
+            "height": 1616,
             "width": 1698,
             "position": [
                 100,
@@ -462,7 +462,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Splits a matrix into three pieces - turn, stretch, turn - with the\nsingular value decomposition: the input equals U x diag(S) x Vh.\n\nS, the singular values, is the part to look at first. They come out\nlargest first, and how fast they fall away says how many independent\npatterns the matrix really holds. If the first two are large and the\nrest are near zero, the data is really two patterns mixed in different\namounts, with noise on top. For a set of poses, or joint angles over\ntime, the answer is usually far fewer than the number of channels.\nU says how much of each pattern each ROW uses; the rows of Vh are the\npatterns themselves.\n\nSYNTAX:\nt.linalg.svd\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32\ntensor). Any shape, rows x columns; a stack of matrices is split one by\none. Receiving it decomposes and sends.\n\nfull (checkbox):\nOn (the default): U is square, rows x rows, and Vh columns x columns -\nfor a 6 x 4 input U is 6 x 6, two of its columns multiplying nothing.\nOff: the reduced form, U 6 x 4 - smaller, and what fits the rebuild\nin this demo (with full on, the rebuild prints a shape error). Changing\nit does not send by itself; the next matrix uses it.\n\nOUTPUTS (sent right to left - Vh first, U last):\n\nU out:\nOne column per pattern, one row per input row: how much of each\npattern each row uses.\n\nS out:\nThe singular values, largest first (1-D, never negative): how strong\neach pattern is.\n\nVh out:\nOne row per pattern, one column per input column: the patterns\nthemselves, each of length 1.\n\nREADING THE DEMO:\nmake_matrix sends a 6 x 4 matrix ten times a second: every row a blend\nof two patterns, plus a checker pattern scaled by the slider. With the\nslider at 0 the singular values read about 4.9, 2.6, 0, 0 - two\npatterns, so two values. Raise the slider and a third singular value\ngrows from 0. The fourth stays 0: there are still only three patterns.\nU and Vh are shown as pictures (blue above 0, red below). The bottom\npicture multiplies the three pieces back together - t.diag makes S\ninto a square matrix, np.matmul does the products - and it is the input\nagain.\n\nRELATED:\nt.linalg.pca_low_rank finds the leading patterns of a set of points,\ncentred first. t.linalg.eig finds the directions a square matrix only\nstretches. t.linalg.qr splits into perpendicular directions and a\ntriangle. np.linalg.matrix_rank counts the singular values that are not\nzero. np.matmul rebuilds.",
+                            "value": "Splits a matrix into three pieces - turn, stretch, turn - with the singular value decomposition: the input equals U x diag(S) x Vh.\n\nS, the singular values, is the part to look at first. They come out largest first, and how fast they fall away says how many independent patterns the matrix really holds. If the first two are large and the rest are near zero, the data is really two patterns mixed in different amounts, with noise on top. For a set of poses, or joint angles over time, the answer is usually far fewer than the number of channels. U says how much of each pattern each ROW uses; the rows of Vh are the patterns themselves.\n\nSYNTAX:\nt.linalg.svd\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32 tensor). Any shape, rows x columns; a stack of matrices is split one by one. Receiving it decomposes and sends.\n\nfull (checkbox):\nOn (the default): U is square, rows x rows, and Vh columns x columns - for a 6 x 4 input U is 6 x 6, two of its columns multiplying nothing.\nOff: the reduced form, U 6 x 4 - smaller, and what fits the rebuild in this demo (with full on, the rebuild prints a shape error). Changing it does not send by itself; the next matrix uses it.\n\nOUTPUTS (sent right to left - Vh first, U last):\n\nU out:\nOne column per pattern, one row per input row: how much of each pattern each row uses.\n\nS out:\nThe singular values, largest first (1-D, never negative): how strong each pattern is.\n\nVh out:\nOne row per pattern, one column per input column: the patterns themselves, each of length 1.\n\nREADING THE DEMO:\nmake_matrix sends a 6 x 4 matrix ten times a second: every row a blend of two patterns, plus a checker pattern scaled by the slider. With the slider at 0 the singular values read about 4.9, 2.6, 0, 0 - two patterns, so two values. Raise the slider and a third singular value grows from 0. The fourth stays 0: there are still only three patterns. U and Vh are shown as pictures (blue above 0, red below). The bottom picture multiplies the three pieces back together - t.diag makes S into a square matrix, np.matmul does the products - and it is the input again.\n\nRELATED:\nt.linalg.pca_low_rank finds the leading patterns of a set of points, centred first. t.linalg.eig finds the directions a square matrix only stretches. t.linalg.qr splits into perpendicular directions and a triangle. np.linalg.matrix_rank counts the singular values that are not zero. np.matmul rebuilds.",
                             "value_type": "str"
                         },
                         "1": {
@@ -486,7 +486,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Splits a matrix into three pieces - turn, stretch, turn - with the\nsingular value decomposition: the input equals U x diag(S) x Vh.\n\nS, the singular values, is the part to look at first. They come out\nlargest first, and how fast they fall away says how many independent\npatterns the matrix really holds. If the first two are large and the\nrest are near zero, the data is really two patterns mixed in different\namounts, with noise on top. For a set of poses, or joint angles over\ntime, the answer is usually far fewer than the number of channels.\nU says how much of each pattern each ROW uses; the rows of Vh are the\npatterns themselves.\n\nSYNTAX:\nt.linalg.svd\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32\ntensor). Any shape, rows x columns; a stack of matrices is split one by\none. Receiving it decomposes and sends.\n\nfull (checkbox):\nOn (the default): U is square, rows x rows, and Vh columns x columns -\nfor a 6 x 4 input U is 6 x 6, two of its columns multiplying nothing.\nOff: the reduced form, U 6 x 4 - smaller, and what fits the rebuild\nin this demo (with full on, the rebuild prints a shape error). Changing\nit does not send by itself; the next matrix uses it.\n\nOUTPUTS (sent right to left - Vh first, U last):\n\nU out:\nOne column per pattern, one row per input row: how much of each\npattern each row uses.\n\nS out:\nThe singular values, largest first (1-D, never negative): how strong\neach pattern is.\n\nVh out:\nOne row per pattern, one column per input column: the patterns\nthemselves, each of length 1.\n\nREADING THE DEMO:\nmake_matrix sends a 6 x 4 matrix ten times a second: every row a blend\nof two patterns, plus a checker pattern scaled by the slider. With the\nslider at 0 the singular values read about 4.9, 2.6, 0, 0 - two\npatterns, so two values. Raise the slider and a third singular value\ngrows from 0. The fourth stays 0: there are still only three patterns.\nU and Vh are shown as pictures (blue above 0, red below). The bottom\npicture multiplies the three pieces back together - t.diag makes S\ninto a square matrix, np.matmul does the products - and it is the input\nagain.\n\nRELATED:\nt.linalg.pca_low_rank finds the leading patterns of a set of points,\ncentred first. t.linalg.eig finds the directions a square matrix only\nstretches. t.linalg.qr splits into perpendicular directions and a\ntriangle. np.linalg.matrix_rank counts the singular values that are not\nzero. np.matmul rebuilds."
+                    "text": "Splits a matrix into three pieces - turn, stretch, turn - with the singular value decomposition: the input equals U x diag(S) x Vh.\n\nS, the singular values, is the part to look at first. They come out largest first, and how fast they fall away says how many independent patterns the matrix really holds. If the first two are large and the rest are near zero, the data is really two patterns mixed in different amounts, with noise on top. For a set of poses, or joint angles over time, the answer is usually far fewer than the number of channels. U says how much of each pattern each ROW uses; the rows of Vh are the patterns themselves.\n\nSYNTAX:\nt.linalg.svd\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32 tensor). Any shape, rows x columns; a stack of matrices is split one by one. Receiving it decomposes and sends.\n\nfull (checkbox):\nOn (the default): U is square, rows x rows, and Vh columns x columns - for a 6 x 4 input U is 6 x 6, two of its columns multiplying nothing.\nOff: the reduced form, U 6 x 4 - smaller, and what fits the rebuild in this demo (with full on, the rebuild prints a shape error). Changing it does not send by itself; the next matrix uses it.\n\nOUTPUTS (sent right to left - Vh first, U last):\n\nU out:\nOne column per pattern, one row per input row: how much of each pattern each row uses.\n\nS out:\nThe singular values, largest first (1-D, never negative): how strong each pattern is.\n\nVh out:\nOne row per pattern, one column per input column: the patterns themselves, each of length 1.\n\nREADING THE DEMO:\nmake_matrix sends a 6 x 4 matrix ten times a second: every row a blend of two patterns, plus a checker pattern scaled by the slider. With the slider at 0 the singular values read about 4.9, 2.6, 0, 0 - two patterns, so two values. Raise the slider and a third singular value grows from 0. The fourth stays 0: there are still only three patterns. U and Vh are shown as pictures (blue above 0, red below). The bottom picture multiplies the three pieces back together - t.diag makes S into a square matrix, np.matmul does the products - and it is the input again.\n\nRELATED:\nt.linalg.pca_low_rank finds the leading patterns of a set of points, centred first. t.linalg.eig finds the directions a square matrix only stretches. t.linalg.qr splits into perpendicular directions and a triangle. np.linalg.matrix_rank counts the singular values that are not zero. np.matmul rebuilds."
                 },
                 "3": {
                     "name": "load_bang",
@@ -1123,8 +1123,8 @@
                     "name": "help_link",
                     "id": 1162,
                     "position_x": 30,
-                    "position_y": 1360,
-                    "width": 146,
+                    "position_y": 1394,
+                    "width": 148,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1135,9 +1135,9 @@
                 "26": {
                     "name": "help_link",
                     "id": 1199,
-                    "position_x": 235,
-                    "position_y": 1360,
-                    "width": 90,
+                    "position_x": 194,
+                    "position_y": 1394,
+                    "width": 92,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1148,9 +1148,9 @@
                 "27": {
                     "name": "help_link",
                     "id": 1236,
-                    "position_x": 371,
-                    "position_y": 1360,
-                    "width": 84,
+                    "position_x": 302,
+                    "position_y": 1394,
+                    "width": 85,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1162,7 +1162,7 @@
                     "name": "help_link",
                     "id": 1273,
                     "position_x": 30,
-                    "position_y": 1404,
+                    "position_y": 1438,
                     "width": 146,
                     "height": 44,
                     "visibility": "show_all",
@@ -1175,7 +1175,7 @@
                     "name": "help_link",
                     "id": 1310,
                     "position_x": 235,
-                    "position_y": 1404,
+                    "position_y": 1438,
                     "width": 72,
                     "height": 44,
                     "visibility": "show_all",
@@ -1188,8 +1188,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1347,
-                    "position_x": 624,
-                    "position_y": 1404,
+                    "position_x": 30,
+                    "position_y": 1360,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -1213,7 +1213,7 @@
                     "name": "close",
                     "id": 1384,
                     "position_x": 24,
-                    "position_y": 1478,
+                    "position_y": 1512,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

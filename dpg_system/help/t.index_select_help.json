@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1161,
+            "height": 1195,
             "width": 2048,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Picks a list of positions along one dimension - rows 0, 3 and 7, say - in the order given, and keeps the dimension.\n\nUse it to pull chosen joints out of a joint tensor, to reorder channels,\nto repeat a row, or to reverse an axis with a descending list. The\nindices can come from anywhere in the patch: a message, t.argsort, a\nt.argwhere result.\n\nSYNTAX:\nt.index_select <dim: int>\nWith no argument the node works along dimension 0 (rows) and shows no\ndim inlet. Give a dim (t.index_select 1) to get a dim box you can change.\n\nEXAMPLE:\nt.index_select 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nSends the selection on arrival. This is the only inlet that sends.\n\nindices:\nThe positions to take, as whole numbers: a list (0 3 7), an array or a\ntensor. They are converted to integers. Repeats are allowed (2 2 5) and\nthe order is kept. A 2-D list of indices is flattened to 1-D first. A\nposition past the end prints an error in the console and nothing is\nsent; negative positions are refused the same way (unlike t[]). The\nnode sends nothing until indices have arrived. This inlet is cold:\nchanging the list does not send - the next tensor uses it. In the demo\na metro re-sends the source ten times a second.\n\ndim (int box, also an inlet - only when an argument was given):\nWhich dimension the indices refer to: 0 rows, 1 columns. A dim the\ntensor does not have sends nothing.\n\nOUTPUTS:\n\noutput:\nThe selected rows (or columns), in the order of the indices. Same number\nof dimensions as the input; along dim it is as long as the index list.\nIt is a new tensor, not a view.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source - tens digit the row, units\ndigit the column. t.index_select 1 takes columns. Click a list: 0 3 7\ngives three columns, 3, 13 ... 93 down the middle one; 9 8 7 ... 0\nreverses the columns (the units digits now count down); 2 2 5 5 repeats\ntwo of them. Set dim to 0 and the same lists pick rows instead.\n\nRELATED:\nt.select takes ONE position and removes the dimension. t[] slices by a\ntyped range. t.take treats the tensor as flat. t.take_along_dim takes a\ndifferent position in each row. t.argsort makes index lists that sort.\nnp.[] takes lists of positions in numpy.",
+                            "value": "Picks a list of positions along one dimension - rows 0, 3 and 7, say - in the order given, and keeps the dimension.\n\nUse it to pull chosen joints out of a joint tensor, to reorder channels, to repeat a row, or to reverse an axis with a descending list. The indices can come from anywhere in the patch: a message, t.argsort, a t.argwhere result.\n\nSYNTAX:\nt.index_select <dim: int>\nWith no argument the node works along dimension 0 (rows) and shows no\ndim inlet. Give a dim (t.index_select 1) to get a dim box you can change.\n\nEXAMPLE:\nt.index_select 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor). Sends the selection on arrival. This is the only inlet that sends.\n\nindices:\nThe positions to take, as whole numbers: a list (0 3 7), an array or a tensor. They are converted to integers. Repeats are allowed (2 2 5) and the order is kept. A 2-D list of indices is flattened to 1-D first. A position past the end prints an error in the console and nothing is sent; negative positions are refused the same way (unlike t[]). The node sends nothing until indices have arrived. This inlet is cold: changing the list does not send - the next tensor uses it. In the demo a metro re-sends the source ten times a second.\n\ndim (int box, also an inlet - only when an argument was given):\nWhich dimension the indices refer to: 0 rows, 1 columns. A dim the tensor does not have sends nothing.\n\nOUTPUTS:\n\noutput:\nThe selected rows (or columns), in the order of the indices. Same number of dimensions as the input; along dim it is as long as the index list. It is a new tensor, not a view.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source - tens digit the row, units digit the column. t.index_select 1 takes columns. Click a list: 0 3 7 gives three columns, 3, 13 ... 93 down the middle one; 9 8 7 ... 0 reverses the columns (the units digits now count down); 2 2 5 5 repeats two of them. Set dim to 0 and the same lists pick rows instead.\n\nRELATED:\nt.select takes ONE position and removes the dimension. t[] slices by a typed range. t.take treats the tensor as flat. t.take_along_dim takes a different position in each row. t.argsort makes index lists that sort. np.[] takes lists of positions in numpy.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Picks a list of positions along one dimension - rows 0, 3 and 7, say - in the order given, and keeps the dimension.\n\nUse it to pull chosen joints out of a joint tensor, to reorder channels,\nto repeat a row, or to reverse an axis with a descending list. The\nindices can come from anywhere in the patch: a message, t.argsort, a\nt.argwhere result.\n\nSYNTAX:\nt.index_select <dim: int>\nWith no argument the node works along dimension 0 (rows) and shows no\ndim inlet. Give a dim (t.index_select 1) to get a dim box you can change.\n\nEXAMPLE:\nt.index_select 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nSends the selection on arrival. This is the only inlet that sends.\n\nindices:\nThe positions to take, as whole numbers: a list (0 3 7), an array or a\ntensor. They are converted to integers. Repeats are allowed (2 2 5) and\nthe order is kept. A 2-D list of indices is flattened to 1-D first. A\nposition past the end prints an error in the console and nothing is\nsent; negative positions are refused the same way (unlike t[]). The\nnode sends nothing until indices have arrived. This inlet is cold:\nchanging the list does not send - the next tensor uses it. In the demo\na metro re-sends the source ten times a second.\n\ndim (int box, also an inlet - only when an argument was given):\nWhich dimension the indices refer to: 0 rows, 1 columns. A dim the\ntensor does not have sends nothing.\n\nOUTPUTS:\n\noutput:\nThe selected rows (or columns), in the order of the indices. Same number\nof dimensions as the input; along dim it is as long as the index list.\nIt is a new tensor, not a view.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source - tens digit the row, units\ndigit the column. t.index_select 1 takes columns. Click a list: 0 3 7\ngives three columns, 3, 13 ... 93 down the middle one; 9 8 7 ... 0\nreverses the columns (the units digits now count down); 2 2 5 5 repeats\ntwo of them. Set dim to 0 and the same lists pick rows instead.\n\nRELATED:\nt.select takes ONE position and removes the dimension. t[] slices by a\ntyped range. t.take treats the tensor as flat. t.take_along_dim takes a\ndifferent position in each row. t.argsort makes index lists that sort.\nnp.[] takes lists of positions in numpy."
+                    "text": "Picks a list of positions along one dimension - rows 0, 3 and 7, say - in the order given, and keeps the dimension.\n\nUse it to pull chosen joints out of a joint tensor, to reorder channels, to repeat a row, or to reverse an axis with a descending list. The indices can come from anywhere in the patch: a message, t.argsort, a t.argwhere result.\n\nSYNTAX:\nt.index_select <dim: int>\nWith no argument the node works along dimension 0 (rows) and shows no\ndim inlet. Give a dim (t.index_select 1) to get a dim box you can change.\n\nEXAMPLE:\nt.index_select 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor). Sends the selection on arrival. This is the only inlet that sends.\n\nindices:\nThe positions to take, as whole numbers: a list (0 3 7), an array or a tensor. They are converted to integers. Repeats are allowed (2 2 5) and the order is kept. A 2-D list of indices is flattened to 1-D first. A position past the end prints an error in the console and nothing is sent; negative positions are refused the same way (unlike t[]). The node sends nothing until indices have arrived. This inlet is cold: changing the list does not send - the next tensor uses it. In the demo a metro re-sends the source ten times a second.\n\ndim (int box, also an inlet - only when an argument was given):\nWhich dimension the indices refer to: 0 rows, 1 columns. A dim the tensor does not have sends nothing.\n\nOUTPUTS:\n\noutput:\nThe selected rows (or columns), in the order of the indices. Same number of dimensions as the input; along dim it is as long as the index list. It is a new tensor, not a view.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source - tens digit the row, units digit the column. t.index_select 1 takes columns. Click a list: 0 3 7 gives three columns, 3, 13 ... 93 down the middle one; 9 8 7 ... 0 reverses the columns (the units digits now count down); 2 2 5 5 repeats two of them. Set dim to 0 and the same lists pick rows instead.\n\nRELATED:\nt.select takes ONE position and removes the dimension. t[] slices by a typed range. t.take treats the tensor as flat. t.take_along_dim takes a different position in each row. t.argsort makes index lists that sort. np.[] takes lists of positions in numpy."
                 },
                 "3": {
                     "name": "p",
@@ -733,7 +733,7 @@
                     "name": "help_link",
                     "id": 940,
                     "position_x": 30,
-                    "position_y": 760,
+                    "position_y": 794,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -745,8 +745,8 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 135,
-                    "position_y": 760,
+                    "position_x": 112,
+                    "position_y": 794,
                     "width": 35,
                     "height": 44,
                     "visibility": "show_all",
@@ -758,9 +758,9 @@
                 "21": {
                     "name": "help_link",
                     "id": 1014,
-                    "position_x": 202,
-                    "position_y": 760,
-                    "width": 53,
+                    "position_x": 163,
+                    "position_y": 794,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -771,9 +771,9 @@
                 "22": {
                     "name": "help_link",
                     "id": 1051,
-                    "position_x": 292,
-                    "position_y": 760,
-                    "width": 115,
+                    "position_x": 233,
+                    "position_y": 794,
+                    "width": 117,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -784,9 +784,9 @@
                 "23": {
                     "name": "help_link",
                     "id": 1088,
-                    "position_x": 459,
-                    "position_y": 760,
-                    "width": 72,
+                    "position_x": 366,
+                    "position_y": 794,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -797,9 +797,9 @@
                 "24": {
                     "name": "help_link",
                     "id": 1125,
-                    "position_x": 572,
-                    "position_y": 760,
-                    "width": 47,
+                    "position_x": 455,
+                    "position_y": 794,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -811,7 +811,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1162,
-                    "position_x": 936,
+                    "position_x": 30,
                     "position_y": 760,
                     "width": 156,
                     "height": 30,
@@ -836,7 +836,7 @@
                     "name": "close",
                     "id": 1199,
                     "position_x": 24,
-                    "position_y": 834,
+                    "position_y": 868,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

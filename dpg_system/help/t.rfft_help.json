@@ -479,7 +479,7 @@
             }
         },
         "1": {
-            "height": 1186,
+            "height": 1220,
             "width": 1799,
             "position": [
                 100,
@@ -546,7 +546,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Takes the Fourier transform of a real signal: how much of each frequency\nthe signal contains.\n\nFeed it a window of samples (a sound frame, a stretch of motion data) and\nit hands back one number per frequency, from 0 (the average) up to half\nthe sample count. Use it to find the pitch of a tone, the tempo of a\ngesture, or to see whether a movement is slow sway or fast tremor.\n\nThe output is COMPLEX: each value carries a size (how much of that\nfrequency) and a phase (where in its cycle it starts). For a picture you\nwant the size - put abs after it, as the demo does. t.real and t.imag\ntake the two parts apart.\n\nWHY rfft AND NOT fft:\nFor a real signal (all ordinary data) the full Fourier transform is a\nmirror image: the top half repeats the bottom half backwards and carries\nnothing new. t.rfft computes only the bottom half, n/2 + 1 values for n\nsamples, so 256 samples give 129 frequencies. It is the one to reach for\nunless the input is itself complex - then use t.fft.\n\nSYNTAX:\nt.rfft <dim: int>\nWith no argument it transforms along the last dimension.\n\nEXAMPLE:\nt.rfft\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe samples. Each tensor that arrives is transformed and sent at once.\nA list or a NumPy array is turned into a float32 tensor first. The\ntransform runs on whatever device the tensor is on.\n\ndim (an int box, only when you give an argument):\nt.rfft 0 transforms along dimension 0 instead of the last one. With no\nargument the node has no dim box and always uses the last dimension, which\nis what you want for one signal, or for a stack of signals one per row.\n\nnorm (menu):\nWhere the 1/n scaling goes. 'backward' (the default) leaves the forward\ntransform unscaled and divides on the way back, so a sine of size 1 over\n256 samples makes a peak of 128. 'forward' divides on the way forward\n(that peak becomes 0.5 - half the sine's size, the other half sits in the\nmirror bin). 'ortho' divides both ways by the square root of n. A forward\nand an inverse node must use the same setting or the round trip comes back\nthe wrong size.\n\nOUTPUTS:\n\nfft tensor out:\nA complex tensor. Along the transformed dimension it has n/2 + 1 values:\nvalue k is the part of the signal that makes k full cycles across the\nwindow. Other dimensions are unchanged.\n\nREADING THE DEMO:\nThe two sines make two spikes: one at the slider's number (10 cycles at\nfirst) and one at 40, half as tall because that sine is half the size.\nAt a whole number of cycles a spike is one bin wide. Drag the slider to\n10.5 and the spike smears into its neighbours - LEAKAGE, because the\nwindow no longer holds a whole number of cycles and its ends do not\nmeet. Multiplying the samples by a window (t.window.hann) before the\ntransform is the cure; that is what the window nodes are for.\n\nRELATED:\nt.irfft turns this back into samples. t.fft is the full transform for\ncomplex input. spectrum and band_pass split a live stream into bands\ninstead of transforming a block. t.cwt shows how frequency content\nchanges over time.",
+                            "value": "Takes the Fourier transform of a real signal: how much of each frequency the signal contains.\n\nFeed it a window of samples (a sound frame, a stretch of motion data) and it hands back one number per frequency, from 0 (the average) up to half the sample count. Use it to find the pitch of a tone, the tempo of a gesture, or to see whether a movement is slow sway or fast tremor.\n\nThe output is COMPLEX: each value carries a size (how much of that frequency) and a phase (where in its cycle it starts). For a picture you want the size - put abs after it, as the demo does. t.real and t.imag take the two parts apart.\n\nWHY rfft AND NOT fft:\nFor a real signal (all ordinary data) the full Fourier transform is a mirror image: the top half repeats the bottom half backwards and carries nothing new. t.rfft computes only the bottom half, n/2 + 1 values for n samples, so 256 samples give 129 frequencies. It is the one to reach for unless the input is itself complex - then use t.fft.\n\nSYNTAX:\nt.rfft <dim: int>\nWith no argument it transforms along the last dimension.\n\nEXAMPLE:\nt.rfft\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe samples. Each tensor that arrives is transformed and sent at once. A list or a NumPy array is turned into a float32 tensor first. The transform runs on whatever device the tensor is on.\n\ndim (an int box, only when you give an argument):\nt.rfft 0 transforms along dimension 0 instead of the last one. With no argument the node has no dim box and always uses the last dimension, which is what you want for one signal, or for a stack of signals one per row.\n\nnorm (menu):\nWhere the 1/n scaling goes. 'backward' (the default) leaves the forward transform unscaled and divides on the way back, so a sine of size 1 over 256 samples makes a peak of 128. 'forward' divides on the way forward (that peak becomes 0.5 - half the sine's size, the other half sits in the mirror bin). 'ortho' divides both ways by the square root of n. A forward and an inverse node must use the same setting or the round trip comes back the wrong size.\n\nOUTPUTS:\n\nfft tensor out:\nA complex tensor. Along the transformed dimension it has n/2 + 1 values:\nvalue k is the part of the signal that makes k full cycles across the window. Other dimensions are unchanged.\n\nREADING THE DEMO:\nThe two sines make two spikes: one at the slider's number (10 cycles at first) and one at 40, half as tall because that sine is half the size. At a whole number of cycles a spike is one bin wide. Drag the slider to 10.5 and the spike smears into its neighbours - LEAKAGE, because the window no longer holds a whole number of cycles and its ends do not meet. Multiplying the samples by a window (t.window.hann) before the transform is the cure; that is what the window nodes are for.\n\nRELATED:\nt.irfft turns this back into samples. t.fft is the full transform for complex input. spectrum and band_pass split a live stream into bands instead of transforming a block. t.cwt shows how frequency content changes over time.",
                             "value_type": "str"
                         },
                         "1": {
@@ -570,7 +570,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Takes the Fourier transform of a real signal: how much of each frequency\nthe signal contains.\n\nFeed it a window of samples (a sound frame, a stretch of motion data) and\nit hands back one number per frequency, from 0 (the average) up to half\nthe sample count. Use it to find the pitch of a tone, the tempo of a\ngesture, or to see whether a movement is slow sway or fast tremor.\n\nThe output is COMPLEX: each value carries a size (how much of that\nfrequency) and a phase (where in its cycle it starts). For a picture you\nwant the size - put abs after it, as the demo does. t.real and t.imag\ntake the two parts apart.\n\nWHY rfft AND NOT fft:\nFor a real signal (all ordinary data) the full Fourier transform is a\nmirror image: the top half repeats the bottom half backwards and carries\nnothing new. t.rfft computes only the bottom half, n/2 + 1 values for n\nsamples, so 256 samples give 129 frequencies. It is the one to reach for\nunless the input is itself complex - then use t.fft.\n\nSYNTAX:\nt.rfft <dim: int>\nWith no argument it transforms along the last dimension.\n\nEXAMPLE:\nt.rfft\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe samples. Each tensor that arrives is transformed and sent at once.\nA list or a NumPy array is turned into a float32 tensor first. The\ntransform runs on whatever device the tensor is on.\n\ndim (an int box, only when you give an argument):\nt.rfft 0 transforms along dimension 0 instead of the last one. With no\nargument the node has no dim box and always uses the last dimension, which\nis what you want for one signal, or for a stack of signals one per row.\n\nnorm (menu):\nWhere the 1/n scaling goes. 'backward' (the default) leaves the forward\ntransform unscaled and divides on the way back, so a sine of size 1 over\n256 samples makes a peak of 128. 'forward' divides on the way forward\n(that peak becomes 0.5 - half the sine's size, the other half sits in the\nmirror bin). 'ortho' divides both ways by the square root of n. A forward\nand an inverse node must use the same setting or the round trip comes back\nthe wrong size.\n\nOUTPUTS:\n\nfft tensor out:\nA complex tensor. Along the transformed dimension it has n/2 + 1 values:\nvalue k is the part of the signal that makes k full cycles across the\nwindow. Other dimensions are unchanged.\n\nREADING THE DEMO:\nThe two sines make two spikes: one at the slider's number (10 cycles at\nfirst) and one at 40, half as tall because that sine is half the size.\nAt a whole number of cycles a spike is one bin wide. Drag the slider to\n10.5 and the spike smears into its neighbours - LEAKAGE, because the\nwindow no longer holds a whole number of cycles and its ends do not\nmeet. Multiplying the samples by a window (t.window.hann) before the\ntransform is the cure; that is what the window nodes are for.\n\nRELATED:\nt.irfft turns this back into samples. t.fft is the full transform for\ncomplex input. spectrum and band_pass split a live stream into bands\ninstead of transforming a block. t.cwt shows how frequency content\nchanges over time."
+                    "text": "Takes the Fourier transform of a real signal: how much of each frequency the signal contains.\n\nFeed it a window of samples (a sound frame, a stretch of motion data) and it hands back one number per frequency, from 0 (the average) up to half the sample count. Use it to find the pitch of a tone, the tempo of a gesture, or to see whether a movement is slow sway or fast tremor.\n\nThe output is COMPLEX: each value carries a size (how much of that frequency) and a phase (where in its cycle it starts). For a picture you want the size - put abs after it, as the demo does. t.real and t.imag take the two parts apart.\n\nWHY rfft AND NOT fft:\nFor a real signal (all ordinary data) the full Fourier transform is a mirror image: the top half repeats the bottom half backwards and carries nothing new. t.rfft computes only the bottom half, n/2 + 1 values for n samples, so 256 samples give 129 frequencies. It is the one to reach for unless the input is itself complex - then use t.fft.\n\nSYNTAX:\nt.rfft <dim: int>\nWith no argument it transforms along the last dimension.\n\nEXAMPLE:\nt.rfft\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe samples. Each tensor that arrives is transformed and sent at once. A list or a NumPy array is turned into a float32 tensor first. The transform runs on whatever device the tensor is on.\n\ndim (an int box, only when you give an argument):\nt.rfft 0 transforms along dimension 0 instead of the last one. With no argument the node has no dim box and always uses the last dimension, which is what you want for one signal, or for a stack of signals one per row.\n\nnorm (menu):\nWhere the 1/n scaling goes. 'backward' (the default) leaves the forward transform unscaled and divides on the way back, so a sine of size 1 over 256 samples makes a peak of 128. 'forward' divides on the way forward (that peak becomes 0.5 - half the sine's size, the other half sits in the mirror bin). 'ortho' divides both ways by the square root of n. A forward and an inverse node must use the same setting or the round trip comes back the wrong size.\n\nOUTPUTS:\n\nfft tensor out:\nA complex tensor. Along the transformed dimension it has n/2 + 1 values:\nvalue k is the part of the signal that makes k full cycles across the window. Other dimensions are unchanged.\n\nREADING THE DEMO:\nThe two sines make two spikes: one at the slider's number (10 cycles at first) and one at 40, half as tall because that sine is half the size. At a whole number of cycles a spike is one bin wide. Drag the slider to 10.5 and the spike smears into its neighbours - LEAKAGE, because the window no longer holds a whole number of cycles and its ends do not meet. Multiplying the samples by a window (t.window.hann) before the transform is the cure; that is what the window nodes are for.\n\nRELATED:\nt.irfft turns this back into samples. t.fft is the full transform for complex input. spectrum and band_pass split a live stream into bands instead of transforming a block. t.cwt shows how frequency content changes over time."
                 },
                 "3": {
                     "name": "slider",
@@ -964,7 +964,7 @@
                     "name": "help_link",
                     "id": 792,
                     "position_x": 30,
-                    "position_y": 840,
+                    "position_y": 874,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -976,9 +976,9 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 127,
-                    "position_y": 840,
-                    "width": 47,
+                    "position_x": 106,
+                    "position_y": 874,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -989,9 +989,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 209,
-                    "position_y": 840,
-                    "width": 96,
+                    "position_x": 170,
+                    "position_y": 874,
+                    "width": 98,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1002,8 +1002,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 353,
-                    "position_y": 840,
+                    "position_x": 284,
+                    "position_y": 874,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -1015,9 +1015,9 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 458,
-                    "position_y": 840,
-                    "width": 47,
+                    "position_x": 366,
+                    "position_y": 874,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1029,8 +1029,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 977,
-                    "position_x": 564,
-                    "position_y": 884,
+                    "position_x": 30,
+                    "position_y": 840,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -1054,7 +1054,7 @@
                     "name": "close",
                     "id": 1014,
                     "position_x": 24,
-                    "position_y": 914,
+                    "position_y": 948,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

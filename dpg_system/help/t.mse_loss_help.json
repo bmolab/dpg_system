@@ -1,5 +1,5 @@
 {
-    "height": 1093,
+    "height": 1127,
     "width": 1839,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Measures how far a tensor is from a target as one number: the sum of\nthe SQUARED differences, element by element (mean squared error, but\nadded up rather than averaged).\n\n0 means identical. Squaring makes big differences count far more than\nsmall ones: one value off by 4 costs 16, while four values off by 1\ncost only 4. So it is dominated by the worst offender - the measure to\nuse when one large discrepancy is what matters and should shout. And\nbelow a difference of 1 squaring makes things SMALLER: off by 0.4 costs\n0.16, where t.l1_loss says 0.40.\n\nReach for it as a running measure of how far a signal or a pose has\ndrifted from a reference, or as the thing a training loop minimises.\n\nA SUM, NOT AN AVERAGE:\nIt adds up rather than averaging, so the number grows with the size of\nthe tensor: 16 across 4 values and 16 across 400 are not the same at\nall. Divide by the element count yourself if you need numbers that\ncompare across sizes.\n\nSYNTAX:\nt.mse_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got (a list or a NumPy array is turned into a float32\ntensor). Receiving it computes the loss and sends it.\n\ntarget:\nWhat you wanted, converted to the type of the input. It is a COLD\ninlet: it is only stored, so set it BEFORE sending the input - send\nthem the other way round and the answer is computed against the\nprevious target, which looks like the loss lagging one step behind.\nNothing is sent until a target has arrived. Same shape as the input,\nor one that broadcasts to it: a single number measures every value\nagainst that number (torch prints a warning about the size mismatch,\nand the answer is still right).\n\nOUTPUTS:\n\nloss:\nOne plain float. 0 when input and target are equal; never negative.\n\nREADING THE DEMO:\nThe vector node is the input: eight values, equal to the target\nexcept the first, which is 0.4 too high (0.6 against 0.2) - so the\nloss reads 0.16, the difference squared. The red-blue strip is the\ndifference. Drag the first value back to 0.2 and the loss reads 0.\nDrag it 0.5 off: 0.25. Move two values 0.3 each: 0.18. Each difference\nis squared, then they are all added.\n\nRELATED:\nt.l1_loss adds the plain sizes of the differences - the robust one.\nt.cross_entropy_loss is for choosing between categories. t.dist is the\nsquare root of this loss (the straight-line distance). np.linalg.norm\nof the difference, squared, is the same number.",
+                    "value": "Measures how far a tensor is from a target as one number: the sum of the SQUARED differences, element by element (mean squared error, but added up rather than averaged).\n\n0 means identical. Squaring makes big differences count far more than small ones: one value off by 4 costs 16, while four values off by 1 cost only 4. So it is dominated by the worst offender - the measure to use when one large discrepancy is what matters and should shout. And below a difference of 1 squaring makes things SMALLER: off by 0.4 costs 0.16, where t.l1_loss says 0.40.\n\nReach for it as a running measure of how far a signal or a pose has drifted from a reference, or as the thing a training loop minimises.\n\nA SUM, NOT AN AVERAGE:\nIt adds up rather than averaging, so the number grows with the size of the tensor: 16 across 4 values and 16 across 400 are not the same at all. Divide by the element count yourself if you need numbers that compare across sizes.\n\nSYNTAX:\nt.mse_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got (a list or a NumPy array is turned into a float32 tensor). Receiving it computes the loss and sends it.\n\ntarget:\nWhat you wanted, converted to the type of the input. It is a COLD inlet: it is only stored, so set it BEFORE sending the input - send them the other way round and the answer is computed against the previous target, which looks like the loss lagging one step behind. Nothing is sent until a target has arrived. Same shape as the input, or one that broadcasts to it: a single number measures every value against that number (torch prints a warning about the size mismatch, and the answer is still right).\n\nOUTPUTS:\n\nloss:\nOne plain float. 0 when input and target are equal; never negative.\n\nREADING THE DEMO:\nThe vector node is the input: eight values, equal to the target except the first, which is 0.4 too high (0.6 against 0.2) - so the loss reads 0.16, the difference squared. The red-blue strip is the difference. Drag the first value back to 0.2 and the loss reads 0.\nDrag it 0.5 off: 0.25. Move two values 0.3 each: 0.18. Each difference is squared, then they are all added.\n\nRELATED:\nt.l1_loss adds the plain sizes of the differences - the robust one. t.cross_entropy_loss is for choosing between categories. t.dist is the square root of this loss (the straight-line distance). np.linalg.norm of the difference, squared, is the same number.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Measures how far a tensor is from a target as one number: the sum of\nthe SQUARED differences, element by element (mean squared error, but\nadded up rather than averaged).\n\n0 means identical. Squaring makes big differences count far more than\nsmall ones: one value off by 4 costs 16, while four values off by 1\ncost only 4. So it is dominated by the worst offender - the measure to\nuse when one large discrepancy is what matters and should shout. And\nbelow a difference of 1 squaring makes things SMALLER: off by 0.4 costs\n0.16, where t.l1_loss says 0.40.\n\nReach for it as a running measure of how far a signal or a pose has\ndrifted from a reference, or as the thing a training loop minimises.\n\nA SUM, NOT AN AVERAGE:\nIt adds up rather than averaging, so the number grows with the size of\nthe tensor: 16 across 4 values and 16 across 400 are not the same at\nall. Divide by the element count yourself if you need numbers that\ncompare across sizes.\n\nSYNTAX:\nt.mse_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got (a list or a NumPy array is turned into a float32\ntensor). Receiving it computes the loss and sends it.\n\ntarget:\nWhat you wanted, converted to the type of the input. It is a COLD\ninlet: it is only stored, so set it BEFORE sending the input - send\nthem the other way round and the answer is computed against the\nprevious target, which looks like the loss lagging one step behind.\nNothing is sent until a target has arrived. Same shape as the input,\nor one that broadcasts to it: a single number measures every value\nagainst that number (torch prints a warning about the size mismatch,\nand the answer is still right).\n\nOUTPUTS:\n\nloss:\nOne plain float. 0 when input and target are equal; never negative.\n\nREADING THE DEMO:\nThe vector node is the input: eight values, equal to the target\nexcept the first, which is 0.4 too high (0.6 against 0.2) - so the\nloss reads 0.16, the difference squared. The red-blue strip is the\ndifference. Drag the first value back to 0.2 and the loss reads 0.\nDrag it 0.5 off: 0.25. Move two values 0.3 each: 0.18. Each difference\nis squared, then they are all added.\n\nRELATED:\nt.l1_loss adds the plain sizes of the differences - the robust one.\nt.cross_entropy_loss is for choosing between categories. t.dist is the\nsquare root of this loss (the straight-line distance). np.linalg.norm\nof the difference, squared, is the same number."
+            "text": "Measures how far a tensor is from a target as one number: the sum of the SQUARED differences, element by element (mean squared error, but added up rather than averaged).\n\n0 means identical. Squaring makes big differences count far more than small ones: one value off by 4 costs 16, while four values off by 1 cost only 4. So it is dominated by the worst offender - the measure to use when one large discrepancy is what matters and should shout. And below a difference of 1 squaring makes things SMALLER: off by 0.4 costs 0.16, where t.l1_loss says 0.40.\n\nReach for it as a running measure of how far a signal or a pose has drifted from a reference, or as the thing a training loop minimises.\n\nA SUM, NOT AN AVERAGE:\nIt adds up rather than averaging, so the number grows with the size of the tensor: 16 across 4 values and 16 across 400 are not the same at all. Divide by the element count yourself if you need numbers that compare across sizes.\n\nSYNTAX:\nt.mse_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got (a list or a NumPy array is turned into a float32 tensor). Receiving it computes the loss and sends it.\n\ntarget:\nWhat you wanted, converted to the type of the input. It is a COLD inlet: it is only stored, so set it BEFORE sending the input - send them the other way round and the answer is computed against the previous target, which looks like the loss lagging one step behind. Nothing is sent until a target has arrived. Same shape as the input, or one that broadcasts to it: a single number measures every value against that number (torch prints a warning about the size mismatch, and the answer is still right).\n\nOUTPUTS:\n\nloss:\nOne plain float. 0 when input and target are equal; never negative.\n\nREADING THE DEMO:\nThe vector node is the input: eight values, equal to the target except the first, which is 0.4 too high (0.6 against 0.2) - so the loss reads 0.16, the difference squared. The red-blue strip is the difference. Drag the first value back to 0.2 and the loss reads 0.\nDrag it 0.5 off: 0.25. Move two values 0.3 each: 0.18. Each difference is squared, then they are all added.\n\nRELATED:\nt.l1_loss adds the plain sizes of the differences - the robust one. t.cross_entropy_loss is for choosing between categories. t.dist is the square root of this loss (the straight-line distance). np.linalg.norm of the difference, squared, is the same number."
         },
         "3": {
             "name": "load_bang",
@@ -584,8 +584,8 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 780,
-            "width": 72,
+            "position_y": 814,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -596,9 +596,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 143,
-            "position_y": 780,
-            "width": 139,
+            "position_x": 119,
+            "position_y": 814,
+            "width": 142,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -609,9 +609,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 341,
-            "position_y": 780,
-            "width": 53,
+            "position_x": 277,
+            "position_y": 814,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -622,9 +622,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 431,
-            "position_y": 780,
-            "width": 103,
+            "position_x": 347,
+            "position_y": 814,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -636,8 +636,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1088,
-            "position_x": 704,
-            "position_y": 824,
+            "position_x": 30,
+            "position_y": 780,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -661,7 +661,7 @@
             "name": "close",
             "id": 1125,
             "position_x": 24,
-            "position_y": 854,
+            "position_y": 888,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

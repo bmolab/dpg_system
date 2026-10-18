@@ -403,7 +403,7 @@
             }
         },
         "2": {
-            "height": 1268,
+            "height": 1302,
             "width": 1680,
             "position": [
                 100,
@@ -470,7 +470,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Joins tensors in DEPTH: along a third axis, so every cell holds one\nvalue from each input.\n\nTwo 7 by 6 pictures become one 7 by 6 by 2 tensor: the same rows and\ncolumns, with two values in each cell - like an image with two colour\nchannels. Three greyscale pictures dstacked are an RGB image of shape\n[height, width, 3]. Rows (1-D) and 2-D tables are first given the extra\naxes they need, so two rows of 8 become [1, 8, 2].\n\nSYNTAX:\nt.dstack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.dstack 3\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it goes first. Receiving it makes the node join and\nsend. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE\ntensor 1. Each is converted to tensor 1's dtype and device. Until\nsomething has reached tensor 2, tensor 1 is joined with nothing and\ncomes out on its own.\n\nALL THE SAME SHAPE:\nThis node insists that every tensor has exactly the same shape as\ntensor 1 (torch itself is looser). If one does not, nothing is sent at\nall; with the app's verbose setting on, a message says so.\n\nOUTPUTS:\n\nstacked tensors:\nThe joined tensor, with the inputs along the third axis (axis 2).\n\nREADING THE DEMO:\ntensor 1 is the F, tensor 2 a ramp, both 7 by 6. t.dstack makes\n[7, 6, 2] (t.info) - one picture with two values per cell, which a\nheat_map cannot draw directly. The two lower heat_maps take it apart\nagain with t[] (:, :, 0 is the first value of every cell, :, :, 1 the\nsecond): the F and the ramp, each intact - dstack keeps the pictures\napart cell by cell, it does not mix them.\n\nRELATED:\nt.hstack and t.vstack join side by side and one above the other.\nt.stack with dim 2 does the same for 2-D tensors, and lets you choose\nthe axis. t.permute moves that channel axis to the front if a node\nwants channels first. np.stack is the numpy version.",
+                            "value": "Joins tensors in DEPTH: along a third axis, so every cell holds one value from each input.\n\nTwo 7 by 6 pictures become one 7 by 6 by 2 tensor: the same rows and columns, with two values in each cell - like an image with two colour channels. Three greyscale pictures dstacked are an RGB image of shape [height, width, 3]. Rows (1-D) and 2-D tables are first given the extra axes they need, so two rows of 8 become [1, 8, 2].\n\nSYNTAX:\nt.dstack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.dstack 3\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it goes first. Receiving it makes the node join and send. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and device. Until something has reached tensor 2, tensor 1 is joined with nothing and comes out on its own.\n\nALL THE SAME SHAPE:\nThis node insists that every tensor has exactly the same shape as tensor 1 (torch itself is looser). If one does not, nothing is sent at all; with the app's verbose setting on, a message says so.\n\nOUTPUTS:\n\nstacked tensors:\nThe joined tensor, with the inputs along the third axis (axis 2).\n\nREADING THE DEMO:\ntensor 1 is the F, tensor 2 a ramp, both 7 by 6. t.dstack makes [7, 6, 2] (t.info) - one picture with two values per cell, which a heat_map cannot draw directly. The two lower heat_maps take it apart again with t[] (:, :, 0 is the first value of every cell, :, :, 1 the second): the F and the ramp, each intact - dstack keeps the pictures apart cell by cell, it does not mix them.\n\nRELATED:\nt.hstack and t.vstack join side by side and one above the other. t.stack with dim 2 does the same for 2-D tensors, and lets you choose the axis. t.permute moves that channel axis to the front if a node wants channels first. np.stack is the numpy version.",
                             "value_type": "str"
                         },
                         "1": {
@@ -494,7 +494,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Joins tensors in DEPTH: along a third axis, so every cell holds one\nvalue from each input.\n\nTwo 7 by 6 pictures become one 7 by 6 by 2 tensor: the same rows and\ncolumns, with two values in each cell - like an image with two colour\nchannels. Three greyscale pictures dstacked are an RGB image of shape\n[height, width, 3]. Rows (1-D) and 2-D tables are first given the extra\naxes they need, so two rows of 8 become [1, 8, 2].\n\nSYNTAX:\nt.dstack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.dstack 3\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it goes first. Receiving it makes the node join and\nsend. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE\ntensor 1. Each is converted to tensor 1's dtype and device. Until\nsomething has reached tensor 2, tensor 1 is joined with nothing and\ncomes out on its own.\n\nALL THE SAME SHAPE:\nThis node insists that every tensor has exactly the same shape as\ntensor 1 (torch itself is looser). If one does not, nothing is sent at\nall; with the app's verbose setting on, a message says so.\n\nOUTPUTS:\n\nstacked tensors:\nThe joined tensor, with the inputs along the third axis (axis 2).\n\nREADING THE DEMO:\ntensor 1 is the F, tensor 2 a ramp, both 7 by 6. t.dstack makes\n[7, 6, 2] (t.info) - one picture with two values per cell, which a\nheat_map cannot draw directly. The two lower heat_maps take it apart\nagain with t[] (:, :, 0 is the first value of every cell, :, :, 1 the\nsecond): the F and the ramp, each intact - dstack keeps the pictures\napart cell by cell, it does not mix them.\n\nRELATED:\nt.hstack and t.vstack join side by side and one above the other.\nt.stack with dim 2 does the same for 2-D tensors, and lets you choose\nthe axis. t.permute moves that channel axis to the front if a node\nwants channels first. np.stack is the numpy version."
+                    "text": "Joins tensors in DEPTH: along a third axis, so every cell holds one value from each input.\n\nTwo 7 by 6 pictures become one 7 by 6 by 2 tensor: the same rows and columns, with two values in each cell - like an image with two colour channels. Three greyscale pictures dstacked are an RGB image of shape [height, width, 3]. Rows (1-D) and 2-D tables are first given the extra axes they need, so two rows of 8 become [1, 8, 2].\n\nSYNTAX:\nt.dstack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.dstack 3\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it goes first. Receiving it makes the node join and send. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and device. Until something has reached tensor 2, tensor 1 is joined with nothing and comes out on its own.\n\nALL THE SAME SHAPE:\nThis node insists that every tensor has exactly the same shape as tensor 1 (torch itself is looser). If one does not, nothing is sent at all; with the app's verbose setting on, a message says so.\n\nOUTPUTS:\n\nstacked tensors:\nThe joined tensor, with the inputs along the third axis (axis 2).\n\nREADING THE DEMO:\ntensor 1 is the F, tensor 2 a ramp, both 7 by 6. t.dstack makes [7, 6, 2] (t.info) - one picture with two values per cell, which a heat_map cannot draw directly. The two lower heat_maps take it apart again with t[] (:, :, 0 is the first value of every cell, :, :, 1 the second): the F and the ramp, each intact - dstack keeps the pictures apart cell by cell, it does not mix them.\n\nRELATED:\nt.hstack and t.vstack join side by side and one above the other. t.stack with dim 2 does the same for 2-D tensors, and lets you choose the axis. t.permute moves that channel axis to the front if a node wants channels first. np.stack is the numpy version."
                 },
                 "3": {
                     "name": "p",
@@ -925,7 +925,7 @@
                     "name": "help_link",
                     "id": 903,
                     "position_x": 30,
-                    "position_y": 1090,
+                    "position_y": 1124,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -937,8 +937,8 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 135,
-                    "position_y": 1090,
+                    "position_x": 112,
+                    "position_y": 1124,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -950,8 +950,8 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 240,
-                    "position_y": 1090,
+                    "position_x": 194,
+                    "position_y": 1124,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -963,9 +963,9 @@
                 "21": {
                     "name": "help_link",
                     "id": 1014,
-                    "position_x": 337,
-                    "position_y": 1090,
-                    "width": 72,
+                    "position_x": 270,
+                    "position_y": 1124,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -976,8 +976,8 @@
                 "22": {
                     "name": "help_link",
                     "id": 1051,
-                    "position_x": 450,
-                    "position_y": 1090,
+                    "position_x": 359,
+                    "position_y": 1124,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -990,7 +990,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1088,
-                    "position_x": 612,
+                    "position_x": 30,
                     "position_y": 1090,
                     "width": 156,
                     "height": 30,
@@ -1015,7 +1015,7 @@
                     "name": "close",
                     "id": 1125,
                     "position_x": 24,
-                    "position_y": 1164,
+                    "position_y": 1198,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

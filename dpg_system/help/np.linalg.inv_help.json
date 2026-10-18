@@ -1,5 +1,5 @@
 {
-    "height": 1045,
+    "height": 1079,
     "width": 1912,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Gives the inverse of a square matrix: the matrix that undoes it.\n\nIf a matrix turns, stretches or shears things, its inverse turns,\nshrinks or un-shears them back. Multiplying a matrix by its inverse gives\nthe identity matrix - 1s down the diagonal, 0s everywhere else - which\nchanges nothing. That is the definition, and the demo checks it live.\n\nReach for it when you need the undoing matrix itself: to map screen\npositions back into a camera's frame, to reverse a calibration, to keep\nboth directions of a transformation. To answer one question of the form\n\"which input gives this output?\", np.linalg.solve is faster and more\naccurate than inverting and multiplying.\n\nNOT EVERY MATRIX HAS ONE:\nA matrix whose determinant is 0 squashes space flat, and that cannot be\nundone. Such a matrix is called singular; np.linalg.inv sends nothing for\nit and the displays keep the last good answer. A matrix that is NEARLY\nsingular does invert, but into huge numbers - small errors in the input\nbecome large errors in the output.\n\nSYNTAX:\nnp.linalg.inv\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nA square matrix (a list of lists is turned into an array). Each one that\narrives is inverted and sent. A matrix that is not square, a 1-D list,\nor a singular matrix sends nothing (the reason is printed only in verbose\nmode). A stack of square matrices is inverted one by one.\n\nOUTPUTS:\n\ninverse matrix:\nThe inverse, the same shape as the input, as floats.\n\nREADING THE DEMO:\nDrag the numbers of the matrix. Its rows start [2 1] and [1 1], whose\ninverse is [1 -1] and [-1 2]. The third picture is np.matmul of the\nmatrix and its inverse: the identity, blue 1s on the diagonal, pale 0s\noff it - and it stays the identity however you change the matrix. Make\nthe rows parallel (bottom row 2 1) and the matrix is singular: no\ninverse is sent, the middle picture keeps the last good one, and the\nproduct of the new matrix with that old inverse is no longer the\nidentity - the sign that something went wrong.\nThe t array array sends to np.linalg.inv first (it fires right to left),\nso the inverse is waiting in np.matmul's second inlet when the matrix\narrives at its first.\n\nRELATED:\nnp.linalg.solve answers A x = b without forming the inverse.\nnp.linalg.det says whether an inverse exists (it must not be 0).\nnp.matmul applies a matrix. np.transpose is the inverse of a pure\nrotation matrix, and much cheaper.",
+                    "value": "Gives the inverse of a square matrix: the matrix that undoes it.\n\nIf a matrix turns, stretches or shears things, its inverse turns, shrinks or un-shears them back. Multiplying a matrix by its inverse gives the identity matrix - 1s down the diagonal, 0s everywhere else - which changes nothing. That is the definition, and the demo checks it live.\n\nReach for it when you need the undoing matrix itself: to map screen positions back into a camera's frame, to reverse a calibration, to keep both directions of a transformation. To answer one question of the form \"which input gives this output?\", np.linalg.solve is faster and more accurate than inverting and multiplying.\n\nNOT EVERY MATRIX HAS ONE:\nA matrix whose determinant is 0 squashes space flat, and that cannot be undone. Such a matrix is called singular; np.linalg.inv sends nothing for it and the displays keep the last good answer. A matrix that is NEARLY singular does invert, but into huge numbers - small errors in the input become large errors in the output.\n\nSYNTAX:\nnp.linalg.inv\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nA square matrix (a list of lists is turned into an array). Each one that arrives is inverted and sent. A matrix that is not square, a 1-D list, or a singular matrix sends nothing (the reason is printed only in verbose mode). A stack of square matrices is inverted one by one.\n\nOUTPUTS:\n\ninverse matrix:\nThe inverse, the same shape as the input, as floats.\n\nREADING THE DEMO:\nDrag the numbers of the matrix. Its rows start [2 1] and [1 1], whose inverse is [1 -1] and [-1 2]. The third picture is np.matmul of the matrix and its inverse: the identity, blue 1s on the diagonal, pale 0s off it - and it stays the identity however you change the matrix. Make the rows parallel (bottom row 2 1) and the matrix is singular: no inverse is sent, the middle picture keeps the last good one, and the product of the new matrix with that old inverse is no longer the identity - the sign that something went wrong.\nThe t array array sends to np.linalg.inv first (it fires right to left), so the inverse is waiting in np.matmul's second inlet when the matrix arrives at its first.\n\nRELATED:\nnp.linalg.solve answers A x = b without forming the inverse. np.linalg.det says whether an inverse exists (it must not be 0). np.matmul applies a matrix. np.transpose is the inverse of a pure rotation matrix, and much cheaper.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Gives the inverse of a square matrix: the matrix that undoes it.\n\nIf a matrix turns, stretches or shears things, its inverse turns,\nshrinks or un-shears them back. Multiplying a matrix by its inverse gives\nthe identity matrix - 1s down the diagonal, 0s everywhere else - which\nchanges nothing. That is the definition, and the demo checks it live.\n\nReach for it when you need the undoing matrix itself: to map screen\npositions back into a camera's frame, to reverse a calibration, to keep\nboth directions of a transformation. To answer one question of the form\n\"which input gives this output?\", np.linalg.solve is faster and more\naccurate than inverting and multiplying.\n\nNOT EVERY MATRIX HAS ONE:\nA matrix whose determinant is 0 squashes space flat, and that cannot be\nundone. Such a matrix is called singular; np.linalg.inv sends nothing for\nit and the displays keep the last good answer. A matrix that is NEARLY\nsingular does invert, but into huge numbers - small errors in the input\nbecome large errors in the output.\n\nSYNTAX:\nnp.linalg.inv\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nA square matrix (a list of lists is turned into an array). Each one that\narrives is inverted and sent. A matrix that is not square, a 1-D list,\nor a singular matrix sends nothing (the reason is printed only in verbose\nmode). A stack of square matrices is inverted one by one.\n\nOUTPUTS:\n\ninverse matrix:\nThe inverse, the same shape as the input, as floats.\n\nREADING THE DEMO:\nDrag the numbers of the matrix. Its rows start [2 1] and [1 1], whose\ninverse is [1 -1] and [-1 2]. The third picture is np.matmul of the\nmatrix and its inverse: the identity, blue 1s on the diagonal, pale 0s\noff it - and it stays the identity however you change the matrix. Make\nthe rows parallel (bottom row 2 1) and the matrix is singular: no\ninverse is sent, the middle picture keeps the last good one, and the\nproduct of the new matrix with that old inverse is no longer the\nidentity - the sign that something went wrong.\nThe t array array sends to np.linalg.inv first (it fires right to left),\nso the inverse is waiting in np.matmul's second inlet when the matrix\narrives at its first.\n\nRELATED:\nnp.linalg.solve answers A x = b without forming the inverse.\nnp.linalg.det says whether an inverse exists (it must not be 0).\nnp.matmul applies a matrix. np.transpose is the inverse of a pure\nrotation matrix, and much cheaper."
+            "text": "Gives the inverse of a square matrix: the matrix that undoes it.\n\nIf a matrix turns, stretches or shears things, its inverse turns, shrinks or un-shears them back. Multiplying a matrix by its inverse gives the identity matrix - 1s down the diagonal, 0s everywhere else - which changes nothing. That is the definition, and the demo checks it live.\n\nReach for it when you need the undoing matrix itself: to map screen positions back into a camera's frame, to reverse a calibration, to keep both directions of a transformation. To answer one question of the form \"which input gives this output?\", np.linalg.solve is faster and more accurate than inverting and multiplying.\n\nNOT EVERY MATRIX HAS ONE:\nA matrix whose determinant is 0 squashes space flat, and that cannot be undone. Such a matrix is called singular; np.linalg.inv sends nothing for it and the displays keep the last good answer. A matrix that is NEARLY singular does invert, but into huge numbers - small errors in the input become large errors in the output.\n\nSYNTAX:\nnp.linalg.inv\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nA square matrix (a list of lists is turned into an array). Each one that arrives is inverted and sent. A matrix that is not square, a 1-D list, or a singular matrix sends nothing (the reason is printed only in verbose mode). A stack of square matrices is inverted one by one.\n\nOUTPUTS:\n\ninverse matrix:\nThe inverse, the same shape as the input, as floats.\n\nREADING THE DEMO:\nDrag the numbers of the matrix. Its rows start [2 1] and [1 1], whose inverse is [1 -1] and [-1 2]. The third picture is np.matmul of the matrix and its inverse: the identity, blue 1s on the diagonal, pale 0s off it - and it stays the identity however you change the matrix. Make the rows parallel (bottom row 2 1) and the matrix is singular: no inverse is sent, the middle picture keeps the last good one, and the product of the new matrix with that old inverse is no longer the identity - the sign that something went wrong.\nThe t array array sends to np.linalg.inv first (it fires right to left), so the inverse is waiting in np.matmul's second inlet when the matrix arrives at its first.\n\nRELATED:\nnp.linalg.solve answers A x = b without forming the inverse. np.linalg.det says whether an inverse exists (it must not be 0). np.matmul applies a matrix. np.transpose is the inverse of a pure rotation matrix, and much cheaper."
         },
         "3": {
             "name": "load_bang",
@@ -404,8 +404,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 830,
-            "width": 109,
+            "position_y": 864,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -416,9 +416,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 189,
-            "position_y": 830,
-            "width": 96,
+            "position_x": 156,
+            "position_y": 864,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -429,9 +429,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 333,
-            "position_y": 830,
-            "width": 72,
+            "position_x": 270,
+            "position_y": 864,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -442,9 +442,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 446,
-            "position_y": 830,
-            "width": 90,
+            "position_x": 359,
+            "position_y": 864,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -456,7 +456,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 654,
+            "position_x": 30,
             "position_y": 830,
             "width": 156,
             "height": 30,
@@ -481,7 +481,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 904,
+            "position_y": 938,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

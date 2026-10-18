@@ -1,5 +1,5 @@
 {
-    "height": 1038,
+    "height": 1072,
     "width": 1641,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Turns a tensor of numbers into shares of a whole that favour the SMALLEST\nvalues: every value comes out positive, they add up to 1, and the lowest\nscore gets the biggest share.\n\nIt is softmax of the negated scores - e to minus each value, divided by\nthe sum of e to minus all of them. Use it when the scores are costs or\ndistances rather than merits: the nearest target, the cheapest option,\nthe joint with the least error should get the most weight.\n\nSYNTAX:\nt.nn.softmin <dim: int>\nDefault dim 0.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy\narray is turned into a float32 tensor first. An integer tensor is refused\n(the console reports \"not implemented for 'Long'\"): convert it with t.to\nfloat32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument.\nThe values along that axis sum to 1; every other axis is a separate set.\nFor a (frames, joints) tensor, dim 1 gives each frame's distribution\nacross the joints; dim 0 gives each joint's distribution over time.\nThose are entirely different questions, and getting dim wrong is the\nusual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the\nonly axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe shares, the same shape as the input, summing to 1 along dim.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page: 1, 2, 0.5, 3, 1.5, 0, 2.5,\n1. Here the 0 (sixth) wins with 0.35 at scale 1, the 0.5 is next with\n0.21, and the 3 gets only 0.02 - the softmax picture reversed. The float\nshows the sum: always 1.\n\nTHE SCALE SLIDER IS THE TEMPERATURE:\nOnly the DIFFERENCES between the scores matter - adding the same amount to\nevery score changes nothing. Multiplying them all by a number does: a\nlarge multiplier stretches the differences, so the SMALLEST score takes\nnearly everything and the result is almost a hard choice; a multiplier\nnear 0 shrinks them, so every element gets nearly the same share (1/8 =\n0.125 here). Dividing by a \"temperature\" before a softmax is the same\nadjustment; the slider multiplies by 1 over the temperature.\n\nRELATED:\nt.nn.softmax favours the largest. t.min finds the smallest value\nitself. t.cdist gives the distances softmin is often fed. t.nn.log_softmax\nis the logarithm of softmax.",
+                    "value": "Turns a tensor of numbers into shares of a whole that favour the SMALLEST values: every value comes out positive, they add up to 1, and the lowest score gets the biggest share.\n\nIt is softmax of the negated scores - e to minus each value, divided by the sum of e to minus all of them. Use it when the scores are costs or distances rather than merits: the nearest target, the cheapest option, the joint with the least error should get the most weight.\n\nSYNTAX:\nt.nn.softmin <dim: int>\nDefault dim 0.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy array is turned into a float32 tensor first. An integer tensor is refused (the console reports \"not implemented for 'Long'\"): convert it with t.to float32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument. The values along that axis sum to 1; every other axis is a separate set. For a (frames, joints) tensor, dim 1 gives each frame's distribution across the joints; dim 0 gives each joint's distribution over time. Those are entirely different questions, and getting dim wrong is the usual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the only axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe shares, the same shape as the input, summing to 1 along dim.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page: 1, 2, 0.5, 3, 1.5, 0, 2.5, 1. Here the 0 (sixth) wins with 0.35 at scale 1, the 0.5 is next with 0.21, and the 3 gets only 0.02 - the softmax picture reversed. The float shows the sum: always 1.\n\nTHE SCALE SLIDER IS THE TEMPERATURE:\nOnly the DIFFERENCES between the scores matter - adding the same amount to every score changes nothing. Multiplying them all by a number does: a large multiplier stretches the differences, so the SMALLEST score takes nearly everything and the result is almost a hard choice; a multiplier near 0 shrinks them, so every element gets nearly the same share (1/8 = 0.125 here). Dividing by a \"temperature\" before a softmax is the same adjustment; the slider multiplies by 1 over the temperature.\n\nRELATED:\nt.nn.softmax favours the largest. t.min finds the smallest value itself. t.cdist gives the distances softmin is often fed. t.nn.log_softmax is the logarithm of softmax.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Turns a tensor of numbers into shares of a whole that favour the SMALLEST\nvalues: every value comes out positive, they add up to 1, and the lowest\nscore gets the biggest share.\n\nIt is softmax of the negated scores - e to minus each value, divided by\nthe sum of e to minus all of them. Use it when the scores are costs or\ndistances rather than merits: the nearest target, the cheapest option,\nthe joint with the least error should get the most weight.\n\nSYNTAX:\nt.nn.softmin <dim: int>\nDefault dim 0.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy\narray is turned into a float32 tensor first. An integer tensor is refused\n(the console reports \"not implemented for 'Long'\"): convert it with t.to\nfloat32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument.\nThe values along that axis sum to 1; every other axis is a separate set.\nFor a (frames, joints) tensor, dim 1 gives each frame's distribution\nacross the joints; dim 0 gives each joint's distribution over time.\nThose are entirely different questions, and getting dim wrong is the\nusual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the\nonly axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe shares, the same shape as the input, summing to 1 along dim.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page: 1, 2, 0.5, 3, 1.5, 0, 2.5,\n1. Here the 0 (sixth) wins with 0.35 at scale 1, the 0.5 is next with\n0.21, and the 3 gets only 0.02 - the softmax picture reversed. The float\nshows the sum: always 1.\n\nTHE SCALE SLIDER IS THE TEMPERATURE:\nOnly the DIFFERENCES between the scores matter - adding the same amount to\nevery score changes nothing. Multiplying them all by a number does: a\nlarge multiplier stretches the differences, so the SMALLEST score takes\nnearly everything and the result is almost a hard choice; a multiplier\nnear 0 shrinks them, so every element gets nearly the same share (1/8 =\n0.125 here). Dividing by a \"temperature\" before a softmax is the same\nadjustment; the slider multiplies by 1 over the temperature.\n\nRELATED:\nt.nn.softmax favours the largest. t.min finds the smallest value\nitself. t.cdist gives the distances softmin is often fed. t.nn.log_softmax\nis the logarithm of softmax."
+            "text": "Turns a tensor of numbers into shares of a whole that favour the SMALLEST values: every value comes out positive, they add up to 1, and the lowest score gets the biggest share.\n\nIt is softmax of the negated scores - e to minus each value, divided by the sum of e to minus all of them. Use it when the scores are costs or distances rather than merits: the nearest target, the cheapest option, the joint with the least error should get the most weight.\n\nSYNTAX:\nt.nn.softmin <dim: int>\nDefault dim 0.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy array is turned into a float32 tensor first. An integer tensor is refused (the console reports \"not implemented for 'Long'\"): convert it with t.to float32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument. The values along that axis sum to 1; every other axis is a separate set. For a (frames, joints) tensor, dim 1 gives each frame's distribution across the joints; dim 0 gives each joint's distribution over time. Those are entirely different questions, and getting dim wrong is the usual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the only axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe shares, the same shape as the input, summing to 1 along dim.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page: 1, 2, 0.5, 3, 1.5, 0, 2.5, 1. Here the 0 (sixth) wins with 0.35 at scale 1, the 0.5 is next with 0.21, and the 3 gets only 0.02 - the softmax picture reversed. The float shows the sum: always 1.\n\nTHE SCALE SLIDER IS THE TEMPERATURE:\nOnly the DIFFERENCES between the scores matter - adding the same amount to every score changes nothing. Multiplying them all by a number does: a large multiplier stretches the differences, so the SMALLEST score takes nearly everything and the result is almost a hard choice; a multiplier near 0 shrinks them, so every element gets nearly the same share (1/8 = 0.125 here). Dividing by a \"temperature\" before a softmax is the same adjustment; the slider multiplies by 1 over the temperature.\n\nRELATED:\nt.nn.softmax favours the largest. t.min finds the smallest value itself. t.cdist gives the distances softmin is often fed. t.nn.log_softmax is the logarithm of softmax."
         },
         "3": {
             "name": "metro",
@@ -543,8 +543,8 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 860,
-            "width": 90,
+            "position_y": 894,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -555,9 +555,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 166,
-            "position_y": 860,
-            "width": 115,
+            "position_x": 138,
+            "position_y": 894,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -568,9 +568,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 333,
-            "position_y": 860,
-            "width": 47,
+            "position_x": 271,
+            "position_y": 894,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -581,8 +581,8 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 415,
-            "position_y": 860,
+            "position_x": 335,
+            "position_y": 894,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -595,8 +595,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1088,
-            "position_x": 504,
-            "position_y": 904,
+            "position_x": 30,
+            "position_y": 860,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -620,7 +620,7 @@
             "name": "close",
             "id": 1125,
             "position_x": 24,
-            "position_y": 934,
+            "position_y": 968,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

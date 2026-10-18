@@ -1,5 +1,5 @@
 {
-    "height": 1398,
+    "height": 1432,
     "width": 1519,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Replaces each value of an array with the running product up to and\nincluding it: the first value, then the first two multiplied, then the\nfirst three, and so on.\n\nIt is cumsum with multiplying instead of adding. Use it for anything that\ncompounds: growth by a rate per step (interest, a population, a pitch\nrising by a fixed ratio per note), decay by a factor per step (an echo\nfading), or a chain of gains or scale factors applied one after another.\n\nSYNTAX:\nnp.cumprod <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumprod\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is multiplied out and\nsent - the only inlet that makes the node send. A single number has no\naxis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its\nown, 0 or -2 runs down each column. Negative counts from the end. An axis\nthe array does not have sends nothing. Changing it does not send by\nitself; the next array uses it.\n\nOUTPUTS:\n\ncumprod:\nThe running products, the same shape as the input. A single 0 anywhere\nmakes every value after it 0. Whole numbers stay whole numbers (int64),\nwhich silently overflow past about 9 x 10 to the 18th - beyond 20\nfactorial.\n\nREADING THE DEMO:\nTop: np.ones makes 40 ones and * turns them into forty copies of the\ngrowth rate, 1.05. The plot shows that flat input line and its cumprod:\n1.05, then 1.05 times 1.05, ... - compound growth, a curve that bends\nupward ever faster and reaches about 7 after 40 steps. Change the * value\non the node: 1.02 grows slowly, 0.95 decays towards 0, 1 stays flat.\nAbove about 1.055 the curve runs off the top of the plot (0 to 8).\n\nBottom: 1 2 3 4 5 6 multiplied out gives 1 2 6 24 120 720 - the\nfactorials.\n\nRELATED:\nnp.cumsum adds instead of multiplying. np.diff is the reverse of\ncumsum, not of cumprod (for cumprod, divide each value by the one\nbefore). t.cumprod is the PyTorch version.",
+                    "value": "Replaces each value of an array with the running product up to and including it: the first value, then the first two multiplied, then the first three, and so on.\n\nIt is cumsum with multiplying instead of adding. Use it for anything that compounds: growth by a rate per step (interest, a population, a pitch rising by a fixed ratio per note), decay by a factor per step (an echo fading), or a chain of gains or scale factors applied one after another.\n\nSYNTAX:\nnp.cumprod <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumprod\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is multiplied out and sent - the only inlet that makes the node send. A single number has no axis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its own, 0 or -2 runs down each column. Negative counts from the end. An axis the array does not have sends nothing. Changing it does not send by itself; the next array uses it.\n\nOUTPUTS:\n\ncumprod:\nThe running products, the same shape as the input. A single 0 anywhere makes every value after it 0. Whole numbers stay whole numbers (int64), which silently overflow past about 9 x 10 to the 18th - beyond 20 factorial.\n\nREADING THE DEMO:\nTop: np.ones makes 40 ones and * turns them into forty copies of the growth rate, 1.05. The plot shows that flat input line and its cumprod: 1.05, then 1.05 times 1.05, ... - compound growth, a curve that bends upward ever faster and reaches about 7 after 40 steps. Change the * value on the node: 1.02 grows slowly, 0.95 decays towards 0, 1 stays flat. Above about 1.055 the curve runs off the top of the plot (0 to 8).\n\nBottom: 1 2 3 4 5 6 multiplied out gives 1 2 6 24 120 720 - the factorials.\n\nRELATED:\nnp.cumsum adds instead of multiplying. np.diff is the reverse of cumsum, not of cumprod (for cumprod, divide each value by the one before). t.cumprod is the PyTorch version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Replaces each value of an array with the running product up to and\nincluding it: the first value, then the first two multiplied, then the\nfirst three, and so on.\n\nIt is cumsum with multiplying instead of adding. Use it for anything that\ncompounds: growth by a rate per step (interest, a population, a pitch\nrising by a fixed ratio per note), decay by a factor per step (an echo\nfading), or a chain of gains or scale factors applied one after another.\n\nSYNTAX:\nnp.cumprod <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumprod\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is multiplied out and\nsent - the only inlet that makes the node send. A single number has no\naxis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its\nown, 0 or -2 runs down each column. Negative counts from the end. An axis\nthe array does not have sends nothing. Changing it does not send by\nitself; the next array uses it.\n\nOUTPUTS:\n\ncumprod:\nThe running products, the same shape as the input. A single 0 anywhere\nmakes every value after it 0. Whole numbers stay whole numbers (int64),\nwhich silently overflow past about 9 x 10 to the 18th - beyond 20\nfactorial.\n\nREADING THE DEMO:\nTop: np.ones makes 40 ones and * turns them into forty copies of the\ngrowth rate, 1.05. The plot shows that flat input line and its cumprod:\n1.05, then 1.05 times 1.05, ... - compound growth, a curve that bends\nupward ever faster and reaches about 7 after 40 steps. Change the * value\non the node: 1.02 grows slowly, 0.95 decays towards 0, 1 stays flat.\nAbove about 1.055 the curve runs off the top of the plot (0 to 8).\n\nBottom: 1 2 3 4 5 6 multiplied out gives 1 2 6 24 120 720 - the\nfactorials.\n\nRELATED:\nnp.cumsum adds instead of multiplying. np.diff is the reverse of\ncumsum, not of cumprod (for cumprod, divide each value by the one\nbefore). t.cumprod is the PyTorch version."
+            "text": "Replaces each value of an array with the running product up to and including it: the first value, then the first two multiplied, then the first three, and so on.\n\nIt is cumsum with multiplying instead of adding. Use it for anything that compounds: growth by a rate per step (interest, a population, a pitch rising by a fixed ratio per note), decay by a factor per step (an echo fading), or a chain of gains or scale factors applied one after another.\n\nSYNTAX:\nnp.cumprod <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumprod\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is multiplied out and sent - the only inlet that makes the node send. A single number has no axis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its own, 0 or -2 runs down each column. Negative counts from the end. An axis the array does not have sends nothing. Changing it does not send by itself; the next array uses it.\n\nOUTPUTS:\n\ncumprod:\nThe running products, the same shape as the input. A single 0 anywhere makes every value after it 0. Whole numbers stay whole numbers (int64), which silently overflow past about 9 x 10 to the 18th - beyond 20 factorial.\n\nREADING THE DEMO:\nTop: np.ones makes 40 ones and * turns them into forty copies of the growth rate, 1.05. The plot shows that flat input line and its cumprod: 1.05, then 1.05 times 1.05, ... - compound growth, a curve that bends upward ever faster and reaches about 7 after 40 steps. Change the * value on the node: 1.02 grows slowly, 0.95 decays towards 0, 1 stays flat. Above about 1.055 the curve runs off the top of the plot (0 to 8).\n\nBottom: 1 2 3 4 5 6 multiplied out gives 1 2 6 24 120 720 - the factorials.\n\nRELATED:\nnp.cumsum adds instead of multiplying. np.diff is the reverse of cumsum, not of cumprod (for cumprod, divide each value by the one before). t.cumprod is the PyTorch version."
         },
         "3": {
             "name": "metro",
@@ -516,8 +516,8 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1220,
-            "width": 72,
+            "position_y": 1254,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -528,8 +528,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 143,
-            "position_y": 1220,
+            "position_x": 119,
+            "position_y": 1254,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -541,9 +541,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 240,
-            "position_y": 1220,
-            "width": 72,
+            "position_x": 195,
+            "position_y": 1254,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -555,7 +555,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1088,
-            "position_x": 364,
+            "position_x": 30,
             "position_y": 1220,
             "width": 156,
             "height": 30,
@@ -580,7 +580,7 @@
             "name": "close",
             "id": 1125,
             "position_x": 24,
-            "position_y": 1294,
+            "position_y": 1328,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

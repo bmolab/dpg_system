@@ -325,7 +325,7 @@
             }
         },
         "1": {
-            "height": 1121,
+            "height": 1155,
             "width": 1929,
             "position": [
                 100,
@@ -392,7 +392,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Takes out every value where a mask is true, and returns them as one flat list.\n\nThe mask is a tensor of true and false the same shape as the source -\nusually the result of a comparison (<, >, ==). Use it to gather every\nreading above a threshold, every joint inside a region, every pixel of a\ncolour, for counting, averaging or sorting.\n\nTHE RESULT IS FLAT:\nHowever the source is shaped, what comes back is 1-D: the chosen values\nin reading order (along the first row, then the next). The number that\npass is not known in advance and cannot in general be arranged into a\nrectangle, so the shape is given up. To KEEP the shape - zeros where the\nmask is false - multiply the source by the mask instead, or use\nnp.where.\n\nSYNTAX:\nt.masked_select\nIt takes no arguments.\n\nINPUTS:\n\nsource tensor:\nThe values (a list or numpy array is converted to a float32 tensor).\nSends the selection on arrival. This is the only inlet that sends.\n\nmask:\nTrue where a value should be taken. Anything non-zero counts as true;\nit is converted to a bool tensor on the source's device. This inlet is\ncold: the mask is stored and used when the next source arrives, so send\nit FIRST. Nothing is sent until a mask has arrived. The mask must be the\nsource's shape, or one that broadcasts to it (a single row of 10 applies\nto every row); otherwise the console prints an error and nothing is sent.\n\nOUTPUTS:\n\nselection tensor:\nA 1-D tensor of the chosen values, as many as the mask has true cells.\nWhen none are true it is empty (shape [0]).\n\nREADING THE DEMO:\nmake_disc sends two pictures ten times a second: each cell's distance\nfrom the centre, then the numbered 10 x 10 source (tens digit the row,\nunits digit the column). < 0.6 turns the distances into the mask - a\nwhite disc - which reaches t.masked_select before the numbers do. The\nlist shows the numbers inside the disc, in reading order, and the strip\nbelow draws them as one row. Drag 0.6 on the < node: the disc grows or\nshrinks, and t.info counts how many cells pass. (Below about 0.16 no\ncell passes: the list empties, but t.info keeps its last count, because\nit ignores empty tensors.)\n\nRELATED:\nnp.where keeps the shape and fills the rejected cells from a second\nsource. t.argwhere gives the POSITIONS of the true cells rather than\ntheir values. The comparison nodes (greater, less) make masks.\nt.index_select picks by position.",
+                            "value": "Takes out every value where a mask is true, and returns them as one flat list.\n\nThe mask is a tensor of true and false the same shape as the source -\nusually the result of a comparison (<, >, ==). Use it to gather every\nreading above a threshold, every joint inside a region, every pixel of a colour, for counting, averaging or sorting.\n\nTHE RESULT IS FLAT:\nHowever the source is shaped, what comes back is 1-D: the chosen values in reading order (along the first row, then the next). The number that pass is not known in advance and cannot in general be arranged into a rectangle, so the shape is given up. To KEEP the shape - zeros where the mask is false - multiply the source by the mask instead, or use np.where.\n\nSYNTAX:\nt.masked_select\nIt takes no arguments.\n\nINPUTS:\n\nsource tensor:\nThe values (a list or numpy array is converted to a float32 tensor). Sends the selection on arrival. This is the only inlet that sends.\n\nmask:\nTrue where a value should be taken. Anything non-zero counts as true;\nit is converted to a bool tensor on the source's device. This inlet is cold: the mask is stored and used when the next source arrives, so send it FIRST. Nothing is sent until a mask has arrived. The mask must be the source's shape, or one that broadcasts to it (a single row of 10 applies to every row); otherwise the console prints an error and nothing is sent.\n\nOUTPUTS:\n\nselection tensor:\nA 1-D tensor of the chosen values, as many as the mask has true cells. When none are true it is empty (shape [0]).\n\nREADING THE DEMO:\nmake_disc sends two pictures ten times a second: each cell's distance from the centre, then the numbered 10 x 10 source (tens digit the row, units digit the column). < 0.6 turns the distances into the mask - a white disc - which reaches t.masked_select before the numbers do. The list shows the numbers inside the disc, in reading order, and the strip below draws them as one row. Drag 0.6 on the < node: the disc grows or shrinks, and t.info counts how many cells pass. (Below about 0.16 no cell passes: the list empties, but t.info keeps its last count, because it ignores empty tensors.)\n\nRELATED:\nnp.where keeps the shape and fills the rejected cells from a second source. t.argwhere gives the POSITIONS of the true cells rather than their values. The comparison nodes (greater, less) make masks. t.index_select picks by position.",
                             "value_type": "str"
                         },
                         "1": {
@@ -416,7 +416,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Takes out every value where a mask is true, and returns them as one flat list.\n\nThe mask is a tensor of true and false the same shape as the source -\nusually the result of a comparison (<, >, ==). Use it to gather every\nreading above a threshold, every joint inside a region, every pixel of a\ncolour, for counting, averaging or sorting.\n\nTHE RESULT IS FLAT:\nHowever the source is shaped, what comes back is 1-D: the chosen values\nin reading order (along the first row, then the next). The number that\npass is not known in advance and cannot in general be arranged into a\nrectangle, so the shape is given up. To KEEP the shape - zeros where the\nmask is false - multiply the source by the mask instead, or use\nnp.where.\n\nSYNTAX:\nt.masked_select\nIt takes no arguments.\n\nINPUTS:\n\nsource tensor:\nThe values (a list or numpy array is converted to a float32 tensor).\nSends the selection on arrival. This is the only inlet that sends.\n\nmask:\nTrue where a value should be taken. Anything non-zero counts as true;\nit is converted to a bool tensor on the source's device. This inlet is\ncold: the mask is stored and used when the next source arrives, so send\nit FIRST. Nothing is sent until a mask has arrived. The mask must be the\nsource's shape, or one that broadcasts to it (a single row of 10 applies\nto every row); otherwise the console prints an error and nothing is sent.\n\nOUTPUTS:\n\nselection tensor:\nA 1-D tensor of the chosen values, as many as the mask has true cells.\nWhen none are true it is empty (shape [0]).\n\nREADING THE DEMO:\nmake_disc sends two pictures ten times a second: each cell's distance\nfrom the centre, then the numbered 10 x 10 source (tens digit the row,\nunits digit the column). < 0.6 turns the distances into the mask - a\nwhite disc - which reaches t.masked_select before the numbers do. The\nlist shows the numbers inside the disc, in reading order, and the strip\nbelow draws them as one row. Drag 0.6 on the < node: the disc grows or\nshrinks, and t.info counts how many cells pass. (Below about 0.16 no\ncell passes: the list empties, but t.info keeps its last count, because\nit ignores empty tensors.)\n\nRELATED:\nnp.where keeps the shape and fills the rejected cells from a second\nsource. t.argwhere gives the POSITIONS of the true cells rather than\ntheir values. The comparison nodes (greater, less) make masks.\nt.index_select picks by position."
+                    "text": "Takes out every value where a mask is true, and returns them as one flat list.\n\nThe mask is a tensor of true and false the same shape as the source -\nusually the result of a comparison (<, >, ==). Use it to gather every\nreading above a threshold, every joint inside a region, every pixel of a colour, for counting, averaging or sorting.\n\nTHE RESULT IS FLAT:\nHowever the source is shaped, what comes back is 1-D: the chosen values in reading order (along the first row, then the next). The number that pass is not known in advance and cannot in general be arranged into a rectangle, so the shape is given up. To KEEP the shape - zeros where the mask is false - multiply the source by the mask instead, or use np.where.\n\nSYNTAX:\nt.masked_select\nIt takes no arguments.\n\nINPUTS:\n\nsource tensor:\nThe values (a list or numpy array is converted to a float32 tensor). Sends the selection on arrival. This is the only inlet that sends.\n\nmask:\nTrue where a value should be taken. Anything non-zero counts as true;\nit is converted to a bool tensor on the source's device. This inlet is cold: the mask is stored and used when the next source arrives, so send it FIRST. Nothing is sent until a mask has arrived. The mask must be the source's shape, or one that broadcasts to it (a single row of 10 applies to every row); otherwise the console prints an error and nothing is sent.\n\nOUTPUTS:\n\nselection tensor:\nA 1-D tensor of the chosen values, as many as the mask has true cells. When none are true it is empty (shape [0]).\n\nREADING THE DEMO:\nmake_disc sends two pictures ten times a second: each cell's distance from the centre, then the numbered 10 x 10 source (tens digit the row, units digit the column). < 0.6 turns the distances into the mask - a white disc - which reaches t.masked_select before the numbers do. The list shows the numbers inside the disc, in reading order, and the strip below draws them as one row. Drag 0.6 on the < node: the disc grows or shrinks, and t.info counts how many cells pass. (Below about 0.16 no cell passes: the list empties, but t.info keeps its last count, because it ignores empty tensors.)\n\nRELATED:\nnp.where keeps the shape and fills the rejected cells from a second source. t.argwhere gives the POSITIONS of the true cells rather than their values. The comparison nodes (greater, less) make masks. t.index_select picks by position."
                 },
                 "3": {
                     "name": "p",
@@ -864,7 +864,7 @@
                     "name": "help_link",
                     "id": 940,
                     "position_x": 30,
-                    "position_y": 920,
+                    "position_y": 954,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -876,9 +876,9 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 135,
-                    "position_y": 920,
-                    "width": 78,
+                    "position_x": 112,
+                    "position_y": 954,
+                    "width": 79,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -889,8 +889,8 @@
                 "21": {
                     "name": "help_link",
                     "id": 1014,
-                    "position_x": 256,
-                    "position_y": 920,
+                    "position_x": 207,
+                    "position_y": 954,
                     "width": 41,
                     "height": 44,
                     "visibility": "show_all",
@@ -902,9 +902,9 @@
                 "22": {
                     "name": "help_link",
                     "id": 1051,
-                    "position_x": 330,
-                    "position_y": 920,
-                    "width": 103,
+                    "position_x": 264,
+                    "position_y": 954,
+                    "width": 104,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -915,8 +915,8 @@
                 "23": {
                     "name": "help_link",
                     "id": 1088,
-                    "position_x": 481,
-                    "position_y": 920,
+                    "position_x": 384,
+                    "position_y": 954,
                     "width": 35,
                     "height": 44,
                     "visibility": "show_all",
@@ -929,7 +929,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1125,
-                    "position_x": 806,
+                    "position_x": 30,
                     "position_y": 920,
                     "width": 156,
                     "height": 30,
@@ -954,7 +954,7 @@
                     "name": "close",
                     "id": 1162,
                     "position_x": 24,
-                    "position_y": 994,
+                    "position_y": 1028,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

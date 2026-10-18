@@ -1,5 +1,5 @@
 {
-    "height": 1378,
+    "height": 1412,
     "width": 1608,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Builds a complex tensor from two real tensors: one holding the real\nparts, one the imaginary parts.\n\nA complex number is two numbers travelling as one - a real part and an\nimaginary part, which you can also read as a point on a plane, or as a\nsize and an angle. You meet them wherever something has both an amount\nand a phase, which in practice means anywhere near a Fourier transform:\nt.fft and t.rfft send complex tensors, and t.ifft and t.irfft take them\nback. Splitting a spectrum with t.real and t.imag, working on the parts,\nand rebuilding it here is how you edit one.\n\nSYNTAX:\nt.complex\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\nreal tensor in:\nThe real parts (a list or number is turned into a float32 tensor). It\nmust be a float tensor - float16, float32 or float64.\n\nimag tensor in:\nThe imaginary parts. It is converted to the real tensor's type.\n\nBOTH inlets make the node send, so when both change it sends twice -\nonce with the old other half. Send the imaginary part first and the\nsecond send is the right one. It sends nothing until both have arrived,\nand nothing at all if the two shapes differ: there is no broadcasting,\nso a single number cannot stand for every imaginary part.\n\nOUTPUTS:\n\ncomplex tensor out:\nThe complex tensor, the same shape as the inputs: complex64 from\nfloat32 parts, complex128 from float64.\n\nREADING THE DEMO:\nTop: cos and sin of one turning angle go in as the real and imaginary\nparts, so the complex number goes round a circle once every 4 seconds.\nThe trigger sends the angle to sin first, so the imaginary part is\nalready stored when the real part arrives. The list shows the number as\nreal+imaginary j; abs gives its size, which stays 1.0 however it turns.\n\nBottom: click the button for four numbers at once. The imaginary parts\ngo first. 3 and 4 make 3+4j, whose size is 5 - the long side of a 3, 4,\n5 triangle.\n\nRELATED:\nt.real and t.imag take the two parts out again. abs gives the size of\neach complex value. t.fft and t.rfft are where complex tensors usually\ncome from.",
+                    "value": "Builds a complex tensor from two real tensors: one holding the real parts, one the imaginary parts.\n\nA complex number is two numbers travelling as one - a real part and an imaginary part, which you can also read as a point on a plane, or as a size and an angle. You meet them wherever something has both an amount and a phase, which in practice means anywhere near a Fourier transform: t.fft and t.rfft send complex tensors, and t.ifft and t.irfft take them back. Splitting a spectrum with t.real and t.imag, working on the parts, and rebuilding it here is how you edit one.\n\nSYNTAX:\nt.complex\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\nreal tensor in:\nThe real parts (a list or number is turned into a float32 tensor). It must be a float tensor - float16, float32 or float64.\n\nimag tensor in:\nThe imaginary parts. It is converted to the real tensor's type.\n\nBOTH inlets make the node send, so when both change it sends twice - once with the old other half. Send the imaginary part first and the second send is the right one. It sends nothing until both have arrived, and nothing at all if the two shapes differ: there is no broadcasting, so a single number cannot stand for every imaginary part.\n\nOUTPUTS:\n\ncomplex tensor out:\nThe complex tensor, the same shape as the inputs: complex64 from float32 parts, complex128 from float64.\n\nREADING THE DEMO:\nTop: cos and sin of one turning angle go in as the real and imaginary parts, so the complex number goes round a circle once every 4 seconds. The trigger sends the angle to sin first, so the imaginary part is already stored when the real part arrives. The list shows the number as real+imaginary j; abs gives its size, which stays 1.0 however it turns.\n\nBottom: click the button for four numbers at once. The imaginary parts go first. 3 and 4 make 3+4j, whose size is 5 - the long side of a 3, 4, 5 triangle.\n\nRELATED:\nt.real and t.imag take the two parts out again. abs gives the size of each complex value. t.fft and t.rfft are where complex tensors usually come from.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Builds a complex tensor from two real tensors: one holding the real\nparts, one the imaginary parts.\n\nA complex number is two numbers travelling as one - a real part and an\nimaginary part, which you can also read as a point on a plane, or as a\nsize and an angle. You meet them wherever something has both an amount\nand a phase, which in practice means anywhere near a Fourier transform:\nt.fft and t.rfft send complex tensors, and t.ifft and t.irfft take them\nback. Splitting a spectrum with t.real and t.imag, working on the parts,\nand rebuilding it here is how you edit one.\n\nSYNTAX:\nt.complex\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\nreal tensor in:\nThe real parts (a list or number is turned into a float32 tensor). It\nmust be a float tensor - float16, float32 or float64.\n\nimag tensor in:\nThe imaginary parts. It is converted to the real tensor's type.\n\nBOTH inlets make the node send, so when both change it sends twice -\nonce with the old other half. Send the imaginary part first and the\nsecond send is the right one. It sends nothing until both have arrived,\nand nothing at all if the two shapes differ: there is no broadcasting,\nso a single number cannot stand for every imaginary part.\n\nOUTPUTS:\n\ncomplex tensor out:\nThe complex tensor, the same shape as the inputs: complex64 from\nfloat32 parts, complex128 from float64.\n\nREADING THE DEMO:\nTop: cos and sin of one turning angle go in as the real and imaginary\nparts, so the complex number goes round a circle once every 4 seconds.\nThe trigger sends the angle to sin first, so the imaginary part is\nalready stored when the real part arrives. The list shows the number as\nreal+imaginary j; abs gives its size, which stays 1.0 however it turns.\n\nBottom: click the button for four numbers at once. The imaginary parts\ngo first. 3 and 4 make 3+4j, whose size is 5 - the long side of a 3, 4,\n5 triangle.\n\nRELATED:\nt.real and t.imag take the two parts out again. abs gives the size of\neach complex value. t.fft and t.rfft are where complex tensors usually\ncome from."
+            "text": "Builds a complex tensor from two real tensors: one holding the real parts, one the imaginary parts.\n\nA complex number is two numbers travelling as one - a real part and an imaginary part, which you can also read as a point on a plane, or as a size and an angle. You meet them wherever something has both an amount and a phase, which in practice means anywhere near a Fourier transform: t.fft and t.rfft send complex tensors, and t.ifft and t.irfft take them back. Splitting a spectrum with t.real and t.imag, working on the parts, and rebuilding it here is how you edit one.\n\nSYNTAX:\nt.complex\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\nreal tensor in:\nThe real parts (a list or number is turned into a float32 tensor). It must be a float tensor - float16, float32 or float64.\n\nimag tensor in:\nThe imaginary parts. It is converted to the real tensor's type.\n\nBOTH inlets make the node send, so when both change it sends twice - once with the old other half. Send the imaginary part first and the second send is the right one. It sends nothing until both have arrived, and nothing at all if the two shapes differ: there is no broadcasting, so a single number cannot stand for every imaginary part.\n\nOUTPUTS:\n\ncomplex tensor out:\nThe complex tensor, the same shape as the inputs: complex64 from float32 parts, complex128 from float64.\n\nREADING THE DEMO:\nTop: cos and sin of one turning angle go in as the real and imaginary parts, so the complex number goes round a circle once every 4 seconds. The trigger sends the angle to sin first, so the imaginary part is already stored when the real part arrives. The list shows the number as real+imaginary j; abs gives its size, which stays 1.0 however it turns.\n\nBottom: click the button for four numbers at once. The imaginary parts go first. 3 and 4 make 3+4j, whose size is 5 - the long side of a 3, 4, 5 triangle.\n\nRELATED:\nt.real and t.imag take the two parts out again. abs gives the size of each complex value. t.fft and t.rfft are where complex tensors usually come from."
         },
         "3": {
             "name": "signal",
@@ -618,8 +618,8 @@
             "name": "help_link",
             "id": 1236,
             "position_x": 30,
-            "position_y": 1200,
-            "width": 53,
+            "position_y": 1234,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -630,9 +630,9 @@
         "28": {
             "name": "help_link",
             "id": 1273,
-            "position_x": 120,
-            "position_y": 1200,
-            "width": 53,
+            "position_x": 100,
+            "position_y": 1234,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -643,9 +643,9 @@
         "29": {
             "name": "help_link",
             "id": 1310,
-            "position_x": 210,
-            "position_y": 1200,
-            "width": 47,
+            "position_x": 170,
+            "position_y": 1234,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -656,9 +656,9 @@
         "30": {
             "name": "help_link",
             "id": 1347,
-            "position_x": 292,
-            "position_y": 1200,
-            "width": 53,
+            "position_x": 234,
+            "position_y": 1234,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -669,8 +669,8 @@
         "31": {
             "name": "help_link",
             "id": 1384,
-            "position_x": 382,
-            "position_y": 1200,
+            "position_x": 304,
+            "position_y": 1234,
             "width": 35,
             "height": 44,
             "visibility": "show_all",
@@ -683,8 +683,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1421,
-            "position_x": 491,
-            "position_y": 1244,
+            "position_x": 30,
+            "position_y": 1200,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -708,7 +708,7 @@
             "name": "close",
             "id": 1458,
             "position_x": 24,
-            "position_y": 1274,
+            "position_y": 1308,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

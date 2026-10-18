@@ -1,5 +1,5 @@
 {
-    "height": 1068,
+    "height": 1102,
     "width": 1647,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a 1-D tensor counting from start towards stop in steps of a fixed size.\n\nThe stop is NOT included. Use it when you know how far apart the values\nshould be rather than how many you want - whole-number indices 0, 1, 2\n..., every tenth of a second, every 5 degrees.\n\nTHE STOP IS LEFT OUT:\nt.arange 0 1 0.1 gives TEN values, 0 to 0.9, not eleven. The count is\n(stop - start) / step, rounded up. This is the same rule as a Python\nrange, and the reason t.arange 0 n 1 gives exactly n indices from 0 to\nn - 1. If you want the stop as well, use t.range; if you want an exact\ncount with both ends exact, use t.linspace.\n\nA negative step counts down, but then start must be larger than stop.\n\nSYNTAX:\nt.arange <start: float> <stop: float> <step: float> <dtype> <device>\nDefaults: 0.0, 1.0 and 0.01 - 100 values, 0 to 0.99.\n\nEXAMPLE:\nt.arange 0 1 0.1\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the tensor. Changing start,\nstop or step does not send by itself - the metro in the demo clicks the\nnode 20 times a second.\n\nstart / stop (drag floats):\nWhere to begin, and the value it stops short of.\n\nstep (drag float):\nThe distance between values. 0 is an error, and so is a step pointing\naway from stop (a positive step with stop below start): either way\nnothing is sent.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.arange 0 16 1 int64.\nWith an integer dtype use whole-number steps: a fractional step there\ngives an empty or surprising tensor.\n\nOUTPUTS:\n\narange out:\nThe 1-D tensor.\n\nREADING THE DEMO:\nThe strip shows t.arange 0 1 0.1, one cell per value, coloured from 0\n(dark purple) to 1 (yellow). It never reaches yellow, because 1 is\nleft out - the list ends at 0.9 and t.info says [10]. Below, t.range with\nthe same three numbers does include 1: eleven values. Drag step on\nt.arange and watch the count in t.info.\n\nRELATED:\nt.range is the same with the stop included. t.linspace takes a count\ninstead of a step. t.logspace spaces values by ratio. np.linspace is the\nNumPy linspace; there is no np.arange node.",
+                    "value": "Makes a 1-D tensor counting from start towards stop in steps of a fixed size.\n\nThe stop is NOT included. Use it when you know how far apart the values should be rather than how many you want - whole-number indices 0, 1, 2 ..., every tenth of a second, every 5 degrees.\n\nTHE STOP IS LEFT OUT:\nt.arange 0 1 0.1 gives TEN values, 0 to 0.9, not eleven. The count is (stop - start) / step, rounded up. This is the same rule as a Python range, and the reason t.arange 0 n 1 gives exactly n indices from 0 to n - 1. If you want the stop as well, use t.range; if you want an exact count with both ends exact, use t.linspace.\n\nA negative step counts down, but then start must be larger than stop.\n\nSYNTAX:\nt.arange <start: float> <stop: float> <step: float> <dtype> <device>\nDefaults: 0.0, 1.0 and 0.01 - 100 values, 0 to 0.99.\n\nEXAMPLE:\nt.arange 0 1 0.1\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the tensor. Changing start, stop or step does not send by itself - the metro in the demo clicks the node 20 times a second.\n\nstart / stop (drag floats):\nWhere to begin, and the value it stops short of.\n\nstep (drag float):\nThe distance between values. 0 is an error, and so is a step pointing away from stop (a positive step with stop below start): either way nothing is sent.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.arange 0 16 1 int64.\nWith an integer dtype use whole-number steps: a fractional step there gives an empty or surprising tensor.\n\nOUTPUTS:\n\narange out:\nThe 1-D tensor.\n\nREADING THE DEMO:\nThe strip shows t.arange 0 1 0.1, one cell per value, coloured from 0 (dark purple) to 1 (yellow). It never reaches yellow, because 1 is left out - the list ends at 0.9 and t.info says [10]. Below, t.range with the same three numbers does include 1: eleven values. Drag step on t.arange and watch the count in t.info.\n\nRELATED:\nt.range is the same with the stop included. t.linspace takes a count instead of a step. t.logspace spaces values by ratio. np.linspace is the NumPy linspace; there is no np.arange node.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a 1-D tensor counting from start towards stop in steps of a fixed size.\n\nThe stop is NOT included. Use it when you know how far apart the values\nshould be rather than how many you want - whole-number indices 0, 1, 2\n..., every tenth of a second, every 5 degrees.\n\nTHE STOP IS LEFT OUT:\nt.arange 0 1 0.1 gives TEN values, 0 to 0.9, not eleven. The count is\n(stop - start) / step, rounded up. This is the same rule as a Python\nrange, and the reason t.arange 0 n 1 gives exactly n indices from 0 to\nn - 1. If you want the stop as well, use t.range; if you want an exact\ncount with both ends exact, use t.linspace.\n\nA negative step counts down, but then start must be larger than stop.\n\nSYNTAX:\nt.arange <start: float> <stop: float> <step: float> <dtype> <device>\nDefaults: 0.0, 1.0 and 0.01 - 100 values, 0 to 0.99.\n\nEXAMPLE:\nt.arange 0 1 0.1\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the tensor. Changing start,\nstop or step does not send by itself - the metro in the demo clicks the\nnode 20 times a second.\n\nstart / stop (drag floats):\nWhere to begin, and the value it stops short of.\n\nstep (drag float):\nThe distance between values. 0 is an error, and so is a step pointing\naway from stop (a positive step with stop below start): either way\nnothing is sent.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.arange 0 16 1 int64.\nWith an integer dtype use whole-number steps: a fractional step there\ngives an empty or surprising tensor.\n\nOUTPUTS:\n\narange out:\nThe 1-D tensor.\n\nREADING THE DEMO:\nThe strip shows t.arange 0 1 0.1, one cell per value, coloured from 0\n(dark purple) to 1 (yellow). It never reaches yellow, because 1 is\nleft out - the list ends at 0.9 and t.info says [10]. Below, t.range with\nthe same three numbers does include 1: eleven values. Drag step on\nt.arange and watch the count in t.info.\n\nRELATED:\nt.range is the same with the stop included. t.linspace takes a count\ninstead of a step. t.logspace spaces values by ratio. np.linspace is the\nNumPy linspace; there is no np.arange node."
+            "text": "Makes a 1-D tensor counting from start towards stop in steps of a fixed size.\n\nThe stop is NOT included. Use it when you know how far apart the values should be rather than how many you want - whole-number indices 0, 1, 2 ..., every tenth of a second, every 5 degrees.\n\nTHE STOP IS LEFT OUT:\nt.arange 0 1 0.1 gives TEN values, 0 to 0.9, not eleven. The count is (stop - start) / step, rounded up. This is the same rule as a Python range, and the reason t.arange 0 n 1 gives exactly n indices from 0 to n - 1. If you want the stop as well, use t.range; if you want an exact count with both ends exact, use t.linspace.\n\nA negative step counts down, but then start must be larger than stop.\n\nSYNTAX:\nt.arange <start: float> <stop: float> <step: float> <dtype> <device>\nDefaults: 0.0, 1.0 and 0.01 - 100 values, 0 to 0.99.\n\nEXAMPLE:\nt.arange 0 1 0.1\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the tensor. Changing start, stop or step does not send by itself - the metro in the demo clicks the node 20 times a second.\n\nstart / stop (drag floats):\nWhere to begin, and the value it stops short of.\n\nstep (drag float):\nThe distance between values. 0 is an error, and so is a step pointing away from stop (a positive step with stop below start): either way nothing is sent.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.arange 0 16 1 int64.\nWith an integer dtype use whole-number steps: a fractional step there gives an empty or surprising tensor.\n\nOUTPUTS:\n\narange out:\nThe 1-D tensor.\n\nREADING THE DEMO:\nThe strip shows t.arange 0 1 0.1, one cell per value, coloured from 0 (dark purple) to 1 (yellow). It never reaches yellow, because 1 is left out - the list ends at 0.9 and t.info says [10]. Below, t.range with the same three numbers does include 1: eleven values. Drag step on t.arange and watch the count in t.info.\n\nRELATED:\nt.range is the same with the stop included. t.linspace takes a count instead of a step. t.logspace spaces values by ratio. np.linspace is the NumPy linspace; there is no np.arange node."
         },
         "3": {
             "name": "metro",
@@ -444,7 +444,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 890,
+            "position_y": 924,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -456,9 +456,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 127,
-            "position_y": 890,
-            "width": 78,
+            "position_x": 106,
+            "position_y": 924,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -469,9 +469,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 248,
-            "position_y": 890,
-            "width": 78,
+            "position_x": 201,
+            "position_y": 924,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -482,9 +482,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 369,
-            "position_y": 890,
-            "width": 84,
+            "position_x": 296,
+            "position_y": 924,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -496,7 +496,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 977,
-            "position_x": 524,
+            "position_x": 30,
             "position_y": 890,
             "width": 156,
             "height": 30,
@@ -521,7 +521,7 @@
             "name": "close",
             "id": 1014,
             "position_x": 24,
-            "position_y": 964,
+            "position_y": 998,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

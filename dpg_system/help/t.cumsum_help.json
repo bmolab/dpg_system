@@ -1,5 +1,5 @@
 {
-    "height": 1498,
+    "height": 1532,
     "width": 1661,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Replaces each value of a tensor with the running total up to and\nincluding it: the first value, then the first two added, then the first\nthree, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at\nevery point. Use it to turn steps into a path (movements into positions,\nspeeds into distance travelled), to turn a histogram into a cumulative\ndistribution, or to turn a list of durations into start times.\n\nSYNTAX:\nt.cumsum <dim: int>\nDefault dim 0, the FIRST axis. For a 1-D tensor that is the only axis;\nfor a 2-D tensor it runs DOWN each column - unlike np.cumsum, which runs\nalong each row by default. Give an axis - t.cumsum 1, or -1 for the last\n- and a dim box appears so it can be changed.\n\nEXAMPLE:\nt.cumsum\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is summed and sent - the only inlet that makes the node send. An\naxis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end. Changing it does\nnot send by itself; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe running totals, the same shape as the input. The last value is the\ntotal of the whole run (what t.sum would give for a 1-D tensor).\n\nREADING THE DEMO:\nTop: t.rand makes 200 random steps between -1 and 1, a new set every\nhalf second. The upper plot shows them - noise, with no shape. The lower\nplot is their cumsum: a random walk, the path you get by taking those\nsteps one after another. Drag t.rand's max up to 1.2 (or min down) and\nthe steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a\nconstant is a straight line whose slope is the constant. Edit the\nmessage (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.cumsum is the NumPy version. t.diff is the reverse: it turns a path\nback into its steps. t.cumprod multiplies instead of adding. t.sum gives\nonly the final total. accumulate keeps a running total of a STREAM, one\nnumber at a time.",
+                    "value": "Replaces each value of a tensor with the running total up to and including it: the first value, then the first two added, then the first three, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at every point. Use it to turn steps into a path (movements into positions, speeds into distance travelled), to turn a histogram into a cumulative distribution, or to turn a list of durations into start times.\n\nSYNTAX:\nt.cumsum <dim: int>\nDefault dim 0, the FIRST axis. For a 1-D tensor that is the only axis;\nfor a 2-D tensor it runs DOWN each column - unlike np.cumsum, which runs\nalong each row by default. Give an axis - t.cumsum 1, or -1 for the last\n- and a dim box appears so it can be changed.\n\nEXAMPLE:\nt.cumsum\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is summed and sent - the only inlet that makes the node send. An axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end. Changing it does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe running totals, the same shape as the input. The last value is the total of the whole run (what t.sum would give for a 1-D tensor).\n\nREADING THE DEMO:\nTop: t.rand makes 200 random steps between -1 and 1, a new set every half second. The upper plot shows them - noise, with no shape. The lower plot is their cumsum: a random walk, the path you get by taking those steps one after another. Drag t.rand's max up to 1.2 (or min down) and the steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a constant is a straight line whose slope is the constant. Edit the message (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.cumsum is the NumPy version. t.diff is the reverse: it turns a path back into its steps. t.cumprod multiplies instead of adding. t.sum gives only the final total. accumulate keeps a running total of a STREAM, one number at a time.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Replaces each value of a tensor with the running total up to and\nincluding it: the first value, then the first two added, then the first\nthree, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at\nevery point. Use it to turn steps into a path (movements into positions,\nspeeds into distance travelled), to turn a histogram into a cumulative\ndistribution, or to turn a list of durations into start times.\n\nSYNTAX:\nt.cumsum <dim: int>\nDefault dim 0, the FIRST axis. For a 1-D tensor that is the only axis;\nfor a 2-D tensor it runs DOWN each column - unlike np.cumsum, which runs\nalong each row by default. Give an axis - t.cumsum 1, or -1 for the last\n- and a dim box appears so it can be changed.\n\nEXAMPLE:\nt.cumsum\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is summed and sent - the only inlet that makes the node send. An\naxis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end. Changing it does\nnot send by itself; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe running totals, the same shape as the input. The last value is the\ntotal of the whole run (what t.sum would give for a 1-D tensor).\n\nREADING THE DEMO:\nTop: t.rand makes 200 random steps between -1 and 1, a new set every\nhalf second. The upper plot shows them - noise, with no shape. The lower\nplot is their cumsum: a random walk, the path you get by taking those\nsteps one after another. Drag t.rand's max up to 1.2 (or min down) and\nthe steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a\nconstant is a straight line whose slope is the constant. Edit the\nmessage (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.cumsum is the NumPy version. t.diff is the reverse: it turns a path\nback into its steps. t.cumprod multiplies instead of adding. t.sum gives\nonly the final total. accumulate keeps a running total of a STREAM, one\nnumber at a time."
+            "text": "Replaces each value of a tensor with the running total up to and including it: the first value, then the first two added, then the first three, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at every point. Use it to turn steps into a path (movements into positions, speeds into distance travelled), to turn a histogram into a cumulative distribution, or to turn a list of durations into start times.\n\nSYNTAX:\nt.cumsum <dim: int>\nDefault dim 0, the FIRST axis. For a 1-D tensor that is the only axis;\nfor a 2-D tensor it runs DOWN each column - unlike np.cumsum, which runs\nalong each row by default. Give an axis - t.cumsum 1, or -1 for the last\n- and a dim box appears so it can be changed.\n\nEXAMPLE:\nt.cumsum\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is summed and sent - the only inlet that makes the node send. An axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end. Changing it does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe running totals, the same shape as the input. The last value is the total of the whole run (what t.sum would give for a 1-D tensor).\n\nREADING THE DEMO:\nTop: t.rand makes 200 random steps between -1 and 1, a new set every half second. The upper plot shows them - noise, with no shape. The lower plot is their cumsum: a random walk, the path you get by taking those steps one after another. Drag t.rand's max up to 1.2 (or min down) and the steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a constant is a straight line whose slope is the constant. Edit the message (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.cumsum is the NumPy version. t.diff is the reverse: it turns a path back into its steps. t.cumprod multiplies instead of adding. t.sum gives only the final total. accumulate keeps a running total of a STREAM, one number at a time."
         },
         "3": {
             "name": "metro",
@@ -620,8 +620,8 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1320,
-            "width": 72,
+            "position_y": 1354,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -632,9 +632,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 143,
-            "position_y": 1320,
-            "width": 53,
+            "position_x": 119,
+            "position_y": 1354,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -645,9 +645,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 233,
-            "position_y": 1320,
-            "width": 72,
+            "position_x": 189,
+            "position_y": 1354,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -658,9 +658,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 346,
-            "position_y": 1320,
-            "width": 47,
+            "position_x": 278,
+            "position_y": 1354,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -671,9 +671,9 @@
         "24": {
             "name": "help_link",
             "id": 1125,
-            "position_x": 428,
-            "position_y": 1320,
-            "width": 78,
+            "position_x": 342,
+            "position_y": 1354,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -685,8 +685,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1162,
-            "position_x": 532,
-            "position_y": 1364,
+            "position_x": 30,
+            "position_y": 1320,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -710,7 +710,7 @@
             "name": "close",
             "id": 1199,
             "position_x": 24,
-            "position_y": 1394,
+            "position_y": 1428,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

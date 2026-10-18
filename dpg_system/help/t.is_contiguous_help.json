@@ -1,5 +1,5 @@
 {
-    "height": 1070,
+    "height": 1104,
     "width": 1968,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Says whether a tensor's values are stored row after row in memory\n(True) or not (False). It changes nothing.\n\nUse it to find out whether a t.view will work, or whether a t.contiguous\nin front of something would actually copy - on a large tensor that copy\nis worth avoiding when it is not needed.\n\nWHAT CONTIGUOUS MEANS:\nA tensor's values live in one flat run of memory, and its shape says how\nto read that run as rows and columns. A fresh tensor is stored row after\nrow, in order - contiguous. t.t, t.transpose, t.permute and slicing out\nsome columns (t.narrow on dimension 1) do not move any values: they\nchange how the same memory is read, which is why they cost nothing at\nany size. The result shows the right numbers, but they are no longer\nstored row after row - it is not contiguous.\n\nSYNTAX:\nt.is_contiguous\n\nEXAMPLE:\nt.is_contiguous\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is tested and the answer sent. A\nlist or NumPy array is turned into a tensor first, which is always\ncontiguous. An empty tensor is ignored.\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nOne 4 by 8 t.rand tensor (click its own button for new values) goes\nfour ways, each into a t.is_contiguous:\nas it is - True;\ntransposed by t.t - False, the same memory read column-first;\nthe first 3 COLUMNS cut out by t.narrow 1 - False, each row now skips\nthe values of the columns left out;\nthe first 2 ROWS cut out by t.narrow 0 - True, those rows are still one\nunbroken run.\nt.flip also rearranges, but it copies, so its result is True.\n\nRELATED:\nt.contiguous makes a contiguous copy. t.view needs a contiguous input;\nt.reshape does not. t.info reports the other things worth knowing about\na tensor.",
+                    "value": "Says whether a tensor's values are stored row after row in memory (True) or not (False). It changes nothing.\n\nUse it to find out whether a t.view will work, or whether a t.contiguous in front of something would actually copy - on a large tensor that copy is worth avoiding when it is not needed.\n\nWHAT CONTIGUOUS MEANS:\nA tensor's values live in one flat run of memory, and its shape says how to read that run as rows and columns. A fresh tensor is stored row after row, in order - contiguous. t.t, t.transpose, t.permute and slicing out some columns (t.narrow on dimension 1) do not move any values: they change how the same memory is read, which is why they cost nothing at any size. The result shows the right numbers, but they are no longer stored row after row - it is not contiguous.\n\nSYNTAX:\nt.is_contiguous\n\nEXAMPLE:\nt.is_contiguous\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is tested and the answer sent. A list or NumPy array is turned into a tensor first, which is always contiguous. An empty tensor is ignored.\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nOne 4 by 8 t.rand tensor (click its own button for new values) goes four ways, each into a t.is_contiguous:\nas it is - True;\ntransposed by t.t - False, the same memory read column-first;\nthe first 3 COLUMNS cut out by t.narrow 1 - False, each row now skips the values of the columns left out;\nthe first 2 ROWS cut out by t.narrow 0 - True, those rows are still one unbroken run.\nt.flip also rearranges, but it copies, so its result is True.\n\nRELATED:\nt.contiguous makes a contiguous copy. t.view needs a contiguous input;\nt.reshape does not. t.info reports the other things worth knowing about a tensor.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Says whether a tensor's values are stored row after row in memory\n(True) or not (False). It changes nothing.\n\nUse it to find out whether a t.view will work, or whether a t.contiguous\nin front of something would actually copy - on a large tensor that copy\nis worth avoiding when it is not needed.\n\nWHAT CONTIGUOUS MEANS:\nA tensor's values live in one flat run of memory, and its shape says how\nto read that run as rows and columns. A fresh tensor is stored row after\nrow, in order - contiguous. t.t, t.transpose, t.permute and slicing out\nsome columns (t.narrow on dimension 1) do not move any values: they\nchange how the same memory is read, which is why they cost nothing at\nany size. The result shows the right numbers, but they are no longer\nstored row after row - it is not contiguous.\n\nSYNTAX:\nt.is_contiguous\n\nEXAMPLE:\nt.is_contiguous\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is tested and the answer sent. A\nlist or NumPy array is turned into a tensor first, which is always\ncontiguous. An empty tensor is ignored.\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nOne 4 by 8 t.rand tensor (click its own button for new values) goes\nfour ways, each into a t.is_contiguous:\nas it is - True;\ntransposed by t.t - False, the same memory read column-first;\nthe first 3 COLUMNS cut out by t.narrow 1 - False, each row now skips\nthe values of the columns left out;\nthe first 2 ROWS cut out by t.narrow 0 - True, those rows are still one\nunbroken run.\nt.flip also rearranges, but it copies, so its result is True.\n\nRELATED:\nt.contiguous makes a contiguous copy. t.view needs a contiguous input;\nt.reshape does not. t.info reports the other things worth knowing about\na tensor."
+            "text": "Says whether a tensor's values are stored row after row in memory (True) or not (False). It changes nothing.\n\nUse it to find out whether a t.view will work, or whether a t.contiguous in front of something would actually copy - on a large tensor that copy is worth avoiding when it is not needed.\n\nWHAT CONTIGUOUS MEANS:\nA tensor's values live in one flat run of memory, and its shape says how to read that run as rows and columns. A fresh tensor is stored row after row, in order - contiguous. t.t, t.transpose, t.permute and slicing out some columns (t.narrow on dimension 1) do not move any values: they change how the same memory is read, which is why they cost nothing at any size. The result shows the right numbers, but they are no longer stored row after row - it is not contiguous.\n\nSYNTAX:\nt.is_contiguous\n\nEXAMPLE:\nt.is_contiguous\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is tested and the answer sent. A list or NumPy array is turned into a tensor first, which is always contiguous. An empty tensor is ignored.\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nOne 4 by 8 t.rand tensor (click its own button for new values) goes four ways, each into a t.is_contiguous:\nas it is - True;\ntransposed by t.t - False, the same memory read column-first;\nthe first 3 COLUMNS cut out by t.narrow 1 - False, each row now skips the values of the columns left out;\nthe first 2 ROWS cut out by t.narrow 0 - True, those rows are still one unbroken run.\nt.flip also rearranges, but it copies, so its result is True.\n\nRELATED:\nt.contiguous makes a contiguous copy. t.view needs a contiguous input;\nt.reshape does not. t.info reports the other things worth knowing about a tensor."
         },
         "3": {
             "name": "load_bang",
@@ -518,7 +518,7 @@
             "name": "comment",
             "id": 940,
             "position_x": 974,
-            "position_y": 860,
+            "position_y": 894,
             "width": 101,
             "height": 30,
             "visibility": "show_all",
@@ -660,7 +660,7 @@
             "name": "comment",
             "id": 1125,
             "position_x": 974,
-            "position_y": 900,
+            "position_y": 934,
             "width": 82,
             "height": 30,
             "visibility": "show_all",
@@ -791,7 +791,7 @@
             "name": "comment",
             "id": 1310,
             "position_x": 974,
-            "position_y": 940,
+            "position_y": 974,
             "width": 107,
             "height": 30,
             "visibility": "show_all",
@@ -815,8 +815,8 @@
             "name": "help_link",
             "id": 1347,
             "position_x": 30,
-            "position_y": 830,
-            "width": 90,
+            "position_y": 864,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -827,9 +827,9 @@
         "31": {
             "name": "help_link",
             "id": 1384,
-            "position_x": 166,
-            "position_y": 830,
-            "width": 53,
+            "position_x": 138,
+            "position_y": 864,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -840,9 +840,9 @@
         "32": {
             "name": "help_link",
             "id": 1421,
-            "position_x": 256,
-            "position_y": 830,
-            "width": 72,
+            "position_x": 208,
+            "position_y": 864,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -853,8 +853,8 @@
         "33": {
             "name": "help_link",
             "id": 1458,
-            "position_x": 369,
-            "position_y": 830,
+            "position_x": 297,
+            "position_y": 864,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -866,9 +866,9 @@
         "34": {
             "name": "help_link",
             "id": 1495,
-            "position_x": 474,
-            "position_y": 830,
-            "width": 53,
+            "position_x": 379,
+            "position_y": 864,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -880,8 +880,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1532,
-            "position_x": 974,
-            "position_y": 980,
+            "position_x": 30,
+            "position_y": 830,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -905,7 +905,7 @@
             "name": "close",
             "id": 1569,
             "position_x": 24,
-            "position_y": 904,
+            "position_y": 938,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -204,7 +204,7 @@
             }
         },
         "1": {
-            "height": 1228,
+            "height": 1262,
             "width": 1851,
             "position": [
                 100,
@@ -271,7 +271,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Finds, element by element, the greatest common divisor of two\ntensors of whole numbers: the largest number that divides both exactly.\n\nThe gcd of 12 and 8 is 4 - the biggest step that lands on both. In a\npatch that is often rhythmic: the gcd of two cycle lengths is the\nlargest pulse both are built from, and dividing each by it reduces a\nratio to its simplest form (12:8 is 3:2).\n\nSYNTAX:\nt.gcd\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, list or a single number used for every element. It is\nonly stored when it arrives, so send it FIRST; until it has received\nsomething the node sends nothing.\n\nThe shapes must broadcast: the same shape, a single number, or shapes\nthat differ only where one has length 1. The demo's table is exactly\nthat - a column of 12 against a row of 12 gives all 144 pairs.\n\nWHOLE NUMBERS ONLY:\nThis is number theory, not arithmetic. Both inputs are turned into whole\nnumbers (64-bit integers) before the work is done, so lists and float\ntensors can go straight in. A value with a fraction is rounded to the\nNEAREST whole number first: 2.6 counts as 3 and 9.4 as 9, so a value\nlike 11.9999 that should have been 12 does not quietly become 11. For a\ndifferent rule put t.floor or t.ceil in front.\n\nZERO:\nThe gcd of a number and 0 is the number itself (every number divides 0),\nand the gcd of 0 and 0 is 0.\n\nOUTPUTS:\n\ngcd tensor out:\nThe greatest common divisors, as 64-bit integers, in the broadcast shape.\n\nREADING THE DEMO:\nTop: four pairs at once. 12 and 8 give 4, 18 and 12 give 6, 7 and 21\ngive 7, 9 and 0 give 9.\n\nBottom: every pair from 1 to 12. Row r, column c holds the gcd of r+1\nand c+1 (the top-left cell is 1 and 1). The diagonal is bright - a\nnumber shares everything with itself - while the first row and column\nare all 1, and so are the rows and columns of the primes 5, 7 and 11\nexcept where they meet themselves. The bright lattice of 2s, 3s, 4s and\n6s is the numbers that share factors.\n\nRELATED:\nt.lcm is the other half: the smallest number both divide into. For any\npair, gcd times lcm is the pair multiplied together. t.round and t.floor\nmake whole numbers from fractions.",
+                            "value": "Finds, element by element, the greatest common divisor of two tensors of whole numbers: the largest number that divides both exactly.\n\nThe gcd of 12 and 8 is 4 - the biggest step that lands on both. In a patch that is often rhythmic: the gcd of two cycle lengths is the largest pulse both are built from, and dividing each by it reduces a ratio to its simplest form (12:8 is 3:2).\n\nSYNTAX:\nt.gcd\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, list or a single number used for every element. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing.\n\nThe shapes must broadcast: the same shape, a single number, or shapes that differ only where one has length 1. The demo's table is exactly that - a column of 12 against a row of 12 gives all 144 pairs.\n\nWHOLE NUMBERS ONLY:\nThis is number theory, not arithmetic. Both inputs are turned into whole numbers (64-bit integers) before the work is done, so lists and float tensors can go straight in. A value with a fraction is rounded to the NEAREST whole number first: 2.6 counts as 3 and 9.4 as 9, so a value like 11.9999 that should have been 12 does not quietly become 11. For a different rule put t.floor or t.ceil in front.\n\nZERO:\nThe gcd of a number and 0 is the number itself (every number divides 0), and the gcd of 0 and 0 is 0.\n\nOUTPUTS:\n\ngcd tensor out:\nThe greatest common divisors, as 64-bit integers, in the broadcast shape.\n\nREADING THE DEMO:\nTop: four pairs at once. 12 and 8 give 4, 18 and 12 give 6, 7 and 21 give 7, 9 and 0 give 9.\n\nBottom: every pair from 1 to 12. Row r, column c holds the gcd of r+1 and c+1 (the top-left cell is 1 and 1). The diagonal is bright - a number shares everything with itself - while the first row and column are all 1, and so are the rows and columns of the primes 5, 7 and 11 except where they meet themselves. The bright lattice of 2s, 3s, 4s and 6s is the numbers that share factors.\n\nRELATED:\nt.lcm is the other half: the smallest number both divide into. For any pair, gcd times lcm is the pair multiplied together. t.round and t.floor make whole numbers from fractions.",
                             "value_type": "str"
                         },
                         "1": {
@@ -295,7 +295,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Finds, element by element, the greatest common divisor of two\ntensors of whole numbers: the largest number that divides both exactly.\n\nThe gcd of 12 and 8 is 4 - the biggest step that lands on both. In a\npatch that is often rhythmic: the gcd of two cycle lengths is the\nlargest pulse both are built from, and dividing each by it reduces a\nratio to its simplest form (12:8 is 3:2).\n\nSYNTAX:\nt.gcd\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, list or a single number used for every element. It is\nonly stored when it arrives, so send it FIRST; until it has received\nsomething the node sends nothing.\n\nThe shapes must broadcast: the same shape, a single number, or shapes\nthat differ only where one has length 1. The demo's table is exactly\nthat - a column of 12 against a row of 12 gives all 144 pairs.\n\nWHOLE NUMBERS ONLY:\nThis is number theory, not arithmetic. Both inputs are turned into whole\nnumbers (64-bit integers) before the work is done, so lists and float\ntensors can go straight in. A value with a fraction is rounded to the\nNEAREST whole number first: 2.6 counts as 3 and 9.4 as 9, so a value\nlike 11.9999 that should have been 12 does not quietly become 11. For a\ndifferent rule put t.floor or t.ceil in front.\n\nZERO:\nThe gcd of a number and 0 is the number itself (every number divides 0),\nand the gcd of 0 and 0 is 0.\n\nOUTPUTS:\n\ngcd tensor out:\nThe greatest common divisors, as 64-bit integers, in the broadcast shape.\n\nREADING THE DEMO:\nTop: four pairs at once. 12 and 8 give 4, 18 and 12 give 6, 7 and 21\ngive 7, 9 and 0 give 9.\n\nBottom: every pair from 1 to 12. Row r, column c holds the gcd of r+1\nand c+1 (the top-left cell is 1 and 1). The diagonal is bright - a\nnumber shares everything with itself - while the first row and column\nare all 1, and so are the rows and columns of the primes 5, 7 and 11\nexcept where they meet themselves. The bright lattice of 2s, 3s, 4s and\n6s is the numbers that share factors.\n\nRELATED:\nt.lcm is the other half: the smallest number both divide into. For any\npair, gcd times lcm is the pair multiplied together. t.round and t.floor\nmake whole numbers from fractions."
+                    "text": "Finds, element by element, the greatest common divisor of two tensors of whole numbers: the largest number that divides both exactly.\n\nThe gcd of 12 and 8 is 4 - the biggest step that lands on both. In a patch that is often rhythmic: the gcd of two cycle lengths is the largest pulse both are built from, and dividing each by it reduces a ratio to its simplest form (12:8 is 3:2).\n\nSYNTAX:\nt.gcd\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, list or a single number used for every element. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing.\n\nThe shapes must broadcast: the same shape, a single number, or shapes that differ only where one has length 1. The demo's table is exactly that - a column of 12 against a row of 12 gives all 144 pairs.\n\nWHOLE NUMBERS ONLY:\nThis is number theory, not arithmetic. Both inputs are turned into whole numbers (64-bit integers) before the work is done, so lists and float tensors can go straight in. A value with a fraction is rounded to the NEAREST whole number first: 2.6 counts as 3 and 9.4 as 9, so a value like 11.9999 that should have been 12 does not quietly become 11. For a different rule put t.floor or t.ceil in front.\n\nZERO:\nThe gcd of a number and 0 is the number itself (every number divides 0), and the gcd of 0 and 0 is 0.\n\nOUTPUTS:\n\ngcd tensor out:\nThe greatest common divisors, as 64-bit integers, in the broadcast shape.\n\nREADING THE DEMO:\nTop: four pairs at once. 12 and 8 give 4, 18 and 12 give 6, 7 and 21 give 7, 9 and 0 give 9.\n\nBottom: every pair from 1 to 12. Row r, column c holds the gcd of r+1 and c+1 (the top-left cell is 1 and 1). The diagonal is bright - a number shares everything with itself - while the first row and column are all 1, and so are the rows and columns of the primes 5, 7 and 11 except where they meet themselves. The bright lattice of 2s, 3s, 4s and 6s is the numbers that share factors.\n\nRELATED:\nt.lcm is the other half: the smallest number both divide into. For any pair, gcd times lcm is the pair multiplied together. t.round and t.floor make whole numbers from fractions."
                 },
                 "3": {
                     "name": "button",
@@ -610,8 +610,8 @@
                     "name": "help_link",
                     "id": 866,
                     "position_x": 30,
-                    "position_y": 1050,
-                    "width": 47,
+                    "position_y": 1084,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -622,8 +622,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 112,
-                    "position_y": 1050,
+                    "position_x": 94,
+                    "position_y": 1084,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -635,8 +635,8 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 209,
-                    "position_y": 1050,
+                    "position_x": 170,
+                    "position_y": 1084,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -648,9 +648,9 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 306,
-                    "position_y": 1050,
-                    "width": 53,
+                    "position_x": 246,
+                    "position_y": 1084,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -662,8 +662,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1014,
-                    "position_x": 568,
-                    "position_y": 1094,
+                    "position_x": 30,
+                    "position_y": 1050,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -687,7 +687,7 @@
                     "name": "close",
                     "id": 1051,
                     "position_x": 24,
-                    "position_y": 1124,
+                    "position_y": 1158,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

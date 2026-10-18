@@ -1,5 +1,5 @@
 {
-    "height": 1118,
+    "height": 1152,
     "width": 1662,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a random choice among the elements, weighted by their scores, as a\nsoftmax: each call adds fresh random noise (Gumbel noise) to the scores\nand then takes a softmax.\n\nRun it repeatedly on the same scores and each element comes out on top\nas often as its plain softmax share says it should - the 3 in the demo\nwins about 38% of the time, the 0 about 2%. So where t.nn.softmax\nDESCRIBES the distribution, gumbel_softmax SAMPLES from it. With 'hard'\non, the output is exactly one 1 and the rest 0: a one-of-N pick, the way\nyou would choose a random state, sound or pose by weight.\n\nSYNTAX:\nt.nn.gumbel_softmax\nNo arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (unnormalised log probabilities). Receiving them triggers the\nnode, and every arrival draws new noise, so the same input gives a\ndifferent output each time. A list, number or numpy array is turned into\na float32 tensor first; an integer tensor is refused.\n\ntau (drag float on the node, and an inlet):\nThe temperature of the softmax taken after the noise. Default 1. Low tau\n(0.1) makes each draw nearly one-of-N - one element close to 1, the\nothers close to 0. High tau (5) blurs each draw towards even shares.\nMust be above 0. Does not trigger.\n\nhard (checkbox on the node, and an inlet):\nOn: the output is exactly one-of-N, a single 1 at the winner. Default off.\nDoes not trigger.\n\ndim (box on the node, and an inlet):\nThe axis the choice is made along. Default -1, the last axis. For a 2-D\ntensor, -1 (or 1) makes one choice per ROW, each row summing to 1; 0\nmakes one choice per COLUMN. The demo's scores are 1-D, so there is only\none axis (0 and -1 are the same). An axis the tensor does not have is\nrefused with a console message and nothing is sent. Does not trigger.\n\nOUTPUTS:\n\noutput:\nOne random draw, the same shape as the input, summing to 1 along the\ndim axis.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page, re-sent five times a\nsecond, so the bottom strip changes on every draw. Watch which cell lights\nup: mostly the fourth (score 3) and seventh (2.5), sometimes others,\nrarely the sixth (score 0). The int shows the winner's index (t.argmax),\ncounting from 0. Tick 'hard' on the node to see clean one-of-N picks;\ndrag tau up and the draws turn soft and even. The scale slider is a\nsecond temperature, applied before the noise: it changes how often each\nelement wins, where tau changes only how decisive each draw looks.\n\nRELATED:\nt.nn.softmax is the distribution being sampled. t.argmax picks the\nwinner's index. t.dist.gumbel is the noise itself. With hard on, this node\nis the patch's way to make a weighted random choice.",
+                    "value": "Makes a random choice among the elements, weighted by their scores, as a softmax: each call adds fresh random noise (Gumbel noise) to the scores and then takes a softmax.\n\nRun it repeatedly on the same scores and each element comes out on top as often as its plain softmax share says it should - the 3 in the demo wins about 38% of the time, the 0 about 2%. So where t.nn.softmax DESCRIBES the distribution, gumbel_softmax SAMPLES from it. With 'hard' on, the output is exactly one 1 and the rest 0: a one-of-N pick, the way you would choose a random state, sound or pose by weight.\n\nSYNTAX:\nt.nn.gumbel_softmax\nNo arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (unnormalised log probabilities). Receiving them triggers the node, and every arrival draws new noise, so the same input gives a different output each time. A list, number or numpy array is turned into a float32 tensor first; an integer tensor is refused.\n\ntau (drag float on the node, and an inlet):\nThe temperature of the softmax taken after the noise. Default 1. Low tau (0.1) makes each draw nearly one-of-N - one element close to 1, the others close to 0. High tau (5) blurs each draw towards even shares. Must be above 0. Does not trigger.\n\nhard (checkbox on the node, and an inlet):\nOn: the output is exactly one-of-N, a single 1 at the winner. Default off. Does not trigger.\n\ndim (box on the node, and an inlet):\nThe axis the choice is made along. Default -1, the last axis. For a 2-D tensor, -1 (or 1) makes one choice per ROW, each row summing to 1; 0 makes one choice per COLUMN. The demo's scores are 1-D, so there is only one axis (0 and -1 are the same). An axis the tensor does not have is refused with a console message and nothing is sent. Does not trigger.\n\nOUTPUTS:\n\noutput:\nOne random draw, the same shape as the input, summing to 1 along the dim axis.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page, re-sent five times a second, so the bottom strip changes on every draw. Watch which cell lights up: mostly the fourth (score 3) and seventh (2.5), sometimes others, rarely the sixth (score 0). The int shows the winner's index (t.argmax), counting from 0. Tick 'hard' on the node to see clean one-of-N picks;\ndrag tau up and the draws turn soft and even. The scale slider is a second temperature, applied before the noise: it changes how often each element wins, where tau changes only how decisive each draw looks.\n\nRELATED:\nt.nn.softmax is the distribution being sampled. t.argmax picks the winner's index. t.dist.gumbel is the noise itself. With hard on, this node is the patch's way to make a weighted random choice.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a random choice among the elements, weighted by their scores, as a\nsoftmax: each call adds fresh random noise (Gumbel noise) to the scores\nand then takes a softmax.\n\nRun it repeatedly on the same scores and each element comes out on top\nas often as its plain softmax share says it should - the 3 in the demo\nwins about 38% of the time, the 0 about 2%. So where t.nn.softmax\nDESCRIBES the distribution, gumbel_softmax SAMPLES from it. With 'hard'\non, the output is exactly one 1 and the rest 0: a one-of-N pick, the way\nyou would choose a random state, sound or pose by weight.\n\nSYNTAX:\nt.nn.gumbel_softmax\nNo arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (unnormalised log probabilities). Receiving them triggers the\nnode, and every arrival draws new noise, so the same input gives a\ndifferent output each time. A list, number or numpy array is turned into\na float32 tensor first; an integer tensor is refused.\n\ntau (drag float on the node, and an inlet):\nThe temperature of the softmax taken after the noise. Default 1. Low tau\n(0.1) makes each draw nearly one-of-N - one element close to 1, the\nothers close to 0. High tau (5) blurs each draw towards even shares.\nMust be above 0. Does not trigger.\n\nhard (checkbox on the node, and an inlet):\nOn: the output is exactly one-of-N, a single 1 at the winner. Default off.\nDoes not trigger.\n\ndim (box on the node, and an inlet):\nThe axis the choice is made along. Default -1, the last axis. For a 2-D\ntensor, -1 (or 1) makes one choice per ROW, each row summing to 1; 0\nmakes one choice per COLUMN. The demo's scores are 1-D, so there is only\none axis (0 and -1 are the same). An axis the tensor does not have is\nrefused with a console message and nothing is sent. Does not trigger.\n\nOUTPUTS:\n\noutput:\nOne random draw, the same shape as the input, summing to 1 along the\ndim axis.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page, re-sent five times a\nsecond, so the bottom strip changes on every draw. Watch which cell lights\nup: mostly the fourth (score 3) and seventh (2.5), sometimes others,\nrarely the sixth (score 0). The int shows the winner's index (t.argmax),\ncounting from 0. Tick 'hard' on the node to see clean one-of-N picks;\ndrag tau up and the draws turn soft and even. The scale slider is a\nsecond temperature, applied before the noise: it changes how often each\nelement wins, where tau changes only how decisive each draw looks.\n\nRELATED:\nt.nn.softmax is the distribution being sampled. t.argmax picks the\nwinner's index. t.dist.gumbel is the noise itself. With hard on, this node\nis the patch's way to make a weighted random choice."
+            "text": "Makes a random choice among the elements, weighted by their scores, as a softmax: each call adds fresh random noise (Gumbel noise) to the scores and then takes a softmax.\n\nRun it repeatedly on the same scores and each element comes out on top as often as its plain softmax share says it should - the 3 in the demo wins about 38% of the time, the 0 about 2%. So where t.nn.softmax DESCRIBES the distribution, gumbel_softmax SAMPLES from it. With 'hard' on, the output is exactly one 1 and the rest 0: a one-of-N pick, the way you would choose a random state, sound or pose by weight.\n\nSYNTAX:\nt.nn.gumbel_softmax\nNo arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (unnormalised log probabilities). Receiving them triggers the node, and every arrival draws new noise, so the same input gives a different output each time. A list, number or numpy array is turned into a float32 tensor first; an integer tensor is refused.\n\ntau (drag float on the node, and an inlet):\nThe temperature of the softmax taken after the noise. Default 1. Low tau (0.1) makes each draw nearly one-of-N - one element close to 1, the others close to 0. High tau (5) blurs each draw towards even shares. Must be above 0. Does not trigger.\n\nhard (checkbox on the node, and an inlet):\nOn: the output is exactly one-of-N, a single 1 at the winner. Default off. Does not trigger.\n\ndim (box on the node, and an inlet):\nThe axis the choice is made along. Default -1, the last axis. For a 2-D tensor, -1 (or 1) makes one choice per ROW, each row summing to 1; 0 makes one choice per COLUMN. The demo's scores are 1-D, so there is only one axis (0 and -1 are the same). An axis the tensor does not have is refused with a console message and nothing is sent. Does not trigger.\n\nOUTPUTS:\n\noutput:\nOne random draw, the same shape as the input, summing to 1 along the dim axis.\n\nREADING THE DEMO:\nThe same eight scores as on the softmax page, re-sent five times a second, so the bottom strip changes on every draw. Watch which cell lights up: mostly the fourth (score 3) and seventh (2.5), sometimes others, rarely the sixth (score 0). The int shows the winner's index (t.argmax), counting from 0. Tick 'hard' on the node to see clean one-of-N picks;\ndrag tau up and the draws turn soft and even. The scale slider is a second temperature, applied before the noise: it changes how often each element wins, where tau changes only how decisive each draw looks.\n\nRELATED:\nt.nn.softmax is the distribution being sampled. t.argmax picks the winner's index. t.dist.gumbel is the noise itself. With hard on, this node is the patch's way to make a weighted random choice."
         },
         "3": {
             "name": "metro",
@@ -543,8 +543,8 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 940,
-            "width": 90,
+            "position_y": 974,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -555,8 +555,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 166,
-            "position_y": 940,
+            "position_x": 138,
+            "position_y": 974,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -568,9 +568,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 271,
-            "position_y": 940,
-            "width": 96,
+            "position_x": 220,
+            "position_y": 974,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -581,9 +581,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 415,
-            "position_y": 940,
-            "width": 115,
+            "position_x": 334,
+            "position_y": 974,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -595,8 +595,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1088,
-            "position_x": 556,
-            "position_y": 984,
+            "position_x": 30,
+            "position_y": 940,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -620,7 +620,7 @@
             "name": "close",
             "id": 1125,
             "position_x": 24,
-            "position_y": 1014,
+            "position_y": 1048,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

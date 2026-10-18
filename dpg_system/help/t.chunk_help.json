@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1148,
+            "height": 1182,
             "width": 1797,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Cuts a tensor into a number of pieces along one axis, and sends each\npiece from its own outlet.\n\nUse it to separate a tensor that holds several things side by side - the\nleft and right halves of a picture, the x, y and z columns of a list of\npoints, the first and second half of a recording.\n\nHOW THE PIECES ARE SIZED:\nt.chunk makes every piece the same size - the length divided by the\nnumber of pieces, rounded UP - and the last piece takes what is left.\nSo 7 rows in 3 pieces are 3, 3 and 1. The surprise: it can give FEWER\npieces than you asked for. 6 rows in 4 pieces are 2, 2 and 2 - only\nthree pieces, because a fourth would be empty - and the unused outlet\nsends nothing (its display keeps whatever it showed before).\nt.tensor_split never does that: it spreads the remainder over the first\npieces (7 in 3 gives 3, 2, 2) and always gives the count you asked for.\n\nTHE NUMBER OF PIECES:\nThe first argument decides how many outlets the node has (tensor 0,\ntensor 1, ...) and how many pieces it cuts. The 'split' box among the\nnode's options sets the number of pieces afterwards, from 1 up to the\nnumber of outlets - it cannot go higher, because the outlets are made\nwhen the node is. With fewer pieces than outlets the later outlets send\nnothing (a display on them keeps the last piece it was sent). A message\n'split 2' into tensor in sets it from the patch, as the demo's messages\ndo.\n\nSYNTAX:\nt.chunk <pieces: int> <dim: int>\nDefaults: 2 pieces, dim 0.\n\nEXAMPLE:\nt.chunk 3\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first).\nEvery tensor that arrives is cut and the pieces sent, tensor 0 first.\nOnly this inlet makes the node send. A message 'split <n>' arriving\nhere sets the number of pieces and cuts the last tensor again.\n\ndim (int box, also an inlet):\nThe axis to cut across: 0 cuts the rows into groups (horizontal cuts),\n1 cuts the columns into groups (vertical cuts). Negative counts from the\nend. If the tensor does not have that axis, or the axis is shorter than\nthe number of pieces, nothing is sent. Changing it does NOT send by\nitself; in the demo a metro inside make_F re-sends the F ten times a\nsecond.\n\nOUTPUTS:\n\ntensor 0, tensor 1, ...:\nThe pieces, in order. Each has as many axes as the input; only its\nlength along dim is smaller. Each is a view of the input, not a copy.\n\nREADING THE DEMO:\nt.chunk 3 cuts the 7 by 6 F into three bands of rows: the top 3 rows (the bar and the start of the stem), the next 3 (the middle arm with the stem above and below it), and a last piece of a single row. t.info\nshows each piece's shape. Type 1 into dim and it cuts the 6 columns\ninstead, three slices 2 columns wide: the stem, then the two halves of\nthe arms. Click split 2 and the F is cut in two (4 rows, then 3), tensor 2\ngoing quiet - its display keeps the last piece it got; split 1 sends\nthe whole F from tensor 0; split 3 brings back three.\n\nRELATED:\nt.tensor_split cuts into pieces as even as possible (3, 2, 2 here).\nt.cat puts pieces back together. t.narrow takes out one piece by start\nand length. np.split is the numpy version (np.split sizes its pieces\nlike t.tensor_split).",
+                            "value": "Cuts a tensor into a number of pieces along one axis, and sends each piece from its own outlet.\n\nUse it to separate a tensor that holds several things side by side - the left and right halves of a picture, the x, y and z columns of a list of points, the first and second half of a recording.\n\nHOW THE PIECES ARE SIZED:\nt.chunk makes every piece the same size - the length divided by the number of pieces, rounded UP - and the last piece takes what is left. So 7 rows in 3 pieces are 3, 3 and 1. The surprise: it can give FEWER pieces than you asked for. 6 rows in 4 pieces are 2, 2 and 2 - only three pieces, because a fourth would be empty - and the unused outlet sends nothing (its display keeps whatever it showed before).\nt.tensor_split never does that: it spreads the remainder over the first pieces (7 in 3 gives 3, 2, 2) and always gives the count you asked for.\n\nTHE NUMBER OF PIECES:\nThe first argument decides how many outlets the node has (tensor 0, tensor 1, ...) and how many pieces it cuts. The 'split' box among the node's options sets the number of pieces afterwards, from 1 up to the number of outlets - it cannot go higher, because the outlets are made when the node is. With fewer pieces than outlets the later outlets send nothing (a display on them keeps the last piece it was sent). A message 'split 2' into tensor in sets it from the patch, as the demo's messages do.\n\nSYNTAX:\nt.chunk <pieces: int> <dim: int>\nDefaults: 2 pieces, dim 0.\n\nEXAMPLE:\nt.chunk 3\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first). Every tensor that arrives is cut and the pieces sent, tensor 0 first.\nOnly this inlet makes the node send. A message 'split <n>' arriving\nhere sets the number of pieces and cuts the last tensor again.\n\ndim (int box, also an inlet):\nThe axis to cut across: 0 cuts the rows into groups (horizontal cuts), 1 cuts the columns into groups (vertical cuts). Negative counts from the end. If the tensor does not have that axis, or the axis is shorter than the number of pieces, nothing is sent. Changing it does NOT send by itself; in the demo a metro inside make_F re-sends the F ten times a second.\n\nOUTPUTS:\n\ntensor 0, tensor 1, ...:\nThe pieces, in order. Each has as many axes as the input; only its length along dim is smaller. Each is a view of the input, not a copy.\n\nREADING THE DEMO:\nt.chunk 3 cuts the 7 by 6 F into three bands of rows: the top 3 rows (the bar and the start of the stem), the next 3 (the middle arm with the stem above and below it), and a last piece of a single row. t.info shows each piece's shape. Type 1 into dim and it cuts the 6 columns instead, three slices 2 columns wide: the stem, then the two halves of the arms. Click split 2 and the F is cut in two (4 rows, then 3), tensor 2 going quiet - its display keeps the last piece it got; split 1 sends the whole F from tensor 0; split 3 brings back three.\n\nRELATED:\nt.tensor_split cuts into pieces as even as possible (3, 2, 2 here). t.cat puts pieces back together. t.narrow takes out one piece by start and length. np.split is the numpy version (np.split sizes its pieces like t.tensor_split).",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Cuts a tensor into a number of pieces along one axis, and sends each\npiece from its own outlet.\n\nUse it to separate a tensor that holds several things side by side - the\nleft and right halves of a picture, the x, y and z columns of a list of\npoints, the first and second half of a recording.\n\nHOW THE PIECES ARE SIZED:\nt.chunk makes every piece the same size - the length divided by the\nnumber of pieces, rounded UP - and the last piece takes what is left.\nSo 7 rows in 3 pieces are 3, 3 and 1. The surprise: it can give FEWER\npieces than you asked for. 6 rows in 4 pieces are 2, 2 and 2 - only\nthree pieces, because a fourth would be empty - and the unused outlet\nsends nothing (its display keeps whatever it showed before).\nt.tensor_split never does that: it spreads the remainder over the first\npieces (7 in 3 gives 3, 2, 2) and always gives the count you asked for.\n\nTHE NUMBER OF PIECES:\nThe first argument decides how many outlets the node has (tensor 0,\ntensor 1, ...) and how many pieces it cuts. The 'split' box among the\nnode's options sets the number of pieces afterwards, from 1 up to the\nnumber of outlets - it cannot go higher, because the outlets are made\nwhen the node is. With fewer pieces than outlets the later outlets send\nnothing (a display on them keeps the last piece it was sent). A message\n'split 2' into tensor in sets it from the patch, as the demo's messages\ndo.\n\nSYNTAX:\nt.chunk <pieces: int> <dim: int>\nDefaults: 2 pieces, dim 0.\n\nEXAMPLE:\nt.chunk 3\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first).\nEvery tensor that arrives is cut and the pieces sent, tensor 0 first.\nOnly this inlet makes the node send. A message 'split <n>' arriving\nhere sets the number of pieces and cuts the last tensor again.\n\ndim (int box, also an inlet):\nThe axis to cut across: 0 cuts the rows into groups (horizontal cuts),\n1 cuts the columns into groups (vertical cuts). Negative counts from the\nend. If the tensor does not have that axis, or the axis is shorter than\nthe number of pieces, nothing is sent. Changing it does NOT send by\nitself; in the demo a metro inside make_F re-sends the F ten times a\nsecond.\n\nOUTPUTS:\n\ntensor 0, tensor 1, ...:\nThe pieces, in order. Each has as many axes as the input; only its\nlength along dim is smaller. Each is a view of the input, not a copy.\n\nREADING THE DEMO:\nt.chunk 3 cuts the 7 by 6 F into three bands of rows: the top 3 rows (the bar and the start of the stem), the next 3 (the middle arm with the stem above and below it), and a last piece of a single row. t.info\nshows each piece's shape. Type 1 into dim and it cuts the 6 columns\ninstead, three slices 2 columns wide: the stem, then the two halves of\nthe arms. Click split 2 and the F is cut in two (4 rows, then 3), tensor 2\ngoing quiet - its display keeps the last piece it got; split 1 sends\nthe whole F from tensor 0; split 3 brings back three.\n\nRELATED:\nt.tensor_split cuts into pieces as even as possible (3, 2, 2 here).\nt.cat puts pieces back together. t.narrow takes out one piece by start\nand length. np.split is the numpy version (np.split sizes its pieces\nlike t.tensor_split)."
+                    "text": "Cuts a tensor into a number of pieces along one axis, and sends each piece from its own outlet.\n\nUse it to separate a tensor that holds several things side by side - the left and right halves of a picture, the x, y and z columns of a list of points, the first and second half of a recording.\n\nHOW THE PIECES ARE SIZED:\nt.chunk makes every piece the same size - the length divided by the number of pieces, rounded UP - and the last piece takes what is left. So 7 rows in 3 pieces are 3, 3 and 1. The surprise: it can give FEWER pieces than you asked for. 6 rows in 4 pieces are 2, 2 and 2 - only three pieces, because a fourth would be empty - and the unused outlet sends nothing (its display keeps whatever it showed before).\nt.tensor_split never does that: it spreads the remainder over the first pieces (7 in 3 gives 3, 2, 2) and always gives the count you asked for.\n\nTHE NUMBER OF PIECES:\nThe first argument decides how many outlets the node has (tensor 0, tensor 1, ...) and how many pieces it cuts. The 'split' box among the node's options sets the number of pieces afterwards, from 1 up to the number of outlets - it cannot go higher, because the outlets are made when the node is. With fewer pieces than outlets the later outlets send nothing (a display on them keeps the last piece it was sent). A message 'split 2' into tensor in sets it from the patch, as the demo's messages do.\n\nSYNTAX:\nt.chunk <pieces: int> <dim: int>\nDefaults: 2 pieces, dim 0.\n\nEXAMPLE:\nt.chunk 3\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first). Every tensor that arrives is cut and the pieces sent, tensor 0 first.\nOnly this inlet makes the node send. A message 'split <n>' arriving\nhere sets the number of pieces and cuts the last tensor again.\n\ndim (int box, also an inlet):\nThe axis to cut across: 0 cuts the rows into groups (horizontal cuts), 1 cuts the columns into groups (vertical cuts). Negative counts from the end. If the tensor does not have that axis, or the axis is shorter than the number of pieces, nothing is sent. Changing it does NOT send by itself; in the demo a metro inside make_F re-sends the F ten times a second.\n\nOUTPUTS:\n\ntensor 0, tensor 1, ...:\nThe pieces, in order. Each has as many axes as the input; only its length along dim is smaller. Each is a view of the input, not a copy.\n\nREADING THE DEMO:\nt.chunk 3 cuts the 7 by 6 F into three bands of rows: the top 3 rows (the bar and the start of the stem), the next 3 (the middle arm with the stem above and below it), and a last piece of a single row. t.info shows each piece's shape. Type 1 into dim and it cuts the 6 columns instead, three slices 2 columns wide: the stem, then the two halves of the arms. Click split 2 and the F is cut in two (4 rows, then 3), tensor 2 going quiet - its display keeps the last piece it got; split 1 sends the whole F from tensor 0; split 3 brings back three.\n\nRELATED:\nt.tensor_split cuts into pieces as even as possible (3, 2, 2 here). t.cat puts pieces back together. t.narrow takes out one piece by start and length. np.split is the numpy version (np.split sizes its pieces like t.tensor_split)."
                 },
                 "3": {
                     "name": "p",
@@ -827,8 +827,8 @@
                     "name": "help_link",
                     "id": 1051,
                     "position_x": 30,
-                    "position_y": 970,
-                    "width": 103,
+                    "position_y": 1004,
+                    "width": 104,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -839,9 +839,9 @@
                 "23": {
                     "name": "help_link",
                     "id": 1088,
-                    "position_x": 181,
-                    "position_y": 970,
-                    "width": 47,
+                    "position_x": 150,
+                    "position_y": 1004,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -852,8 +852,8 @@
                 "24": {
                     "name": "help_link",
                     "id": 1125,
-                    "position_x": 263,
-                    "position_y": 970,
+                    "position_x": 214,
+                    "position_y": 1004,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -865,8 +865,8 @@
                 "25": {
                     "name": "help_link",
                     "id": 1162,
-                    "position_x": 368,
-                    "position_y": 970,
+                    "position_x": 296,
+                    "position_y": 1004,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -879,7 +879,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1199,
-                    "position_x": 656,
+                    "position_x": 30,
                     "position_y": 970,
                     "width": 156,
                     "height": 30,
@@ -904,7 +904,7 @@
                     "name": "close",
                     "id": 1236,
                     "position_x": 24,
-                    "position_y": 1044,
+                    "position_y": 1078,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 1041,
+    "height": 1075,
     "width": 1653,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor of random numbers the same shape as the tensor you send it.\n\nUse it to add noise to incoming data - the noise must be the same shape\nas the data - to jitter positions, or to test a chain with random data\nin exactly the shape real data will have. Because every tensor in\ntriggers a new one, a stream of frames gets fresh noise every frame.\n\nThe numbers are uniform between min and max, as on t.rand.\n\nSYNTAX:\nt.rand_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.rand_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node\nsend - a stream of tensors gives a stream of outputs, each matching the\none that came in. A list, NumPy array or number has a shape too and\nworks the same way: a list of 5 numbers gives 5 values, a list of\nlists a 2-D tensor, a single number a 1-element tensor. A bang sends a\nnew tensor in the shape last received.\n\nmin / max (drag floats, also inlets):\nThe range of the random values, as on t.rand. They do not send by\nthemselves; the next tensor in uses them.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.rand_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.rand_like also copies the input's dtype and\ndevice. This node does not: the output is always the dtype and device\nset on the node (float32 on cpu unless you change them). Feed it a\nfloat16 tensor on mps and you get float32 on cpu back. Set dtype and\ndevice here to match if the two tensors will meet later.\n\nOUTPUTS:\n\nrandom tensor:\nA tensor the same shape as the input.\n\nThe dtype changes what the numbers are, as on t.rand: float types give\nany value from min up to (not including) max; int64 and uint8 give whole\nnumbers from min to max, both included (choosing int64 while max is 1\nraises max to 32767; uint8 raises it to 255, for the full 0 to 255);\nbool gives true or false at random.\n\nREADING THE DEMO:\nA metro clicks t.linspace 10 times a second, and each ramp it sends\n(top strip) makes t.rand_like send a fresh row of noise the same length\n(bottom strip) - new numbers every time. Drag steps on t.linspace and\nthe noise follows its length; drag min and max on t.rand_like to change\nthe noise range (the strip is scaled 0 to 1).\n\nRELATED:\nt.rand makes noise in a shape you type. t.zeros_like and t.ones_like\ncopy the shape the same way with zeros or ones. np.rand is the NumPy\nversion of t.rand.",
+                    "value": "Makes a tensor of random numbers the same shape as the tensor you send it.\n\nUse it to add noise to incoming data - the noise must be the same shape as the data - to jitter positions, or to test a chain with random data in exactly the shape real data will have. Because every tensor in triggers a new one, a stream of frames gets fresh noise every frame.\n\nThe numbers are uniform between min and max, as on t.rand.\n\nSYNTAX:\nt.rand_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.rand_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node send - a stream of tensors gives a stream of outputs, each matching the one that came in. A list, NumPy array or number has a shape too and works the same way: a list of 5 numbers gives 5 values, a list of lists a 2-D tensor, a single number a 1-element tensor. A bang sends a new tensor in the shape last received.\n\nmin / max (drag floats, also inlets):\nThe range of the random values, as on t.rand. They do not send by themselves; the next tensor in uses them.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.rand_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.rand_like also copies the input's dtype and device. This node does not: the output is always the dtype and device set on the node (float32 on cpu unless you change them). Feed it a float16 tensor on mps and you get float32 on cpu back. Set dtype and device here to match if the two tensors will meet later.\n\nOUTPUTS:\n\nrandom tensor:\nA tensor the same shape as the input.\n\nThe dtype changes what the numbers are, as on t.rand: float types give any value from min up to (not including) max; int64 and uint8 give whole numbers from min to max, both included (choosing int64 while max is 1 raises max to 32767; uint8 raises it to 255, for the full 0 to 255);\nbool gives true or false at random.\n\nREADING THE DEMO:\nA metro clicks t.linspace 10 times a second, and each ramp it sends (top strip) makes t.rand_like send a fresh row of noise the same length (bottom strip) - new numbers every time. Drag steps on t.linspace and the noise follows its length; drag min and max on t.rand_like to change the noise range (the strip is scaled 0 to 1).\n\nRELATED:\nt.rand makes noise in a shape you type. t.zeros_like and t.ones_like copy the shape the same way with zeros or ones. np.rand is the NumPy version of t.rand.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor of random numbers the same shape as the tensor you send it.\n\nUse it to add noise to incoming data - the noise must be the same shape\nas the data - to jitter positions, or to test a chain with random data\nin exactly the shape real data will have. Because every tensor in\ntriggers a new one, a stream of frames gets fresh noise every frame.\n\nThe numbers are uniform between min and max, as on t.rand.\n\nSYNTAX:\nt.rand_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.rand_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node\nsend - a stream of tensors gives a stream of outputs, each matching the\none that came in. A list, NumPy array or number has a shape too and\nworks the same way: a list of 5 numbers gives 5 values, a list of\nlists a 2-D tensor, a single number a 1-element tensor. A bang sends a\nnew tensor in the shape last received.\n\nmin / max (drag floats, also inlets):\nThe range of the random values, as on t.rand. They do not send by\nthemselves; the next tensor in uses them.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.rand_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.rand_like also copies the input's dtype and\ndevice. This node does not: the output is always the dtype and device\nset on the node (float32 on cpu unless you change them). Feed it a\nfloat16 tensor on mps and you get float32 on cpu back. Set dtype and\ndevice here to match if the two tensors will meet later.\n\nOUTPUTS:\n\nrandom tensor:\nA tensor the same shape as the input.\n\nThe dtype changes what the numbers are, as on t.rand: float types give\nany value from min up to (not including) max; int64 and uint8 give whole\nnumbers from min to max, both included (choosing int64 while max is 1\nraises max to 32767; uint8 raises it to 255, for the full 0 to 255);\nbool gives true or false at random.\n\nREADING THE DEMO:\nA metro clicks t.linspace 10 times a second, and each ramp it sends\n(top strip) makes t.rand_like send a fresh row of noise the same length\n(bottom strip) - new numbers every time. Drag steps on t.linspace and\nthe noise follows its length; drag min and max on t.rand_like to change\nthe noise range (the strip is scaled 0 to 1).\n\nRELATED:\nt.rand makes noise in a shape you type. t.zeros_like and t.ones_like\ncopy the shape the same way with zeros or ones. np.rand is the NumPy\nversion of t.rand."
+            "text": "Makes a tensor of random numbers the same shape as the tensor you send it.\n\nUse it to add noise to incoming data - the noise must be the same shape as the data - to jitter positions, or to test a chain with random data in exactly the shape real data will have. Because every tensor in triggers a new one, a stream of frames gets fresh noise every frame.\n\nThe numbers are uniform between min and max, as on t.rand.\n\nSYNTAX:\nt.rand_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.rand_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node send - a stream of tensors gives a stream of outputs, each matching the one that came in. A list, NumPy array or number has a shape too and works the same way: a list of 5 numbers gives 5 values, a list of lists a 2-D tensor, a single number a 1-element tensor. A bang sends a new tensor in the shape last received.\n\nmin / max (drag floats, also inlets):\nThe range of the random values, as on t.rand. They do not send by themselves; the next tensor in uses them.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.rand_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.rand_like also copies the input's dtype and device. This node does not: the output is always the dtype and device set on the node (float32 on cpu unless you change them). Feed it a float16 tensor on mps and you get float32 on cpu back. Set dtype and device here to match if the two tensors will meet later.\n\nOUTPUTS:\n\nrandom tensor:\nA tensor the same shape as the input.\n\nThe dtype changes what the numbers are, as on t.rand: float types give any value from min up to (not including) max; int64 and uint8 give whole numbers from min to max, both included (choosing int64 while max is 1 raises max to 32767; uint8 raises it to 255, for the full 0 to 255);\nbool gives true or false at random.\n\nREADING THE DEMO:\nA metro clicks t.linspace 10 times a second, and each ramp it sends (top strip) makes t.rand_like send a fresh row of noise the same length (bottom strip) - new numbers every time. Drag steps on t.linspace and the noise follows its length; drag min and max on t.rand_like to change the noise range (the strip is scaled 0 to 1).\n\nRELATED:\nt.rand makes noise in a shape you type. t.zeros_like and t.ones_like copy the shape the same way with zeros or ones. np.rand is the NumPy version of t.rand."
         },
         "3": {
             "name": "metro",
@@ -420,8 +420,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 850,
-            "width": 53,
+            "position_y": 884,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -432,9 +432,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 120,
-            "position_y": 850,
-            "width": 90,
+            "position_x": 100,
+            "position_y": 884,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -445,9 +445,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 256,
-            "position_y": 850,
-            "width": 84,
+            "position_x": 208,
+            "position_y": 884,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -458,8 +458,8 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 384,
-            "position_y": 850,
+            "position_x": 309,
+            "position_y": 884,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -472,7 +472,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 524,
+            "position_x": 30,
             "position_y": 850,
             "width": 156,
             "height": 30,
@@ -497,7 +497,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 924,
+            "position_y": 958,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

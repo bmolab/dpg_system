@@ -1,5 +1,5 @@
 {
-    "height": 1171,
+    "height": 1205,
     "width": 1888,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Reads a numpy .npz file and sends the arrays in it, as a dictionary.\n\nAn .npz is several named arrays saved together in one file - the usual way\nnumpy data is shipped, and the format of most motion-capture archives (AMASS,\nfor one). Because it holds several arrays, what comes out is a DICTIONARY: one\nentry per array, under its name. Use dict_keys to find out what is in a file\nyou did not write, and the dict nodes (dict_extract and friends) to take out\nthe arrays you want.\n\nLOADING:\nClick \"load\" and choose a file. It is read straight away and sent. \"send\"\nsends the same contents again without re-reading the file.\n\nTo load a file by name instead, send the node the message \"path\" followed\nby the file's path, as the message box in the demo does. That sets the path\nand reads the file at once - from a patch, with no dialog.\n\nThe path is saved with the patch (it is the \"path\" option), and when the\npatch is opened again the file is read and sent automatically. A path typed\nafter the name (np.load /path/to/file.npz) fills in that option and is read\nas soon as the node is made; so is a path typed into the option. A path that\nis not absolute is looked for relative to the folder the app was started\nfrom - normally the top folder of the installation, the one holding\ndpg_system_main.py, which is why the demo's path starts with\ndpg_system/help.\n\nOnly .npz files. A plain .npy file (a single array) is not read by this node.\n\nIf the file cannot be read, the error is printed to the console and nothing\nis sent.\n\nA WORD OF CAUTION:\nThe file is read with numpy's pickle support switched on, so that arrays of\nmixed objects load. A pickled file can run code as it loads - only open .npz\nfiles you trust.\n\nSYNTAX:\nnp.load <path>\n\nEXAMPLE:\nnp.load dpg_system/help/data/np_load_example.npz\n\nINPUTS and PARAMETERS:\n\nload:\nA button. Choose a file, read it and send it. Any inlet also accepts the\nmessage \"path <file>\".\n\nsend:\nA button. Send the last file read, again.\n\npath (option):\nThe file to read. Set by \"load\" or by a \"path\" message; read automatically\nwhen the patch opens.\n\nOUTPUTS:\n\ndict out:\nA dictionary of the file's arrays, keyed by name.\n\nREADING THE DEMO:\nThe help comes with a small file, np_load_example.npz, holding two arrays:\n\"rings\", a 16 x 16 target of concentric rings, and \"checker\", an 8 x 12\ncheckerboard of 2 x 2 squares, both with values from 0 to 1. Click the\nmessage box to load it: dict_keys lists the two names, and dict_extract\ntakes each array out by name for a heat_map.\n\nRELATED:\ndict_keys and dict_extract unpack the dictionary. np.sequence records and\nplays back a series of arrays.",
+                    "value": "Reads a numpy .npz file and sends the arrays in it, as a dictionary.\n\nAn .npz is several named arrays saved together in one file - the usual way numpy data is shipped, and the format of most motion-capture archives (AMASS, for one). Because it holds several arrays, what comes out is a DICTIONARY: one entry per array, under its name. Use dict_keys to find out what is in a file you did not write, and the dict nodes (dict_extract and friends) to take out the arrays you want.\n\nLOADING:\nClick \"load\" and choose a file. It is read straight away and sent. \"send\" sends the same contents again without re-reading the file.\n\nTo load a file by name instead, send the node the message \"path\" followed by the file's path, as the message box in the demo does. That sets the path and reads the file at once - from a patch, with no dialog.\n\nThe path is saved with the patch (it is the \"path\" option), and when the patch is opened again the file is read and sent automatically. A path typed after the name (np.load /path/to/file.npz) fills in that option and is read as soon as the node is made; so is a path typed into the option. A path that is not absolute is looked for relative to the folder the app was started from - normally the top folder of the installation, the one holding dpg_system_main.py, which is why the demo's path starts with dpg_system/help.\n\nOnly .npz files. A plain .npy file (a single array) is not read by this node.\n\nIf the file cannot be read, the error is printed to the console and nothing is sent.\n\nA WORD OF CAUTION:\nThe file is read with numpy's pickle support switched on, so that arrays of mixed objects load. A pickled file can run code as it loads - only open .npz files you trust.\n\nSYNTAX:\nnp.load <path>\n\nEXAMPLE:\nnp.load dpg_system/help/data/np_load_example.npz\n\nINPUTS and PARAMETERS:\n\nload:\nA button. Choose a file, read it and send it. Any inlet also accepts the\nmessage \"path <file>\".\n\nsend:\nA button. Send the last file read, again.\n\npath (option):\nThe file to read. Set by \"load\" or by a \"path\" message; read automatically when the patch opens.\n\nOUTPUTS:\n\ndict out:\nA dictionary of the file's arrays, keyed by name.\n\nREADING THE DEMO:\nThe help comes with a small file, np_load_example.npz, holding two arrays:\n\"rings\", a 16 x 16 target of concentric rings, and \"checker\", an 8 x 12 checkerboard of 2 x 2 squares, both with values from 0 to 1. Click the message box to load it: dict_keys lists the two names, and dict_extract takes each array out by name for a heat_map.\n\nRELATED:\ndict_keys and dict_extract unpack the dictionary. np.sequence records and plays back a series of arrays.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Reads a numpy .npz file and sends the arrays in it, as a dictionary.\n\nAn .npz is several named arrays saved together in one file - the usual way\nnumpy data is shipped, and the format of most motion-capture archives (AMASS,\nfor one). Because it holds several arrays, what comes out is a DICTIONARY: one\nentry per array, under its name. Use dict_keys to find out what is in a file\nyou did not write, and the dict nodes (dict_extract and friends) to take out\nthe arrays you want.\n\nLOADING:\nClick \"load\" and choose a file. It is read straight away and sent. \"send\"\nsends the same contents again without re-reading the file.\n\nTo load a file by name instead, send the node the message \"path\" followed\nby the file's path, as the message box in the demo does. That sets the path\nand reads the file at once - from a patch, with no dialog.\n\nThe path is saved with the patch (it is the \"path\" option), and when the\npatch is opened again the file is read and sent automatically. A path typed\nafter the name (np.load /path/to/file.npz) fills in that option and is read\nas soon as the node is made; so is a path typed into the option. A path that\nis not absolute is looked for relative to the folder the app was started\nfrom - normally the top folder of the installation, the one holding\ndpg_system_main.py, which is why the demo's path starts with\ndpg_system/help.\n\nOnly .npz files. A plain .npy file (a single array) is not read by this node.\n\nIf the file cannot be read, the error is printed to the console and nothing\nis sent.\n\nA WORD OF CAUTION:\nThe file is read with numpy's pickle support switched on, so that arrays of\nmixed objects load. A pickled file can run code as it loads - only open .npz\nfiles you trust.\n\nSYNTAX:\nnp.load <path>\n\nEXAMPLE:\nnp.load dpg_system/help/data/np_load_example.npz\n\nINPUTS and PARAMETERS:\n\nload:\nA button. Choose a file, read it and send it. Any inlet also accepts the\nmessage \"path <file>\".\n\nsend:\nA button. Send the last file read, again.\n\npath (option):\nThe file to read. Set by \"load\" or by a \"path\" message; read automatically\nwhen the patch opens.\n\nOUTPUTS:\n\ndict out:\nA dictionary of the file's arrays, keyed by name.\n\nREADING THE DEMO:\nThe help comes with a small file, np_load_example.npz, holding two arrays:\n\"rings\", a 16 x 16 target of concentric rings, and \"checker\", an 8 x 12\ncheckerboard of 2 x 2 squares, both with values from 0 to 1. Click the\nmessage box to load it: dict_keys lists the two names, and dict_extract\ntakes each array out by name for a heat_map.\n\nRELATED:\ndict_keys and dict_extract unpack the dictionary. np.sequence records and\nplays back a series of arrays."
+            "text": "Reads a numpy .npz file and sends the arrays in it, as a dictionary.\n\nAn .npz is several named arrays saved together in one file - the usual way numpy data is shipped, and the format of most motion-capture archives (AMASS, for one). Because it holds several arrays, what comes out is a DICTIONARY: one entry per array, under its name. Use dict_keys to find out what is in a file you did not write, and the dict nodes (dict_extract and friends) to take out the arrays you want.\n\nLOADING:\nClick \"load\" and choose a file. It is read straight away and sent. \"send\" sends the same contents again without re-reading the file.\n\nTo load a file by name instead, send the node the message \"path\" followed by the file's path, as the message box in the demo does. That sets the path and reads the file at once - from a patch, with no dialog.\n\nThe path is saved with the patch (it is the \"path\" option), and when the patch is opened again the file is read and sent automatically. A path typed after the name (np.load /path/to/file.npz) fills in that option and is read as soon as the node is made; so is a path typed into the option. A path that is not absolute is looked for relative to the folder the app was started from - normally the top folder of the installation, the one holding dpg_system_main.py, which is why the demo's path starts with dpg_system/help.\n\nOnly .npz files. A plain .npy file (a single array) is not read by this node.\n\nIf the file cannot be read, the error is printed to the console and nothing is sent.\n\nA WORD OF CAUTION:\nThe file is read with numpy's pickle support switched on, so that arrays of mixed objects load. A pickled file can run code as it loads - only open .npz files you trust.\n\nSYNTAX:\nnp.load <path>\n\nEXAMPLE:\nnp.load dpg_system/help/data/np_load_example.npz\n\nINPUTS and PARAMETERS:\n\nload:\nA button. Choose a file, read it and send it. Any inlet also accepts the\nmessage \"path <file>\".\n\nsend:\nA button. Send the last file read, again.\n\npath (option):\nThe file to read. Set by \"load\" or by a \"path\" message; read automatically when the patch opens.\n\nOUTPUTS:\n\ndict out:\nA dictionary of the file's arrays, keyed by name.\n\nREADING THE DEMO:\nThe help comes with a small file, np_load_example.npz, holding two arrays:\n\"rings\", a 16 x 16 target of concentric rings, and \"checker\", an 8 x 12 checkerboard of 2 x 2 squares, both with values from 0 to 1. Click the message box to load it: dict_keys lists the two names, and dict_extract takes each array out by name for a heat_map.\n\nRELATED:\ndict_keys and dict_extract unpack the dictionary. np.sequence records and plays back a series of arrays."
         },
         "3": {
             "name": "message",
@@ -386,8 +386,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 800,
-            "width": 72,
+            "position_y": 834,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -398,9 +398,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 143,
-            "position_y": 800,
-            "width": 90,
+            "position_x": 119,
+            "position_y": 834,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -411,9 +411,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 279,
-            "position_y": 800,
-            "width": 84,
+            "position_x": 227,
+            "position_y": 834,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -425,7 +425,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 829,
-            "position_x": 704,
+            "position_x": 30,
             "position_y": 800,
             "width": 156,
             "height": 30,
@@ -450,7 +450,7 @@
             "name": "close",
             "id": 866,
             "position_x": 24,
-            "position_y": 874,
+            "position_y": 908,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

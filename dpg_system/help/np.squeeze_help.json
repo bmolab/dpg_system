@@ -1,5 +1,5 @@
 {
-    "height": 1278,
+    "height": 1312,
     "width": 1719,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Removes one axis of length 1 from an array, without changing any values.\n\nA result often comes out with a stray extra axis - [12, 1] where you\nwanted a plain row of twelve, or [1, 3, 4] where you wanted [3, 4].\nnp.squeeze takes that axis away. It is the reverse of np.expand_dims.\n\nONE AXIS AT A TIME:\nUnlike numpy's own squeeze, this node never removes every length-1 axis\nat once: it removes the single axis you name, and only if that axis\nreally has length 1. If it does not, nothing is sent (the reason is\nprinted to the console when the app is verbose).\n\nSYNTAX:\nnp.squeeze <axis: int>\nDefault axis 0.\n\nEXAMPLE:\nnp.squeeze 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it\nis what makes the node send - if the axis can be removed.\n\naxis (on the node):\nWhich axis to remove, counting from 0. It must have length 1. Negative\nvalues count from the end, as in numpy: -1 is the last axis. Changing it\ndoes not send by itself; in the demo the metro re-sends the ramp.\n\nOUTPUTS:\n\nsqueezed array:\nThe same values with that axis gone.\n\nREADING THE DEMO:\nnp.reshape 12 1 turns the ramp into a column, shape [12, 1]. np.squeeze 1\nremoves the length-1 axis: shape [12], drawn as a row. Now click 1 12 to\nmake the input a single row, [1, 12]: axis 1 has length 12, so nothing\ncomes out and the bottom displays freeze. Set axis to 0 and it flows\nagain - [1, 12] squeezed on axis 0 is [12].\n\nRELATED:\nnp.expand_dims (np.unsqueeze) adds a length-1 axis. flatten removes all\nstructure at once, whatever the shape. np.reshape can drop the axis too\nif you spell out the shape. t.reshape covers the PyTorch version,\nt.squeeze.",
+                    "value": "Removes one axis of length 1 from an array, without changing any values.\n\nA result often comes out with a stray extra axis - [12, 1] where you wanted a plain row of twelve, or [1, 3, 4] where you wanted [3, 4]. np.squeeze takes that axis away. It is the reverse of np.expand_dims.\n\nONE AXIS AT A TIME:\nUnlike numpy's own squeeze, this node never removes every length-1 axis at once: it removes the single axis you name, and only if that axis really has length 1. If it does not, nothing is sent (the reason is printed to the console when the app is verbose).\n\nSYNTAX:\nnp.squeeze <axis: int>\nDefault axis 0.\n\nEXAMPLE:\nnp.squeeze 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it is what makes the node send - if the axis can be removed.\n\naxis (on the node):\nWhich axis to remove, counting from 0. It must have length 1. Negative values count from the end, as in numpy: -1 is the last axis. Changing it does not send by itself; in the demo the metro re-sends the ramp.\n\nOUTPUTS:\n\nsqueezed array:\nThe same values with that axis gone.\n\nREADING THE DEMO:\nnp.reshape 12 1 turns the ramp into a column, shape [12, 1]. np.squeeze 1 removes the length-1 axis: shape [12], drawn as a row. Now click 1 12 to make the input a single row, [1, 12]: axis 1 has length 12, so nothing comes out and the bottom displays freeze. Set axis to 0 and it flows again - [1, 12] squeezed on axis 0 is [12].\n\nRELATED:\nnp.expand_dims (np.unsqueeze) adds a length-1 axis. flatten removes all structure at once, whatever the shape. np.reshape can drop the axis too if you spell out the shape. t.reshape covers the PyTorch version, t.squeeze.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Removes one axis of length 1 from an array, without changing any values.\n\nA result often comes out with a stray extra axis - [12, 1] where you\nwanted a plain row of twelve, or [1, 3, 4] where you wanted [3, 4].\nnp.squeeze takes that axis away. It is the reverse of np.expand_dims.\n\nONE AXIS AT A TIME:\nUnlike numpy's own squeeze, this node never removes every length-1 axis\nat once: it removes the single axis you name, and only if that axis\nreally has length 1. If it does not, nothing is sent (the reason is\nprinted to the console when the app is verbose).\n\nSYNTAX:\nnp.squeeze <axis: int>\nDefault axis 0.\n\nEXAMPLE:\nnp.squeeze 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it\nis what makes the node send - if the axis can be removed.\n\naxis (on the node):\nWhich axis to remove, counting from 0. It must have length 1. Negative\nvalues count from the end, as in numpy: -1 is the last axis. Changing it\ndoes not send by itself; in the demo the metro re-sends the ramp.\n\nOUTPUTS:\n\nsqueezed array:\nThe same values with that axis gone.\n\nREADING THE DEMO:\nnp.reshape 12 1 turns the ramp into a column, shape [12, 1]. np.squeeze 1\nremoves the length-1 axis: shape [12], drawn as a row. Now click 1 12 to\nmake the input a single row, [1, 12]: axis 1 has length 12, so nothing\ncomes out and the bottom displays freeze. Set axis to 0 and it flows\nagain - [1, 12] squeezed on axis 0 is [12].\n\nRELATED:\nnp.expand_dims (np.unsqueeze) adds a length-1 axis. flatten removes all\nstructure at once, whatever the shape. np.reshape can drop the axis too\nif you spell out the shape. t.reshape covers the PyTorch version,\nt.squeeze."
+            "text": "Removes one axis of length 1 from an array, without changing any values.\n\nA result often comes out with a stray extra axis - [12, 1] where you wanted a plain row of twelve, or [1, 3, 4] where you wanted [3, 4]. np.squeeze takes that axis away. It is the reverse of np.expand_dims.\n\nONE AXIS AT A TIME:\nUnlike numpy's own squeeze, this node never removes every length-1 axis at once: it removes the single axis you name, and only if that axis really has length 1. If it does not, nothing is sent (the reason is printed to the console when the app is verbose).\n\nSYNTAX:\nnp.squeeze <axis: int>\nDefault axis 0.\n\nEXAMPLE:\nnp.squeeze 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it is what makes the node send - if the axis can be removed.\n\naxis (on the node):\nWhich axis to remove, counting from 0. It must have length 1. Negative values count from the end, as in numpy: -1 is the last axis. Changing it does not send by itself; in the demo the metro re-sends the ramp.\n\nOUTPUTS:\n\nsqueezed array:\nThe same values with that axis gone.\n\nREADING THE DEMO:\nnp.reshape 12 1 turns the ramp into a column, shape [12, 1]. np.squeeze 1 removes the length-1 axis: shape [12], drawn as a row. Now click 1 12 to make the input a single row, [1, 12]: axis 1 has length 12, so nothing comes out and the bottom displays freeze. Set axis to 0 and it flows again - [1, 12] squeezed on axis 0 is [12].\n\nRELATED:\nnp.expand_dims (np.unsqueeze) adds a length-1 axis. flatten removes all structure at once, whatever the shape. np.reshape can drop the axis too if you spell out the shape. t.reshape covers the PyTorch version, t.squeeze."
         },
         "3": {
             "name": "metro",
@@ -538,8 +538,8 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1100,
-            "width": 103,
+            "position_y": 1134,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -550,8 +550,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 181,
-            "position_y": 1100,
+            "position_x": 150,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -563,9 +563,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 278,
-            "position_y": 1100,
-            "width": 78,
+            "position_x": 226,
+            "position_y": 1134,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -576,8 +576,8 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 399,
-            "position_y": 1100,
+            "position_x": 321,
+            "position_y": 1134,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -589,9 +589,9 @@
         "24": {
             "name": "help_link",
             "id": 1125,
-            "position_x": 504,
-            "position_y": 1100,
-            "width": 72,
+            "position_x": 403,
+            "position_y": 1134,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -603,7 +603,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1162,
-            "position_x": 602,
+            "position_x": 30,
             "position_y": 1100,
             "width": 156,
             "height": 30,
@@ -628,7 +628,7 @@
             "name": "close",
             "id": 1199,
             "position_x": 24,
-            "position_y": 1174,
+            "position_y": 1208,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

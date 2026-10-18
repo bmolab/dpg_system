@@ -6,6 +6,8 @@ and a close button at the bottom left.
 """
 import json, os
 from strip_starters import strip_patch, strip_toggles
+from reflow_prose import reflow
+from compact_see_also import compact
 
 HELP_DIR = '/Users/drokeby/dpg_system/dpg_system/help'
 
@@ -97,7 +99,9 @@ def build(name, title, body, demo, links, demo_width=520,
          'comment': title})
 
     text_x = demo_width + TEXT_X_PAD
-    # prose
+    # prose: one line per paragraph, so the text_block wraps it to its own
+    # width (the generators write it hard-wrapped at about 72 columns)
+    body = reflow(body)
     add({'name': 'text_block', 'id': new_id(),
          'position_x': text_x, 'position_y': 45,
          'width': text_width + 8, 'height': text_height + 16,
@@ -185,6 +189,8 @@ def build(name, title, body, demo, links, demo_width=520,
         'links': lk,
     }
     path = os.path.join(out_dir, name + '_help.json')
+    # SEE ALSO: the label on its own line, the buttons close together under it
+    compact(patch)
 
     if subpatch is None:
         # a signal saved with 'on' true starts by itself: drop load_bang -> t 1

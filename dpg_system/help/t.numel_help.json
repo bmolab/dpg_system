@@ -1,5 +1,5 @@
 {
-    "height": 898,
+    "height": 932,
     "width": 1656,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Counts the values in a tensor: the product of its shape.\n\nA 3 by 4 tensor holds 12 values, a 2 by 3 by 4 one holds 24. Use it to\ncheck that a reshape can work before trying it (the new shape must\nmultiply to the same number), to size a buffer to match, or to scale a\nsum into an average.\n\nSYNTAX:\nt.numel\n\nEXAMPLE:\nt.numel\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is counted. A list or NumPy array\nis turned into a tensor first, so t.numel counts a list's numbers too.\nAn empty tensor or an empty list gives 0.\n\nOUTPUTS:\n\nnumel out:\nThe number of values, as an int.\n\nREADING THE DEMO:\nA metro makes a fresh t.rand tensor three times a second. Pick a shape\nfrom the menu: the heat_map shows the tensor (rows by columns) so you\ncan count the cells, t.info shows the shape, and t.numel the count - 12\nfor 3x4, 48 for 6x8, 16 for 1x16. 2x3x4 has three dimensions, which the\nheat_map cannot draw as one picture, but t.numel still answers 24.\n\nRELATED:\nt.info gives the shape itself. t.reshape and t.view need a new shape\nwith the same count. np.shape gives a NumPy array's shape.",
+                    "value": "Counts the values in a tensor: the product of its shape.\n\nA 3 by 4 tensor holds 12 values, a 2 by 3 by 4 one holds 24. Use it to check that a reshape can work before trying it (the new shape must multiply to the same number), to size a buffer to match, or to scale a sum into an average.\n\nSYNTAX:\nt.numel\n\nEXAMPLE:\nt.numel\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is counted. A list or NumPy array is turned into a tensor first, so t.numel counts a list's numbers too. An empty tensor or an empty list gives 0.\n\nOUTPUTS:\n\nnumel out:\nThe number of values, as an int.\n\nREADING THE DEMO:\nA metro makes a fresh t.rand tensor three times a second. Pick a shape from the menu: the heat_map shows the tensor (rows by columns) so you can count the cells, t.info shows the shape, and t.numel the count - 12 for 3x4, 48 for 6x8, 16 for 1x16. 2x3x4 has three dimensions, which the heat_map cannot draw as one picture, but t.numel still answers 24.\n\nRELATED:\nt.info gives the shape itself. t.reshape and t.view need a new shape with the same count. np.shape gives a NumPy array's shape.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Counts the values in a tensor: the product of its shape.\n\nA 3 by 4 tensor holds 12 values, a 2 by 3 by 4 one holds 24. Use it to\ncheck that a reshape can work before trying it (the new shape must\nmultiply to the same number), to size a buffer to match, or to scale a\nsum into an average.\n\nSYNTAX:\nt.numel\n\nEXAMPLE:\nt.numel\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is counted. A list or NumPy array\nis turned into a tensor first, so t.numel counts a list's numbers too.\nAn empty tensor or an empty list gives 0.\n\nOUTPUTS:\n\nnumel out:\nThe number of values, as an int.\n\nREADING THE DEMO:\nA metro makes a fresh t.rand tensor three times a second. Pick a shape\nfrom the menu: the heat_map shows the tensor (rows by columns) so you\ncan count the cells, t.info shows the shape, and t.numel the count - 12\nfor 3x4, 48 for 6x8, 16 for 1x16. 2x3x4 has three dimensions, which the\nheat_map cannot draw as one picture, but t.numel still answers 24.\n\nRELATED:\nt.info gives the shape itself. t.reshape and t.view need a new shape\nwith the same count. np.shape gives a NumPy array's shape."
+            "text": "Counts the values in a tensor: the product of its shape.\n\nA 3 by 4 tensor holds 12 values, a 2 by 3 by 4 one holds 24. Use it to check that a reshape can work before trying it (the new shape must multiply to the same number), to size a buffer to match, or to scale a sum into an average.\n\nSYNTAX:\nt.numel\n\nEXAMPLE:\nt.numel\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is counted. A list or NumPy array is turned into a tensor first, so t.numel counts a list's numbers too. An empty tensor or an empty list gives 0.\n\nOUTPUTS:\n\nnumel out:\nThe number of values, as an int.\n\nREADING THE DEMO:\nA metro makes a fresh t.rand tensor three times a second. Pick a shape from the menu: the heat_map shows the tensor (rows by columns) so you can count the cells, t.info shows the shape, and t.numel the count - 12 for 3x4, 48 for 6x8, 16 for 1x16. 2x3x4 has three dimensions, which the heat_map cannot draw as one picture, but t.numel still answers 24.\n\nRELATED:\nt.info gives the shape itself. t.reshape and t.view need a new shape with the same count. np.shape gives a NumPy array's shape."
         },
         "3": {
             "name": "menu",
@@ -395,8 +395,8 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 720,
-            "width": 53,
+            "position_y": 754,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -407,9 +407,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 120,
-            "position_y": 720,
-            "width": 72,
+            "position_x": 100,
+            "position_y": 754,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -420,9 +420,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 233,
-            "position_y": 720,
-            "width": 53,
+            "position_x": 189,
+            "position_y": 754,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -433,8 +433,8 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 323,
-            "position_y": 720,
+            "position_x": 259,
+            "position_y": 754,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -447,7 +447,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 940,
-            "position_x": 644,
+            "position_x": 30,
             "position_y": 720,
             "width": 156,
             "height": 30,
@@ -472,7 +472,7 @@
             "name": "close",
             "id": 977,
             "position_x": 24,
-            "position_y": 794,
+            "position_y": 828,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

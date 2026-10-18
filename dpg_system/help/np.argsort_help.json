@@ -1,5 +1,5 @@
 {
-    "height": 1108,
+    "height": 1142,
     "width": 1762,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Gives the positions that would put an array in order: the index of\nthe smallest value first, then the next smallest, and so on.\n\nIt does not move any values - it tells you where they are. Use it when\nyou want to reorder something ELSE by the same ranking: sort joints by\nspeed, then use the same order for their names; find which three\nsensors read highest; rank a set of scores and keep track of whose\nthey were.\n\nREADING THE INDICES:\nPositions count from 0. If the first index is 5, the smallest value is\nin cell 5 of the input. Reading the input at each index in turn gives the\nsorted values, exactly what np.sort sends. When two values are equal\ntheir order is not guaranteed.\n\nSYNTAX:\nnp.argsort <axis: int>\nDefault axis -1, the last axis: each row is ranked on its own.\n\nEXAMPLE:\nnp.argsort\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is ranked\nand sent; only this inlet makes the node send.\n\naxis (int box, also an inlet):\nFor a 2-D array, -1 or 1 ranks each row separately (indices are column\nnumbers), 0 or -2 ranks each column (indices are row numbers). Negative\ncounts from the end. An axis the array does not have sends nothing.\n\ndescending (checkbox, under show options):\nLargest first: the index list is reversed.\n\nOUTPUTS:\n\nindices:\nWhole numbers (int64), in the same shape as the input.\n\nREADING THE DEMO:\nnp.rand makes 8 values; click its button for new ones. The top strip\nshows them with their values. The middle strip and the list are the\nindices from np.argsort: the first names the cell of the top strip\nholding the smallest value, the next the cell holding the next smallest,\nand so on along the row.\n\nThe bottom strip USES those indices: np.[] reads the values at the\npositions it is given, in the order given, so reading them in argsort's\norder puts the values in order - the same result np.sort gives, made\nfrom the ranking. The 't array array' fires right to left, so the\nindices reach np.[] before the values do; the values arriving is what\nmakes np.[] send. An integer array sent to np.[]'s Indices inlet picks\nthose positions along the first axis.\n\nTo reorder something ELSE by the same ranking, send the other array\ninto np.[] instead - the indices still come from the first.\n\nRELATED:\nnp.sort gives the sorted values directly. np.[] picks positions. t.argsort is the PyTorch\nversion. np.flip reverses an index list (smallest-first to largest-first).",
+                    "value": "Gives the positions that would put an array in order: the index of the smallest value first, then the next smallest, and so on.\n\nIt does not move any values - it tells you where they are. Use it when you want to reorder something ELSE by the same ranking: sort joints by speed, then use the same order for their names; find which three sensors read highest; rank a set of scores and keep track of whose they were.\n\nREADING THE INDICES:\nPositions count from 0. If the first index is 5, the smallest value is in cell 5 of the input. Reading the input at each index in turn gives the sorted values, exactly what np.sort sends. When two values are equal their order is not guaranteed.\n\nSYNTAX:\nnp.argsort <axis: int>\nDefault axis -1, the last axis: each row is ranked on its own.\n\nEXAMPLE:\nnp.argsort\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is ranked and sent; only this inlet makes the node send.\n\naxis (int box, also an inlet):\nFor a 2-D array, -1 or 1 ranks each row separately (indices are column numbers), 0 or -2 ranks each column (indices are row numbers). Negative counts from the end. An axis the array does not have sends nothing.\n\ndescending (checkbox, under show options):\nLargest first: the index list is reversed.\n\nOUTPUTS:\n\nindices:\nWhole numbers (int64), in the same shape as the input.\n\nREADING THE DEMO:\nnp.rand makes 8 values; click its button for new ones. The top strip shows them with their values. The middle strip and the list are the indices from np.argsort: the first names the cell of the top strip holding the smallest value, the next the cell holding the next smallest, and so on along the row.\n\nThe bottom strip USES those indices: np.[] reads the values at the positions it is given, in the order given, so reading them in argsort's order puts the values in order - the same result np.sort gives, made from the ranking. The 't array array' fires right to left, so the indices reach np.[] before the values do; the values arriving is what makes np.[] send. An integer array sent to np.[]'s Indices inlet picks those positions along the first axis.\n\nTo reorder something ELSE by the same ranking, send the other array into np.[] instead - the indices still come from the first.\n\nRELATED:\nnp.sort gives the sorted values directly. np.[] picks positions. t.argsort is the PyTorch version. np.flip reverses an index list (smallest-first to largest-first).",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Gives the positions that would put an array in order: the index of\nthe smallest value first, then the next smallest, and so on.\n\nIt does not move any values - it tells you where they are. Use it when\nyou want to reorder something ELSE by the same ranking: sort joints by\nspeed, then use the same order for their names; find which three\nsensors read highest; rank a set of scores and keep track of whose\nthey were.\n\nREADING THE INDICES:\nPositions count from 0. If the first index is 5, the smallest value is\nin cell 5 of the input. Reading the input at each index in turn gives the\nsorted values, exactly what np.sort sends. When two values are equal\ntheir order is not guaranteed.\n\nSYNTAX:\nnp.argsort <axis: int>\nDefault axis -1, the last axis: each row is ranked on its own.\n\nEXAMPLE:\nnp.argsort\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is ranked\nand sent; only this inlet makes the node send.\n\naxis (int box, also an inlet):\nFor a 2-D array, -1 or 1 ranks each row separately (indices are column\nnumbers), 0 or -2 ranks each column (indices are row numbers). Negative\ncounts from the end. An axis the array does not have sends nothing.\n\ndescending (checkbox, under show options):\nLargest first: the index list is reversed.\n\nOUTPUTS:\n\nindices:\nWhole numbers (int64), in the same shape as the input.\n\nREADING THE DEMO:\nnp.rand makes 8 values; click its button for new ones. The top strip\nshows them with their values. The middle strip and the list are the\nindices from np.argsort: the first names the cell of the top strip\nholding the smallest value, the next the cell holding the next smallest,\nand so on along the row.\n\nThe bottom strip USES those indices: np.[] reads the values at the\npositions it is given, in the order given, so reading them in argsort's\norder puts the values in order - the same result np.sort gives, made\nfrom the ranking. The 't array array' fires right to left, so the\nindices reach np.[] before the values do; the values arriving is what\nmakes np.[] send. An integer array sent to np.[]'s Indices inlet picks\nthose positions along the first axis.\n\nTo reorder something ELSE by the same ranking, send the other array\ninto np.[] instead - the indices still come from the first.\n\nRELATED:\nnp.sort gives the sorted values directly. np.[] picks positions. t.argsort is the PyTorch\nversion. np.flip reverses an index list (smallest-first to largest-first)."
+            "text": "Gives the positions that would put an array in order: the index of the smallest value first, then the next smallest, and so on.\n\nIt does not move any values - it tells you where they are. Use it when you want to reorder something ELSE by the same ranking: sort joints by speed, then use the same order for their names; find which three sensors read highest; rank a set of scores and keep track of whose they were.\n\nREADING THE INDICES:\nPositions count from 0. If the first index is 5, the smallest value is in cell 5 of the input. Reading the input at each index in turn gives the sorted values, exactly what np.sort sends. When two values are equal their order is not guaranteed.\n\nSYNTAX:\nnp.argsort <axis: int>\nDefault axis -1, the last axis: each row is ranked on its own.\n\nEXAMPLE:\nnp.argsort\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is ranked and sent; only this inlet makes the node send.\n\naxis (int box, also an inlet):\nFor a 2-D array, -1 or 1 ranks each row separately (indices are column numbers), 0 or -2 ranks each column (indices are row numbers). Negative counts from the end. An axis the array does not have sends nothing.\n\ndescending (checkbox, under show options):\nLargest first: the index list is reversed.\n\nOUTPUTS:\n\nindices:\nWhole numbers (int64), in the same shape as the input.\n\nREADING THE DEMO:\nnp.rand makes 8 values; click its button for new ones. The top strip shows them with their values. The middle strip and the list are the indices from np.argsort: the first names the cell of the top strip holding the smallest value, the next the cell holding the next smallest, and so on along the row.\n\nThe bottom strip USES those indices: np.[] reads the values at the positions it is given, in the order given, so reading them in argsort's order puts the values in order - the same result np.sort gives, made from the ranking. The 't array array' fires right to left, so the indices reach np.[] before the values do; the values arriving is what makes np.[] send. An integer array sent to np.[]'s Indices inlet picks those positions along the first axis.\n\nTo reorder something ELSE by the same ranking, send the other array into np.[] instead - the indices still come from the first.\n\nRELATED:\nnp.sort gives the sorted values directly. np.[] picks positions. t.argsort is the PyTorch version. np.flip reverses an index list (smallest-first to largest-first)."
         },
         "3": {
             "name": "load_bang",
@@ -497,7 +497,7 @@
             "name": "help_link",
             "id": 866,
             "position_x": 30,
-            "position_y": 930,
+            "position_y": 964,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -509,9 +509,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 127,
-            "position_y": 930,
-            "width": 47,
+            "position_x": 106,
+            "position_y": 964,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -522,9 +522,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 209,
-            "position_y": 930,
-            "width": 72,
+            "position_x": 170,
+            "position_y": 964,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -535,8 +535,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 322,
-            "position_y": 930,
+            "position_x": 259,
+            "position_y": 964,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -549,7 +549,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 584,
+            "position_x": 30,
             "position_y": 930,
             "width": 156,
             "height": 30,
@@ -574,7 +574,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 1004,
+            "position_y": 1038,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

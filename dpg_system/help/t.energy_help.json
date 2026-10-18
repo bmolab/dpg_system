@@ -1,5 +1,5 @@
 {
-    "height": 1098,
+    "height": 1132,
     "width": 1573,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Adds up how much a tensor CHANGES from one value to the next: the\ndifferences between neighbours, made positive, summed into one number.\n\nIt measures the total distance travelled, not how far the values ended\nup from where they started. A signal that swings a long way and comes\nback has high energy and no overall change. Use it to ask how much\nsomething moved over a stretch of samples - a window of a joint's\npositions, a recorded gesture - or, with n 2, how jerky the movement\nwas: the total change in the change.\n\n(Despite the name, this is not the physicist's energy or the sum of\nsquares: it is the total variation, the sum of the sizes of the steps.)\n\nSYNTAX:\nt.energy <dim: int>\nWith no argument the differences run along the LAST axis and there is no\ndim inlet. Give an axis as the argument - t.energy 0 - and a dim box\nappears so it can be changed. Either way the answer is ONE number,\nsummed over everything.\n\nEXAMPLE:\nt.energy\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is measured and sent - the only inlet that makes the node send.\n\nn (int box):\nHow many times to difference before summing. 1 (the default) is total\nchange; 2 is total change in the change. 0 sums the sizes of the values\nthemselves. A tensor not longer than n along the axis gives 0. Negative n\nis refused with an error. Changing it does not send by itself - the\nmetro in the demo re-sends.\n\ndim (int box, only with an argument):\nThe axis to take the differences along.\n\nOUTPUTS:\n\ntensor out:\nA single number, as a one-value tensor.\n\nREADING THE DEMO:\nBoth messages hold values from 0 to 8, sent five times a second. The\nsteady climb 0 1 2 ... 8 moves 1 at each of its 8 steps: energy 8, the\nsame as the distance from start to finish. The zigzag 0 8 0 8 ... moves\n8 at each step: energy 64, although it ends where it began. Same range,\nsame start and end - eight times the travel.\n\nType 2 into n on both: the climb gives 0 (its speed never changes),\nthe zigzag 112 (it reverses with all its speed every step).\n\nRELATED:\nt.diff gives the differences themselves, before summing. np.diff is\nthe NumPy difference. t.length is the size of a tensor, not how much it\nchanges. t.sum adds values without differencing.",
+                    "value": "Adds up how much a tensor CHANGES from one value to the next: the differences between neighbours, made positive, summed into one number.\n\nIt measures the total distance travelled, not how far the values ended up from where they started. A signal that swings a long way and comes back has high energy and no overall change. Use it to ask how much something moved over a stretch of samples - a window of a joint's positions, a recorded gesture - or, with n 2, how jerky the movement was: the total change in the change.\n\n(Despite the name, this is not the physicist's energy or the sum of squares: it is the total variation, the sum of the sizes of the steps.)\n\nSYNTAX:\nt.energy <dim: int>\nWith no argument the differences run along the LAST axis and there is no\ndim inlet. Give an axis as the argument - t.energy 0 - and a dim box\nappears so it can be changed. Either way the answer is ONE number,\nsummed over everything.\n\nEXAMPLE:\nt.energy\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is measured and sent - the only inlet that makes the node send.\n\nn (int box):\nHow many times to difference before summing. 1 (the default) is total change; 2 is total change in the change. 0 sums the sizes of the values themselves. A tensor not longer than n along the axis gives 0. Negative n is refused with an error. Changing it does not send by itself - the metro in the demo re-sends.\n\ndim (int box, only with an argument):\nThe axis to take the differences along.\n\nOUTPUTS:\n\ntensor out:\nA single number, as a one-value tensor.\n\nREADING THE DEMO:\nBoth messages hold values from 0 to 8, sent five times a second. The steady climb 0 1 2 ... 8 moves 1 at each of its 8 steps: energy 8, the same as the distance from start to finish. The zigzag 0 8 0 8 ... moves 8 at each step: energy 64, although it ends where it began. Same range, same start and end - eight times the travel.\n\nType 2 into n on both: the climb gives 0 (its speed never changes), the zigzag 112 (it reverses with all its speed every step).\n\nRELATED:\nt.diff gives the differences themselves, before summing. np.diff is the NumPy difference. t.length is the size of a tensor, not how much it changes. t.sum adds values without differencing.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Adds up how much a tensor CHANGES from one value to the next: the\ndifferences between neighbours, made positive, summed into one number.\n\nIt measures the total distance travelled, not how far the values ended\nup from where they started. A signal that swings a long way and comes\nback has high energy and no overall change. Use it to ask how much\nsomething moved over a stretch of samples - a window of a joint's\npositions, a recorded gesture - or, with n 2, how jerky the movement\nwas: the total change in the change.\n\n(Despite the name, this is not the physicist's energy or the sum of\nsquares: it is the total variation, the sum of the sizes of the steps.)\n\nSYNTAX:\nt.energy <dim: int>\nWith no argument the differences run along the LAST axis and there is no\ndim inlet. Give an axis as the argument - t.energy 0 - and a dim box\nappears so it can be changed. Either way the answer is ONE number,\nsummed over everything.\n\nEXAMPLE:\nt.energy\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is measured and sent - the only inlet that makes the node send.\n\nn (int box):\nHow many times to difference before summing. 1 (the default) is total\nchange; 2 is total change in the change. 0 sums the sizes of the values\nthemselves. A tensor not longer than n along the axis gives 0. Negative n\nis refused with an error. Changing it does not send by itself - the\nmetro in the demo re-sends.\n\ndim (int box, only with an argument):\nThe axis to take the differences along.\n\nOUTPUTS:\n\ntensor out:\nA single number, as a one-value tensor.\n\nREADING THE DEMO:\nBoth messages hold values from 0 to 8, sent five times a second. The\nsteady climb 0 1 2 ... 8 moves 1 at each of its 8 steps: energy 8, the\nsame as the distance from start to finish. The zigzag 0 8 0 8 ... moves\n8 at each step: energy 64, although it ends where it began. Same range,\nsame start and end - eight times the travel.\n\nType 2 into n on both: the climb gives 0 (its speed never changes),\nthe zigzag 112 (it reverses with all its speed every step).\n\nRELATED:\nt.diff gives the differences themselves, before summing. np.diff is\nthe NumPy difference. t.length is the size of a tensor, not how much it\nchanges. t.sum adds values without differencing."
+            "text": "Adds up how much a tensor CHANGES from one value to the next: the differences between neighbours, made positive, summed into one number.\n\nIt measures the total distance travelled, not how far the values ended up from where they started. A signal that swings a long way and comes back has high energy and no overall change. Use it to ask how much something moved over a stretch of samples - a window of a joint's positions, a recorded gesture - or, with n 2, how jerky the movement was: the total change in the change.\n\n(Despite the name, this is not the physicist's energy or the sum of squares: it is the total variation, the sum of the sizes of the steps.)\n\nSYNTAX:\nt.energy <dim: int>\nWith no argument the differences run along the LAST axis and there is no\ndim inlet. Give an axis as the argument - t.energy 0 - and a dim box\nappears so it can be changed. Either way the answer is ONE number,\nsummed over everything.\n\nEXAMPLE:\nt.energy\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is measured and sent - the only inlet that makes the node send.\n\nn (int box):\nHow many times to difference before summing. 1 (the default) is total change; 2 is total change in the change. 0 sums the sizes of the values themselves. A tensor not longer than n along the axis gives 0. Negative n is refused with an error. Changing it does not send by itself - the metro in the demo re-sends.\n\ndim (int box, only with an argument):\nThe axis to take the differences along.\n\nOUTPUTS:\n\ntensor out:\nA single number, as a one-value tensor.\n\nREADING THE DEMO:\nBoth messages hold values from 0 to 8, sent five times a second. The steady climb 0 1 2 ... 8 moves 1 at each of its 8 steps: energy 8, the same as the distance from start to finish. The zigzag 0 8 0 8 ... moves 8 at each step: energy 64, although it ends where it began. Same range, same start and end - eight times the travel.\n\nType 2 into n on both: the climb gives 0 (its speed never changes), the zigzag 112 (it reverses with all its speed every step).\n\nRELATED:\nt.diff gives the differences themselves, before summing. np.diff is the NumPy difference. t.length is the size of a tensor, not how much it changes. t.sum adds values without differencing."
         },
         "3": {
             "name": "metro",
@@ -494,8 +494,8 @@
             "name": "help_link",
             "id": 866,
             "position_x": 30,
-            "position_y": 920,
-            "width": 53,
+            "position_y": 954,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -506,8 +506,8 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 120,
-            "position_y": 920,
+            "position_x": 100,
+            "position_y": 954,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -519,8 +519,8 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 217,
-            "position_y": 920,
+            "position_x": 176,
+            "position_y": 954,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -532,9 +532,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 322,
-            "position_y": 920,
-            "width": 47,
+            "position_x": 258,
+            "position_y": 954,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -546,8 +546,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 524,
-            "position_y": 964,
+            "position_x": 30,
+            "position_y": 920,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -571,7 +571,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 994,
+            "position_y": 1028,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

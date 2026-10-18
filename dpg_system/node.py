@@ -1500,17 +1500,19 @@ class TextEditor(StringWidget):
         self._font = 0
         self._raw = ''      # unwrapped value
         self._shown = ''    # exactly what we last pushed into the widget
+        self._inserted = set()  # indices in _shown of the newlines _wrap added
 
     def _draw_widget(self):
         dpg.add_input_text(label=self._label, width=self._zoomed(self.widget_width), tag=self.uuid, user_data=self.node,
                            default_value=self.default_value, on_enter=False, multiline=True)
         self._raw = self.default_value
         self._shown = self.default_value
+        self._inserted = set()
 
     def _convert_and_set(self, data):
         super()._convert_and_set(data, strip=False)
         self._raw = self.value
-        self._shown = self._wrap(self.value)
+        self._shown, self._inserted = self._wrap_marked(self.value)
         if self._shown != self.value and dpg.does_item_exist(self.uuid):
             dpg.set_value(self.uuid, self._shown)
 
@@ -1520,10 +1522,30 @@ class TextEditor(StringWidget):
         shown = dpg.get_value(self.uuid)
         if shown == self._shown:
             self.value = self._raw
-        else:
-            self.value = shown
-            self._raw = shown
-            self._shown = shown
+            return
+        # Something was typed. The display still holds the line breaks _wrap
+        # inserted; they must not become part of the text, or every edit bakes
+        # the current wrap into the patch (and a wider box then shows ragged
+        # lines). Line the new display up with the old one: unchanged stretches
+        # carry their inserted-break marks across and those breaks are dropped;
+        # whatever the user typed (newlines included) is kept as typed.
+        import difflib
+        raw = []
+        inserted = set()
+        ops = difflib.SequenceMatcher(None, self._shown, shown, autojunk=False).get_opcodes()
+        for tag, i1, i2, j1, j2 in ops:
+            if tag == 'equal':
+                for k in range(i2 - i1):
+                    if (i1 + k) in self._inserted:
+                        inserted.add(j1 + k)
+                    else:
+                        raw.append(shown[j1 + k])
+            elif tag in ('replace', 'insert'):
+                raw.append(shown[j1:j2])
+        self._raw = ''.join(raw)
+        self.value = self._raw
+        self._shown = shown
+        self._inserted = inserted
 
     def _glyph_width(self):
         """On-screen advance of one character, in item-width units.
@@ -1566,33 +1588,59 @@ class TextEditor(StringWidget):
         return max(8, int((width - 24) / glyph))  # frame padding + scrollbar
 
     def _wrap(self, text):
+        return self._wrap_marked(text)[0]
+
+    def _wrap_marked(self, text):
+        """The text as displayed, and the indices of the newlines added to it."""
         cols = self._wrap_columns()
         if not cols or not text:
-            return text
+            return text, set()
         out = []
-        for para in text.split('\n'):
-            if len(para) <= cols:
-                out.append(para)
-            else:
-                out.extend(textwrap.wrap(para, cols, break_long_words=True,
-                                         break_on_hyphens=False,
-                                         replace_whitespace=False,
-                                         drop_whitespace=False) or [''])
-        return '\n'.join(out)
+        inserted = set()
+        pos = 0
+        for n, para in enumerate(text.split('\n')):
+            if n:
+                out.append('\n')       # a real newline of the text
+                pos += 1
+            pieces = [para]
+            if len(para) > cols:
+                pieces = textwrap.wrap(para, cols, break_long_words=True,
+                                       break_on_hyphens=False, expand_tabs=False,
+                                       replace_whitespace=False,
+                                       drop_whitespace=False) or ['']
+                if ''.join(pieces) != para:     # never lose characters
+                    pieces = [para]
+                # break after a space, not before it: a line that starts with
+                # the space reads as indented
+                for k in range(1, len(pieces)):
+                    lead = len(pieces[k]) - len(pieces[k].lstrip(' '))
+                    if lead and len(pieces[k]) > lead:
+                        pieces[k - 1] += pieces[k][:lead]
+                        pieces[k] = pieces[k][lead:]
+            for k, piece in enumerate(pieces):
+                if k:
+                    out.append('\n')
+                    inserted.add(pos)
+                    pos += 1
+                out.append(piece)
+                pos += len(piece)
+        return ''.join(out), inserted
 
     def rewrap(self):
         """Re-flow the displayed text. Call after a width or font change."""
         if not dpg.does_item_exist(self.uuid):
             return
-        shown = self._wrap(self._raw)
+        shown, inserted = self._wrap_marked(self._raw)
         if shown != self._shown:
             self._shown = shown
+            self._inserted = inserted
             dpg.set_value(self.uuid, shown)
 
     def set_wrap_enabled(self, enabled):
         self.wrap_enabled = enabled
         if not enabled and dpg.does_item_exist(self.uuid):
             self._shown = self._raw
+            self._inserted = set()
             dpg.set_value(self.uuid, self._raw)
         else:
             self.rewrap()

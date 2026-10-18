@@ -1,5 +1,5 @@
 {
-    "height": 1201,
+    "height": 1235,
     "width": 1748,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a Hamming window: a cosine hump that rises from 0.08 to 1 and back.\n\nUse it to taper a frame of samples before a Fourier transform (t.rfft),\nor as a smoothing kernel or fade shape: it is a list of m weights, at\nmost 1, that rise towards the middle.\n\nTHE SHAPE:\n0.54 - 0.46 cos. Almost the Hann hump, but lifted so the ends stop at\n0.08 instead of zero. Those weights were chosen to cancel the nearest\nside lobe: the leakage right next to a peak is lower than Hann's, but\nfar from the peak it dies away more slowly. Choose it when a weak tone\nclose to a strong one must not be swamped.\n\nSYNTAX:\nt.window.hamming\nNo arguments: set the length and the rest on the node.\n\nEXAMPLE:\nt.window.hamming\n\nINPUTS and PARAMETERS:\n\n(button, the first inlet):\nMakes the window and sends it. Anything arriving here triggers it; in the\ndemo a metro bangs it ten times a second so the plot follows your edits.\nNothing else on the node sends by itself.\n\ntype (menu):\nWhich window. Choosing another one turns this node into that window - the\ntitle changes and the parameter boxes change to suit - so one node can\naudition them all.\n\nm (int):\nThe length: how many values. Default 256, smallest 1. Match it to the\nnumber of samples in the frame you are going to multiply.\n\nsym (checkbox, default on):\nOn: SYMMETRIC - the window rises and falls the same way and both ends are\nthe edge value. Right for designing filters. Off: PERIODIC - computed as\nif one sample longer and the last sample dropped, so a row of them laid\nend to end repeats exactly. That is the version to use before an FFT.\n\ndevice / dtype / requires_grad:\nWhere the tensor is made (cpu by default), its number type (float32 by\ndefault) and whether gradients flow through it.\n\nOUTPUTS:\n\nwindow tensor out:\nA 1-D tensor of m values, at most 1. Multiply a frame by it (a * node\ndoes tensors) before t.rfft.\n\nWHAT A WINDOW IS FOR:\nCutting a frame out of a longer signal leaves ragged ends: unless the\nframe happens to hold a whole number of cycles, the last sample does not\nmeet the first, and t.rfft reads that jump as extra frequencies smeared\naround every real one (LEAKAGE - drag the slider on the t.rfft page to\n10.5 cycles to see it). Multiplying by a window fades the frame in and\nout so the ends meet at or near zero. The price is that each spectral\nspike gets wider. Every window is a different bargain between a narrow\nspike (the main lobe) and quiet surroundings (the side lobes).\n\nREADING THE DEMO:\nThe plot draws the window, first value on the left; the strip under it is\nthe same values as shades (dark 0, bright 1). Drag m on the node to change the length, or untick sym.\n\nRELATED:\nt.window.hann, t.window.general_hamming, t.window.blackman and t.rfft are on their own pages.\nt.rfft is what a window usually feeds; the type menu on this node\nswitches to any other window.",
+                    "value": "Makes a Hamming window: a cosine hump that rises from 0.08 to 1 and back.\n\nUse it to taper a frame of samples before a Fourier transform (t.rfft), or as a smoothing kernel or fade shape: it is a list of m weights, at most 1, that rise towards the middle.\n\nTHE SHAPE:\n0.54 - 0.46 cos. Almost the Hann hump, but lifted so the ends stop at 0.08 instead of zero. Those weights were chosen to cancel the nearest side lobe: the leakage right next to a peak is lower than Hann's, but far from the peak it dies away more slowly. Choose it when a weak tone close to a strong one must not be swamped.\n\nSYNTAX:\nt.window.hamming\nNo arguments: set the length and the rest on the node.\n\nEXAMPLE:\nt.window.hamming\n\nINPUTS and PARAMETERS:\n\n(button, the first inlet):\nMakes the window and sends it. Anything arriving here triggers it; in the demo a metro bangs it ten times a second so the plot follows your edits. Nothing else on the node sends by itself.\n\ntype (menu):\nWhich window. Choosing another one turns this node into that window - the title changes and the parameter boxes change to suit - so one node can audition them all.\n\nm (int):\nThe length: how many values. Default 256, smallest 1. Match it to the number of samples in the frame you are going to multiply.\n\nsym (checkbox, default on):\nOn: SYMMETRIC - the window rises and falls the same way and both ends are the edge value. Right for designing filters. Off: PERIODIC - computed as if one sample longer and the last sample dropped, so a row of them laid end to end repeats exactly. That is the version to use before an FFT.\n\ndevice / dtype / requires_grad:\nWhere the tensor is made (cpu by default), its number type (float32 by default) and whether gradients flow through it.\n\nOUTPUTS:\n\nwindow tensor out:\nA 1-D tensor of m values, at most 1. Multiply a frame by it (a * node does tensors) before t.rfft.\n\nWHAT A WINDOW IS FOR:\nCutting a frame out of a longer signal leaves ragged ends: unless the frame happens to hold a whole number of cycles, the last sample does not meet the first, and t.rfft reads that jump as extra frequencies smeared around every real one (LEAKAGE - drag the slider on the t.rfft page to 10.5 cycles to see it). Multiplying by a window fades the frame in and out so the ends meet at or near zero. The price is that each spectral spike gets wider. Every window is a different bargain between a narrow spike (the main lobe) and quiet surroundings (the side lobes).\n\nREADING THE DEMO:\nThe plot draws the window, first value on the left; the strip under it is the same values as shades (dark 0, bright 1). Drag m on the node to change the length, or untick sym.\n\nRELATED:\nt.window.hann, t.window.general_hamming, t.window.blackman and t.rfft are on their own pages. t.rfft is what a window usually feeds; the type menu on this node switches to any other window.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a Hamming window: a cosine hump that rises from 0.08 to 1 and back.\n\nUse it to taper a frame of samples before a Fourier transform (t.rfft),\nor as a smoothing kernel or fade shape: it is a list of m weights, at\nmost 1, that rise towards the middle.\n\nTHE SHAPE:\n0.54 - 0.46 cos. Almost the Hann hump, but lifted so the ends stop at\n0.08 instead of zero. Those weights were chosen to cancel the nearest\nside lobe: the leakage right next to a peak is lower than Hann's, but\nfar from the peak it dies away more slowly. Choose it when a weak tone\nclose to a strong one must not be swamped.\n\nSYNTAX:\nt.window.hamming\nNo arguments: set the length and the rest on the node.\n\nEXAMPLE:\nt.window.hamming\n\nINPUTS and PARAMETERS:\n\n(button, the first inlet):\nMakes the window and sends it. Anything arriving here triggers it; in the\ndemo a metro bangs it ten times a second so the plot follows your edits.\nNothing else on the node sends by itself.\n\ntype (menu):\nWhich window. Choosing another one turns this node into that window - the\ntitle changes and the parameter boxes change to suit - so one node can\naudition them all.\n\nm (int):\nThe length: how many values. Default 256, smallest 1. Match it to the\nnumber of samples in the frame you are going to multiply.\n\nsym (checkbox, default on):\nOn: SYMMETRIC - the window rises and falls the same way and both ends are\nthe edge value. Right for designing filters. Off: PERIODIC - computed as\nif one sample longer and the last sample dropped, so a row of them laid\nend to end repeats exactly. That is the version to use before an FFT.\n\ndevice / dtype / requires_grad:\nWhere the tensor is made (cpu by default), its number type (float32 by\ndefault) and whether gradients flow through it.\n\nOUTPUTS:\n\nwindow tensor out:\nA 1-D tensor of m values, at most 1. Multiply a frame by it (a * node\ndoes tensors) before t.rfft.\n\nWHAT A WINDOW IS FOR:\nCutting a frame out of a longer signal leaves ragged ends: unless the\nframe happens to hold a whole number of cycles, the last sample does not\nmeet the first, and t.rfft reads that jump as extra frequencies smeared\naround every real one (LEAKAGE - drag the slider on the t.rfft page to\n10.5 cycles to see it). Multiplying by a window fades the frame in and\nout so the ends meet at or near zero. The price is that each spectral\nspike gets wider. Every window is a different bargain between a narrow\nspike (the main lobe) and quiet surroundings (the side lobes).\n\nREADING THE DEMO:\nThe plot draws the window, first value on the left; the strip under it is\nthe same values as shades (dark 0, bright 1). Drag m on the node to change the length, or untick sym.\n\nRELATED:\nt.window.hann, t.window.general_hamming, t.window.blackman and t.rfft are on their own pages.\nt.rfft is what a window usually feeds; the type menu on this node\nswitches to any other window."
+            "text": "Makes a Hamming window: a cosine hump that rises from 0.08 to 1 and back.\n\nUse it to taper a frame of samples before a Fourier transform (t.rfft), or as a smoothing kernel or fade shape: it is a list of m weights, at most 1, that rise towards the middle.\n\nTHE SHAPE:\n0.54 - 0.46 cos. Almost the Hann hump, but lifted so the ends stop at 0.08 instead of zero. Those weights were chosen to cancel the nearest side lobe: the leakage right next to a peak is lower than Hann's, but far from the peak it dies away more slowly. Choose it when a weak tone close to a strong one must not be swamped.\n\nSYNTAX:\nt.window.hamming\nNo arguments: set the length and the rest on the node.\n\nEXAMPLE:\nt.window.hamming\n\nINPUTS and PARAMETERS:\n\n(button, the first inlet):\nMakes the window and sends it. Anything arriving here triggers it; in the demo a metro bangs it ten times a second so the plot follows your edits. Nothing else on the node sends by itself.\n\ntype (menu):\nWhich window. Choosing another one turns this node into that window - the title changes and the parameter boxes change to suit - so one node can audition them all.\n\nm (int):\nThe length: how many values. Default 256, smallest 1. Match it to the number of samples in the frame you are going to multiply.\n\nsym (checkbox, default on):\nOn: SYMMETRIC - the window rises and falls the same way and both ends are the edge value. Right for designing filters. Off: PERIODIC - computed as if one sample longer and the last sample dropped, so a row of them laid end to end repeats exactly. That is the version to use before an FFT.\n\ndevice / dtype / requires_grad:\nWhere the tensor is made (cpu by default), its number type (float32 by default) and whether gradients flow through it.\n\nOUTPUTS:\n\nwindow tensor out:\nA 1-D tensor of m values, at most 1. Multiply a frame by it (a * node does tensors) before t.rfft.\n\nWHAT A WINDOW IS FOR:\nCutting a frame out of a longer signal leaves ragged ends: unless the frame happens to hold a whole number of cycles, the last sample does not meet the first, and t.rfft reads that jump as extra frequencies smeared around every real one (LEAKAGE - drag the slider on the t.rfft page to 10.5 cycles to see it). Multiplying by a window fades the frame in and out so the ends meet at or near zero. The price is that each spectral spike gets wider. Every window is a different bargain between a narrow spike (the main lobe) and quiet surroundings (the side lobes).\n\nREADING THE DEMO:\nThe plot draws the window, first value on the left; the strip under it is the same values as shades (dark 0, bright 1). Drag m on the node to change the length, or untick sym.\n\nRELATED:\nt.window.hann, t.window.general_hamming, t.window.blackman and t.rfft are on their own pages. t.rfft is what a window usually feeds; the type menu on this node switches to any other window."
         },
         "3": {
             "name": "metro",
@@ -359,8 +359,8 @@
             "name": "help_link",
             "id": 607,
             "position_x": 30,
-            "position_y": 682,
-            "width": 96,
+            "position_y": 716,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -371,9 +371,9 @@
         "11": {
             "name": "help_link",
             "id": 644,
-            "position_x": 174,
-            "position_y": 682,
-            "width": 164,
+            "position_x": 144,
+            "position_y": 716,
+            "width": 167,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -384,9 +384,9 @@
         "12": {
             "name": "help_link",
             "id": 681,
-            "position_x": 402,
-            "position_y": 682,
-            "width": 121,
+            "position_x": 327,
+            "position_y": 716,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -398,7 +398,7 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 726,
+            "position_y": 760,
             "width": 53,
             "height": 44,
             "visibility": "show_all",
@@ -411,8 +411,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 755,
-            "position_x": 564,
-            "position_y": 726,
+            "position_x": 30,
+            "position_y": 682,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -436,7 +436,7 @@
             "name": "close",
             "id": 792,
             "position_x": 24,
-            "position_y": 800,
+            "position_y": 834,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 1276,
+    "height": 1310,
     "width": 1610,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Turns a tensor of arbitrary numbers into shares of a whole: every value\ncomes out positive, and they add up to 1.\n\nEach value becomes e to that value, divided by the sum of e to all the\nvalues. The result is a distribution over the elements: the largest score\ngets the biggest share, and how much bigger depends on how far ahead it\nis. Use it to turn a set of scores - how well each candidate matches, how\nactive each joint is - into weights you can blend with. The blend changes\nsmoothly as the scores change, where picking the largest (argmax) would\njump from one to another.\n\nSOFTMAX IS A SOFT ARGMAX:\nargmax answers \"which one is largest\" with a single index. softmax answers\nthe same question spread out. Scores close together give a flat,\nundecided distribution; one score well ahead gives a spiky one that is\nnearly a choice.\n\nSYNTAX:\nt.nn.softmax <dim: int>\nDefault dim 0.\n\nEXAMPLE:\nt.nn.softmax 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy\narray is turned into a float32 tensor first. An integer tensor is refused\n(the console reports \"not implemented for 'Long'\"): convert it with t.to\nfloat32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument.\nThe values along that axis sum to 1; every other axis is a separate set.\nFor a (frames, joints) tensor, dim 1 gives each frame's distribution\nacross the joints; dim 0 gives each joint's distribution over time.\nThose are entirely different questions, and getting dim wrong is the\nusual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the\nonly axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe shares, the same shape as the input, each between 0 and 1, summing\nto 1 along dim.\n\nREADING THE DEMO:\nThe eight scores are 1, 2, 0.5, 3, 1.5, 0, 2.5, 1. The top strip shows\nthem; the bottom strip shows the softmax. At scale 1 the 3 gets 0.38, the\n2.5 gets 0.23, and the 0 only 0.02 - the order is kept, the gaps are\nexaggerated. The float shows the sum: 1.00 always.\n\nTHE SCALE SLIDER IS THE TEMPERATURE:\nOnly the DIFFERENCES between the scores matter - adding the same amount to\nevery score changes nothing. Multiplying them all by a number does: a\nlarge multiplier stretches the differences, so the largest score takes\nnearly everything and the result is almost a hard choice; a multiplier\nnear 0 shrinks them, so every element gets nearly the same share (1/8 =\n0.125 here). Dividing by a \"temperature\" before a softmax is the same\nadjustment; the slider multiplies by 1 over the temperature.\n\nALSO DOCUMENTED HERE: t.special.softmax\nt.special.softmax is the same operation (torch.special.softmax is torch's softmax\nunder another name) with the same default, dim 0. Two differences in the\nnode: it has NO dim inlet unless you type a dim as its argument\n(t.special.softmax 1 shows one), and its outlet is called 'tensor out' rather\nthan 'output'.\n\nRELATED:\nt.nn.softmin is the same with the smallest score winning. t.nn.log_softmax\ngives the logarithm of the shares, accurately. t.nn.gumbel_softmax draws a\nrandom choice weighted by them. t.argmax gives only the winner's index.\nt.nn.sigmoid is the two-choice case: sigmoid of x is the softmax of\n[x, 0].",
+                    "value": "Turns a tensor of arbitrary numbers into shares of a whole: every value comes out positive, and they add up to 1.\n\nEach value becomes e to that value, divided by the sum of e to all the values. The result is a distribution over the elements: the largest score gets the biggest share, and how much bigger depends on how far ahead it is. Use it to turn a set of scores - how well each candidate matches, how active each joint is - into weights you can blend with. The blend changes smoothly as the scores change, where picking the largest (argmax) would jump from one to another.\n\nSOFTMAX IS A SOFT ARGMAX:\nargmax answers \"which one is largest\" with a single index. softmax answers the same question spread out. Scores close together give a flat, undecided distribution; one score well ahead gives a spiky one that is nearly a choice.\n\nSYNTAX:\nt.nn.softmax <dim: int>\nDefault dim 0.\n\nEXAMPLE:\nt.nn.softmax 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy array is turned into a float32 tensor first. An integer tensor is refused (the console reports \"not implemented for 'Long'\"): convert it with t.to float32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument. The values along that axis sum to 1; every other axis is a separate set. For a (frames, joints) tensor, dim 1 gives each frame's distribution across the joints; dim 0 gives each joint's distribution over time. Those are entirely different questions, and getting dim wrong is the usual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the only axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe shares, the same shape as the input, each between 0 and 1, summing to 1 along dim.\n\nREADING THE DEMO:\nThe eight scores are 1, 2, 0.5, 3, 1.5, 0, 2.5, 1. The top strip shows them; the bottom strip shows the softmax. At scale 1 the 3 gets 0.38, the 2.5 gets 0.23, and the 0 only 0.02 - the order is kept, the gaps are exaggerated. The float shows the sum: 1.00 always.\n\nTHE SCALE SLIDER IS THE TEMPERATURE:\nOnly the DIFFERENCES between the scores matter - adding the same amount to every score changes nothing. Multiplying them all by a number does: a large multiplier stretches the differences, so the largest score takes nearly everything and the result is almost a hard choice; a multiplier near 0 shrinks them, so every element gets nearly the same share (1/8 = 0.125 here). Dividing by a \"temperature\" before a softmax is the same adjustment; the slider multiplies by 1 over the temperature.\n\nALSO DOCUMENTED HERE: t.special.softmax\nt.special.softmax is the same operation (torch.special.softmax is torch's softmax under another name) with the same default, dim 0. Two differences in the node: it has NO dim inlet unless you type a dim as its argument (t.special.softmax 1 shows one), and its outlet is called 'tensor out' rather than 'output'.\n\nRELATED:\nt.nn.softmin is the same with the smallest score winning. t.nn.log_softmax gives the logarithm of the shares, accurately. t.nn.gumbel_softmax draws a random choice weighted by them. t.argmax gives only the winner's index. t.nn.sigmoid is the two-choice case: sigmoid of x is the softmax of [x, 0].",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Turns a tensor of arbitrary numbers into shares of a whole: every value\ncomes out positive, and they add up to 1.\n\nEach value becomes e to that value, divided by the sum of e to all the\nvalues. The result is a distribution over the elements: the largest score\ngets the biggest share, and how much bigger depends on how far ahead it\nis. Use it to turn a set of scores - how well each candidate matches, how\nactive each joint is - into weights you can blend with. The blend changes\nsmoothly as the scores change, where picking the largest (argmax) would\njump from one to another.\n\nSOFTMAX IS A SOFT ARGMAX:\nargmax answers \"which one is largest\" with a single index. softmax answers\nthe same question spread out. Scores close together give a flat,\nundecided distribution; one score well ahead gives a spiky one that is\nnearly a choice.\n\nSYNTAX:\nt.nn.softmax <dim: int>\nDefault dim 0.\n\nEXAMPLE:\nt.nn.softmax 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy\narray is turned into a float32 tensor first. An integer tensor is refused\n(the console reports \"not implemented for 'Long'\"): convert it with t.to\nfloat32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument.\nThe values along that axis sum to 1; every other axis is a separate set.\nFor a (frames, joints) tensor, dim 1 gives each frame's distribution\nacross the joints; dim 0 gives each joint's distribution over time.\nThose are entirely different questions, and getting dim wrong is the\nusual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the\nonly axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe shares, the same shape as the input, each between 0 and 1, summing\nto 1 along dim.\n\nREADING THE DEMO:\nThe eight scores are 1, 2, 0.5, 3, 1.5, 0, 2.5, 1. The top strip shows\nthem; the bottom strip shows the softmax. At scale 1 the 3 gets 0.38, the\n2.5 gets 0.23, and the 0 only 0.02 - the order is kept, the gaps are\nexaggerated. The float shows the sum: 1.00 always.\n\nTHE SCALE SLIDER IS THE TEMPERATURE:\nOnly the DIFFERENCES between the scores matter - adding the same amount to\nevery score changes nothing. Multiplying them all by a number does: a\nlarge multiplier stretches the differences, so the largest score takes\nnearly everything and the result is almost a hard choice; a multiplier\nnear 0 shrinks them, so every element gets nearly the same share (1/8 =\n0.125 here). Dividing by a \"temperature\" before a softmax is the same\nadjustment; the slider multiplies by 1 over the temperature.\n\nALSO DOCUMENTED HERE: t.special.softmax\nt.special.softmax is the same operation (torch.special.softmax is torch's softmax\nunder another name) with the same default, dim 0. Two differences in the\nnode: it has NO dim inlet unless you type a dim as its argument\n(t.special.softmax 1 shows one), and its outlet is called 'tensor out' rather\nthan 'output'.\n\nRELATED:\nt.nn.softmin is the same with the smallest score winning. t.nn.log_softmax\ngives the logarithm of the shares, accurately. t.nn.gumbel_softmax draws a\nrandom choice weighted by them. t.argmax gives only the winner's index.\nt.nn.sigmoid is the two-choice case: sigmoid of x is the softmax of\n[x, 0]."
+            "text": "Turns a tensor of arbitrary numbers into shares of a whole: every value comes out positive, and they add up to 1.\n\nEach value becomes e to that value, divided by the sum of e to all the values. The result is a distribution over the elements: the largest score gets the biggest share, and how much bigger depends on how far ahead it is. Use it to turn a set of scores - how well each candidate matches, how active each joint is - into weights you can blend with. The blend changes smoothly as the scores change, where picking the largest (argmax) would jump from one to another.\n\nSOFTMAX IS A SOFT ARGMAX:\nargmax answers \"which one is largest\" with a single index. softmax answers the same question spread out. Scores close together give a flat, undecided distribution; one score well ahead gives a spiky one that is nearly a choice.\n\nSYNTAX:\nt.nn.softmax <dim: int>\nDefault dim 0.\n\nEXAMPLE:\nt.nn.softmax 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy array is turned into a float32 tensor first. An integer tensor is refused (the console reports \"not implemented for 'Long'\"): convert it with t.to float32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument. The values along that axis sum to 1; every other axis is a separate set. For a (frames, joints) tensor, dim 1 gives each frame's distribution across the joints; dim 0 gives each joint's distribution over time. Those are entirely different questions, and getting dim wrong is the usual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the only axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe shares, the same shape as the input, each between 0 and 1, summing to 1 along dim.\n\nREADING THE DEMO:\nThe eight scores are 1, 2, 0.5, 3, 1.5, 0, 2.5, 1. The top strip shows them; the bottom strip shows the softmax. At scale 1 the 3 gets 0.38, the 2.5 gets 0.23, and the 0 only 0.02 - the order is kept, the gaps are exaggerated. The float shows the sum: 1.00 always.\n\nTHE SCALE SLIDER IS THE TEMPERATURE:\nOnly the DIFFERENCES between the scores matter - adding the same amount to every score changes nothing. Multiplying them all by a number does: a large multiplier stretches the differences, so the largest score takes nearly everything and the result is almost a hard choice; a multiplier near 0 shrinks them, so every element gets nearly the same share (1/8 = 0.125 here). Dividing by a \"temperature\" before a softmax is the same adjustment; the slider multiplies by 1 over the temperature.\n\nALSO DOCUMENTED HERE: t.special.softmax\nt.special.softmax is the same operation (torch.special.softmax is torch's softmax under another name) with the same default, dim 0. Two differences in the node: it has NO dim inlet unless you type a dim as its argument (t.special.softmax 1 shows one), and its outlet is called 'tensor out' rather than 'output'.\n\nRELATED:\nt.nn.softmin is the same with the smallest score winning. t.nn.log_softmax gives the logarithm of the shares, accurately. t.nn.gumbel_softmax draws a random choice weighted by them. t.argmax gives only the winner's index. t.nn.sigmoid is the two-choice case: sigmoid of x is the softmax of [x, 0]."
         },
         "3": {
             "name": "metro",
@@ -543,8 +543,8 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 860,
-            "width": 90,
+            "position_y": 894,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -555,9 +555,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 166,
-            "position_y": 860,
-            "width": 115,
+            "position_x": 138,
+            "position_y": 894,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -568,9 +568,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 333,
-            "position_y": 860,
-            "width": 133,
+            "position_x": 271,
+            "position_y": 894,
+            "width": 136,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -582,7 +582,7 @@
             "name": "help_link",
             "id": 1051,
             "position_x": 30,
-            "position_y": 904,
+            "position_y": 938,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -595,7 +595,7 @@
             "name": "help_link",
             "id": 1088,
             "position_x": 135,
-            "position_y": 904,
+            "position_y": 938,
             "width": 90,
             "height": 44,
             "visibility": "show_all",
@@ -608,7 +608,7 @@
             "name": "help_link",
             "id": 1125,
             "position_x": 271,
-            "position_y": 904,
+            "position_y": 938,
             "width": 121,
             "height": 44,
             "visibility": "show_all",
@@ -621,8 +621,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1162,
-            "position_x": 504,
-            "position_y": 948,
+            "position_x": 30,
+            "position_y": 860,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -646,7 +646,7 @@
             "name": "close",
             "id": 1199,
             "position_x": 24,
-            "position_y": 978,
+            "position_y": 1012,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

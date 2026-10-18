@@ -1,5 +1,5 @@
 {
-    "height": 821,
+    "height": 855,
     "width": 1647,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor in which every element is the same value, which you choose.\n\nA constant of any shape: a level to compare against, a bias to add, a\nstarting value other than zero or one. It is the one-step version of\nt.ones times a number.\n\nSYNTAX:\nt.full <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension - t.full 4 4 is 4 by 4. The VALUE is not\nan argument: set it on the node. With no numbers you get a 1-element\ntensor. The number of dimensions is fixed when the node is made (one\ndim property per number typed); retype the node to change it.\n\nEXAMPLE:\nt.full 4 4\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send.\n\nvalue (drag float, also an inlet):\nWhat to fill with. Default 1.0. Setting it does not send by itself - in\nthe demo 't bang float' sets the value and then clicks the node.\n\ndim 0, dim 1, ... (whole numbers):\nThe size of each dimension, used on the next click.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.full 4 4 int64.\nAn integer dtype cuts the value down to a whole number (2.7 fills with\n2); a value that does not fit (300 as uint8) is an error and nothing is\nsent.\n\nOUTPUTS:\n\nfilled tensor:\nThe tensor.\n\nREADING THE DEMO:\nDrag the float from 0 to 1: the whole 4 by 4 heat_map changes colour\ntogether, every cell printing the same number, because every element is\nthat value.\n\nRELATED:\nt.ones and t.zeros are the two commonest fills. t.eye puts ones only on\nthe diagonal. np.ones (times a number) is the NumPy route to the same\nthing.",
+                    "value": "Makes a tensor in which every element is the same value, which you choose.\n\nA constant of any shape: a level to compare against, a bias to add, a starting value other than zero or one. It is the one-step version of t.ones times a number.\n\nSYNTAX:\nt.full <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension - t.full 4 4 is 4 by 4. The VALUE is not\nan argument: set it on the node. With no numbers you get a 1-element\ntensor. The number of dimensions is fixed when the node is made (one\ndim property per number typed); retype the node to change it.\n\nEXAMPLE:\nt.full 4 4\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, to send the tensor. Nothing else makes the node send.\n\nvalue (drag float, also an inlet):\nWhat to fill with. Default 1.0. Setting it does not send by itself - in the demo 't bang float' sets the value and then clicks the node.\n\ndim 0, dim 1, ... (whole numbers):\nThe size of each dimension, used on the next click.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.full 4 4 int64.\nAn integer dtype cuts the value down to a whole number (2.7 fills with 2); a value that does not fit (300 as uint8) is an error and nothing is sent.\n\nOUTPUTS:\n\nfilled tensor:\nThe tensor.\n\nREADING THE DEMO:\nDrag the float from 0 to 1: the whole 4 by 4 heat_map changes colour together, every cell printing the same number, because every element is that value.\n\nRELATED:\nt.ones and t.zeros are the two commonest fills. t.eye puts ones only on the diagonal. np.ones (times a number) is the NumPy route to the same thing.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor in which every element is the same value, which you choose.\n\nA constant of any shape: a level to compare against, a bias to add, a\nstarting value other than zero or one. It is the one-step version of\nt.ones times a number.\n\nSYNTAX:\nt.full <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension - t.full 4 4 is 4 by 4. The VALUE is not\nan argument: set it on the node. With no numbers you get a 1-element\ntensor. The number of dimensions is fixed when the node is made (one\ndim property per number typed); retype the node to change it.\n\nEXAMPLE:\nt.full 4 4\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send.\n\nvalue (drag float, also an inlet):\nWhat to fill with. Default 1.0. Setting it does not send by itself - in\nthe demo 't bang float' sets the value and then clicks the node.\n\ndim 0, dim 1, ... (whole numbers):\nThe size of each dimension, used on the next click.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.full 4 4 int64.\nAn integer dtype cuts the value down to a whole number (2.7 fills with\n2); a value that does not fit (300 as uint8) is an error and nothing is\nsent.\n\nOUTPUTS:\n\nfilled tensor:\nThe tensor.\n\nREADING THE DEMO:\nDrag the float from 0 to 1: the whole 4 by 4 heat_map changes colour\ntogether, every cell printing the same number, because every element is\nthat value.\n\nRELATED:\nt.ones and t.zeros are the two commonest fills. t.eye puts ones only on\nthe diagonal. np.ones (times a number) is the NumPy route to the same\nthing."
+            "text": "Makes a tensor in which every element is the same value, which you choose.\n\nA constant of any shape: a level to compare against, a bias to add, a starting value other than zero or one. It is the one-step version of t.ones times a number.\n\nSYNTAX:\nt.full <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension - t.full 4 4 is 4 by 4. The VALUE is not\nan argument: set it on the node. With no numbers you get a 1-element\ntensor. The number of dimensions is fixed when the node is made (one\ndim property per number typed); retype the node to change it.\n\nEXAMPLE:\nt.full 4 4\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, to send the tensor. Nothing else makes the node send.\n\nvalue (drag float, also an inlet):\nWhat to fill with. Default 1.0. Setting it does not send by itself - in the demo 't bang float' sets the value and then clicks the node.\n\ndim 0, dim 1, ... (whole numbers):\nThe size of each dimension, used on the next click.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.full 4 4 int64.\nAn integer dtype cuts the value down to a whole number (2.7 fills with 2); a value that does not fit (300 as uint8) is an error and nothing is sent.\n\nOUTPUTS:\n\nfilled tensor:\nThe tensor.\n\nREADING THE DEMO:\nDrag the float from 0 to 1: the whole 4 by 4 heat_map changes colour together, every cell printing the same number, because every element is that value.\n\nRELATED:\nt.ones and t.zeros are the two commonest fills. t.eye puts ones only on the diagonal. np.ones (times a number) is the NumPy route to the same thing."
         },
         "3": {
             "name": "load_bang",
@@ -296,8 +296,8 @@
             "name": "help_link",
             "id": 607,
             "position_x": 30,
-            "position_y": 470,
-            "width": 53,
+            "position_y": 504,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -308,8 +308,8 @@
         "11": {
             "name": "help_link",
             "id": 644,
-            "position_x": 120,
-            "position_y": 470,
+            "position_x": 100,
+            "position_y": 504,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -321,9 +321,9 @@
         "12": {
             "name": "help_link",
             "id": 681,
-            "position_x": 217,
-            "position_y": 470,
-            "width": 47,
+            "position_x": 176,
+            "position_y": 504,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -334,8 +334,8 @@
         "13": {
             "name": "help_link",
             "id": 718,
-            "position_x": 299,
-            "position_y": 470,
+            "position_x": 240,
+            "position_y": 504,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -348,7 +348,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 755,
-            "position_x": 524,
+            "position_x": 30,
             "position_y": 470,
             "width": 156,
             "height": 30,
@@ -373,7 +373,7 @@
             "name": "close",
             "id": 792,
             "position_x": 24,
-            "position_y": 544,
+            "position_y": 578,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

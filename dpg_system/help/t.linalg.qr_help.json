@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1228,
+            "height": 1262,
             "width": 1619,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Splits a matrix into Q, whose columns are perpendicular directions of\nlength 1, and R, a triangle: the input equals Q x R.\n\nQ is the useful half on its own: it turns a set of arbitrary directions\n(the columns of the input) into a set of mutually perpendicular ones\nspanning the same space - the first column of Q points along the first\ncolumn of the input, the second is the part of the second column at\nright angles to the first, and so on. R records how to mix Q's columns\nback into the input, and is zero below its diagonal because each input\ncolumn only needs the Q columns up to its own. It is also the stable\nway least-squares problems are solved.\n\nSYNTAX:\nt.linalg.qr\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32\ntensor), rows x columns. Receiving it decomposes and sends.\n\nmode (menu):\nreduced (the default): for a 4 x 3 input, Q is 4 x 3 and R 3 x 3.\ncomplete: Q is square, 4 x 4 (one more perpendicular direction), and R\n4 x 3 with a row of zeros.\nr: R only - Q is sent as an EMPTY tensor, which the pictures here\ncannot draw.\nChanging it does not send by itself; the next matrix uses it (here the\nmatrix is re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nQ tensor out:\nQ, columns of length 1 at right angles to each other. Sent second.\n\nR tensor out:\nR, upper triangular. Sent first.\n\nREADING THE DEMO:\nmake_matrix sends a 4 x 3 matrix. Q (blue above 0, red below) has the\nsame shape; R's zeros below the diagonal show as the neutral colour.\nThe bottom picture is Q times R from np.matmul (R arrives first and is\nstored, then Q triggers): the input again. Choose 'complete' and Q\ngains a fourth column and R a zero row; the product is unchanged.\nSigns are free: a column of Q and the matching row of R can both flip\nand the product stays the same.\n\nRELATED:\nt.linalg.svd breaks a matrix into patterns and their strengths.\nt.linalg.eig finds the directions a square matrix only stretches.\nnp.linalg.solve solves the equations that qr is often used for.\nnp.matmul multiplies the pieces back together.",
+                            "value": "Splits a matrix into Q, whose columns are perpendicular directions of length 1, and R, a triangle: the input equals Q x R.\n\nQ is the useful half on its own: it turns a set of arbitrary directions (the columns of the input) into a set of mutually perpendicular ones spanning the same space - the first column of Q points along the first column of the input, the second is the part of the second column at right angles to the first, and so on. R records how to mix Q's columns back into the input, and is zero below its diagonal because each input column only needs the Q columns up to its own. It is also the stable way least-squares problems are solved.\n\nSYNTAX:\nt.linalg.qr\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32 tensor), rows x columns. Receiving it decomposes and sends.\n\nmode (menu):\nreduced (the default): for a 4 x 3 input, Q is 4 x 3 and R 3 x 3.\ncomplete: Q is square, 4 x 4 (one more perpendicular direction), and R 4 x 3 with a row of zeros.\nr: R only - Q is sent as an EMPTY tensor, which the pictures here cannot draw.\nChanging it does not send by itself; the next matrix uses it (here the matrix is re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nQ tensor out:\nQ, columns of length 1 at right angles to each other. Sent second.\n\nR tensor out:\nR, upper triangular. Sent first.\n\nREADING THE DEMO:\nmake_matrix sends a 4 x 3 matrix. Q (blue above 0, red below) has the same shape; R's zeros below the diagonal show as the neutral colour. The bottom picture is Q times R from np.matmul (R arrives first and is stored, then Q triggers): the input again. Choose 'complete' and Q gains a fourth column and R a zero row; the product is unchanged.\nSigns are free: a column of Q and the matching row of R can both flip and the product stays the same.\n\nRELATED:\nt.linalg.svd breaks a matrix into patterns and their strengths. t.linalg.eig finds the directions a square matrix only stretches. np.linalg.solve solves the equations that qr is often used for. np.matmul multiplies the pieces back together.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Splits a matrix into Q, whose columns are perpendicular directions of\nlength 1, and R, a triangle: the input equals Q x R.\n\nQ is the useful half on its own: it turns a set of arbitrary directions\n(the columns of the input) into a set of mutually perpendicular ones\nspanning the same space - the first column of Q points along the first\ncolumn of the input, the second is the part of the second column at\nright angles to the first, and so on. R records how to mix Q's columns\nback into the input, and is zero below its diagonal because each input\ncolumn only needs the Q columns up to its own. It is also the stable\nway least-squares problems are solved.\n\nSYNTAX:\nt.linalg.qr\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32\ntensor), rows x columns. Receiving it decomposes and sends.\n\nmode (menu):\nreduced (the default): for a 4 x 3 input, Q is 4 x 3 and R 3 x 3.\ncomplete: Q is square, 4 x 4 (one more perpendicular direction), and R\n4 x 3 with a row of zeros.\nr: R only - Q is sent as an EMPTY tensor, which the pictures here\ncannot draw.\nChanging it does not send by itself; the next matrix uses it (here the\nmatrix is re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nQ tensor out:\nQ, columns of length 1 at right angles to each other. Sent second.\n\nR tensor out:\nR, upper triangular. Sent first.\n\nREADING THE DEMO:\nmake_matrix sends a 4 x 3 matrix. Q (blue above 0, red below) has the\nsame shape; R's zeros below the diagonal show as the neutral colour.\nThe bottom picture is Q times R from np.matmul (R arrives first and is\nstored, then Q triggers): the input again. Choose 'complete' and Q\ngains a fourth column and R a zero row; the product is unchanged.\nSigns are free: a column of Q and the matching row of R can both flip\nand the product stays the same.\n\nRELATED:\nt.linalg.svd breaks a matrix into patterns and their strengths.\nt.linalg.eig finds the directions a square matrix only stretches.\nnp.linalg.solve solves the equations that qr is often used for.\nnp.matmul multiplies the pieces back together."
+                    "text": "Splits a matrix into Q, whose columns are perpendicular directions of length 1, and R, a triangle: the input equals Q x R.\n\nQ is the useful half on its own: it turns a set of arbitrary directions (the columns of the input) into a set of mutually perpendicular ones spanning the same space - the first column of Q points along the first column of the input, the second is the part of the second column at right angles to the first, and so on. R records how to mix Q's columns back into the input, and is zero below its diagonal because each input column only needs the Q columns up to its own. It is also the stable way least-squares problems are solved.\n\nSYNTAX:\nt.linalg.qr\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32 tensor), rows x columns. Receiving it decomposes and sends.\n\nmode (menu):\nreduced (the default): for a 4 x 3 input, Q is 4 x 3 and R 3 x 3.\ncomplete: Q is square, 4 x 4 (one more perpendicular direction), and R 4 x 3 with a row of zeros.\nr: R only - Q is sent as an EMPTY tensor, which the pictures here cannot draw.\nChanging it does not send by itself; the next matrix uses it (here the matrix is re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nQ tensor out:\nQ, columns of length 1 at right angles to each other. Sent second.\n\nR tensor out:\nR, upper triangular. Sent first.\n\nREADING THE DEMO:\nmake_matrix sends a 4 x 3 matrix. Q (blue above 0, red below) has the same shape; R's zeros below the diagonal show as the neutral colour. The bottom picture is Q times R from np.matmul (R arrives first and is stored, then Q triggers): the input again. Choose 'complete' and Q gains a fourth column and R a zero row; the product is unchanged.\nSigns are free: a column of Q and the matching row of R can both flip and the product stays the same.\n\nRELATED:\nt.linalg.svd breaks a matrix into patterns and their strengths. t.linalg.eig finds the directions a square matrix only stretches. np.linalg.solve solves the equations that qr is often used for. np.matmul multiplies the pieces back together."
                 },
                 "3": {
                     "name": "p",
@@ -689,8 +689,8 @@
                     "name": "help_link",
                     "id": 792,
                     "position_x": 30,
-                    "position_y": 1050,
-                    "width": 90,
+                    "position_y": 1084,
+                    "width": 92,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -701,9 +701,9 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 166,
-                    "position_y": 1050,
-                    "width": 90,
+                    "position_x": 138,
+                    "position_y": 1084,
+                    "width": 92,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -714,9 +714,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 302,
-                    "position_y": 1050,
-                    "width": 109,
+                    "position_x": 246,
+                    "position_y": 1084,
+                    "width": 110,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -727,9 +727,9 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 461,
-                    "position_y": 1050,
-                    "width": 72,
+                    "position_x": 372,
+                    "position_y": 1084,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -741,8 +741,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 940,
-                    "position_x": 564,
-                    "position_y": 1094,
+                    "position_x": 30,
+                    "position_y": 1050,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -766,7 +766,7 @@
                     "name": "close",
                     "id": 977,
                     "position_x": 24,
-                    "position_y": 1124,
+                    "position_y": 1158,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

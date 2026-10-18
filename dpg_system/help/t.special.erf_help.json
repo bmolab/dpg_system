@@ -1,5 +1,5 @@
 {
-    "height": 1062,
+    "height": 1096,
     "width": 1575,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Applies the error function, erf, to every element of a tensor.\n\nIt is the area under a bell curve, so it turns a distance measured in\nstandard deviations into a probability, and it makes a smooth S-shaped step\nfor edges and transitions.\n\nTHE CURVE:\nAn S from -1 to 1 through 0, steepest at 0 and flattening out quickly:\nerf(1) = 0.843, erf(2) = 0.995, erf(3) = 0.99998. It is antisymmetric:\nerf(-x) = -erf(x). erf(x / 1.414) is the chance a normal value lies\nwithin x standard deviations of the mean.\n\nSYNTAX:\nt.special.erf\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number; far out it is exactly 1 or -1 in 32-bit\nfloats.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-3 to 3 here), and the\nupper plot draws them: a straight ramp. The lower plot is erf of each\nof those 200 values, so it is the graph of the function from -3 to 3,\ndrawn from -1.1 (bottom) to 1.1 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.special.erfc is 1 minus this, kept accurate far out.\nt.special.erfinv undoes it. t.special.ndtr is the same curve rescaled to\nthe normal distribution's 0 to 1 probability.",
+                    "value": "Applies the error function, erf, to every element of a tensor.\n\nIt is the area under a bell curve, so it turns a distance measured in standard deviations into a probability, and it makes a smooth S-shaped step for edges and transitions.\n\nTHE CURVE:\nAn S from -1 to 1 through 0, steepest at 0 and flattening out quickly:\nerf(1) = 0.843, erf(2) = 0.995, erf(3) = 0.99998. It is antisymmetric: erf(-x) = -erf(x). erf(x / 1.414) is the chance a normal value lies within x standard deviations of the mean.\n\nSYNTAX:\nt.special.erf\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number; far out it is exactly 1 or -1 in 32-bit floats.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-3 to 3 here), and the upper plot draws them: a straight ramp. The lower plot is erf of each of those 200 values, so it is the graph of the function from -3 to 3, drawn from -1.1 (bottom) to 1.1 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.special.erfc is 1 minus this, kept accurate far out. t.special.erfinv undoes it. t.special.ndtr is the same curve rescaled to the normal distribution's 0 to 1 probability.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Applies the error function, erf, to every element of a tensor.\n\nIt is the area under a bell curve, so it turns a distance measured in\nstandard deviations into a probability, and it makes a smooth S-shaped step\nfor edges and transitions.\n\nTHE CURVE:\nAn S from -1 to 1 through 0, steepest at 0 and flattening out quickly:\nerf(1) = 0.843, erf(2) = 0.995, erf(3) = 0.99998. It is antisymmetric:\nerf(-x) = -erf(x). erf(x / 1.414) is the chance a normal value lies\nwithin x standard deviations of the mean.\n\nSYNTAX:\nt.special.erf\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number; far out it is exactly 1 or -1 in 32-bit\nfloats.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-3 to 3 here), and the\nupper plot draws them: a straight ramp. The lower plot is erf of each\nof those 200 values, so it is the graph of the function from -3 to 3,\ndrawn from -1.1 (bottom) to 1.1 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.special.erfc is 1 minus this, kept accurate far out.\nt.special.erfinv undoes it. t.special.ndtr is the same curve rescaled to\nthe normal distribution's 0 to 1 probability."
+            "text": "Applies the error function, erf, to every element of a tensor.\n\nIt is the area under a bell curve, so it turns a distance measured in standard deviations into a probability, and it makes a smooth S-shaped step for edges and transitions.\n\nTHE CURVE:\nAn S from -1 to 1 through 0, steepest at 0 and flattening out quickly:\nerf(1) = 0.843, erf(2) = 0.995, erf(3) = 0.99998. It is antisymmetric: erf(-x) = -erf(x). erf(x / 1.414) is the chance a normal value lies within x standard deviations of the mean.\n\nSYNTAX:\nt.special.erf\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number; far out it is exactly 1 or -1 in 32-bit floats.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-3 to 3 here), and the upper plot draws them: a straight ramp. The lower plot is erf of each of those 200 values, so it is the graph of the function from -3 to 3, drawn from -1.1 (bottom) to 1.1 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.special.erfc is 1 minus this, kept accurate far out. t.special.erfinv undoes it. t.special.ndtr is the same curve rescaled to the normal distribution's 0 to 1 probability."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 103,
+            "position_y": 874,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 181,
-            "position_y": 840,
-            "width": 115,
+            "position_x": 150,
+            "position_y": 874,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -457,9 +457,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 348,
-            "position_y": 840,
-            "width": 103,
+            "position_x": 283,
+            "position_y": 874,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -471,7 +471,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 884,
+            "position_y": 918,
             "width": 109,
             "height": 44,
             "visibility": "show_all",
@@ -484,7 +484,7 @@
             "name": "help_link",
             "id": 866,
             "position_x": 189,
-            "position_y": 884,
+            "position_y": 918,
             "width": 96,
             "height": 44,
             "visibility": "show_all",
@@ -497,8 +497,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 477,
-            "position_y": 884,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -522,7 +522,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 958,
+            "position_y": 992,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

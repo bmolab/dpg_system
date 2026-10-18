@@ -1,5 +1,5 @@
 {
-    "height": 1428,
+    "height": 1462,
     "width": 1682,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Piles tensors of the same shape on top of each other, along a NEW\naxis.\n\nThe result has one more axis than the inputs, and the tensors stay\nseparate inside it: stacking two rows of 8 gives a 2 by 8 tensor - row 0\nis the first, row 1 the second. Use it to turn several signals into one\ntable, to pair up x and y lists, or to build a batch out of single\nframes.\n\nSTACK OR CAT?\nJoining two rows of 8 with t.cat gives ONE row of 16 - the second\ncarries straight on from the first. With t.stack it gives 2 rows of 8,\nthe originals kept apart. cat extends an axis; stack adds one. The demo\ndoes both to the same two rows.\n\nSYNTAX:\nt.stack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has, NOT the\ndim (which is set in the dim box).\n\nEXAMPLE:\nt.stack 3\n\nINPUTS and PARAMETERS:\n\ntensor 1:\nThe first tensor - it goes first (on top, or on the left). Receiving it\nmakes the node join and send. A list or numpy array becomes a float32\ntensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE\ntensor 1. Each is converted to tensor 1's dtype and device.\nEach must have exactly the same shape as tensor 1. One that does not is\nLEFT OUT and the rest are stacked - so a stack that comes out with fewer\nlayers than inputs means a shape did not match. Nothing is said unless\nthe app's verbose setting is on; then the console names the input that\nwas left out (tensor 2, tensor 3 ...). Before\nanything reaches tensor 2, tensor 1 is stacked alone (a new axis of\nlength 1).\n\ndim (int box, also an inlet):\nWhere the new axis goes. 0 (the default) puts it first: the tensors\nbecome the rows (for 1-D inputs) or the layers (for 2-D inputs). The\nnew axis can also go last - for two rows of 8, dim 1 gives 8 rows of 2,\nthe inputs becoming the columns. Negative counts from the end: -1 also\nmeans last, and -2 (for 1-D inputs) means first, the same as 0. Changing\nit does NOT send by itself; in the demo the metro re-sends.\n\nOUTPUTS:\n\noutput:\nThe stacked tensor, with one more axis than the inputs.\n\nREADING THE DEMO:\ntensor 1 is a ramp rising across 8 cells (drag stop on its t.linspace);\ntensor 2 the same ramp falling, made once when the patch opens.\nt.stack gives a 2 by 8 picture - rising on top, falling below; type 1\ninto dim and it is 8 by 2, the two side by side as columns. t.cat of the\nsame two gives a single strip of 16. Keep steps at 8: the two must have\nthe same shape.\n\nRELATED:\nt.cat joins along an existing axis. t.unsqueeze adds a length-1 axis to\na single tensor. t.vstack and t.dstack stack 2-D pictures by rows or in\ndepth. t.chunk takes a tensor apart. np.stack is the numpy version.",
+                    "value": "Piles tensors of the same shape on top of each other, along a NEW axis.\n\nThe result has one more axis than the inputs, and the tensors stay separate inside it: stacking two rows of 8 gives a 2 by 8 tensor - row 0 is the first, row 1 the second. Use it to turn several signals into one table, to pair up x and y lists, or to build a batch out of single frames.\n\nSTACK OR CAT?\nJoining two rows of 8 with t.cat gives ONE row of 16 - the second carries straight on from the first. With t.stack it gives 2 rows of 8, the originals kept apart. cat extends an axis; stack adds one. The demo does both to the same two rows.\n\nSYNTAX:\nt.stack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has, NOT the\ndim (which is set in the dim box).\n\nEXAMPLE:\nt.stack 3\n\nINPUTS and PARAMETERS:\n\ntensor 1:\nThe first tensor - it goes first (on top, or on the left). Receiving it makes the node join and send. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and device. Each must have exactly the same shape as tensor 1. One that does not is LEFT OUT and the rest are stacked - so a stack that comes out with fewer layers than inputs means a shape did not match. Nothing is said unless the app's verbose setting is on; then the console names the input that was left out (tensor 2, tensor 3 ...). Before\nanything reaches tensor 2, tensor 1 is stacked alone (a new axis of length 1).\n\ndim (int box, also an inlet):\nWhere the new axis goes. 0 (the default) puts it first: the tensors become the rows (for 1-D inputs) or the layers (for 2-D inputs). The new axis can also go last - for two rows of 8, dim 1 gives 8 rows of 2, the inputs becoming the columns. Negative counts from the end: -1 also means last, and -2 (for 1-D inputs) means first, the same as 0. Changing it does NOT send by itself; in the demo the metro re-sends.\n\nOUTPUTS:\n\noutput:\nThe stacked tensor, with one more axis than the inputs.\n\nREADING THE DEMO:\ntensor 1 is a ramp rising across 8 cells (drag stop on its t.linspace);\ntensor 2 the same ramp falling, made once when the patch opens. t.stack gives a 2 by 8 picture - rising on top, falling below; type 1 into dim and it is 8 by 2, the two side by side as columns. t.cat of the same two gives a single strip of 16. Keep steps at 8: the two must have the same shape.\n\nRELATED:\nt.cat joins along an existing axis. t.unsqueeze adds a length-1 axis to a single tensor. t.vstack and t.dstack stack 2-D pictures by rows or in depth. t.chunk takes a tensor apart. np.stack is the numpy version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Piles tensors of the same shape on top of each other, along a NEW\naxis.\n\nThe result has one more axis than the inputs, and the tensors stay\nseparate inside it: stacking two rows of 8 gives a 2 by 8 tensor - row 0\nis the first, row 1 the second. Use it to turn several signals into one\ntable, to pair up x and y lists, or to build a batch out of single\nframes.\n\nSTACK OR CAT?\nJoining two rows of 8 with t.cat gives ONE row of 16 - the second\ncarries straight on from the first. With t.stack it gives 2 rows of 8,\nthe originals kept apart. cat extends an axis; stack adds one. The demo\ndoes both to the same two rows.\n\nSYNTAX:\nt.stack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has, NOT the\ndim (which is set in the dim box).\n\nEXAMPLE:\nt.stack 3\n\nINPUTS and PARAMETERS:\n\ntensor 1:\nThe first tensor - it goes first (on top, or on the left). Receiving it\nmakes the node join and send. A list or numpy array becomes a float32\ntensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE\ntensor 1. Each is converted to tensor 1's dtype and device.\nEach must have exactly the same shape as tensor 1. One that does not is\nLEFT OUT and the rest are stacked - so a stack that comes out with fewer\nlayers than inputs means a shape did not match. Nothing is said unless\nthe app's verbose setting is on; then the console names the input that\nwas left out (tensor 2, tensor 3 ...). Before\nanything reaches tensor 2, tensor 1 is stacked alone (a new axis of\nlength 1).\n\ndim (int box, also an inlet):\nWhere the new axis goes. 0 (the default) puts it first: the tensors\nbecome the rows (for 1-D inputs) or the layers (for 2-D inputs). The\nnew axis can also go last - for two rows of 8, dim 1 gives 8 rows of 2,\nthe inputs becoming the columns. Negative counts from the end: -1 also\nmeans last, and -2 (for 1-D inputs) means first, the same as 0. Changing\nit does NOT send by itself; in the demo the metro re-sends.\n\nOUTPUTS:\n\noutput:\nThe stacked tensor, with one more axis than the inputs.\n\nREADING THE DEMO:\ntensor 1 is a ramp rising across 8 cells (drag stop on its t.linspace);\ntensor 2 the same ramp falling, made once when the patch opens.\nt.stack gives a 2 by 8 picture - rising on top, falling below; type 1\ninto dim and it is 8 by 2, the two side by side as columns. t.cat of the\nsame two gives a single strip of 16. Keep steps at 8: the two must have\nthe same shape.\n\nRELATED:\nt.cat joins along an existing axis. t.unsqueeze adds a length-1 axis to\na single tensor. t.vstack and t.dstack stack 2-D pictures by rows or in\ndepth. t.chunk takes a tensor apart. np.stack is the numpy version."
+            "text": "Piles tensors of the same shape on top of each other, along a NEW axis.\n\nThe result has one more axis than the inputs, and the tensors stay separate inside it: stacking two rows of 8 gives a 2 by 8 tensor - row 0 is the first, row 1 the second. Use it to turn several signals into one table, to pair up x and y lists, or to build a batch out of single frames.\n\nSTACK OR CAT?\nJoining two rows of 8 with t.cat gives ONE row of 16 - the second carries straight on from the first. With t.stack it gives 2 rows of 8, the originals kept apart. cat extends an axis; stack adds one. The demo does both to the same two rows.\n\nSYNTAX:\nt.stack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has, NOT the\ndim (which is set in the dim box).\n\nEXAMPLE:\nt.stack 3\n\nINPUTS and PARAMETERS:\n\ntensor 1:\nThe first tensor - it goes first (on top, or on the left). Receiving it makes the node join and send. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and device. Each must have exactly the same shape as tensor 1. One that does not is LEFT OUT and the rest are stacked - so a stack that comes out with fewer layers than inputs means a shape did not match. Nothing is said unless the app's verbose setting is on; then the console names the input that was left out (tensor 2, tensor 3 ...). Before\nanything reaches tensor 2, tensor 1 is stacked alone (a new axis of length 1).\n\ndim (int box, also an inlet):\nWhere the new axis goes. 0 (the default) puts it first: the tensors become the rows (for 1-D inputs) or the layers (for 2-D inputs). The new axis can also go last - for two rows of 8, dim 1 gives 8 rows of 2, the inputs becoming the columns. Negative counts from the end: -1 also means last, and -2 (for 1-D inputs) means first, the same as 0. Changing it does NOT send by itself; in the demo the metro re-sends.\n\nOUTPUTS:\n\noutput:\nThe stacked tensor, with one more axis than the inputs.\n\nREADING THE DEMO:\ntensor 1 is a ramp rising across 8 cells (drag stop on its t.linspace);\ntensor 2 the same ramp falling, made once when the patch opens. t.stack gives a 2 by 8 picture - rising on top, falling below; type 1 into dim and it is 8 by 2, the two side by side as columns. t.cat of the same two gives a single strip of 16. Keep steps at 8: the two must have the same shape.\n\nRELATED:\nt.cat joins along an existing axis. t.unsqueeze adds a length-1 axis to a single tensor. t.vstack and t.dstack stack 2-D pictures by rows or in depth. t.chunk takes a tensor apart. np.stack is the numpy version."
         },
         "3": {
             "name": "metro",
@@ -557,8 +557,8 @@
             "name": "help_link",
             "id": 1014,
             "position_x": 30,
-            "position_y": 1250,
-            "width": 47,
+            "position_y": 1284,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -569,9 +569,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 112,
-            "position_y": 1250,
-            "width": 84,
+            "position_x": 94,
+            "position_y": 1284,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -582,8 +582,8 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 240,
-            "position_y": 1250,
+            "position_x": 195,
+            "position_y": 1284,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -595,8 +595,8 @@
         "24": {
             "name": "help_link",
             "id": 1125,
-            "position_x": 345,
-            "position_y": 1250,
+            "position_x": 277,
+            "position_y": 1284,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -608,8 +608,8 @@
         "25": {
             "name": "help_link",
             "id": 1162,
-            "position_x": 442,
-            "position_y": 1250,
+            "position_x": 353,
+            "position_y": 1284,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -622,7 +622,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1199,
-            "position_x": 584,
+            "position_x": 30,
             "position_y": 1250,
             "width": 156,
             "height": 30,
@@ -647,7 +647,7 @@
             "name": "close",
             "id": 1236,
             "position_x": 24,
-            "position_y": 1324,
+            "position_y": 1358,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

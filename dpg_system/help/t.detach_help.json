@@ -1,5 +1,5 @@
 {
-    "height": 1098,
+    "height": 1132,
     "width": 1658,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Passes a tensor through with its gradient history cut off: the same\nnumbers, no longer connected to whatever computed them.\n\nWhen a tensor has requires_grad set, every operation done to it is\nrecorded, so that gradients can later be worked back through the chain\n(this is how training works). The result of each of those operations\ncarries the record with it - and so does anything computed from it, all\nthe way down the patch. That record costs memory and time, and some\noperations refuse a tensor that is carrying one. Put t.detach where a\nresult leaves the gradient-tracked part of a patch and goes on to be\ndrawn, stored, sent or used as ordinary data.\n\nThe output shares its numbers with the input rather than copying them:\nit is cheap at any size. (If the input is later changed in place, the\ndetached tensor sees the change too.)\n\nSYNTAX:\nt.detach\n\nEXAMPLE:\nt.detach\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is detached and sent. A list or\nNumPy array is turned into a float32 tensor first (which has no history\nanyway); an empty one is ignored.\n\nOUTPUTS:\n\ntensor out:\nThe same values, with requires_grad off and no history.\n\nREADING THE DEMO:\nt.linspace makes 8 values from -2 to 2 and t.nn.tanh bends them into an\nS-curve. Tick the toggle (requires_grad on t.linspace) and the tanh\nresult is now tracked: the upper t.info reports True. After t.detach the\nlower t.info reports False - and the two strips show the numbers are\nuntouched. Untick it and both read False.\n\nRELATED:\ntensor (t.to) sets requires_grad when making a tensor. t.info shows\nwhether a tensor is tracked. t.contiguous is the other \"same numbers,\ndifferent bookkeeping\" node.",
+                    "value": "Passes a tensor through with its gradient history cut off: the same numbers, no longer connected to whatever computed them.\n\nWhen a tensor has requires_grad set, every operation done to it is recorded, so that gradients can later be worked back through the chain (this is how training works). The result of each of those operations carries the record with it - and so does anything computed from it, all the way down the patch. That record costs memory and time, and some operations refuse a tensor that is carrying one. Put t.detach where a result leaves the gradient-tracked part of a patch and goes on to be drawn, stored, sent or used as ordinary data.\n\nThe output shares its numbers with the input rather than copying them:\nit is cheap at any size. (If the input is later changed in place, the detached tensor sees the change too.)\n\nSYNTAX:\nt.detach\n\nEXAMPLE:\nt.detach\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is detached and sent. A list or NumPy array is turned into a float32 tensor first (which has no history anyway); an empty one is ignored.\n\nOUTPUTS:\n\ntensor out:\nThe same values, with requires_grad off and no history.\n\nREADING THE DEMO:\nt.linspace makes 8 values from -2 to 2 and t.nn.tanh bends them into an S-curve. Tick the toggle (requires_grad on t.linspace) and the tanh result is now tracked: the upper t.info reports True. After t.detach the lower t.info reports False - and the two strips show the numbers are untouched. Untick it and both read False.\n\nRELATED:\ntensor (t.to) sets requires_grad when making a tensor. t.info shows whether a tensor is tracked. t.contiguous is the other \"same numbers, different bookkeeping\" node.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Passes a tensor through with its gradient history cut off: the same\nnumbers, no longer connected to whatever computed them.\n\nWhen a tensor has requires_grad set, every operation done to it is\nrecorded, so that gradients can later be worked back through the chain\n(this is how training works). The result of each of those operations\ncarries the record with it - and so does anything computed from it, all\nthe way down the patch. That record costs memory and time, and some\noperations refuse a tensor that is carrying one. Put t.detach where a\nresult leaves the gradient-tracked part of a patch and goes on to be\ndrawn, stored, sent or used as ordinary data.\n\nThe output shares its numbers with the input rather than copying them:\nit is cheap at any size. (If the input is later changed in place, the\ndetached tensor sees the change too.)\n\nSYNTAX:\nt.detach\n\nEXAMPLE:\nt.detach\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is detached and sent. A list or\nNumPy array is turned into a float32 tensor first (which has no history\nanyway); an empty one is ignored.\n\nOUTPUTS:\n\ntensor out:\nThe same values, with requires_grad off and no history.\n\nREADING THE DEMO:\nt.linspace makes 8 values from -2 to 2 and t.nn.tanh bends them into an\nS-curve. Tick the toggle (requires_grad on t.linspace) and the tanh\nresult is now tracked: the upper t.info reports True. After t.detach the\nlower t.info reports False - and the two strips show the numbers are\nuntouched. Untick it and both read False.\n\nRELATED:\ntensor (t.to) sets requires_grad when making a tensor. t.info shows\nwhether a tensor is tracked. t.contiguous is the other \"same numbers,\ndifferent bookkeeping\" node."
+            "text": "Passes a tensor through with its gradient history cut off: the same numbers, no longer connected to whatever computed them.\n\nWhen a tensor has requires_grad set, every operation done to it is recorded, so that gradients can later be worked back through the chain (this is how training works). The result of each of those operations carries the record with it - and so does anything computed from it, all the way down the patch. That record costs memory and time, and some operations refuse a tensor that is carrying one. Put t.detach where a result leaves the gradient-tracked part of a patch and goes on to be drawn, stored, sent or used as ordinary data.\n\nThe output shares its numbers with the input rather than copying them:\nit is cheap at any size. (If the input is later changed in place, the detached tensor sees the change too.)\n\nSYNTAX:\nt.detach\n\nEXAMPLE:\nt.detach\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is detached and sent. A list or NumPy array is turned into a float32 tensor first (which has no history anyway); an empty one is ignored.\n\nOUTPUTS:\n\ntensor out:\nThe same values, with requires_grad off and no history.\n\nREADING THE DEMO:\nt.linspace makes 8 values from -2 to 2 and t.nn.tanh bends them into an S-curve. Tick the toggle (requires_grad on t.linspace) and the tanh result is now tracked: the upper t.info reports True. After t.detach the lower t.info reports False - and the two strips show the numbers are untouched. Untick it and both read False.\n\nRELATED:\ntensor (t.to) sets requires_grad when making a tensor. t.info shows whether a tensor is tracked. t.contiguous is the other \"same numbers, different bookkeeping\" node."
         },
         "3": {
             "name": "metro",
@@ -491,8 +491,8 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 920,
-            "width": 53,
+            "position_y": 954,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -503,9 +503,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 120,
-            "position_y": 920,
-            "width": 53,
+            "position_x": 100,
+            "position_y": 954,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -516,9 +516,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 210,
-            "position_y": 920,
-            "width": 90,
+            "position_x": 170,
+            "position_y": 954,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -530,7 +530,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1051,
-            "position_x": 566,
+            "position_x": 30,
             "position_y": 920,
             "width": 156,
             "height": 30,
@@ -555,7 +555,7 @@
             "name": "close",
             "id": 1088,
             "position_x": 24,
-            "position_y": 994,
+            "position_y": 1028,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

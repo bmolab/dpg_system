@@ -1,5 +1,5 @@
 {
-    "height": 1268,
+    "height": 1302,
     "width": 1748,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor of random samples from the KUMARASWAMY distribution: values\nbetween 0 and 1 in a shape set by two numbers.\n\nIt makes the same family of shapes as t.dist.beta - flat, humped,\nU-shaped, leaning to either end - but from a formula simple enough to\ninvert by hand: a sample is (1 - (1 - u) to the power 1/beta) to the\npower 1/alpha, for a uniform u. Its parameters do not mean exactly the\nsame as beta's, so the same numbers give a somewhat different shape.\n\nSYNTAX:\nt.dist.kumaraswamy <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.kumaraswamy 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.kumaraswamy 64 64); with none it is [1], a single sample.\nA list or tensor of numbers, or a single number, sent into the inlet\nworks too. A new shape does not send by itself - the next click uses\nit.\n\nalpha (drag float, also an inlet):\nLarger values push the samples towards 1. Must be above 0. Default 1.\n\nbeta (drag float, also an inlet):\nLarger values push the samples towards 0. Must be above 0. Default 1.\n\nBoth 1 give the flat line; both below 1 a U; both above 1 a hump.\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A parameter that must be above 0\nhas a drag float that stops at 0.000001. A value the distribution\ncannot take (see each parameter) - 0 or below sent into such an inlet,\nsay - prints a message in the console, and the node goes on sampling\nwith the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. At the defaults (1 and 1) the heat_map (0 dark, 1 bright) is even\nnoise and the histogram flat. Drag alpha up and the samples crowd\ntowards 1; drag beta up and they crowd towards 0; both up gives a hump;\nboth below 1 piles them at the ends.\n\nRELATED:\nt.dist.beta is the better-known distribution with the same range of\nshapes. t.dist.uniform is the flat case; t.dist.continuous_bernoulli\nis another 0..1 shape.",
+                    "value": "Makes a tensor of random samples from the KUMARASWAMY distribution: values between 0 and 1 in a shape set by two numbers.\n\nIt makes the same family of shapes as t.dist.beta - flat, humped, U-shaped, leaning to either end - but from a formula simple enough to invert by hand: a sample is (1 - (1 - u) to the power 1/beta) to the power 1/alpha, for a uniform u. Its parameters do not mean exactly the same as beta's, so the same numbers give a somewhat different shape.\n\nSYNTAX:\nt.dist.kumaraswamy <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.kumaraswamy 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.kumaraswamy 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nalpha (drag float, also an inlet):\nLarger values push the samples towards 1. Must be above 0. Default 1.\n\nbeta (drag float, also an inlet):\nLarger values push the samples towards 0. Must be above 0. Default 1.\n\nBoth 1 give the flat line; both below 1 a U; both above 1 a hump.\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. At the defaults (1 and 1) the heat_map (0 dark, 1 bright) is even noise and the histogram flat. Drag alpha up and the samples crowd towards 1; drag beta up and they crowd towards 0; both up gives a hump;\nboth below 1 piles them at the ends.\n\nRELATED:\nt.dist.beta is the better-known distribution with the same range of shapes. t.dist.uniform is the flat case; t.dist.continuous_bernoulli is another 0..1 shape.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor of random samples from the KUMARASWAMY distribution: values\nbetween 0 and 1 in a shape set by two numbers.\n\nIt makes the same family of shapes as t.dist.beta - flat, humped,\nU-shaped, leaning to either end - but from a formula simple enough to\ninvert by hand: a sample is (1 - (1 - u) to the power 1/beta) to the\npower 1/alpha, for a uniform u. Its parameters do not mean exactly the\nsame as beta's, so the same numbers give a somewhat different shape.\n\nSYNTAX:\nt.dist.kumaraswamy <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.kumaraswamy 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.kumaraswamy 64 64); with none it is [1], a single sample.\nA list or tensor of numbers, or a single number, sent into the inlet\nworks too. A new shape does not send by itself - the next click uses\nit.\n\nalpha (drag float, also an inlet):\nLarger values push the samples towards 1. Must be above 0. Default 1.\n\nbeta (drag float, also an inlet):\nLarger values push the samples towards 0. Must be above 0. Default 1.\n\nBoth 1 give the flat line; both below 1 a U; both above 1 a hump.\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A parameter that must be above 0\nhas a drag float that stops at 0.000001. A value the distribution\ncannot take (see each parameter) - 0 or below sent into such an inlet,\nsay - prints a message in the console, and the node goes on sampling\nwith the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. At the defaults (1 and 1) the heat_map (0 dark, 1 bright) is even\nnoise and the histogram flat. Drag alpha up and the samples crowd\ntowards 1; drag beta up and they crowd towards 0; both up gives a hump;\nboth below 1 piles them at the ends.\n\nRELATED:\nt.dist.beta is the better-known distribution with the same range of\nshapes. t.dist.uniform is the flat case; t.dist.continuous_bernoulli\nis another 0..1 shape."
+            "text": "Makes a tensor of random samples from the KUMARASWAMY distribution: values between 0 and 1 in a shape set by two numbers.\n\nIt makes the same family of shapes as t.dist.beta - flat, humped, U-shaped, leaning to either end - but from a formula simple enough to invert by hand: a sample is (1 - (1 - u) to the power 1/beta) to the power 1/alpha, for a uniform u. Its parameters do not mean exactly the same as beta's, so the same numbers give a somewhat different shape.\n\nSYNTAX:\nt.dist.kumaraswamy <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.kumaraswamy 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.kumaraswamy 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nalpha (drag float, also an inlet):\nLarger values push the samples towards 1. Must be above 0. Default 1.\n\nbeta (drag float, also an inlet):\nLarger values push the samples towards 0. Must be above 0. Default 1.\n\nBoth 1 give the flat line; both below 1 a U; both above 1 a hump.\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. At the defaults (1 and 1) the heat_map (0 dark, 1 bright) is even noise and the histogram flat. Drag alpha up and the samples crowd towards 1; drag beta up and they crowd towards 0; both up gives a hump;\nboth below 1 piles them at the ends.\n\nRELATED:\nt.dist.beta is the better-known distribution with the same range of shapes. t.dist.uniform is the flat case; t.dist.continuous_bernoulli is another 0..1 shape."
         },
         "3": {
             "name": "load_bang",
@@ -503,8 +503,8 @@
             "name": "help_link",
             "id": 866,
             "position_x": 30,
-            "position_y": 1090,
-            "width": 84,
+            "position_y": 1124,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -515,9 +515,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 158,
-            "position_y": 1090,
-            "width": 103,
+            "position_x": 131,
+            "position_y": 1124,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -528,9 +528,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 309,
-            "position_y": 1090,
-            "width": 182,
+            "position_x": 251,
+            "position_y": 1124,
+            "width": 186,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -541,9 +541,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 560,
-            "position_y": 1090,
-            "width": 53,
+            "position_x": 453,
+            "position_y": 1124,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -555,7 +555,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 656,
+            "position_x": 30,
             "position_y": 1090,
             "width": 156,
             "height": 30,
@@ -580,7 +580,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 1164,
+            "position_y": 1198,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

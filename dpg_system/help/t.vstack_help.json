@@ -403,7 +403,7 @@
             }
         },
         "2": {
-            "height": 1268,
+            "height": 1302,
             "width": 1603,
             "position": [
                 100,
@@ -470,7 +470,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Joins tensors one above the other, along the rows.\n\nt.vstack and t.row_stack are two names for the same node: both run\ntorch.vstack.\n\nFor two 7 by 6 pictures the result is 14 by 6 - the second below the\nfirst. It is t.cat with dim 0 for tensors of 2 or more axes. Rows (1-D\ntensors) are first made into tables of one row, so two rows of 8 become\na 2 by 8 table - the same as t.stack would give, which is why it is\ncalled row_stack.\n\nSYNTAX:\nt.vstack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\nt.row_stack takes the same argument.\n\nEXAMPLE:\nt.vstack\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it goes first. Receiving it makes the node join and\nsend. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE\ntensor 1. Each is converted to tensor 1's dtype and device. Until\nsomething has reached tensor 2, tensor 1 is joined with nothing and\ncomes out on its own.\n\nALL THE SAME SHAPE:\nThis node insists that every tensor has exactly the same shape as\ntensor 1 (torch itself is looser). If one does not, nothing is sent at\nall; with the app's verbose setting on, a message says so.\n\nOUTPUTS:\n\nstacked tensors:\nThe joined tensor, taller.\n\nREADING THE DEMO:\ntensor 1 is the F (7 by 6), tensor 2 a ramp of the same shape.\nt.vstack hangs the ramp below the F: 14 by 6 (t.info).\n\nRELATED:\nt.hstack joins side by side; t.dstack in depth. t.cat lets you choose\nthe axis, t.stack adds a new one. np.concatenate and np.stack are the\nnumpy versions.",
+                            "value": "Joins tensors one above the other, along the rows.\n\nt.vstack and t.row_stack are two names for the same node: both run torch.vstack.\n\nFor two 7 by 6 pictures the result is 14 by 6 - the second below the first. It is t.cat with dim 0 for tensors of 2 or more axes. Rows (1-D tensors) are first made into tables of one row, so two rows of 8 become a 2 by 8 table - the same as t.stack would give, which is why it is called row_stack.\n\nSYNTAX:\nt.vstack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\nt.row_stack takes the same argument.\n\nEXAMPLE:\nt.vstack\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it goes first. Receiving it makes the node join and send. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and device. Until something has reached tensor 2, tensor 1 is joined with nothing and comes out on its own.\n\nALL THE SAME SHAPE:\nThis node insists that every tensor has exactly the same shape as tensor 1 (torch itself is looser). If one does not, nothing is sent at all; with the app's verbose setting on, a message says so.\n\nOUTPUTS:\n\nstacked tensors:\nThe joined tensor, taller.\n\nREADING THE DEMO:\ntensor 1 is the F (7 by 6), tensor 2 a ramp of the same shape. t.vstack hangs the ramp below the F: 14 by 6 (t.info).\n\nRELATED:\nt.hstack joins side by side; t.dstack in depth. t.cat lets you choose the axis, t.stack adds a new one. np.concatenate and np.stack are the numpy versions.",
                             "value_type": "str"
                         },
                         "1": {
@@ -494,7 +494,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Joins tensors one above the other, along the rows.\n\nt.vstack and t.row_stack are two names for the same node: both run\ntorch.vstack.\n\nFor two 7 by 6 pictures the result is 14 by 6 - the second below the\nfirst. It is t.cat with dim 0 for tensors of 2 or more axes. Rows (1-D\ntensors) are first made into tables of one row, so two rows of 8 become\na 2 by 8 table - the same as t.stack would give, which is why it is\ncalled row_stack.\n\nSYNTAX:\nt.vstack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\nt.row_stack takes the same argument.\n\nEXAMPLE:\nt.vstack\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it goes first. Receiving it makes the node join and\nsend. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE\ntensor 1. Each is converted to tensor 1's dtype and device. Until\nsomething has reached tensor 2, tensor 1 is joined with nothing and\ncomes out on its own.\n\nALL THE SAME SHAPE:\nThis node insists that every tensor has exactly the same shape as\ntensor 1 (torch itself is looser). If one does not, nothing is sent at\nall; with the app's verbose setting on, a message says so.\n\nOUTPUTS:\n\nstacked tensors:\nThe joined tensor, taller.\n\nREADING THE DEMO:\ntensor 1 is the F (7 by 6), tensor 2 a ramp of the same shape.\nt.vstack hangs the ramp below the F: 14 by 6 (t.info).\n\nRELATED:\nt.hstack joins side by side; t.dstack in depth. t.cat lets you choose\nthe axis, t.stack adds a new one. np.concatenate and np.stack are the\nnumpy versions."
+                    "text": "Joins tensors one above the other, along the rows.\n\nt.vstack and t.row_stack are two names for the same node: both run torch.vstack.\n\nFor two 7 by 6 pictures the result is 14 by 6 - the second below the first. It is t.cat with dim 0 for tensors of 2 or more axes. Rows (1-D tensors) are first made into tables of one row, so two rows of 8 become a 2 by 8 table - the same as t.stack would give, which is why it is called row_stack.\n\nSYNTAX:\nt.vstack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\nt.row_stack takes the same argument.\n\nEXAMPLE:\nt.vstack\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it goes first. Receiving it makes the node join and send. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and device. Until something has reached tensor 2, tensor 1 is joined with nothing and comes out on its own.\n\nALL THE SAME SHAPE:\nThis node insists that every tensor has exactly the same shape as tensor 1 (torch itself is looser). If one does not, nothing is sent at all; with the app's verbose setting on, a message says so.\n\nOUTPUTS:\n\nstacked tensors:\nThe joined tensor, taller.\n\nREADING THE DEMO:\ntensor 1 is the F (7 by 6), tensor 2 a ramp of the same shape. t.vstack hangs the ramp below the F: 14 by 6 (t.info).\n\nRELATED:\nt.hstack joins side by side; t.dstack in depth. t.cat lets you choose the axis, t.stack adds a new one. np.concatenate and np.stack are the numpy versions."
                 },
                 "3": {
                     "name": "p",
@@ -809,7 +809,7 @@
                     "name": "help_link",
                     "id": 755,
                     "position_x": 30,
-                    "position_y": 1090,
+                    "position_y": 1124,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -821,8 +821,8 @@
                 "15": {
                     "name": "help_link",
                     "id": 792,
-                    "position_x": 135,
-                    "position_y": 1090,
+                    "position_x": 112,
+                    "position_y": 1124,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -834,8 +834,8 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 240,
-                    "position_y": 1090,
+                    "position_x": 194,
+                    "position_y": 1124,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -847,9 +847,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 337,
-                    "position_y": 1090,
-                    "width": 47,
+                    "position_x": 270,
+                    "position_y": 1124,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -860,9 +860,9 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 419,
-                    "position_y": 1090,
-                    "width": 103,
+                    "position_x": 334,
+                    "position_y": 1124,
+                    "width": 104,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -874,7 +874,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 940,
-                    "position_x": 548,
+                    "position_x": 30,
                     "position_y": 1090,
                     "width": 156,
                     "height": 30,
@@ -899,7 +899,7 @@
                     "name": "close",
                     "id": 977,
                     "position_x": 24,
-                    "position_y": 1164,
+                    "position_y": 1198,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

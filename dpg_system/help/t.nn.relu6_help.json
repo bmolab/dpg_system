@@ -1,5 +1,5 @@
 {
-    "height": 1152,
+    "height": 1186,
     "width": 1729,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Replaces negative values with zero and values above 6 with 6, passing\neverything in between unchanged.\n\nIt is relu with a ceiling: a clamp between 0 and 6. The 6 is fixed - it\ncomes from networks built for low-precision hardware, where a known\nmaximum lets the numbers be stored in fewer bits. In a patch it is a quick\nway to keep a level inside 0..6; for any other range use t.nn.hardtanh or\nt.clamp, which take the limits as parameters.\n\nTHE CURVE:\nFlat at 0 below zero, the input itself from 0 to 6, then flat at 6. Two\ncorners, both sharp. The demo's ramp runs from -8 to 8 so that both flat\nstretches show.\n\nSYNTAX:\nt.nn.relu6\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -8 (left edge of the\nplot) to 8 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -8 to 8; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu has no ceiling. t.nn.hardtanh is the same flat-straight-flat\nshape with limits you set (default -1 and 1); t.clamp does it for any\ntensor. t.nn.hardsigmoid and t.nn.hardswish are built from relu6.",
+                    "value": "Replaces negative values with zero and values above 6 with 6, passing everything in between unchanged.\n\nIt is relu with a ceiling: a clamp between 0 and 6. The 6 is fixed - it comes from networks built for low-precision hardware, where a known maximum lets the numbers be stored in fewer bits. In a patch it is a quick way to keep a level inside 0..6; for any other range use t.nn.hardtanh or t.clamp, which take the limits as parameters.\n\nTHE CURVE:\nFlat at 0 below zero, the input itself from 0 to 6, then flat at 6. Two corners, both sharp. The demo's ramp runs from -8 to 8 so that both flat stretches show.\n\nSYNTAX:\nt.nn.relu6\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -8 (left edge of the plot) to 8 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -8 to 8; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu has no ceiling. t.nn.hardtanh is the same flat-straight-flat shape with limits you set (default -1 and 1); t.clamp does it for any tensor. t.nn.hardsigmoid and t.nn.hardswish are built from relu6.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Replaces negative values with zero and values above 6 with 6, passing\neverything in between unchanged.\n\nIt is relu with a ceiling: a clamp between 0 and 6. The 6 is fixed - it\ncomes from networks built for low-precision hardware, where a known\nmaximum lets the numbers be stored in fewer bits. In a patch it is a quick\nway to keep a level inside 0..6; for any other range use t.nn.hardtanh or\nt.clamp, which take the limits as parameters.\n\nTHE CURVE:\nFlat at 0 below zero, the input itself from 0 to 6, then flat at 6. Two\ncorners, both sharp. The demo's ramp runs from -8 to 8 so that both flat\nstretches show.\n\nSYNTAX:\nt.nn.relu6\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -8 (left edge of the\nplot) to 8 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -8 to 8; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu has no ceiling. t.nn.hardtanh is the same flat-straight-flat\nshape with limits you set (default -1 and 1); t.clamp does it for any\ntensor. t.nn.hardsigmoid and t.nn.hardswish are built from relu6."
+            "text": "Replaces negative values with zero and values above 6 with 6, passing everything in between unchanged.\n\nIt is relu with a ceiling: a clamp between 0 and 6. The 6 is fixed - it comes from networks built for low-precision hardware, where a known maximum lets the numbers be stored in fewer bits. In a patch it is a quick way to keep a level inside 0..6; for any other range use t.nn.hardtanh or t.clamp, which take the limits as parameters.\n\nTHE CURVE:\nFlat at 0 below zero, the input itself from 0 to 6, then flat at 6. Two corners, both sharp. The demo's ramp runs from -8 to 8 so that both flat stretches show.\n\nSYNTAX:\nt.nn.relu6\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -8 (left edge of the plot) to 8 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -8 to 8; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu has no ceiling. t.nn.hardtanh is the same flat-straight-flat shape with limits you set (default -1 and 1); t.clamp does it for any tensor. t.nn.hardsigmoid and t.nn.hardswish are built from relu6."
         },
         "3": {
             "name": "metro",
@@ -379,8 +379,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 930,
-            "width": 72,
+            "position_y": 964,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -391,9 +391,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 143,
-            "position_y": 930,
-            "width": 96,
+            "position_x": 119,
+            "position_y": 964,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -404,8 +404,8 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 287,
-            "position_y": 930,
+            "position_x": 233,
+            "position_y": 964,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -417,9 +417,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 384,
-            "position_y": 930,
-            "width": 115,
+            "position_x": 309,
+            "position_y": 964,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -431,7 +431,7 @@
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 974,
+            "position_y": 1008,
             "width": 103,
             "height": 44,
             "visibility": "show_all",
@@ -444,8 +444,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 940,
-            "position_x": 525,
-            "position_y": 974,
+            "position_x": 30,
+            "position_y": 930,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -469,7 +469,7 @@
             "name": "close",
             "id": 977,
             "position_x": 24,
-            "position_y": 1048,
+            "position_y": 1082,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

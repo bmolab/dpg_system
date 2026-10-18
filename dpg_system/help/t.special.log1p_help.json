@@ -1,5 +1,5 @@
 {
-    "height": 1018,
+    "height": 1052,
     "width": 1709,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Computes the natural log of (1 + x) for every element of a tensor - kept\naccurate when x is tiny.\n\nIt turns small fractional changes (a 0.1% gain, a tiny probability) into\nlogs without losing them: log(1 + 0.00000001) computed by adding first\ngives 0 in 32-bit floats, this gives 0.00000001.\n\nTHE CURVE:\n0 at 0, rising ever more slowly to the right (1.79 at 5), plunging\ntowards minus infinity as x approaches -1. Near 0 it is almost exactly x.\n\nSYNTAX:\nt.special.log1p\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n-1 gives minus infinity; anything below -1 gives NaN (not a number). The\ndemo starts at -0.9 for that reason.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-0.9 to 5 here), and the\nupper plot draws them: a straight ramp. The lower plot is log(1 + x) of each\nof those 200 values, so it is the graph of the function from -0.9 to 5,\ndrawn from -2.5 (bottom) to 2 (top). Drag start and stop on t.linspace\nto look at another stretch (keep start above -1).\n\nRELATED:\nt.special.expm1 is its inverse, with the same care near zero.\nt.special.xlog1py multiplies the result by a second value, safely when\nthat value is 0.",
+                    "value": "Computes the natural log of (1 + x) for every element of a tensor - kept accurate when x is tiny.\n\nIt turns small fractional changes (a 0.1% gain, a tiny probability) into logs without losing them: log(1 + 0.00000001) computed by adding first gives 0 in 32-bit floats, this gives 0.00000001.\n\nTHE CURVE:\n0 at 0, rising ever more slowly to the right (1.79 at 5), plunging towards minus infinity as x approaches -1. Near 0 it is almost exactly x.\n\nSYNTAX:\nt.special.log1p\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n-1 gives minus infinity; anything below -1 gives NaN (not a number). The demo starts at -0.9 for that reason.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-0.9 to 5 here), and the upper plot draws them: a straight ramp. The lower plot is log(1 + x) of each of those 200 values, so it is the graph of the function from -0.9 to 5, drawn from -2.5 (bottom) to 2 (top). Drag start and stop on t.linspace to look at another stretch (keep start above -1).\n\nRELATED:\nt.special.expm1 is its inverse, with the same care near zero. t.special.xlog1py multiplies the result by a second value, safely when that value is 0.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Computes the natural log of (1 + x) for every element of a tensor - kept\naccurate when x is tiny.\n\nIt turns small fractional changes (a 0.1% gain, a tiny probability) into\nlogs without losing them: log(1 + 0.00000001) computed by adding first\ngives 0 in 32-bit floats, this gives 0.00000001.\n\nTHE CURVE:\n0 at 0, rising ever more slowly to the right (1.79 at 5), plunging\ntowards minus infinity as x approaches -1. Near 0 it is almost exactly x.\n\nSYNTAX:\nt.special.log1p\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n-1 gives minus infinity; anything below -1 gives NaN (not a number). The\ndemo starts at -0.9 for that reason.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-0.9 to 5 here), and the\nupper plot draws them: a straight ramp. The lower plot is log(1 + x) of each\nof those 200 values, so it is the graph of the function from -0.9 to 5,\ndrawn from -2.5 (bottom) to 2 (top). Drag start and stop on t.linspace\nto look at another stretch (keep start above -1).\n\nRELATED:\nt.special.expm1 is its inverse, with the same care near zero.\nt.special.xlog1py multiplies the result by a second value, safely when\nthat value is 0."
+            "text": "Computes the natural log of (1 + x) for every element of a tensor - kept accurate when x is tiny.\n\nIt turns small fractional changes (a 0.1% gain, a tiny probability) into logs without losing them: log(1 + 0.00000001) computed by adding first gives 0 in 32-bit floats, this gives 0.00000001.\n\nTHE CURVE:\n0 at 0, rising ever more slowly to the right (1.79 at 5), plunging towards minus infinity as x approaches -1. Near 0 it is almost exactly x.\n\nSYNTAX:\nt.special.log1p\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n-1 gives minus infinity; anything below -1 gives NaN (not a number). The demo starts at -0.9 for that reason.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-0.9 to 5 here), and the upper plot draws them: a straight ramp. The lower plot is log(1 + x) of each of those 200 values, so it is the graph of the function from -0.9 to 5, drawn from -2.5 (bottom) to 2 (top). Drag start and stop on t.linspace to look at another stretch (keep start above -1).\n\nRELATED:\nt.special.expm1 is its inverse, with the same care near zero. t.special.xlog1py multiplies the result by a second value, safely when that value is 0."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 109,
+            "position_y": 874,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 189,
-            "position_y": 840,
-            "width": 121,
+            "position_x": 156,
+            "position_y": 874,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -457,8 +457,8 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 363,
-            "position_y": 840,
+            "position_x": 295,
+            "position_y": 874,
             "width": 41,
             "height": 44,
             "visibility": "show_all",
@@ -470,9 +470,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 437,
-            "position_y": 840,
-            "width": 103,
+            "position_x": 352,
+            "position_y": 874,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -484,8 +484,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 566,
-            "position_y": 884,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -509,7 +509,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 914,
+            "position_y": 948,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

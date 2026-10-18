@@ -1,5 +1,5 @@
 {
-    "height": 1408,
+    "height": 1442,
     "width": 1810,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Fills a tensor with random samples from the NORMAL distribution (the bell\ncurve), keeping the tensor's shape.\n\nSend it any tensor and it sends back a tensor of the same shape and\ntype, every element replaced by an independent bell-curve sample. Use\nit to add jitter shaped like the data you already have, or to make\nnormal noise of whatever size arrives. To make samples from nothing,\nwith the shape typed into the node, use t.dist.normal.\n\nSYNTAX:\nt.normal\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its\nvalues are ignored, and it is not changed (the node fills a copy). A\nlist or number is turned into a tensor first. Every tensor that arrives\nis filled and sent; this is the only inlet that makes the node send.\nThe input must have a floating-point dtype (float32, the default for\nthe t.* generators, is right). An integer tensor - from t.zeros with\ndtype int64, say - prints an error in the console and nothing is sent.\n\nmean (drag float, also an inlet):\nThe middle of the bell. Default 0.\n\nstd (drag float, also an inlet):\nThe spread - the standard deviation. Default 1. 0 gives every element\nexactly the mean; a negative std is an error (printed in the console)\nand nothing is sent.\n\nThe parameters are drag floats on the node and also inlets. They are\nread when the next tensor arrives; setting one does not send. In the\ndemo each slider goes through 't bang float', which passes the number\nto the parameter first and THEN clicks the t.zeros, so a fresh tensor\narrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled\nwith fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens: its 64 x 64 tensor\nof zeros goes into t.normal, which sends back 4096 bell-curve samples.\nThe heat_map shows the field (-3 dark, 3 bright); the histogram under\nit is the bell. Drag mean and the bell slides sideways; drag std and it\nwidens or narrows. The zeros themselves never show - only their shape\nmatters.\n\nRELATED:\nt.dist.normal makes the same samples without an input tensor.\nt.uniform, t.cauchy and t.log_normal are the other fills. t.rand and\nnp.rand make uniform noise.",
+                    "value": "Fills a tensor with random samples from the NORMAL distribution (the bell curve), keeping the tensor's shape.\n\nSend it any tensor and it sends back a tensor of the same shape and type, every element replaced by an independent bell-curve sample. Use it to add jitter shaped like the data you already have, or to make normal noise of whatever size arrives. To make samples from nothing, with the shape typed into the node, use t.dist.normal.\n\nSYNTAX:\nt.normal\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its values are ignored, and it is not changed (the node fills a copy). A list or number is turned into a tensor first. Every tensor that arrives is filled and sent; this is the only inlet that makes the node send. The input must have a floating-point dtype (float32, the default for the t.* generators, is right). An integer tensor - from t.zeros with dtype int64, say - prints an error in the console and nothing is sent.\n\nmean (drag float, also an inlet):\nThe middle of the bell. Default 0.\n\nstd (drag float, also an inlet):\nThe spread - the standard deviation. Default 1. 0 gives every element exactly the mean; a negative std is an error (printed in the console) and nothing is sent.\n\nThe parameters are drag floats on the node and also inlets. They are read when the next tensor arrives; setting one does not send. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the t.zeros, so a fresh tensor arrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled with fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens: its 64 x 64 tensor of zeros goes into t.normal, which sends back 4096 bell-curve samples. The heat_map shows the field (-3 dark, 3 bright); the histogram under it is the bell. Drag mean and the bell slides sideways; drag std and it widens or narrows. The zeros themselves never show - only their shape matters.\n\nRELATED:\nt.dist.normal makes the same samples without an input tensor. t.uniform, t.cauchy and t.log_normal are the other fills. t.rand and np.rand make uniform noise.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Fills a tensor with random samples from the NORMAL distribution (the bell\ncurve), keeping the tensor's shape.\n\nSend it any tensor and it sends back a tensor of the same shape and\ntype, every element replaced by an independent bell-curve sample. Use\nit to add jitter shaped like the data you already have, or to make\nnormal noise of whatever size arrives. To make samples from nothing,\nwith the shape typed into the node, use t.dist.normal.\n\nSYNTAX:\nt.normal\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its\nvalues are ignored, and it is not changed (the node fills a copy). A\nlist or number is turned into a tensor first. Every tensor that arrives\nis filled and sent; this is the only inlet that makes the node send.\nThe input must have a floating-point dtype (float32, the default for\nthe t.* generators, is right). An integer tensor - from t.zeros with\ndtype int64, say - prints an error in the console and nothing is sent.\n\nmean (drag float, also an inlet):\nThe middle of the bell. Default 0.\n\nstd (drag float, also an inlet):\nThe spread - the standard deviation. Default 1. 0 gives every element\nexactly the mean; a negative std is an error (printed in the console)\nand nothing is sent.\n\nThe parameters are drag floats on the node and also inlets. They are\nread when the next tensor arrives; setting one does not send. In the\ndemo each slider goes through 't bang float', which passes the number\nto the parameter first and THEN clicks the t.zeros, so a fresh tensor\narrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled\nwith fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens: its 64 x 64 tensor\nof zeros goes into t.normal, which sends back 4096 bell-curve samples.\nThe heat_map shows the field (-3 dark, 3 bright); the histogram under\nit is the bell. Drag mean and the bell slides sideways; drag std and it\nwidens or narrows. The zeros themselves never show - only their shape\nmatters.\n\nRELATED:\nt.dist.normal makes the same samples without an input tensor.\nt.uniform, t.cauchy and t.log_normal are the other fills. t.rand and\nnp.rand make uniform noise."
+            "text": "Fills a tensor with random samples from the NORMAL distribution (the bell curve), keeping the tensor's shape.\n\nSend it any tensor and it sends back a tensor of the same shape and type, every element replaced by an independent bell-curve sample. Use it to add jitter shaped like the data you already have, or to make normal noise of whatever size arrives. To make samples from nothing, with the shape typed into the node, use t.dist.normal.\n\nSYNTAX:\nt.normal\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its values are ignored, and it is not changed (the node fills a copy). A list or number is turned into a tensor first. Every tensor that arrives is filled and sent; this is the only inlet that makes the node send. The input must have a floating-point dtype (float32, the default for the t.* generators, is right). An integer tensor - from t.zeros with dtype int64, say - prints an error in the console and nothing is sent.\n\nmean (drag float, also an inlet):\nThe middle of the bell. Default 0.\n\nstd (drag float, also an inlet):\nThe spread - the standard deviation. Default 1. 0 gives every element exactly the mean; a negative std is an error (printed in the console) and nothing is sent.\n\nThe parameters are drag floats on the node and also inlets. They are read when the next tensor arrives; setting one does not send. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the t.zeros, so a fresh tensor arrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled with fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens: its 64 x 64 tensor of zeros goes into t.normal, which sends back 4096 bell-curve samples. The heat_map shows the field (-3 dark, 3 bright); the histogram under it is the bell. Drag mean and the bell slides sideways; drag std and it widens or narrows. The zeros themselves never show - only their shape matters.\n\nRELATED:\nt.dist.normal makes the same samples without an input tensor. t.uniform, t.cauchy and t.log_normal are the other fills. t.rand and np.rand make uniform noise."
         },
         "3": {
             "name": "load_bang",
@@ -540,8 +540,8 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 1230,
-            "width": 96,
+            "position_y": 1264,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -552,9 +552,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 174,
-            "position_y": 1230,
-            "width": 72,
+            "position_x": 144,
+            "position_y": 1264,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -565,9 +565,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 287,
-            "position_y": 1230,
-            "width": 90,
+            "position_x": 233,
+            "position_y": 1264,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -578,9 +578,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 423,
-            "position_y": 1230,
-            "width": 53,
+            "position_x": 341,
+            "position_y": 1264,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -591,8 +591,8 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 513,
-            "position_y": 1230,
+            "position_x": 411,
+            "position_y": 1264,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -605,7 +605,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 656,
+            "position_x": 30,
             "position_y": 1230,
             "width": 156,
             "height": 30,
@@ -630,7 +630,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 1304,
+            "position_y": 1338,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

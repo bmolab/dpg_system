@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1488,
+            "height": 1522,
             "width": 1983,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Divides a tensor by its length along one axis, so what is left is only\ndirection: every slice comes out with length 1.\n\n[3 4] becomes [0.6 0.8]: the same direction, length 1. Two inputs that\npoint the same way but differ in size come out identical - which is how\nyou compare shapes or gestures without their strength getting in the\nway, or turn a movement into a pure direction.\n\nIT WORKS ALONG AN AXIS - 'dim':\ndim says which axis the length is measured along, and every slice along\nit is scaled on its own. The default, -1, is the last axis: a single\nvector is made length 1 as a whole, and a table of rows (8 rows of\nx y z) has each ROW made length 1. For that table dim 0 makes each\nCOLUMN length 1 instead. An axis the tensor does not have prints an\nerror and sends nothing.\n\nSYNTAX:\nt.normalize\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or a NumPy array is turned into a float32 tensor).\nReceiving it normalizes and sends.\n\ndim (number box, also an inlet):\nThe axis to measure length along. Default -1, the last axis; negative\ncounts from the end. Changing it does not send\nby itself - the next tensor uses it (in the bottom demo the rows are\nre-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nnormalized tensor out:\nThe same shape, every slice along dim scaled to length 1.\n\nNEAR ZERO:\nA slice whose length is nearly zero has no meaningful direction, yet\ndividing by that tiny length still gives a full-size direction -\npointing wherever the noise points. If normalized data jumps about\nwhile things are still, that is why: check the length first (t.length)\nand gate on it. Only an exactly zero slice comes back as zeros.\n\nREADING THE DEMO:\nTop: the point [x y], starting at [3 4], normalized with the default\ndim gives [0.6 0.8]. Move the sliders: the result always has length 1, and it\nonly changes when the DIRECTION changes - drag both towards zero\ntogether and it stays put.\nBottom: make_rows sends 8 rows of 3 values of very different sizes\n(lengths 0.5 to 3; picture on a 0 to 3 scale). Normalized with the\nsame default dim -1, each row keeps its pattern but every row now has length 1 (picture on\na 0 to 1 scale). The strips under each picture are the length of each\nrow (np.linalg.norm, axis 1): uneven before, all 1 after. Set dim to 0\nand the COLUMNS become length 1 instead, so the row lengths are no\nlonger 1.\n\nRELATED:\nt.length gives the length that is divided out. t.cosine_similarity\ncompares two directions directly. norm (no prefix) does the same for a\nsingle vector of numbers. np.linalg.norm measures lengths along an\naxis.",
+                            "value": "Divides a tensor by its length along one axis, so what is left is only direction: every slice comes out with length 1.\n\n[3 4] becomes [0.6 0.8]: the same direction, length 1. Two inputs that point the same way but differ in size come out identical - which is how you compare shapes or gestures without their strength getting in the way, or turn a movement into a pure direction.\n\nIT WORKS ALONG AN AXIS - 'dim':\ndim says which axis the length is measured along, and every slice along it is scaled on its own. The default, -1, is the last axis: a single vector is made length 1 as a whole, and a table of rows (8 rows of x y z) has each ROW made length 1. For that table dim 0 makes each COLUMN length 1 instead. An axis the tensor does not have prints an error and sends nothing.\n\nSYNTAX:\nt.normalize\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or a NumPy array is turned into a float32 tensor). Receiving it normalizes and sends.\n\ndim (number box, also an inlet):\nThe axis to measure length along. Default -1, the last axis; negative counts from the end. Changing it does not send\nby itself - the next tensor uses it (in the bottom demo the rows are re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nnormalized tensor out:\nThe same shape, every slice along dim scaled to length 1.\n\nNEAR ZERO:\nA slice whose length is nearly zero has no meaningful direction, yet dividing by that tiny length still gives a full-size direction - pointing wherever the noise points. If normalized data jumps about while things are still, that is why: check the length first (t.length) and gate on it. Only an exactly zero slice comes back as zeros.\n\nREADING THE DEMO:\nTop: the point [x y], starting at [3 4], normalized with the default dim gives [0.6 0.8]. Move the sliders: the result always has length 1, and it only changes when the DIRECTION changes - drag both towards zero together and it stays put.\nBottom: make_rows sends 8 rows of 3 values of very different sizes (lengths 0.5 to 3; picture on a 0 to 3 scale). Normalized with the same default dim -1, each row keeps its pattern but every row now has length 1 (picture on a 0 to 1 scale). The strips under each picture are the length of each row (np.linalg.norm, axis 1): uneven before, all 1 after. Set dim to 0 and the COLUMNS become length 1 instead, so the row lengths are no longer 1.\n\nRELATED:\nt.length gives the length that is divided out. t.cosine_similarity compares two directions directly. norm (no prefix) does the same for a single vector of numbers. np.linalg.norm measures lengths along an axis.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Divides a tensor by its length along one axis, so what is left is only\ndirection: every slice comes out with length 1.\n\n[3 4] becomes [0.6 0.8]: the same direction, length 1. Two inputs that\npoint the same way but differ in size come out identical - which is how\nyou compare shapes or gestures without their strength getting in the\nway, or turn a movement into a pure direction.\n\nIT WORKS ALONG AN AXIS - 'dim':\ndim says which axis the length is measured along, and every slice along\nit is scaled on its own. The default, -1, is the last axis: a single\nvector is made length 1 as a whole, and a table of rows (8 rows of\nx y z) has each ROW made length 1. For that table dim 0 makes each\nCOLUMN length 1 instead. An axis the tensor does not have prints an\nerror and sends nothing.\n\nSYNTAX:\nt.normalize\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or a NumPy array is turned into a float32 tensor).\nReceiving it normalizes and sends.\n\ndim (number box, also an inlet):\nThe axis to measure length along. Default -1, the last axis; negative\ncounts from the end. Changing it does not send\nby itself - the next tensor uses it (in the bottom demo the rows are\nre-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nnormalized tensor out:\nThe same shape, every slice along dim scaled to length 1.\n\nNEAR ZERO:\nA slice whose length is nearly zero has no meaningful direction, yet\ndividing by that tiny length still gives a full-size direction -\npointing wherever the noise points. If normalized data jumps about\nwhile things are still, that is why: check the length first (t.length)\nand gate on it. Only an exactly zero slice comes back as zeros.\n\nREADING THE DEMO:\nTop: the point [x y], starting at [3 4], normalized with the default\ndim gives [0.6 0.8]. Move the sliders: the result always has length 1, and it\nonly changes when the DIRECTION changes - drag both towards zero\ntogether and it stays put.\nBottom: make_rows sends 8 rows of 3 values of very different sizes\n(lengths 0.5 to 3; picture on a 0 to 3 scale). Normalized with the\nsame default dim -1, each row keeps its pattern but every row now has length 1 (picture on\na 0 to 1 scale). The strips under each picture are the length of each\nrow (np.linalg.norm, axis 1): uneven before, all 1 after. Set dim to 0\nand the COLUMNS become length 1 instead, so the row lengths are no\nlonger 1.\n\nRELATED:\nt.length gives the length that is divided out. t.cosine_similarity\ncompares two directions directly. norm (no prefix) does the same for a\nsingle vector of numbers. np.linalg.norm measures lengths along an\naxis."
+                    "text": "Divides a tensor by its length along one axis, so what is left is only direction: every slice comes out with length 1.\n\n[3 4] becomes [0.6 0.8]: the same direction, length 1. Two inputs that point the same way but differ in size come out identical - which is how you compare shapes or gestures without their strength getting in the way, or turn a movement into a pure direction.\n\nIT WORKS ALONG AN AXIS - 'dim':\ndim says which axis the length is measured along, and every slice along it is scaled on its own. The default, -1, is the last axis: a single vector is made length 1 as a whole, and a table of rows (8 rows of x y z) has each ROW made length 1. For that table dim 0 makes each COLUMN length 1 instead. An axis the tensor does not have prints an error and sends nothing.\n\nSYNTAX:\nt.normalize\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or a NumPy array is turned into a float32 tensor). Receiving it normalizes and sends.\n\ndim (number box, also an inlet):\nThe axis to measure length along. Default -1, the last axis; negative counts from the end. Changing it does not send\nby itself - the next tensor uses it (in the bottom demo the rows are re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nnormalized tensor out:\nThe same shape, every slice along dim scaled to length 1.\n\nNEAR ZERO:\nA slice whose length is nearly zero has no meaningful direction, yet dividing by that tiny length still gives a full-size direction - pointing wherever the noise points. If normalized data jumps about while things are still, that is why: check the length first (t.length) and gate on it. Only an exactly zero slice comes back as zeros.\n\nREADING THE DEMO:\nTop: the point [x y], starting at [3 4], normalized with the default dim gives [0.6 0.8]. Move the sliders: the result always has length 1, and it only changes when the DIRECTION changes - drag both towards zero together and it stays put.\nBottom: make_rows sends 8 rows of 3 values of very different sizes (lengths 0.5 to 3; picture on a 0 to 3 scale). Normalized with the same default dim -1, each row keeps its pattern but every row now has length 1 (picture on a 0 to 1 scale). The strips under each picture are the length of each row (np.linalg.norm, axis 1): uneven before, all 1 after. Set dim to 0 and the COLUMNS become length 1 instead, so the row lengths are no longer 1.\n\nRELATED:\nt.length gives the length that is divided out. t.cosine_similarity compares two directions directly. norm (no prefix) does the same for a single vector of numbers. np.linalg.norm measures lengths along an axis."
                 },
                 "3": {
                     "name": "load_bang",
@@ -866,7 +866,7 @@
                     "name": "help_link",
                     "id": 1088,
                     "position_x": 30,
-                    "position_y": 1310,
+                    "position_y": 1344,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -878,9 +878,9 @@
                 "24": {
                     "name": "help_link",
                     "id": 1125,
-                    "position_x": 135,
-                    "position_y": 1310,
-                    "width": 133,
+                    "position_x": 112,
+                    "position_y": 1344,
+                    "width": 136,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -891,8 +891,8 @@
                 "25": {
                     "name": "help_link",
                     "id": 1162,
-                    "position_x": 325,
-                    "position_y": 1310,
+                    "position_x": 264,
+                    "position_y": 1344,
                     "width": 41,
                     "height": 44,
                     "visibility": "show_all",
@@ -904,9 +904,9 @@
                 "26": {
                     "name": "help_link",
                     "id": 1199,
-                    "position_x": 399,
-                    "position_y": 1310,
-                    "width": 103,
+                    "position_x": 321,
+                    "position_y": 1344,
+                    "width": 104,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -917,9 +917,9 @@
                 "27": {
                     "name": "help_link",
                     "id": 1236,
-                    "position_x": 550,
-                    "position_y": 1310,
-                    "width": 53,
+                    "position_x": 441,
+                    "position_y": 1344,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -931,8 +931,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1273,
-                    "position_x": 774,
-                    "position_y": 1354,
+                    "position_x": 30,
+                    "position_y": 1310,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -956,7 +956,7 @@
                     "name": "close",
                     "id": 1310,
                     "position_x": 24,
-                    "position_y": 1384,
+                    "position_y": 1418,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

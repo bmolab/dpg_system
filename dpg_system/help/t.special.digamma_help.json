@@ -1,5 +1,5 @@
 {
-    "height": 1062,
+    "height": 1096,
     "width": 1564,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Applies the digamma function - the slope of the log of the gamma\nfunction - to every element of a tensor.\n\nIt turns up whenever you fit or differentiate a gamma, beta or Dirichlet\ndistribution (the average log of a gamma-distributed value is digamma of its\nshape), and digamma(n + 1) + 0.5772 is the harmonic sum 1 + 1/2 + ... + 1/n.\n\nTHE CURVE:\nFor positive x it rises steadily, like a logarithm: very negative near 0,\ncrossing zero at about 1.4616 (where log gamma is lowest), -0.5772 at 1,\nabout 1.7 at 6. Each step of 1 adds 1/x: digamma(x + 1) = digamma(x) + 1/x.\n\nSYNTAX:\nt.special.digamma\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives minus infinity. Negative whole numbers give NaN (not a number),\nand between them the curve swoops from plus to minus infinity, so keep\nthe input positive unless you mean it.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (0.25 to 6 here), and the\nupper plot draws them: a straight ramp. The lower plot is digamma of each\nof those 200 values, so it is the graph of the function from 0.25 to 6,\ndrawn from -5 (bottom) to 2 (top). Drag start and stop on t.linspace\nto look at another stretch (keep start above 0).\n\nRELATED:\nt.special.gammaln is the function this is the slope of.\nt.special.polygamma with n = 0 is the same thing, and higher n gives its\nfurther derivatives.",
+                    "value": "Applies the digamma function - the slope of the log of the gamma function - to every element of a tensor.\n\nIt turns up whenever you fit or differentiate a gamma, beta or Dirichlet distribution (the average log of a gamma-distributed value is digamma of its shape), and digamma(n + 1) + 0.5772 is the harmonic sum 1 + 1/2 + ... + 1/n.\n\nTHE CURVE:\nFor positive x it rises steadily, like a logarithm: very negative near 0, crossing zero at about 1.4616 (where log gamma is lowest), -0.5772 at 1, about 1.7 at 6. Each step of 1 adds 1/x: digamma(x + 1) = digamma(x) + 1/x.\n\nSYNTAX:\nt.special.digamma\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives minus infinity. Negative whole numbers give NaN (not a number), and between them the curve swoops from plus to minus infinity, so keep the input positive unless you mean it.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (0.25 to 6 here), and the upper plot draws them: a straight ramp. The lower plot is digamma of each of those 200 values, so it is the graph of the function from 0.25 to 6, drawn from -5 (bottom) to 2 (top). Drag start and stop on t.linspace to look at another stretch (keep start above 0).\n\nRELATED:\nt.special.gammaln is the function this is the slope of. t.special.polygamma with n = 0 is the same thing, and higher n gives its further derivatives.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Applies the digamma function - the slope of the log of the gamma\nfunction - to every element of a tensor.\n\nIt turns up whenever you fit or differentiate a gamma, beta or Dirichlet\ndistribution (the average log of a gamma-distributed value is digamma of its\nshape), and digamma(n + 1) + 0.5772 is the harmonic sum 1 + 1/2 + ... + 1/n.\n\nTHE CURVE:\nFor positive x it rises steadily, like a logarithm: very negative near 0,\ncrossing zero at about 1.4616 (where log gamma is lowest), -0.5772 at 1,\nabout 1.7 at 6. Each step of 1 adds 1/x: digamma(x + 1) = digamma(x) + 1/x.\n\nSYNTAX:\nt.special.digamma\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives minus infinity. Negative whole numbers give NaN (not a number),\nand between them the curve swoops from plus to minus infinity, so keep\nthe input positive unless you mean it.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (0.25 to 6 here), and the\nupper plot draws them: a straight ramp. The lower plot is digamma of each\nof those 200 values, so it is the graph of the function from 0.25 to 6,\ndrawn from -5 (bottom) to 2 (top). Drag start and stop on t.linspace\nto look at another stretch (keep start above 0).\n\nRELATED:\nt.special.gammaln is the function this is the slope of.\nt.special.polygamma with n = 0 is the same thing, and higher n gives its\nfurther derivatives."
+            "text": "Applies the digamma function - the slope of the log of the gamma function - to every element of a tensor.\n\nIt turns up whenever you fit or differentiate a gamma, beta or Dirichlet distribution (the average log of a gamma-distributed value is digamma of its shape), and digamma(n + 1) + 0.5772 is the harmonic sum 1 + 1/2 + ... + 1/n.\n\nTHE CURVE:\nFor positive x it rises steadily, like a logarithm: very negative near 0, crossing zero at about 1.4616 (where log gamma is lowest), -0.5772 at 1, about 1.7 at 6. Each step of 1 adds 1/x: digamma(x + 1) = digamma(x) + 1/x.\n\nSYNTAX:\nt.special.digamma\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives minus infinity. Negative whole numbers give NaN (not a number), and between them the curve swoops from plus to minus infinity, so keep the input positive unless you mean it.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (0.25 to 6 here), and the upper plot draws them: a straight ramp. The lower plot is digamma of each of those 200 values, so it is the graph of the function from 0.25 to 6, drawn from -5 (bottom) to 2 (top). Drag start and stop on t.linspace to look at another stretch (keep start above 0).\n\nRELATED:\nt.special.gammaln is the function this is the slope of. t.special.polygamma with n = 0 is the same thing, and higher n gives its further derivatives."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 121,
+            "position_y": 874,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 204,
-            "position_y": 840,
-            "width": 133,
+            "position_x": 169,
+            "position_y": 874,
+            "width": 136,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -458,7 +458,7 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 884,
+            "position_y": 918,
             "width": 152,
             "height": 44,
             "visibility": "show_all",
@@ -471,7 +471,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 243,
-            "position_y": 884,
+            "position_y": 918,
             "width": 103,
             "height": 44,
             "visibility": "show_all",
@@ -484,8 +484,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 372,
-            "position_y": 928,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -509,7 +509,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 958,
+            "position_y": 992,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

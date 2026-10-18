@@ -1,5 +1,5 @@
 {
-    "height": 1152,
+    "height": 1186,
     "width": 1717,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Passes every positive value unchanged and replaces every negative value\nwith zero.\n\nIt is the plainest bend there is, and the most used activation in neural\nnetworks: a straight line with one corner, at zero. In a patch it folds\nnegatives away - half-wave rectifying a signal, keeping only the increases\nof a difference, making sure a level never goes below zero while leaving\neverything above zero exactly as it was.\n\nTHE CURVE:\nFlat along zero for every negative input, then the input itself from zero\nup. There is no upper limit: a large input comes out just as large. The\ncorner at zero is sharp - if that matters, gelu, silu and softplus are\nrounded versions of the same shape.\n\nSYNTAX:\nt.nn.relu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.leaky_relu keeps a small slope below zero instead of flat zero.\nt.nn.relu6 also caps the top at 6. t.nn.elu and t.nn.gelu are smooth\nversions of the corner; t.nn.softplus is relu with no corner at all.\nt.clamp with a minimum of 0 does the same job and lets you choose the\nfloor.",
+                    "value": "Passes every positive value unchanged and replaces every negative value with zero.\n\nIt is the plainest bend there is, and the most used activation in neural networks: a straight line with one corner, at zero. In a patch it folds negatives away - half-wave rectifying a signal, keeping only the increases of a difference, making sure a level never goes below zero while leaving everything above zero exactly as it was.\n\nTHE CURVE:\nFlat along zero for every negative input, then the input itself from zero up. There is no upper limit: a large input comes out just as large. The corner at zero is sharp - if that matters, gelu, silu and softplus are rounded versions of the same shape.\n\nSYNTAX:\nt.nn.relu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -4 to 4; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.leaky_relu keeps a small slope below zero instead of flat zero. t.nn.relu6 also caps the top at 6. t.nn.elu and t.nn.gelu are smooth versions of the corner; t.nn.softplus is relu with no corner at all. t.clamp with a minimum of 0 does the same job and lets you choose the floor.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Passes every positive value unchanged and replaces every negative value\nwith zero.\n\nIt is the plainest bend there is, and the most used activation in neural\nnetworks: a straight line with one corner, at zero. In a patch it folds\nnegatives away - half-wave rectifying a signal, keeping only the increases\nof a difference, making sure a level never goes below zero while leaving\neverything above zero exactly as it was.\n\nTHE CURVE:\nFlat along zero for every negative input, then the input itself from zero\nup. There is no upper limit: a large input comes out just as large. The\ncorner at zero is sharp - if that matters, gelu, silu and softplus are\nrounded versions of the same shape.\n\nSYNTAX:\nt.nn.relu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.leaky_relu keeps a small slope below zero instead of flat zero.\nt.nn.relu6 also caps the top at 6. t.nn.elu and t.nn.gelu are smooth\nversions of the corner; t.nn.softplus is relu with no corner at all.\nt.clamp with a minimum of 0 does the same job and lets you choose the\nfloor."
+            "text": "Passes every positive value unchanged and replaces every negative value with zero.\n\nIt is the plainest bend there is, and the most used activation in neural networks: a straight line with one corner, at zero. In a patch it folds negatives away - half-wave rectifying a signal, keeping only the increases of a difference, making sure a level never goes below zero while leaving everything above zero exactly as it was.\n\nTHE CURVE:\nFlat along zero for every negative input, then the input itself from zero up. There is no upper limit: a large input comes out just as large. The corner at zero is sharp - if that matters, gelu, silu and softplus are rounded versions of the same shape.\n\nSYNTAX:\nt.nn.relu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -4 to 4; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.leaky_relu keeps a small slope below zero instead of flat zero. t.nn.relu6 also caps the top at 6. t.nn.elu and t.nn.gelu are smooth versions of the corner; t.nn.softplus is relu with no corner at all. t.clamp with a minimum of 0 does the same job and lets you choose the floor."
         },
         "3": {
             "name": "metro",
@@ -379,8 +379,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 930,
-            "width": 109,
+            "position_y": 964,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -391,9 +391,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 189,
-            "position_y": 930,
-            "width": 78,
+            "position_x": 156,
+            "position_y": 964,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -404,8 +404,8 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 310,
-            "position_y": 930,
+            "position_x": 251,
+            "position_y": 964,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -417,9 +417,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 415,
-            "position_y": 930,
-            "width": 72,
+            "position_x": 333,
+            "position_y": 964,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -431,7 +431,7 @@
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 974,
+            "position_y": 1008,
             "width": 96,
             "height": 44,
             "visibility": "show_all",
@@ -444,7 +444,7 @@
             "name": "help_link",
             "id": 940,
             "position_x": 174,
-            "position_y": 974,
+            "position_y": 1008,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -457,8 +457,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 977,
-            "position_x": 513,
-            "position_y": 974,
+            "position_x": 30,
+            "position_y": 930,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -482,7 +482,7 @@
             "name": "close",
             "id": 1014,
             "position_x": 24,
-            "position_y": 1048,
+            "position_y": 1082,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

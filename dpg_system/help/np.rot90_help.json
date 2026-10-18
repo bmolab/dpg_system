@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 981,
+            "height": 1015,
             "width": 1725,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Turns an array by quarter turns, like rotating a picture.\n\nnp.rot90 and np.rotate are two names for the same node.\n\nUse it to turn an image or a grid on its side, or to change which way a\npattern faces. One quarter turn swaps the number of rows and columns: a 7\nby 6 array becomes 6 by 7.\n\nWHICH WAY:\nWith the default axes, a positive k turns ANTICLOCKWISE as a heat_map\ndraws the array (row 0 at the top): the top row becomes the left column.\nA negative k turns clockwise. k 2 is a half turn (the same as flipping\nboth axes), k 4 is back where you started, and k 5 is the same as k 1.\n\nSYNTAX:\nnp.rot90 <k: int> <axis 1: int> <axis 2: int>\nnp.rotate <k: int> <axis 1: int> <axis 2: int>\nDefaults: k 1, axis 1 0, axis 2 1.\n\nEXAMPLE:\nnp.rot90 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one). Each array that arrives is turned\nand sent; only this inlet makes the node send. A 1-D array is treated as\na single row, so one quarter turn makes it a column (N rows of 1).\n\nk (int box, also an inlet):\nHow many quarter turns. Changing it does NOT send by itself - in the\ndemo a metro inside make_F re-sends the F ten times a second.\n\naxis 1 / axis 2 (int boxes, also inlets):\nThe plane to turn in: the turn goes FROM axis 1 TOWARDS axis 2. Swapping\nthem reverses the direction. For a 2-D array leave them at 0 and 1; they\nmatter for 3-D arrays, where they choose which pair of axes turns. A\nnegative axis counts from the end (-1 is the last), one past the last\nis treated as the last; if the two end up the same, nothing is sent\n(a message says so).\n\nOUTPUTS:\n\nrotated array:\nThe turned array. With an odd k its first two dimensions have swapped.\n\nREADING THE DEMO:\nThe F (7 by 6) turned once anticlockwise lies on its back, 6 by 7, its\ntop bar now down the left side. np.shape shows the shapes swap. Step k\nand it keeps turning; set k to 2 and it stands on its head; type 1 into\naxis 1 and 0 into axis 2 and the same k turns it clockwise.\n\nRELATED:\nnp.flip mirrors along one axis. np.transpose swaps rows and columns,\nwhich is a flip across the diagonal rather than a turn. np.roll shifts\nwith wrap-around. np.reshape changes the shape without moving anything.",
+                            "value": "Turns an array by quarter turns, like rotating a picture.\n\nnp.rot90 and np.rotate are two names for the same node.\n\nUse it to turn an image or a grid on its side, or to change which way a pattern faces. One quarter turn swaps the number of rows and columns: a 7 by 6 array becomes 6 by 7.\n\nWHICH WAY:\nWith the default axes, a positive k turns ANTICLOCKWISE as a heat_map draws the array (row 0 at the top): the top row becomes the left column. A negative k turns clockwise. k 2 is a half turn (the same as flipping both axes), k 4 is back where you started, and k 5 is the same as k 1.\n\nSYNTAX:\nnp.rot90 <k: int> <axis 1: int> <axis 2: int>\nnp.rotate <k: int> <axis 1: int> <axis 2: int>\nDefaults: k 1, axis 1 0, axis 2 1.\n\nEXAMPLE:\nnp.rot90 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one). Each array that arrives is turned and sent; only this inlet makes the node send. A 1-D array is treated as a single row, so one quarter turn makes it a column (N rows of 1).\n\nk (int box, also an inlet):\nHow many quarter turns. Changing it does NOT send by itself - in the demo a metro inside make_F re-sends the F ten times a second.\n\naxis 1 / axis 2 (int boxes, also inlets):\nThe plane to turn in: the turn goes FROM axis 1 TOWARDS axis 2. Swapping them reverses the direction. For a 2-D array leave them at 0 and 1; they matter for 3-D arrays, where they choose which pair of axes turns. A negative axis counts from the end (-1 is the last), one past the last is treated as the last; if the two end up the same, nothing is sent (a message says so).\n\nOUTPUTS:\n\nrotated array:\nThe turned array. With an odd k its first two dimensions have swapped.\n\nREADING THE DEMO:\nThe F (7 by 6) turned once anticlockwise lies on its back, 6 by 7, its top bar now down the left side. np.shape shows the shapes swap. Step k and it keeps turning; set k to 2 and it stands on its head; type 1 into axis 1 and 0 into axis 2 and the same k turns it clockwise.\n\nRELATED:\nnp.flip mirrors along one axis. np.transpose swaps rows and columns, which is a flip across the diagonal rather than a turn. np.roll shifts with wrap-around. np.reshape changes the shape without moving anything.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Turns an array by quarter turns, like rotating a picture.\n\nnp.rot90 and np.rotate are two names for the same node.\n\nUse it to turn an image or a grid on its side, or to change which way a\npattern faces. One quarter turn swaps the number of rows and columns: a 7\nby 6 array becomes 6 by 7.\n\nWHICH WAY:\nWith the default axes, a positive k turns ANTICLOCKWISE as a heat_map\ndraws the array (row 0 at the top): the top row becomes the left column.\nA negative k turns clockwise. k 2 is a half turn (the same as flipping\nboth axes), k 4 is back where you started, and k 5 is the same as k 1.\n\nSYNTAX:\nnp.rot90 <k: int> <axis 1: int> <axis 2: int>\nnp.rotate <k: int> <axis 1: int> <axis 2: int>\nDefaults: k 1, axis 1 0, axis 2 1.\n\nEXAMPLE:\nnp.rot90 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one). Each array that arrives is turned\nand sent; only this inlet makes the node send. A 1-D array is treated as\na single row, so one quarter turn makes it a column (N rows of 1).\n\nk (int box, also an inlet):\nHow many quarter turns. Changing it does NOT send by itself - in the\ndemo a metro inside make_F re-sends the F ten times a second.\n\naxis 1 / axis 2 (int boxes, also inlets):\nThe plane to turn in: the turn goes FROM axis 1 TOWARDS axis 2. Swapping\nthem reverses the direction. For a 2-D array leave them at 0 and 1; they\nmatter for 3-D arrays, where they choose which pair of axes turns. A\nnegative axis counts from the end (-1 is the last), one past the last\nis treated as the last; if the two end up the same, nothing is sent\n(a message says so).\n\nOUTPUTS:\n\nrotated array:\nThe turned array. With an odd k its first two dimensions have swapped.\n\nREADING THE DEMO:\nThe F (7 by 6) turned once anticlockwise lies on its back, 6 by 7, its\ntop bar now down the left side. np.shape shows the shapes swap. Step k\nand it keeps turning; set k to 2 and it stands on its head; type 1 into\naxis 1 and 0 into axis 2 and the same k turns it clockwise.\n\nRELATED:\nnp.flip mirrors along one axis. np.transpose swaps rows and columns,\nwhich is a flip across the diagonal rather than a turn. np.roll shifts\nwith wrap-around. np.reshape changes the shape without moving anything."
+                    "text": "Turns an array by quarter turns, like rotating a picture.\n\nnp.rot90 and np.rotate are two names for the same node.\n\nUse it to turn an image or a grid on its side, or to change which way a pattern faces. One quarter turn swaps the number of rows and columns: a 7 by 6 array becomes 6 by 7.\n\nWHICH WAY:\nWith the default axes, a positive k turns ANTICLOCKWISE as a heat_map draws the array (row 0 at the top): the top row becomes the left column. A negative k turns clockwise. k 2 is a half turn (the same as flipping both axes), k 4 is back where you started, and k 5 is the same as k 1.\n\nSYNTAX:\nnp.rot90 <k: int> <axis 1: int> <axis 2: int>\nnp.rotate <k: int> <axis 1: int> <axis 2: int>\nDefaults: k 1, axis 1 0, axis 2 1.\n\nEXAMPLE:\nnp.rot90 1\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one). Each array that arrives is turned and sent; only this inlet makes the node send. A 1-D array is treated as a single row, so one quarter turn makes it a column (N rows of 1).\n\nk (int box, also an inlet):\nHow many quarter turns. Changing it does NOT send by itself - in the demo a metro inside make_F re-sends the F ten times a second.\n\naxis 1 / axis 2 (int boxes, also inlets):\nThe plane to turn in: the turn goes FROM axis 1 TOWARDS axis 2. Swapping them reverses the direction. For a 2-D array leave them at 0 and 1; they matter for 3-D arrays, where they choose which pair of axes turns. A negative axis counts from the end (-1 is the last), one past the last is treated as the last; if the two end up the same, nothing is sent (a message says so).\n\nOUTPUTS:\n\nrotated array:\nThe turned array. With an odd k its first two dimensions have swapped.\n\nREADING THE DEMO:\nThe F (7 by 6) turned once anticlockwise lies on its back, 6 by 7, its top bar now down the left side. np.shape shows the shapes swap. Step k and it keeps turning; set k to 2 and it stands on its head; type 1 into axis 1 and 0 into axis 2 and the same k turns it clockwise.\n\nRELATED:\nnp.flip mirrors along one axis. np.transpose swaps rows and columns, which is a flip across the diagonal rather than a turn. np.roll shifts with wrap-around. np.reshape changes the shape without moving anything."
                 },
                 "3": {
                     "name": "p",
@@ -602,7 +602,7 @@
                     "name": "help_link",
                     "id": 755,
                     "position_x": 30,
-                    "position_y": 770,
+                    "position_y": 804,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -614,9 +614,9 @@
                 "15": {
                     "name": "help_link",
                     "id": 792,
-                    "position_x": 127,
-                    "position_y": 770,
-                    "width": 90,
+                    "position_x": 106,
+                    "position_y": 804,
+                    "width": 92,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -627,8 +627,8 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 263,
-                    "position_y": 770,
+                    "position_x": 214,
+                    "position_y": 804,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -640,9 +640,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 360,
-                    "position_y": 770,
-                    "width": 78,
+                    "position_x": 290,
+                    "position_y": 804,
+                    "width": 79,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -654,7 +654,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 903,
-                    "position_x": 584,
+                    "position_x": 30,
                     "position_y": 770,
                     "width": 156,
                     "height": 30,
@@ -679,7 +679,7 @@
                     "name": "close",
                     "id": 940,
                     "position_x": 24,
-                    "position_y": 844,
+                    "position_y": 878,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

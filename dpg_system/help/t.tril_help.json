@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1041,
+            "height": 1075,
             "width": 2036,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Keeps the lower triangle of a matrix - the diagonal and everything below it - and sets the rest to zero.\n\nThe shape stays the same; only the values above the diagonal become\n0. A matrix of relationships between things - a covariance, a distance\nmatrix, a similarity - is symmetric: the entry for A against B equals\nthe one for B against A. Half of it is repeated, and keeping one\ntriangle is how you count each pair once. With which diag set so the\ndiagonal itself goes too, the entries comparing each thing with itself\nare removed as well - almost always what you want when asking about\npairs.\n\nSYNTAX:\nt.tril\nIt takes no arguments; set which diag in its box.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list or numpy array is converted to a float32 tensor).\nSends on arrival. A tensor of more than two dimensions is treated as a\nstack of matrices, each cut the same way; a 1-D tensor is refused by\nPyTorch with an error in the console.\n\nwhich diag (int box):\nWhere the cut is. 0 cuts along the main diagonal (top left to bottom\nright) and keeps it. 1 moves the cut one step up and to the right, -1\none step down and to the left. So t.tril with which diag -1 keeps only what is strictly below\nthe diagonal, and which diag 1 keeps one extra diagonal above it. Changing it does not send;\nthe next matrix uses it - in the demo a metro inside make_numbered\nre-sends the source ten times a second.\n\nOUTPUTS:\n\noutput:\nThe matrix, same shape, with the values above the cut set to 0.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source (tens digit the row, units\ndigit the column; the diagonal is 0 11 22 ... 99). The right one is\nt.tril's result: the lower triangle keeps its numbers and the rest is\ndark zero. Step which diag and watch the edge of the triangle slide.\n\nRELATED:\nt.triu keeps the opposite triangle. t.diag reads one diagonal out as a\nvector. t.eye makes the identity matrix. In numpy, np.where with a\ncomparison of row and column numbers does the same job.",
+                            "value": "Keeps the lower triangle of a matrix - the diagonal and everything below it - and sets the rest to zero.\n\nThe shape stays the same; only the values above the diagonal become 0. A matrix of relationships between things - a covariance, a distance matrix, a similarity - is symmetric: the entry for A against B equals the one for B against A. Half of it is repeated, and keeping one triangle is how you count each pair once. With which diag set so the diagonal itself goes too, the entries comparing each thing with itself are removed as well - almost always what you want when asking about pairs.\n\nSYNTAX:\nt.tril\nIt takes no arguments; set which diag in its box.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list or numpy array is converted to a float32 tensor). Sends on arrival. A tensor of more than two dimensions is treated as a stack of matrices, each cut the same way; a 1-D tensor is refused by PyTorch with an error in the console.\n\nwhich diag (int box):\nWhere the cut is. 0 cuts along the main diagonal (top left to bottom right) and keeps it. 1 moves the cut one step up and to the right, -1 one step down and to the left. So t.tril with which diag -1 keeps only what is strictly below the diagonal, and which diag 1 keeps one extra diagonal above it. Changing it does not send;\nthe next matrix uses it - in the demo a metro inside make_numbered re-sends the source ten times a second.\n\nOUTPUTS:\n\noutput:\nThe matrix, same shape, with the values above the cut set to 0.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source (tens digit the row, units digit the column; the diagonal is 0 11 22 ... 99). The right one is t.tril's result: the lower triangle keeps its numbers and the rest is dark zero. Step which diag and watch the edge of the triangle slide.\n\nRELATED:\nt.triu keeps the opposite triangle. t.diag reads one diagonal out as a vector. t.eye makes the identity matrix. In numpy, np.where with a comparison of row and column numbers does the same job.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Keeps the lower triangle of a matrix - the diagonal and everything below it - and sets the rest to zero.\n\nThe shape stays the same; only the values above the diagonal become\n0. A matrix of relationships between things - a covariance, a distance\nmatrix, a similarity - is symmetric: the entry for A against B equals\nthe one for B against A. Half of it is repeated, and keeping one\ntriangle is how you count each pair once. With which diag set so the\ndiagonal itself goes too, the entries comparing each thing with itself\nare removed as well - almost always what you want when asking about\npairs.\n\nSYNTAX:\nt.tril\nIt takes no arguments; set which diag in its box.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list or numpy array is converted to a float32 tensor).\nSends on arrival. A tensor of more than two dimensions is treated as a\nstack of matrices, each cut the same way; a 1-D tensor is refused by\nPyTorch with an error in the console.\n\nwhich diag (int box):\nWhere the cut is. 0 cuts along the main diagonal (top left to bottom\nright) and keeps it. 1 moves the cut one step up and to the right, -1\none step down and to the left. So t.tril with which diag -1 keeps only what is strictly below\nthe diagonal, and which diag 1 keeps one extra diagonal above it. Changing it does not send;\nthe next matrix uses it - in the demo a metro inside make_numbered\nre-sends the source ten times a second.\n\nOUTPUTS:\n\noutput:\nThe matrix, same shape, with the values above the cut set to 0.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source (tens digit the row, units\ndigit the column; the diagonal is 0 11 22 ... 99). The right one is\nt.tril's result: the lower triangle keeps its numbers and the rest is\ndark zero. Step which diag and watch the edge of the triangle slide.\n\nRELATED:\nt.triu keeps the opposite triangle. t.diag reads one diagonal out as a\nvector. t.eye makes the identity matrix. In numpy, np.where with a\ncomparison of row and column numbers does the same job."
+                    "text": "Keeps the lower triangle of a matrix - the diagonal and everything below it - and sets the rest to zero.\n\nThe shape stays the same; only the values above the diagonal become 0. A matrix of relationships between things - a covariance, a distance matrix, a similarity - is symmetric: the entry for A against B equals the one for B against A. Half of it is repeated, and keeping one triangle is how you count each pair once. With which diag set so the diagonal itself goes too, the entries comparing each thing with itself are removed as well - almost always what you want when asking about pairs.\n\nSYNTAX:\nt.tril\nIt takes no arguments; set which diag in its box.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list or numpy array is converted to a float32 tensor). Sends on arrival. A tensor of more than two dimensions is treated as a stack of matrices, each cut the same way; a 1-D tensor is refused by PyTorch with an error in the console.\n\nwhich diag (int box):\nWhere the cut is. 0 cuts along the main diagonal (top left to bottom right) and keeps it. 1 moves the cut one step up and to the right, -1 one step down and to the left. So t.tril with which diag -1 keeps only what is strictly below the diagonal, and which diag 1 keeps one extra diagonal above it. Changing it does not send;\nthe next matrix uses it - in the demo a metro inside make_numbered re-sends the source ten times a second.\n\nOUTPUTS:\n\noutput:\nThe matrix, same shape, with the values above the cut set to 0.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source (tens digit the row, units digit the column; the diagonal is 0 11 22 ... 99). The right one is t.tril's result: the lower triangle keeps its numbers and the rest is dark zero. Step which diag and watch the edge of the triangle slide.\n\nRELATED:\nt.triu keeps the opposite triangle. t.diag reads one diagonal out as a vector. t.eye makes the identity matrix. In numpy, np.where with a comparison of row and column numbers does the same job."
                 },
                 "3": {
                     "name": "p",
@@ -561,8 +561,8 @@
                     "name": "help_link",
                     "id": 644,
                     "position_x": 30,
-                    "position_y": 640,
-                    "width": 53,
+                    "position_y": 674,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -573,9 +573,9 @@
                 "12": {
                     "name": "help_link",
                     "id": 681,
-                    "position_x": 120,
-                    "position_y": 640,
-                    "width": 53,
+                    "position_x": 100,
+                    "position_y": 674,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -586,9 +586,9 @@
                 "13": {
                     "name": "help_link",
                     "id": 718,
-                    "position_x": 210,
-                    "position_y": 640,
-                    "width": 47,
+                    "position_x": 170,
+                    "position_y": 674,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -599,8 +599,8 @@
                 "14": {
                     "name": "help_link",
                     "id": 755,
-                    "position_x": 292,
-                    "position_y": 640,
+                    "position_x": 234,
+                    "position_y": 674,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -613,7 +613,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 792,
-                    "position_x": 924,
+                    "position_x": 30,
                     "position_y": 640,
                     "width": 156,
                     "height": 30,
@@ -638,7 +638,7 @@
                     "name": "close",
                     "id": 829,
                     "position_x": 24,
-                    "position_y": 714,
+                    "position_y": 748,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

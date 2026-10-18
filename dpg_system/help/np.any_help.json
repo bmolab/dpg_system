@@ -1,5 +1,5 @@
 {
-    "height": 978,
+    "height": 1012,
     "width": 1812,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Answers True if ANY value in an array is true (non-zero), False only\nif every one is zero.\n\nIts usual job is the end of a test: compare an array with something,\nthen ask \"did it happen anywhere?\" - is any joint moving faster than a\nlimit, has any sensor dropped out, is any pixel above the threshold. It\nturns a whole mask into one yes or no you can gate on.\n\nSYNTAX:\nnp.any\n\nEXAMPLE:\nnp.any\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one; a single number counts as a\none-element array). Every array that arrives is tested and the answer\nsent - this is the only inlet. Any shape is accepted, and the WHOLE\narray is always tested: there is no axis, so you get one True or False,\nnever one per row. Values are read as true or false the numpy way: 0,\n0.0 and False are false, anything else - including negative numbers\nand NaN - is true.\nAn empty array gives False (there is nothing true in it).\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nnp.rand makes 6 by 6 values between 0.2 and 0.8. The > node compares\neach with the slider and draws the answer as a mask: white where the\nvalue is above the threshold, dark red where it is not. np.any looks at the\nmask and lights the toggle if even ONE cell is white. Drag the slider\nup: cells go dark one by one, and np.any stays True until the very last\none - the largest value - goes dark, just under 0.8. Click np.rand's\nbutton for new values.\n\nRELATED:\nnp.all is the opposite question: true only if EVERY value is true.\nnp.sum of a mask counts how many are true. np.amax > threshold is the\nsame test as np.any of (array > threshold). np.argwhere lists the\npositions of the true cells. t.any is the PyTorch version.",
+                    "value": "Answers True if ANY value in an array is true (non-zero), False only if every one is zero.\n\nIts usual job is the end of a test: compare an array with something, then ask \"did it happen anywhere?\" - is any joint moving faster than a limit, has any sensor dropped out, is any pixel above the threshold. It turns a whole mask into one yes or no you can gate on.\n\nSYNTAX:\nnp.any\n\nEXAMPLE:\nnp.any\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one; a single number counts as a one-element array). Every array that arrives is tested and the answer sent - this is the only inlet. Any shape is accepted, and the WHOLE array is always tested: there is no axis, so you get one True or False, never one per row. Values are read as true or false the numpy way: 0, 0.0 and False are false, anything else - including negative numbers and NaN - is true.\nAn empty array gives False (there is nothing true in it).\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nnp.rand makes 6 by 6 values between 0.2 and 0.8. The > node compares each with the slider and draws the answer as a mask: white where the value is above the threshold, dark red where it is not. np.any looks at the mask and lights the toggle if even ONE cell is white. Drag the slider up: cells go dark one by one, and np.any stays True until the very last one - the largest value - goes dark, just under 0.8. Click np.rand's button for new values.\n\nRELATED:\nnp.all is the opposite question: true only if EVERY value is true. np.sum of a mask counts how many are true. np.amax > threshold is the same test as np.any of (array > threshold). np.argwhere lists the positions of the true cells. t.any is the PyTorch version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Answers True if ANY value in an array is true (non-zero), False only\nif every one is zero.\n\nIts usual job is the end of a test: compare an array with something,\nthen ask \"did it happen anywhere?\" - is any joint moving faster than a\nlimit, has any sensor dropped out, is any pixel above the threshold. It\nturns a whole mask into one yes or no you can gate on.\n\nSYNTAX:\nnp.any\n\nEXAMPLE:\nnp.any\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one; a single number counts as a\none-element array). Every array that arrives is tested and the answer\nsent - this is the only inlet. Any shape is accepted, and the WHOLE\narray is always tested: there is no axis, so you get one True or False,\nnever one per row. Values are read as true or false the numpy way: 0,\n0.0 and False are false, anything else - including negative numbers\nand NaN - is true.\nAn empty array gives False (there is nothing true in it).\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nnp.rand makes 6 by 6 values between 0.2 and 0.8. The > node compares\neach with the slider and draws the answer as a mask: white where the\nvalue is above the threshold, dark red where it is not. np.any looks at the\nmask and lights the toggle if even ONE cell is white. Drag the slider\nup: cells go dark one by one, and np.any stays True until the very last\none - the largest value - goes dark, just under 0.8. Click np.rand's\nbutton for new values.\n\nRELATED:\nnp.all is the opposite question: true only if EVERY value is true.\nnp.sum of a mask counts how many are true. np.amax > threshold is the\nsame test as np.any of (array > threshold). np.argwhere lists the\npositions of the true cells. t.any is the PyTorch version."
+            "text": "Answers True if ANY value in an array is true (non-zero), False only if every one is zero.\n\nIts usual job is the end of a test: compare an array with something, then ask \"did it happen anywhere?\" - is any joint moving faster than a limit, has any sensor dropped out, is any pixel above the threshold. It turns a whole mask into one yes or no you can gate on.\n\nSYNTAX:\nnp.any\n\nEXAMPLE:\nnp.any\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one; a single number counts as a one-element array). Every array that arrives is tested and the answer sent - this is the only inlet. Any shape is accepted, and the WHOLE array is always tested: there is no axis, so you get one True or False, never one per row. Values are read as true or false the numpy way: 0, 0.0 and False are false, anything else - including negative numbers and NaN - is true.\nAn empty array gives False (there is nothing true in it).\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nnp.rand makes 6 by 6 values between 0.2 and 0.8. The > node compares each with the slider and draws the answer as a mask: white where the value is above the threshold, dark red where it is not. np.any looks at the mask and lights the toggle if even ONE cell is white. Drag the slider up: cells go dark one by one, and np.any stays True until the very last one - the largest value - goes dark, just under 0.8. Click np.rand's button for new values.\n\nRELATED:\nnp.all is the opposite question: true only if EVERY value is true. np.sum of a mask counts how many are true. np.amax > threshold is the same test as np.any of (array > threshold). np.argwhere lists the positions of the true cells. t.any is the PyTorch version."
         },
         "3": {
             "name": "load_bang",
@@ -526,8 +526,8 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 800,
-            "width": 53,
+            "position_y": 834,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -538,9 +538,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 120,
-            "position_y": 800,
-            "width": 53,
+            "position_x": 100,
+            "position_y": 834,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -551,8 +551,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 210,
-            "position_y": 800,
+            "position_x": 170,
+            "position_y": 834,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -564,9 +564,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 307,
-            "position_y": 800,
-            "width": 84,
+            "position_x": 246,
+            "position_y": 834,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -577,9 +577,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 435,
-            "position_y": 800,
-            "width": 47,
+            "position_x": 347,
+            "position_y": 834,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -591,7 +591,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 634,
+            "position_x": 30,
             "position_y": 800,
             "width": 156,
             "height": 30,
@@ -616,7 +616,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 874,
+            "position_y": 908,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

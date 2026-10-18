@@ -1,5 +1,5 @@
 {
-    "height": 841,
+    "height": 875,
     "width": 1720,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor filled with zeros, in the shape you give it.\n\nOn its own it is the dullest tensor there is, and that is its use: a\nblank to start from. Accumulate into it, add values into part of it,\nor hold a correctly shaped place in a chain until real data arrives.\n\nSYNTAX:\nt.zeros <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.zeros 8 8 is an 8 by 8 tensor,\nt.zeros 16 a row of 16. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.zeros 8 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send; each\nclick sends a new tensor.\n\nshape (text, also an inlet):\nThe dimensions, typed as numbers separated by spaces or commas - '8 8',\n'[4, 16]' or '2 3 4' for 3-D. A list or tensor of numbers sent into the\ninlet works too (a message '4 16', or a shape from another node), and\nso does a single number (16 is a row of 16). Unlike np.zeros, the\nnumber of dimensions can change here without retyping the node. A new\nshape does not send; the next click uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.zeros 8 8 int64.\nOUTPUTS:\n\ntensor of zeros:\nThe tensor. A bool dtype gives all false.\n\nREADING THE DEMO:\nThe load_bang clicks t.zeros once when the page opens. The heat_map is\nthe tensor - every cell 0, one flat colour, each printing its 0. t.info\nreports its shape, dtype and device: [8, 8], torch.float32, cpu. Click\nthe message '4 8': 't bang list' sends the list into the shape inlet\nand THEN clicks the node, so the picture becomes 4 rows of 8 and t.info\nfollows; '8 8' puts it back. Typing a shape into the node and clicking\nits button does the same. Choose int64 as dtype and click again to see\nt.info change.\n\nRELATED:\nt.ones is the same with every value 1, t.full with any value you pick.\nt.zeros_like takes its shape from another tensor. t.eye puts ones on the\ndiagonal of a square of zeros. np.zeros is the NumPy version.",
+                    "value": "Makes a tensor filled with zeros, in the shape you give it.\n\nOn its own it is the dullest tensor there is, and that is its use: a blank to start from. Accumulate into it, add values into part of it, or hold a correctly shaped place in a chain until real data arrives.\n\nSYNTAX:\nt.zeros <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.zeros 8 8 is an 8 by 8 tensor,\nt.zeros 16 a row of 16. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.zeros 8 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, to send the tensor. Nothing else makes the node send; each click sends a new tensor.\n\nshape (text, also an inlet):\nThe dimensions, typed as numbers separated by spaces or commas - '8 8', '[4, 16]' or '2 3 4' for 3-D. A list or tensor of numbers sent into the inlet works too (a message '4 16', or a shape from another node), and so does a single number (16 is a row of 16). Unlike np.zeros, the number of dimensions can change here without retyping the node. A new shape does not send; the next click uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.zeros 8 8 int64.\nOUTPUTS:\n\ntensor of zeros:\nThe tensor. A bool dtype gives all false.\n\nREADING THE DEMO:\nThe load_bang clicks t.zeros once when the page opens. The heat_map is the tensor - every cell 0, one flat colour, each printing its 0. t.info reports its shape, dtype and device: [8, 8], torch.float32, cpu. Click the message '4 8': 't bang list' sends the list into the shape inlet and THEN clicks the node, so the picture becomes 4 rows of 8 and t.info follows; '8 8' puts it back. Typing a shape into the node and clicking its button does the same. Choose int64 as dtype and click again to see t.info change.\n\nRELATED:\nt.ones is the same with every value 1, t.full with any value you pick. t.zeros_like takes its shape from another tensor. t.eye puts ones on the diagonal of a square of zeros. np.zeros is the NumPy version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor filled with zeros, in the shape you give it.\n\nOn its own it is the dullest tensor there is, and that is its use: a\nblank to start from. Accumulate into it, add values into part of it,\nor hold a correctly shaped place in a chain until real data arrives.\n\nSYNTAX:\nt.zeros <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.zeros 8 8 is an 8 by 8 tensor,\nt.zeros 16 a row of 16. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.zeros 8 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send; each\nclick sends a new tensor.\n\nshape (text, also an inlet):\nThe dimensions, typed as numbers separated by spaces or commas - '8 8',\n'[4, 16]' or '2 3 4' for 3-D. A list or tensor of numbers sent into the\ninlet works too (a message '4 16', or a shape from another node), and\nso does a single number (16 is a row of 16). Unlike np.zeros, the\nnumber of dimensions can change here without retyping the node. A new\nshape does not send; the next click uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.zeros 8 8 int64.\nOUTPUTS:\n\ntensor of zeros:\nThe tensor. A bool dtype gives all false.\n\nREADING THE DEMO:\nThe load_bang clicks t.zeros once when the page opens. The heat_map is\nthe tensor - every cell 0, one flat colour, each printing its 0. t.info\nreports its shape, dtype and device: [8, 8], torch.float32, cpu. Click\nthe message '4 8': 't bang list' sends the list into the shape inlet\nand THEN clicks the node, so the picture becomes 4 rows of 8 and t.info\nfollows; '8 8' puts it back. Typing a shape into the node and clicking\nits button does the same. Choose int64 as dtype and click again to see\nt.info change.\n\nRELATED:\nt.ones is the same with every value 1, t.full with any value you pick.\nt.zeros_like takes its shape from another tensor. t.eye puts ones on the\ndiagonal of a square of zeros. np.zeros is the NumPy version."
+            "text": "Makes a tensor filled with zeros, in the shape you give it.\n\nOn its own it is the dullest tensor there is, and that is its use: a blank to start from. Accumulate into it, add values into part of it, or hold a correctly shaped place in a chain until real data arrives.\n\nSYNTAX:\nt.zeros <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.zeros 8 8 is an 8 by 8 tensor,\nt.zeros 16 a row of 16. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.zeros 8 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, to send the tensor. Nothing else makes the node send; each click sends a new tensor.\n\nshape (text, also an inlet):\nThe dimensions, typed as numbers separated by spaces or commas - '8 8', '[4, 16]' or '2 3 4' for 3-D. A list or tensor of numbers sent into the inlet works too (a message '4 16', or a shape from another node), and so does a single number (16 is a row of 16). Unlike np.zeros, the number of dimensions can change here without retyping the node. A new shape does not send; the next click uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.zeros 8 8 int64.\nOUTPUTS:\n\ntensor of zeros:\nThe tensor. A bool dtype gives all false.\n\nREADING THE DEMO:\nThe load_bang clicks t.zeros once when the page opens. The heat_map is the tensor - every cell 0, one flat colour, each printing its 0. t.info reports its shape, dtype and device: [8, 8], torch.float32, cpu. Click the message '4 8': 't bang list' sends the list into the shape inlet and THEN clicks the node, so the picture becomes 4 rows of 8 and t.info follows; '8 8' puts it back. Typing a shape into the node and clicking its button does the same. Choose int64 as dtype and click again to see t.info change.\n\nRELATED:\nt.ones is the same with every value 1, t.full with any value you pick. t.zeros_like takes its shape from another tensor. t.eye puts ones on the diagonal of a square of zeros. np.zeros is the NumPy version."
         },
         "3": {
             "name": "load_bang",
@@ -385,8 +385,8 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 620,
-            "width": 53,
+            "position_y": 654,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -397,9 +397,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 120,
-            "position_y": 620,
-            "width": 53,
+            "position_x": 100,
+            "position_y": 654,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -410,9 +410,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 210,
-            "position_y": 620,
-            "width": 90,
+            "position_x": 170,
+            "position_y": 654,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -423,9 +423,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 346,
-            "position_y": 620,
-            "width": 47,
+            "position_x": 278,
+            "position_y": 654,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -436,8 +436,8 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 428,
-            "position_y": 620,
+            "position_x": 342,
+            "position_y": 654,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -450,7 +450,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 977,
-            "position_x": 596,
+            "position_x": 30,
             "position_y": 620,
             "width": 156,
             "height": 30,
@@ -475,7 +475,7 @@
             "name": "close",
             "id": 1014,
             "position_x": 24,
-            "position_y": 694,
+            "position_y": 728,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 1062,
+    "height": 1096,
     "width": 1661,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Applies the modified Bessel function of the first kind of order 0, I0,\nto every element of a tensor.\n\nIt shapes the Kaiser window used in filter design and is the normalising\nconstant of the von Mises distribution (a bell curve wrapped around a\ncircle, for angles and directions).\n\nTHE CURVE:\n1 at 0, symmetric, curving up on both sides and then growing roughly like\ne to the |x| (divided by the square root of 2 pi |x|): I0(2) = 2.28,\nI0(4) = 11.3. It never oscillates - it is the Bessel equation with a sign\nflipped.\n\nSYNTAX:\nt.special.i0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nOverflows to infinity past about |x| = 90 in 32-bit floats;\nt.special.i0e avoids that.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-4 to 4 here), and the\nupper plot draws them: a straight ramp. The lower plot is I0(x) of each\nof those 200 values, so it is the graph of the function from -4 to 4,\ndrawn from 0 (bottom) to 12 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.special.i0e is the same divided by e to the |x|, which stays in range.\nt.special.i1 is order 1. t.special.bessel_j0 is the oscillating\ncousin. t.window.kaiser builds the window this function shapes.",
+                    "value": "Applies the modified Bessel function of the first kind of order 0, I0, to every element of a tensor.\n\nIt shapes the Kaiser window used in filter design and is the normalising constant of the von Mises distribution (a bell curve wrapped around a circle, for angles and directions).\n\nTHE CURVE:\n1 at 0, symmetric, curving up on both sides and then growing roughly like e to the |x| (divided by the square root of 2 pi |x|): I0(2) = 2.28, I0(4) = 11.3. It never oscillates - it is the Bessel equation with a sign flipped.\n\nSYNTAX:\nt.special.i0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nOverflows to infinity past about |x| = 90 in 32-bit floats;\nt.special.i0e avoids that.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-4 to 4 here), and the upper plot draws them: a straight ramp. The lower plot is I0(x) of each of those 200 values, so it is the graph of the function from -4 to 4, drawn from 0 (bottom) to 12 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.special.i0e is the same divided by e to the |x|, which stays in range. t.special.i1 is order 1. t.special.bessel_j0 is the oscillating cousin. t.window.kaiser builds the window this function shapes.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Applies the modified Bessel function of the first kind of order 0, I0,\nto every element of a tensor.\n\nIt shapes the Kaiser window used in filter design and is the normalising\nconstant of the von Mises distribution (a bell curve wrapped around a\ncircle, for angles and directions).\n\nTHE CURVE:\n1 at 0, symmetric, curving up on both sides and then growing roughly like\ne to the |x| (divided by the square root of 2 pi |x|): I0(2) = 2.28,\nI0(4) = 11.3. It never oscillates - it is the Bessel equation with a sign\nflipped.\n\nSYNTAX:\nt.special.i0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nOverflows to infinity past about |x| = 90 in 32-bit floats;\nt.special.i0e avoids that.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-4 to 4 here), and the\nupper plot draws them: a straight ramp. The lower plot is I0(x) of each\nof those 200 values, so it is the graph of the function from -4 to 4,\ndrawn from 0 (bottom) to 12 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.special.i0e is the same divided by e to the |x|, which stays in range.\nt.special.i1 is order 1. t.special.bessel_j0 is the oscillating\ncousin. t.window.kaiser builds the window this function shapes."
+            "text": "Applies the modified Bessel function of the first kind of order 0, I0, to every element of a tensor.\n\nIt shapes the Kaiser window used in filter design and is the normalising constant of the von Mises distribution (a bell curve wrapped around a circle, for angles and directions).\n\nTHE CURVE:\n1 at 0, symmetric, curving up on both sides and then growing roughly like e to the |x| (divided by the square root of 2 pi |x|): I0(2) = 2.28, I0(4) = 11.3. It never oscillates - it is the Bessel equation with a sign flipped.\n\nSYNTAX:\nt.special.i0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nOverflows to infinity past about |x| = 90 in 32-bit floats;\nt.special.i0e avoids that.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-4 to 4 here), and the upper plot draws them: a straight ramp. The lower plot is I0(x) of each of those 200 values, so it is the graph of the function from -4 to 4, drawn from 0 (bottom) to 12 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.special.i0e is the same divided by e to the |x|, which stays in range. t.special.i1 is order 1. t.special.bessel_j0 is the oscillating cousin. t.window.kaiser builds the window this function shapes."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 96,
+            "position_y": 874,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 174,
-            "position_y": 840,
-            "width": 90,
+            "position_x": 144,
+            "position_y": 874,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -457,9 +457,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 310,
-            "position_y": 840,
-            "width": 133,
+            "position_x": 252,
+            "position_y": 874,
+            "width": 136,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -471,7 +471,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 884,
+            "position_y": 918,
             "width": 109,
             "height": 44,
             "visibility": "show_all",
@@ -484,7 +484,7 @@
             "name": "help_link",
             "id": 866,
             "position_x": 189,
-            "position_y": 884,
+            "position_y": 918,
             "width": 115,
             "height": 44,
             "visibility": "show_all",
@@ -497,8 +497,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 469,
-            "position_y": 884,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -522,7 +522,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 958,
+            "position_y": 992,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

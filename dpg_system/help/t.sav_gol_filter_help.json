@@ -504,7 +504,7 @@
             }
         },
         "1": {
-            "height": 1336,
+            "height": 1370,
             "width": 1961,
             "position": [
                 100,
@@ -571,7 +571,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Smooths streams by fitting a curve to the most recent stretch of samples\n(a Savitzky-Golay filter), which keeps the shape of peaks that a moving\naverage would flatten.\n\nUse it on a trace whose peaks matter - their height, their timing - such\nas a speed you will look for maxima in. Over each window of samples it\nfits a low-order polynomial and reports the fitted value, so a peak fits\na curve with a peak in it and keeps most of its height, while jitter\ndoes not fit and is removed.\n\nTHE DELAY:\nThe value reported is the fitted curve at the MIDDLE of the window, so\nthe output is late by half the window: (window length - 1) / 2 frames -\n15 frames, a quarter of a second at 60 frames a second, at the default\n31. The demo's filtered line runs visibly behind the input. A shorter\nwindow is less late and smooths less.\n\nThe fit also assumes the data is smooth across the window: at a real\nstep it overshoots a little on either side.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all\nof them one moment in time. Every row gets its own filter state, so a\nwhole body - 22 joints, one row each - is filtered in one operation. The\nfirst frame (and any change in the number of rows) builds the state\nafresh.\n\nSYNTAX:\nt.sav_gol_filter\nNo arguments.\n\nEXAMPLE:\nt.sav_gol_filter\n\nINPUTS and PARAMETERS:\n\nsignal:\n[streams, values], exactly 2-D. A single value must be shaped [1, 1]\n(as the demo's t.reshape does); anything that is not 2-D prints a\nmessage in the console and sends nothing. Each arrival is one step.\n\nreset (button):\nEmpties the history. The next input fills the whole window, as if the\nsignal had always been at that value, so the output starts AT it rather\nthan climbing from zero: a steady 1.0 comes out as 1.0 from the first\nframe. The filter starts the same way from its first input.\n\nwindow length (int, 3 to 1001, default 31):\nHow many recent samples each fit spans. An even number is raised by one.\n\npolynomial order (int, 1 to 8, default 3):\nThe degree of the fitted curve; must be below the window length (it is\nlowered if not). Higher follows sharper shapes and smooths less. Order\n1 is a straight line - a plain moving average.\n\nnormalize output (checkbox, default ON):\nScales each row of the result to length 1. That is right for quaternion\nrows - a smoothed quaternion must be unit length to be a rotation - and\nWRONG for anything else: a single value becomes +1 or -1. Untick it for\nordinary numbers, as in the demo. (Quaternions are smoothed as four\nplain numbers, so a sign flip between q and -q in the input will make a\nmess of them - keep the signs consistent first.)\n\nChanging any of these starts the filter again with an empty history.\n\nOUTPUTS:\n\nfiltered:\n[streams, values], the fitted values half a window ago.\n\nREADING THE DEMO:\nDrag window length on the node: at 31 the line is smooth but a quarter\nof a second late and the spikes are spread into small bumps; at 7 it is\nnearly on time but smooths less and lets a third of each spike\nthrough.\n\nRELATED:\nfilter and one_euro_filter are moving-average style smoothers with\nless delay. t.smart_clamp_kf rejects spikes instead of spreading them.",
+                            "value": "Smooths streams by fitting a curve to the most recent stretch of samples (a Savitzky-Golay filter), which keeps the shape of peaks that a moving average would flatten.\n\nUse it on a trace whose peaks matter - their height, their timing - such as a speed you will look for maxima in. Over each window of samples it fits a low-order polynomial and reports the fitted value, so a peak fits a curve with a peak in it and keeps most of its height, while jitter does not fit and is removed.\n\nTHE DELAY:\nThe value reported is the fitted curve at the MIDDLE of the window, so the output is late by half the window: (window length - 1) / 2 frames - 15 frames, a quarter of a second at 60 frames a second, at the default 31. The demo's filtered line runs visibly behind the input. A shorter window is less late and smooths less.\n\nThe fit also assumes the data is smooth across the window: at a real step it overshoots a little on either side.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all of them one moment in time. Every row gets its own filter state, so a whole body - 22 joints, one row each - is filtered in one operation. The first frame (and any change in the number of rows) builds the state afresh.\n\nSYNTAX:\nt.sav_gol_filter\nNo arguments.\n\nEXAMPLE:\nt.sav_gol_filter\n\nINPUTS and PARAMETERS:\n\nsignal:\n[streams, values], exactly 2-D. A single value must be shaped [1, 1] (as the demo's t.reshape does); anything that is not 2-D prints a message in the console and sends nothing. Each arrival is one step.\n\nreset (button):\nEmpties the history. The next input fills the whole window, as if the signal had always been at that value, so the output starts AT it rather than climbing from zero: a steady 1.0 comes out as 1.0 from the first frame. The filter starts the same way from its first input.\n\nwindow length (int, 3 to 1001, default 31):\nHow many recent samples each fit spans. An even number is raised by one.\n\npolynomial order (int, 1 to 8, default 3):\nThe degree of the fitted curve; must be below the window length (it is lowered if not). Higher follows sharper shapes and smooths less. Order 1 is a straight line - a plain moving average.\n\nnormalize output (checkbox, default ON):\nScales each row of the result to length 1. That is right for quaternion rows - a smoothed quaternion must be unit length to be a rotation - and WRONG for anything else: a single value becomes +1 or -1. Untick it for ordinary numbers, as in the demo. (Quaternions are smoothed as four plain numbers, so a sign flip between q and -q in the input will make a mess of them - keep the signs consistent first.)\n\nChanging any of these starts the filter again with an empty history.\n\nOUTPUTS:\n\nfiltered:\n[streams, values], the fitted values half a window ago.\n\nREADING THE DEMO:\nDrag window length on the node: at 31 the line is smooth but a quarter of a second late and the spikes are spread into small bumps; at 7 it is nearly on time but smooths less and lets a third of each spike through.\n\nRELATED:\nfilter and one_euro_filter are moving-average style smoothers with less delay. t.smart_clamp_kf rejects spikes instead of spreading them.",
                             "value_type": "str"
                         },
                         "1": {
@@ -595,7 +595,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Smooths streams by fitting a curve to the most recent stretch of samples\n(a Savitzky-Golay filter), which keeps the shape of peaks that a moving\naverage would flatten.\n\nUse it on a trace whose peaks matter - their height, their timing - such\nas a speed you will look for maxima in. Over each window of samples it\nfits a low-order polynomial and reports the fitted value, so a peak fits\na curve with a peak in it and keeps most of its height, while jitter\ndoes not fit and is removed.\n\nTHE DELAY:\nThe value reported is the fitted curve at the MIDDLE of the window, so\nthe output is late by half the window: (window length - 1) / 2 frames -\n15 frames, a quarter of a second at 60 frames a second, at the default\n31. The demo's filtered line runs visibly behind the input. A shorter\nwindow is less late and smooths less.\n\nThe fit also assumes the data is smooth across the window: at a real\nstep it overshoots a little on either side.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all\nof them one moment in time. Every row gets its own filter state, so a\nwhole body - 22 joints, one row each - is filtered in one operation. The\nfirst frame (and any change in the number of rows) builds the state\nafresh.\n\nSYNTAX:\nt.sav_gol_filter\nNo arguments.\n\nEXAMPLE:\nt.sav_gol_filter\n\nINPUTS and PARAMETERS:\n\nsignal:\n[streams, values], exactly 2-D. A single value must be shaped [1, 1]\n(as the demo's t.reshape does); anything that is not 2-D prints a\nmessage in the console and sends nothing. Each arrival is one step.\n\nreset (button):\nEmpties the history. The next input fills the whole window, as if the\nsignal had always been at that value, so the output starts AT it rather\nthan climbing from zero: a steady 1.0 comes out as 1.0 from the first\nframe. The filter starts the same way from its first input.\n\nwindow length (int, 3 to 1001, default 31):\nHow many recent samples each fit spans. An even number is raised by one.\n\npolynomial order (int, 1 to 8, default 3):\nThe degree of the fitted curve; must be below the window length (it is\nlowered if not). Higher follows sharper shapes and smooths less. Order\n1 is a straight line - a plain moving average.\n\nnormalize output (checkbox, default ON):\nScales each row of the result to length 1. That is right for quaternion\nrows - a smoothed quaternion must be unit length to be a rotation - and\nWRONG for anything else: a single value becomes +1 or -1. Untick it for\nordinary numbers, as in the demo. (Quaternions are smoothed as four\nplain numbers, so a sign flip between q and -q in the input will make a\nmess of them - keep the signs consistent first.)\n\nChanging any of these starts the filter again with an empty history.\n\nOUTPUTS:\n\nfiltered:\n[streams, values], the fitted values half a window ago.\n\nREADING THE DEMO:\nDrag window length on the node: at 31 the line is smooth but a quarter\nof a second late and the spikes are spread into small bumps; at 7 it is\nnearly on time but smooths less and lets a third of each spike\nthrough.\n\nRELATED:\nfilter and one_euro_filter are moving-average style smoothers with\nless delay. t.smart_clamp_kf rejects spikes instead of spreading them."
+                    "text": "Smooths streams by fitting a curve to the most recent stretch of samples (a Savitzky-Golay filter), which keeps the shape of peaks that a moving average would flatten.\n\nUse it on a trace whose peaks matter - their height, their timing - such as a speed you will look for maxima in. Over each window of samples it fits a low-order polynomial and reports the fitted value, so a peak fits a curve with a peak in it and keeps most of its height, while jitter does not fit and is removed.\n\nTHE DELAY:\nThe value reported is the fitted curve at the MIDDLE of the window, so the output is late by half the window: (window length - 1) / 2 frames - 15 frames, a quarter of a second at 60 frames a second, at the default 31. The demo's filtered line runs visibly behind the input. A shorter window is less late and smooths less.\n\nThe fit also assumes the data is smooth across the window: at a real step it overshoots a little on either side.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all of them one moment in time. Every row gets its own filter state, so a whole body - 22 joints, one row each - is filtered in one operation. The first frame (and any change in the number of rows) builds the state afresh.\n\nSYNTAX:\nt.sav_gol_filter\nNo arguments.\n\nEXAMPLE:\nt.sav_gol_filter\n\nINPUTS and PARAMETERS:\n\nsignal:\n[streams, values], exactly 2-D. A single value must be shaped [1, 1] (as the demo's t.reshape does); anything that is not 2-D prints a message in the console and sends nothing. Each arrival is one step.\n\nreset (button):\nEmpties the history. The next input fills the whole window, as if the signal had always been at that value, so the output starts AT it rather than climbing from zero: a steady 1.0 comes out as 1.0 from the first frame. The filter starts the same way from its first input.\n\nwindow length (int, 3 to 1001, default 31):\nHow many recent samples each fit spans. An even number is raised by one.\n\npolynomial order (int, 1 to 8, default 3):\nThe degree of the fitted curve; must be below the window length (it is lowered if not). Higher follows sharper shapes and smooths less. Order 1 is a straight line - a plain moving average.\n\nnormalize output (checkbox, default ON):\nScales each row of the result to length 1. That is right for quaternion rows - a smoothed quaternion must be unit length to be a rotation - and WRONG for anything else: a single value becomes +1 or -1. Untick it for ordinary numbers, as in the demo. (Quaternions are smoothed as four plain numbers, so a sign flip between q and -q in the input will make a mess of them - keep the signs consistent first.)\n\nChanging any of these starts the filter again with an empty history.\n\nOUTPUTS:\n\nfiltered:\n[streams, values], the fitted values half a window ago.\n\nREADING THE DEMO:\nDrag window length on the node: at 31 the line is smooth but a quarter of a second late and the spikes are spread into small bumps; at 7 it is nearly on time but smooths less and lets a third of each spike through.\n\nRELATED:\nfilter and one_euro_filter are moving-average style smoothers with less delay. t.smart_clamp_kf rejects spikes instead of spreading them."
                 },
                 "3": {
                     "name": "p",
@@ -919,8 +919,8 @@
                     "name": "help_link",
                     "id": 792,
                     "position_x": 30,
-                    "position_y": 790,
-                    "width": 53,
+                    "position_y": 824,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -931,9 +931,9 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 120,
-                    "position_y": 790,
-                    "width": 109,
+                    "position_x": 100,
+                    "position_y": 824,
+                    "width": 110,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -944,9 +944,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 279,
-                    "position_y": 790,
-                    "width": 115,
+                    "position_x": 226,
+                    "position_y": 824,
+                    "width": 117,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -957,8 +957,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 446,
-                    "position_y": 790,
+                    "position_x": 359,
+                    "position_y": 824,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -971,8 +971,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 940,
-                    "position_x": 794,
-                    "position_y": 834,
+                    "position_x": 30,
+                    "position_y": 790,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -996,7 +996,7 @@
                     "name": "close",
                     "id": 977,
                     "position_x": 24,
-                    "position_y": 864,
+                    "position_y": 898,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

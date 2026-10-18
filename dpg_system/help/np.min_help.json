@@ -222,7 +222,7 @@
             }
         },
         "1": {
-            "height": 968,
+            "height": 1002,
             "width": 1754,
             "position": [
                 100,
@@ -289,7 +289,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Caps an array from above: every value larger than the limit is\nreplaced by the limit, and smaller values pass untouched.\n\nIt is a clamp on ONE side - the top - applied to every element\nseparately, so the output has the same shape as the input. Use it to stop\na level from overshooting, or to cut a curve's peaks off flat.\n\nTHE NAME READS BACKWARDS:\nnp.min does not find the smallest value of the array. It takes, for every\nelement, the smaller of that element and the limit (numpy calls this\nnp.minimum) - which keeps the result at or BELOW the limit, so the limit\nis a ceiling. To find the smallest value in an array, the reduction, use\nnp.amin.\n\nSYNTAX:\nnp.min <limit: float>\nDefault 0.0 - so a bare np.min turns every positive value into 0.\n\nEXAMPLE:\nnp.min 0.5\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one; a single number comes out as a\none-value array). Every input is capped and sent - this is the only\ninlet, and the only thing that makes the node send.\n\nmin (drag float on the node):\nThe ceiling. A property, not an inlet: it cannot be driven from the\npatch, and changing it does NOT send by itself - the next array uses it.\nIn the demo make_sine re-sends the wave ten times a second.\n\nOUTPUTS:\n\nout array:\nThe capped array, the same shape as the input.\n\nREADING THE DEMO:\nThe plot draws the wave and the capped copy over each other. Below the\nlimit they are one line; above it the wave rises to 1 while the copy runs\nflat at 0.5. The bottom half of the wave is left alone. np.amin, below,\nreads the same wave and sends ONE number, its lowest value (-1): that is\nthe reduction the name might make you expect.\n\nRELATED:\nnp.max is the floor, the other side. np.clip limits both sides at once.\nnp.amin finds the smallest value. The min node takes the smaller of its\ninput and an operand on an inlet, element by element, so its limit can be\ndriven from the patch. t.minimum is the PyTorch version (the smaller of\ntwo tensors, element by element).",
+                            "value": "Caps an array from above: every value larger than the limit is replaced by the limit, and smaller values pass untouched.\n\nIt is a clamp on ONE side - the top - applied to every element separately, so the output has the same shape as the input. Use it to stop a level from overshooting, or to cut a curve's peaks off flat.\n\nTHE NAME READS BACKWARDS:\nnp.min does not find the smallest value of the array. It takes, for every element, the smaller of that element and the limit (numpy calls this np.minimum) - which keeps the result at or BELOW the limit, so the limit is a ceiling. To find the smallest value in an array, the reduction, use np.amin.\n\nSYNTAX:\nnp.min <limit: float>\nDefault 0.0 - so a bare np.min turns every positive value into 0.\n\nEXAMPLE:\nnp.min 0.5\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one; a single number comes out as a one-value array). Every input is capped and sent - this is the only inlet, and the only thing that makes the node send.\n\nmin (drag float on the node):\nThe ceiling. A property, not an inlet: it cannot be driven from the patch, and changing it does NOT send by itself - the next array uses it. In the demo make_sine re-sends the wave ten times a second.\n\nOUTPUTS:\n\nout array:\nThe capped array, the same shape as the input.\n\nREADING THE DEMO:\nThe plot draws the wave and the capped copy over each other. Below the limit they are one line; above it the wave rises to 1 while the copy runs flat at 0.5. The bottom half of the wave is left alone. np.amin, below, reads the same wave and sends ONE number, its lowest value (-1): that is the reduction the name might make you expect.\n\nRELATED:\nnp.max is the floor, the other side. np.clip limits both sides at once. np.amin finds the smallest value. The min node takes the smaller of its input and an operand on an inlet, element by element, so its limit can be driven from the patch. t.minimum is the PyTorch version (the smaller of two tensors, element by element).",
                             "value_type": "str"
                         },
                         "1": {
@@ -313,7 +313,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Caps an array from above: every value larger than the limit is\nreplaced by the limit, and smaller values pass untouched.\n\nIt is a clamp on ONE side - the top - applied to every element\nseparately, so the output has the same shape as the input. Use it to stop\na level from overshooting, or to cut a curve's peaks off flat.\n\nTHE NAME READS BACKWARDS:\nnp.min does not find the smallest value of the array. It takes, for every\nelement, the smaller of that element and the limit (numpy calls this\nnp.minimum) - which keeps the result at or BELOW the limit, so the limit\nis a ceiling. To find the smallest value in an array, the reduction, use\nnp.amin.\n\nSYNTAX:\nnp.min <limit: float>\nDefault 0.0 - so a bare np.min turns every positive value into 0.\n\nEXAMPLE:\nnp.min 0.5\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one; a single number comes out as a\none-value array). Every input is capped and sent - this is the only\ninlet, and the only thing that makes the node send.\n\nmin (drag float on the node):\nThe ceiling. A property, not an inlet: it cannot be driven from the\npatch, and changing it does NOT send by itself - the next array uses it.\nIn the demo make_sine re-sends the wave ten times a second.\n\nOUTPUTS:\n\nout array:\nThe capped array, the same shape as the input.\n\nREADING THE DEMO:\nThe plot draws the wave and the capped copy over each other. Below the\nlimit they are one line; above it the wave rises to 1 while the copy runs\nflat at 0.5. The bottom half of the wave is left alone. np.amin, below,\nreads the same wave and sends ONE number, its lowest value (-1): that is\nthe reduction the name might make you expect.\n\nRELATED:\nnp.max is the floor, the other side. np.clip limits both sides at once.\nnp.amin finds the smallest value. The min node takes the smaller of its\ninput and an operand on an inlet, element by element, so its limit can be\ndriven from the patch. t.minimum is the PyTorch version (the smaller of\ntwo tensors, element by element)."
+                    "text": "Caps an array from above: every value larger than the limit is replaced by the limit, and smaller values pass untouched.\n\nIt is a clamp on ONE side - the top - applied to every element separately, so the output has the same shape as the input. Use it to stop a level from overshooting, or to cut a curve's peaks off flat.\n\nTHE NAME READS BACKWARDS:\nnp.min does not find the smallest value of the array. It takes, for every element, the smaller of that element and the limit (numpy calls this np.minimum) - which keeps the result at or BELOW the limit, so the limit is a ceiling. To find the smallest value in an array, the reduction, use np.amin.\n\nSYNTAX:\nnp.min <limit: float>\nDefault 0.0 - so a bare np.min turns every positive value into 0.\n\nEXAMPLE:\nnp.min 0.5\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one; a single number comes out as a one-value array). Every input is capped and sent - this is the only inlet, and the only thing that makes the node send.\n\nmin (drag float on the node):\nThe ceiling. A property, not an inlet: it cannot be driven from the patch, and changing it does NOT send by itself - the next array uses it. In the demo make_sine re-sends the wave ten times a second.\n\nOUTPUTS:\n\nout array:\nThe capped array, the same shape as the input.\n\nREADING THE DEMO:\nThe plot draws the wave and the capped copy over each other. Below the limit they are one line; above it the wave rises to 1 while the copy runs flat at 0.5. The bottom half of the wave is left alone. np.amin, below, reads the same wave and sends ONE number, its lowest value (-1): that is the reduction the name might make you expect.\n\nRELATED:\nnp.max is the floor, the other side. np.clip limits both sides at once. np.amin finds the smallest value. The min node takes the smaller of its input and an operand on an inlet, element by element, so its limit can be driven from the patch. t.minimum is the PyTorch version (the smaller of two tensors, element by element)."
                 },
                 "3": {
                     "name": "p",
@@ -636,8 +636,8 @@
                     "name": "help_link",
                     "id": 792,
                     "position_x": 30,
-                    "position_y": 790,
-                    "width": 53,
+                    "position_y": 824,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -648,8 +648,8 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 120,
-                    "position_y": 790,
+                    "position_x": 100,
+                    "position_y": 824,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -661,8 +661,8 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 217,
-                    "position_y": 790,
+                    "position_x": 176,
+                    "position_y": 824,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -674,8 +674,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 314,
-                    "position_y": 790,
+                    "position_x": 252,
+                    "position_y": 824,
                     "width": 35,
                     "height": 44,
                     "visibility": "show_all",
@@ -687,9 +687,9 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 381,
-                    "position_y": 790,
-                    "width": 72,
+                    "position_x": 303,
+                    "position_y": 824,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -701,8 +701,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 977,
-                    "position_x": 556,
-                    "position_y": 834,
+                    "position_x": 30,
+                    "position_y": 790,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -726,7 +726,7 @@
                     "name": "close",
                     "id": 1014,
                     "position_x": 24,
-                    "position_y": 864,
+                    "position_y": 898,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

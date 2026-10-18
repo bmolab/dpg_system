@@ -716,7 +716,7 @@
             }
         },
         "1": {
-            "height": 1411,
+            "height": 1445,
             "width": 1949,
             "position": [
                 100,
@@ -783,7 +783,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Breaks each joint's movement into timescales: for every joint and every\nband, how much that joint turned this frame once the turning is smoothed\ndown to that band.\n\nUse it on a whole pose stream to tell slow movement from fast in one\nstep - the swing of an arm and the tremor in it come out as different\nnumbers. One frame in gives [joints, bands, 3] out.\n\nHOW IT WORKS:\nEach joint's rotation is turned into a form that can be filtered (the\nfirst two rows of its rotation matrix) and passed through a bank of\nLOWPASS filters, one per band, each cutting off at its band's upper\nedge. So band 1 keeps everything below about 8 Hz (nearly the raw\nmovement) and the last keeps only the slowest drift. Each filtered copy\nis turned back into a rotation, and the node reports the rotation from\nlast frame's copy to this frame's, as an axis-angle vector (its length\nis the angle in radians), multiplied by that band's GAIN. Because the\nbands are lowpass, a fast tremor shows only in the first bands, while a\nslow sway shows in all of them.\n\nThe gains make the slow bands, which move very little per frame, big\nenough to see: by default 2.25, 2.25, 3.375, 5.06, 7.59, 11.39, 17.09\nfrom the fastest band to the slowest (1.5 times more per band). Send\nthe message band_gains followed by one number per band to set your\nown. The band edges follow t.filter_bank's rules: 'number of bands'\ncounts edges, so the default 8 gives 7 bands, highest first; report_bands\nprints them.\n\nSYNTAX:\nt.rotation_band_diff\nNo arguments.\n\nEXAMPLE:\nt.rotation_band_diff\n\nINPUTS and PARAMETERS:\n\nrotations:\n[joints, 3] axis-angle or [joints, 4] quaternions (w first). A flat\nlist of joints is split by 'input format'. Each arrival is one frame.\nThe first frame (and the first after reset) sends nothing: there is no\nprevious frame to compare with.\n\nreset (button):\nEmpties the filters and forgets the previous frame. Unlike\nt.filter_bank's reset it does not pre-fill the filters.\n\ninput format (menu: auto, axis-angle, quaternion):\nHow a FLAT input is split into joints: every 3 or every 4 numbers. auto\ndecides from the length, and gives up (with a console message) when the\nlength divides by both 3 and 4 - set it explicitly for SMPL poses of 72\nvalues.\n\nsample freq (Hz, default 60): the rate frames really arrive at.\n\nnumber of bands (default 8): band edges, one more than the bands.\n\nlow / high (Hz, defaults 0.01 and 8): the range of the band edges.\n\norder (1 to 8, default 1): how steeply each lowpass cuts.\n\nband scaling (log or linear), overlap fraction (default 0): as on\nt.filter_bank.\n\nChanging a setting rebuilds the bank (and the gains return to default\nif the number of bands no longer matches them).\n\nOUTPUTS:\n\nbanded rotation diffs:\n[joints, bands, 3]: per joint and band, this frame's turn as an\naxis-angle vector, times the band's gain.\n\nREADING THE DEMO:\nnp.linalg.norm (axis 2) turns each vector into its length - how much the\njoint turned in that band this frame - and heat_scroll draws the 7\nbands as 7 rows scrolling left, the fastest band at the top. The jitter\nand the glitches light up the top rows; the slow turning back and forth\nglows in every row and fades where the turn reverses; the quick turns\nflash through all of them.\n\nRELATED:\nt.filter_bank is the general band splitter for ordinary values.\nquaternion_diff_and_axis measures frame-to-frame rotation without bands.",
+                            "value": "Breaks each joint's movement into timescales: for every joint and every band, how much that joint turned this frame once the turning is smoothed down to that band.\n\nUse it on a whole pose stream to tell slow movement from fast in one step - the swing of an arm and the tremor in it come out as different numbers. One frame in gives [joints, bands, 3] out.\n\nHOW IT WORKS:\nEach joint's rotation is turned into a form that can be filtered (the first two rows of its rotation matrix) and passed through a bank of LOWPASS filters, one per band, each cutting off at its band's upper edge. So band 1 keeps everything below about 8 Hz (nearly the raw movement) and the last keeps only the slowest drift. Each filtered copy is turned back into a rotation, and the node reports the rotation from last frame's copy to this frame's, as an axis-angle vector (its length is the angle in radians), multiplied by that band's GAIN. Because the bands are lowpass, a fast tremor shows only in the first bands, while a slow sway shows in all of them.\n\nThe gains make the slow bands, which move very little per frame, big enough to see: by default 2.25, 2.25, 3.375, 5.06, 7.59, 11.39, 17.09 from the fastest band to the slowest (1.5 times more per band). Send the message band_gains followed by one number per band to set your own. The band edges follow t.filter_bank's rules: 'number of bands' counts edges, so the default 8 gives 7 bands, highest first; report_bands prints them.\n\nSYNTAX:\nt.rotation_band_diff\nNo arguments.\n\nEXAMPLE:\nt.rotation_band_diff\n\nINPUTS and PARAMETERS:\n\nrotations:\n[joints, 3] axis-angle or [joints, 4] quaternions (w first). A flat list of joints is split by 'input format'. Each arrival is one frame. The first frame (and the first after reset) sends nothing: there is no previous frame to compare with.\n\nreset (button):\nEmpties the filters and forgets the previous frame. Unlike t.filter_bank's reset it does not pre-fill the filters.\n\ninput format (menu: auto, axis-angle, quaternion):\nHow a FLAT input is split into joints: every 3 or every 4 numbers. auto decides from the length, and gives up (with a console message) when the length divides by both 3 and 4 - set it explicitly for SMPL poses of 72 values.\n\nsample freq (Hz, default 60): the rate frames really arrive at.\n\nnumber of bands (default 8): band edges, one more than the bands.\n\nlow / high (Hz, defaults 0.01 and 8): the range of the band edges.\n\norder (1 to 8, default 1): how steeply each lowpass cuts.\n\nband scaling (log or linear), overlap fraction (default 0): as on t.filter_bank.\n\nChanging a setting rebuilds the bank (and the gains return to default if the number of bands no longer matches them).\n\nOUTPUTS:\n\nbanded rotation diffs:\n[joints, bands, 3]: per joint and band, this frame's turn as an axis-angle vector, times the band's gain.\n\nREADING THE DEMO:\nnp.linalg.norm (axis 2) turns each vector into its length - how much the joint turned in that band this frame - and heat_scroll draws the 7 bands as 7 rows scrolling left, the fastest band at the top. The jitter and the glitches light up the top rows; the slow turning back and forth glows in every row and fades where the turn reverses; the quick turns flash through all of them.\n\nRELATED:\nt.filter_bank is the general band splitter for ordinary values. quaternion_diff_and_axis measures frame-to-frame rotation without bands.",
                             "value_type": "str"
                         },
                         "1": {
@@ -807,7 +807,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Breaks each joint's movement into timescales: for every joint and every\nband, how much that joint turned this frame once the turning is smoothed\ndown to that band.\n\nUse it on a whole pose stream to tell slow movement from fast in one\nstep - the swing of an arm and the tremor in it come out as different\nnumbers. One frame in gives [joints, bands, 3] out.\n\nHOW IT WORKS:\nEach joint's rotation is turned into a form that can be filtered (the\nfirst two rows of its rotation matrix) and passed through a bank of\nLOWPASS filters, one per band, each cutting off at its band's upper\nedge. So band 1 keeps everything below about 8 Hz (nearly the raw\nmovement) and the last keeps only the slowest drift. Each filtered copy\nis turned back into a rotation, and the node reports the rotation from\nlast frame's copy to this frame's, as an axis-angle vector (its length\nis the angle in radians), multiplied by that band's GAIN. Because the\nbands are lowpass, a fast tremor shows only in the first bands, while a\nslow sway shows in all of them.\n\nThe gains make the slow bands, which move very little per frame, big\nenough to see: by default 2.25, 2.25, 3.375, 5.06, 7.59, 11.39, 17.09\nfrom the fastest band to the slowest (1.5 times more per band). Send\nthe message band_gains followed by one number per band to set your\nown. The band edges follow t.filter_bank's rules: 'number of bands'\ncounts edges, so the default 8 gives 7 bands, highest first; report_bands\nprints them.\n\nSYNTAX:\nt.rotation_band_diff\nNo arguments.\n\nEXAMPLE:\nt.rotation_band_diff\n\nINPUTS and PARAMETERS:\n\nrotations:\n[joints, 3] axis-angle or [joints, 4] quaternions (w first). A flat\nlist of joints is split by 'input format'. Each arrival is one frame.\nThe first frame (and the first after reset) sends nothing: there is no\nprevious frame to compare with.\n\nreset (button):\nEmpties the filters and forgets the previous frame. Unlike\nt.filter_bank's reset it does not pre-fill the filters.\n\ninput format (menu: auto, axis-angle, quaternion):\nHow a FLAT input is split into joints: every 3 or every 4 numbers. auto\ndecides from the length, and gives up (with a console message) when the\nlength divides by both 3 and 4 - set it explicitly for SMPL poses of 72\nvalues.\n\nsample freq (Hz, default 60): the rate frames really arrive at.\n\nnumber of bands (default 8): band edges, one more than the bands.\n\nlow / high (Hz, defaults 0.01 and 8): the range of the band edges.\n\norder (1 to 8, default 1): how steeply each lowpass cuts.\n\nband scaling (log or linear), overlap fraction (default 0): as on\nt.filter_bank.\n\nChanging a setting rebuilds the bank (and the gains return to default\nif the number of bands no longer matches them).\n\nOUTPUTS:\n\nbanded rotation diffs:\n[joints, bands, 3]: per joint and band, this frame's turn as an\naxis-angle vector, times the band's gain.\n\nREADING THE DEMO:\nnp.linalg.norm (axis 2) turns each vector into its length - how much the\njoint turned in that band this frame - and heat_scroll draws the 7\nbands as 7 rows scrolling left, the fastest band at the top. The jitter\nand the glitches light up the top rows; the slow turning back and forth\nglows in every row and fades where the turn reverses; the quick turns\nflash through all of them.\n\nRELATED:\nt.filter_bank is the general band splitter for ordinary values.\nquaternion_diff_and_axis measures frame-to-frame rotation without bands."
+                    "text": "Breaks each joint's movement into timescales: for every joint and every band, how much that joint turned this frame once the turning is smoothed down to that band.\n\nUse it on a whole pose stream to tell slow movement from fast in one step - the swing of an arm and the tremor in it come out as different numbers. One frame in gives [joints, bands, 3] out.\n\nHOW IT WORKS:\nEach joint's rotation is turned into a form that can be filtered (the first two rows of its rotation matrix) and passed through a bank of LOWPASS filters, one per band, each cutting off at its band's upper edge. So band 1 keeps everything below about 8 Hz (nearly the raw movement) and the last keeps only the slowest drift. Each filtered copy is turned back into a rotation, and the node reports the rotation from last frame's copy to this frame's, as an axis-angle vector (its length is the angle in radians), multiplied by that band's GAIN. Because the bands are lowpass, a fast tremor shows only in the first bands, while a slow sway shows in all of them.\n\nThe gains make the slow bands, which move very little per frame, big enough to see: by default 2.25, 2.25, 3.375, 5.06, 7.59, 11.39, 17.09 from the fastest band to the slowest (1.5 times more per band). Send the message band_gains followed by one number per band to set your own. The band edges follow t.filter_bank's rules: 'number of bands' counts edges, so the default 8 gives 7 bands, highest first; report_bands prints them.\n\nSYNTAX:\nt.rotation_band_diff\nNo arguments.\n\nEXAMPLE:\nt.rotation_band_diff\n\nINPUTS and PARAMETERS:\n\nrotations:\n[joints, 3] axis-angle or [joints, 4] quaternions (w first). A flat list of joints is split by 'input format'. Each arrival is one frame. The first frame (and the first after reset) sends nothing: there is no previous frame to compare with.\n\nreset (button):\nEmpties the filters and forgets the previous frame. Unlike t.filter_bank's reset it does not pre-fill the filters.\n\ninput format (menu: auto, axis-angle, quaternion):\nHow a FLAT input is split into joints: every 3 or every 4 numbers. auto decides from the length, and gives up (with a console message) when the length divides by both 3 and 4 - set it explicitly for SMPL poses of 72 values.\n\nsample freq (Hz, default 60): the rate frames really arrive at.\n\nnumber of bands (default 8): band edges, one more than the bands.\n\nlow / high (Hz, defaults 0.01 and 8): the range of the band edges.\n\norder (1 to 8, default 1): how steeply each lowpass cuts.\n\nband scaling (log or linear), overlap fraction (default 0): as on t.filter_bank.\n\nChanging a setting rebuilds the bank (and the gains return to default if the number of bands no longer matches them).\n\nOUTPUTS:\n\nbanded rotation diffs:\n[joints, bands, 3]: per joint and band, this frame's turn as an axis-angle vector, times the band's gain.\n\nREADING THE DEMO:\nnp.linalg.norm (axis 2) turns each vector into its length - how much the joint turned in that band this frame - and heat_scroll draws the 7 bands as 7 rows scrolling left, the fastest band at the top. The jitter and the glitches light up the top rows; the slow turning back and forth glows in every row and fades where the turn reverses; the quick turns flash through all of them.\n\nRELATED:\nt.filter_bank is the general band splitter for ordinary values. quaternion_diff_and_axis measures frame-to-frame rotation without bands."
                 },
                 "3": {
                     "name": "p",
@@ -1071,8 +1071,8 @@
                     "name": "help_link",
                     "id": 607,
                     "position_x": 30,
-                    "position_y": 560,
-                    "width": 96,
+                    "position_y": 594,
+                    "width": 98,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1083,9 +1083,9 @@
                 "11": {
                     "name": "help_link",
                     "id": 644,
-                    "position_x": 174,
-                    "position_y": 560,
-                    "width": 164,
+                    "position_x": 144,
+                    "position_y": 594,
+                    "width": 167,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1096,9 +1096,9 @@
                 "12": {
                     "name": "help_link",
                     "id": 681,
-                    "position_x": 402,
-                    "position_y": 560,
-                    "width": 90,
+                    "position_x": 327,
+                    "position_y": 594,
+                    "width": 92,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1110,7 +1110,7 @@
                     "name": "help_link",
                     "id": 718,
                     "position_x": 30,
-                    "position_y": 604,
+                    "position_y": 638,
                     "width": 84,
                     "height": 44,
                     "visibility": "show_all",
@@ -1123,8 +1123,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 755,
-                    "position_x": 794,
-                    "position_y": 604,
+                    "position_x": 30,
+                    "position_y": 560,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -1148,7 +1148,7 @@
                     "name": "close",
                     "id": 792,
                     "position_x": 24,
-                    "position_y": 678,
+                    "position_y": 712,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

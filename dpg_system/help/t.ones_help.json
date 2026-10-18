@@ -1,5 +1,5 @@
 {
-    "height": 768,
+    "height": 802,
     "width": 1517,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor filled with ones, in the shape you give it.\n\nMultiplying by one changes nothing, which makes ones the neutral start\nfor many things: times a number they become a tensor full of that\nnumber, and as weights or a mask they let everything through until you\nchange some of them.\n\nSYNTAX:\nt.ones <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.ones 8 is a row of 8, t.ones 4 4 a 4\nby 4 tensor. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.ones 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send.\n\nshape (text, also an inlet):\nThe dimensions, typed as numbers separated by spaces or commas ('8',\n'4 4', '[2, 3, 4]'). A list or tensor of numbers, or a single number,\nsent into the inlet works too. A new shape does not send; the next\nclick uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.ones 8 int64.\nOUTPUTS:\n\ntensor of ones:\nThe tensor. A bool dtype gives all true.\n\nREADING THE DEMO:\nThe top list is the tensor itself: eight ones. Below, '*' scales it by\nthe float. Drag the float: 't bang float' sets the multiplier first and\nTHEN clicks t.ones, so you get a row of whatever number you drag to.\n\nRELATED:\nt.zeros is the same with every value 0. t.full makes a tensor of any one\nvalue in a single step - the same result as ones times a number.\nt.ones_like takes its shape from another tensor. np.ones is the NumPy\nversion.",
+                    "value": "Makes a tensor filled with ones, in the shape you give it.\n\nMultiplying by one changes nothing, which makes ones the neutral start for many things: times a number they become a tensor full of that number, and as weights or a mask they let everything through until you change some of them.\n\nSYNTAX:\nt.ones <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.ones 8 is a row of 8, t.ones 4 4 a 4\nby 4 tensor. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.ones 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, to send the tensor. Nothing else makes the node send.\n\nshape (text, also an inlet):\nThe dimensions, typed as numbers separated by spaces or commas ('8', '4 4', '[2, 3, 4]'). A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send; the next click uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.ones 8 int64.\nOUTPUTS:\n\ntensor of ones:\nThe tensor. A bool dtype gives all true.\n\nREADING THE DEMO:\nThe top list is the tensor itself: eight ones. Below, '*' scales it by the float. Drag the float: 't bang float' sets the multiplier first and THEN clicks t.ones, so you get a row of whatever number you drag to.\n\nRELATED:\nt.zeros is the same with every value 0. t.full makes a tensor of any one value in a single step - the same result as ones times a number. t.ones_like takes its shape from another tensor. np.ones is the NumPy version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor filled with ones, in the shape you give it.\n\nMultiplying by one changes nothing, which makes ones the neutral start\nfor many things: times a number they become a tensor full of that\nnumber, and as weights or a mask they let everything through until you\nchange some of them.\n\nSYNTAX:\nt.ones <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.ones 8 is a row of 8, t.ones 4 4 a 4\nby 4 tensor. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.ones 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send.\n\nshape (text, also an inlet):\nThe dimensions, typed as numbers separated by spaces or commas ('8',\n'4 4', '[2, 3, 4]'). A list or tensor of numbers, or a single number,\nsent into the inlet works too. A new shape does not send; the next\nclick uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.ones 8 int64.\nOUTPUTS:\n\ntensor of ones:\nThe tensor. A bool dtype gives all true.\n\nREADING THE DEMO:\nThe top list is the tensor itself: eight ones. Below, '*' scales it by\nthe float. Drag the float: 't bang float' sets the multiplier first and\nTHEN clicks t.ones, so you get a row of whatever number you drag to.\n\nRELATED:\nt.zeros is the same with every value 0. t.full makes a tensor of any one\nvalue in a single step - the same result as ones times a number.\nt.ones_like takes its shape from another tensor. np.ones is the NumPy\nversion."
+            "text": "Makes a tensor filled with ones, in the shape you give it.\n\nMultiplying by one changes nothing, which makes ones the neutral start for many things: times a number they become a tensor full of that number, and as weights or a mask they let everything through until you change some of them.\n\nSYNTAX:\nt.ones <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.ones 8 is a row of 8, t.ones 4 4 a 4\nby 4 tensor. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.ones 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, to send the tensor. Nothing else makes the node send.\n\nshape (text, also an inlet):\nThe dimensions, typed as numbers separated by spaces or commas ('8', '4 4', '[2, 3, 4]'). A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send; the next click uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.ones 8 int64.\nOUTPUTS:\n\ntensor of ones:\nThe tensor. A bool dtype gives all true.\n\nREADING THE DEMO:\nThe top list is the tensor itself: eight ones. Below, '*' scales it by the float. Drag the float: 't bang float' sets the multiplier first and THEN clicks t.ones, so you get a row of whatever number you drag to.\n\nRELATED:\nt.zeros is the same with every value 0. t.full makes a tensor of any one value in a single step - the same result as ones times a number. t.ones_like takes its shape from another tensor. np.ones is the NumPy version."
         },
         "3": {
             "name": "load_bang",
@@ -300,7 +300,7 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 590,
+            "position_y": 624,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -312,9 +312,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 127,
-            "position_y": 590,
-            "width": 53,
+            "position_x": 106,
+            "position_y": 624,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -325,9 +325,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 217,
-            "position_y": 590,
-            "width": 84,
+            "position_x": 176,
+            "position_y": 624,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -338,8 +338,8 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 345,
-            "position_y": 590,
+            "position_x": 277,
+            "position_y": 624,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -352,7 +352,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 431,
+            "position_x": 30,
             "position_y": 590,
             "width": 156,
             "height": 30,
@@ -377,7 +377,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 664,
+            "position_y": 698,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

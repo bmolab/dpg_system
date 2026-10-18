@@ -1,5 +1,5 @@
 {
-    "height": 1278,
+    "height": 1312,
     "width": 1630,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Drops the fractional part of every value in a tensor, keeping the\nwhole-number part: 2.7 becomes 2 and -2.7 becomes -2 - always towards\nzero.\n\nThis is \"the whole part\" in the everyday sense, and the same as\nconverting a float to an integer in most programming languages. Each\nelement is processed on its own, so the output has the shape of the\ninput.\n\nTRUNC AND FLOOR DIFFER FOR NEGATIVES:\nFor positive values trunc and floor agree. For negative values trunc\ngoes UP towards zero (-2.7 becomes -2), floor goes down (-3). So trunc\nis symmetric about zero: -x gives exactly minus what x gives. Around\nzero this makes one step twice as wide as the others - every value from\n-0.99 to 0.99 comes out as 0 - which is easy to see in the demo.\n\nSYNTAX:\nt.trunc\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a\nfloat32 tensor first. Every input is processed and sent - this is the\nonly inlet that makes the node send. An empty tensor sends nothing.\n\nOUTPUTS:\n\noutput:\nThe truncated tensor, the same shape and type as the input - still\nfloats, just with whole-number values. An integer tensor comes back\nunchanged.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.trunc turns it into a\nstaircase that sits UNDER the ramp on the right and ABOVE it on the\nleft - always between the ramp and zero - with a double-width step at 0\nin the middle. The message shows the same sizes either side of zero\ngiving the same sizes back.\n\nRELATED:\nt.frac keeps exactly the part t.trunc throws away: the two add up to\nthe original value. t.floor always goes down, t.ceil always up, t.round\nto the nearest. trunc does the same for numbers and NumPy arrays\n(np.trunc shares its page).",
+                    "value": "Drops the fractional part of every value in a tensor, keeping the whole-number part: 2.7 becomes 2 and -2.7 becomes -2 - always towards zero.\n\nThis is \"the whole part\" in the everyday sense, and the same as converting a float to an integer in most programming languages. Each element is processed on its own, so the output has the shape of the input.\n\nTRUNC AND FLOOR DIFFER FOR NEGATIVES:\nFor positive values trunc and floor agree. For negative values trunc goes UP towards zero (-2.7 becomes -2), floor goes down (-3). So trunc is symmetric about zero: -x gives exactly minus what x gives. Around zero this makes one step twice as wide as the others - every value from -0.99 to 0.99 comes out as 0 - which is easy to see in the demo.\n\nSYNTAX:\nt.trunc\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a float32 tensor first. Every input is processed and sent - this is the only inlet that makes the node send. An empty tensor sends nothing.\n\nOUTPUTS:\n\noutput:\nThe truncated tensor, the same shape and type as the input - still floats, just with whole-number values. An integer tensor comes back unchanged.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.trunc turns it into a staircase that sits UNDER the ramp on the right and ABOVE it on the left - always between the ramp and zero - with a double-width step at 0 in the middle. The message shows the same sizes either side of zero giving the same sizes back.\n\nRELATED:\nt.frac keeps exactly the part t.trunc throws away: the two add up to the original value. t.floor always goes down, t.ceil always up, t.round to the nearest. trunc does the same for numbers and NumPy arrays (np.trunc shares its page).",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Drops the fractional part of every value in a tensor, keeping the\nwhole-number part: 2.7 becomes 2 and -2.7 becomes -2 - always towards\nzero.\n\nThis is \"the whole part\" in the everyday sense, and the same as\nconverting a float to an integer in most programming languages. Each\nelement is processed on its own, so the output has the shape of the\ninput.\n\nTRUNC AND FLOOR DIFFER FOR NEGATIVES:\nFor positive values trunc and floor agree. For negative values trunc\ngoes UP towards zero (-2.7 becomes -2), floor goes down (-3). So trunc\nis symmetric about zero: -x gives exactly minus what x gives. Around\nzero this makes one step twice as wide as the others - every value from\n-0.99 to 0.99 comes out as 0 - which is easy to see in the demo.\n\nSYNTAX:\nt.trunc\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a\nfloat32 tensor first. Every input is processed and sent - this is the\nonly inlet that makes the node send. An empty tensor sends nothing.\n\nOUTPUTS:\n\noutput:\nThe truncated tensor, the same shape and type as the input - still\nfloats, just with whole-number values. An integer tensor comes back\nunchanged.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.trunc turns it into a\nstaircase that sits UNDER the ramp on the right and ABOVE it on the\nleft - always between the ramp and zero - with a double-width step at 0\nin the middle. The message shows the same sizes either side of zero\ngiving the same sizes back.\n\nRELATED:\nt.frac keeps exactly the part t.trunc throws away: the two add up to\nthe original value. t.floor always goes down, t.ceil always up, t.round\nto the nearest. trunc does the same for numbers and NumPy arrays\n(np.trunc shares its page)."
+            "text": "Drops the fractional part of every value in a tensor, keeping the whole-number part: 2.7 becomes 2 and -2.7 becomes -2 - always towards zero.\n\nThis is \"the whole part\" in the everyday sense, and the same as converting a float to an integer in most programming languages. Each element is processed on its own, so the output has the shape of the input.\n\nTRUNC AND FLOOR DIFFER FOR NEGATIVES:\nFor positive values trunc and floor agree. For negative values trunc goes UP towards zero (-2.7 becomes -2), floor goes down (-3). So trunc is symmetric about zero: -x gives exactly minus what x gives. Around zero this makes one step twice as wide as the others - every value from -0.99 to 0.99 comes out as 0 - which is easy to see in the demo.\n\nSYNTAX:\nt.trunc\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a float32 tensor first. Every input is processed and sent - this is the only inlet that makes the node send. An empty tensor sends nothing.\n\nOUTPUTS:\n\noutput:\nThe truncated tensor, the same shape and type as the input - still floats, just with whole-number values. An integer tensor comes back unchanged.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.trunc turns it into a staircase that sits UNDER the ramp on the right and ABOVE it on the left - always between the ramp and zero - with a double-width step at 0 in the middle. The message shows the same sizes either side of zero giving the same sizes back.\n\nRELATED:\nt.frac keeps exactly the part t.trunc throws away: the two add up to the original value. t.floor always goes down, t.ceil always up, t.round to the nearest. trunc does the same for numbers and NumPy arrays (np.trunc shares its page)."
         },
         "3": {
             "name": "metro",
@@ -507,8 +507,8 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 1100,
-            "width": 53,
+            "position_y": 1134,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -519,8 +519,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 120,
-            "position_y": 1100,
+            "position_x": 100,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -532,9 +532,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 217,
-            "position_y": 1100,
-            "width": 53,
+            "position_x": 176,
+            "position_y": 1134,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -545,8 +545,8 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 307,
-            "position_y": 1100,
+            "position_x": 246,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -558,9 +558,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 404,
-            "position_y": 1100,
-            "width": 47,
+            "position_x": 322,
+            "position_y": 1134,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -572,8 +572,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 494,
-            "position_y": 1144,
+            "position_x": 30,
+            "position_y": 1100,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -597,7 +597,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 1174,
+            "position_y": 1208,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -213,7 +213,7 @@
             }
         },
         "1": {
-            "height": 1358,
+            "height": 1392,
             "width": 1750,
             "position": [
                 100,
@@ -280,7 +280,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Counts how many genuinely independent directions a matrix has - its\nrank.\n\nEach row of a matrix is a direction. If one row can be made by adding up\nmultiples of the others, it adds nothing new, and the rank is less than\nthe number of rows. A 3 x 3 matrix of rank 3 reaches every point in 3-D\nspace; rank 2 flattens everything onto a plane, rank 1 onto a line, rank\n0 (all zeros) onto a single point.\n\nReach for it to check whether data is really as many-dimensional as it\nlooks - three sensors that always move together are rank 1, not 3 - or\nwhether a square matrix can be inverted (only at full rank).\n\nLOOKS CAN DECEIVE:\nA smooth picture can have rank 1: every row of an outer product is the\nsame row scaled, however many rows there are. Random noise of the same\nsize has full rank.\n\nSYNTAX:\nnp.linalg.matrix_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nAny 2-D array - it need not be square. Each one that arrives is measured\nand sent. A 1-D list gives 1 (or 0 if it is all zeros). A stack of\nmatrices gives one rank each.\n\nNEARLY DEPENDENT ROWS:\nThe count uses a small tolerance scaled to the matrix (numpy's singular\nvalue test), so rows that are almost but not exactly parallel still\ncount as independent. Rows that are exact multiples count as one.\n\nOUTPUTS:\n\nmatrix rank:\nThe rank, a whole number.\n\nREADING THE DEMO:\nTop: a 3 x 3 matrix to edit, starting as the identity - rank 3. Type\n1 0 0 into its second row so it copies the first: rank 2. Make all three\nrows the same: rank 1. Press zero on the vector: rank 0.\nBottom left: an 8 x 8 outer product of two ramps (made in make_outer) -\na full picture, but rank 1. Bottom right: 8 x 8 random noise - rank 8.\nClick np.rand for new noise; the rank stays 8.\n\nRELATED:\nnp.linalg.det is 0 exactly when a square matrix is below full rank.\nnp.outer always makes rank-1 matrices. np.linalg.solve needs full rank.\nt.linalg.svd gives the singular values the rank is counted from.",
+                            "value": "Counts how many genuinely independent directions a matrix has - its rank.\n\nEach row of a matrix is a direction. If one row can be made by adding up multiples of the others, it adds nothing new, and the rank is less than the number of rows. A 3 x 3 matrix of rank 3 reaches every point in 3-D space; rank 2 flattens everything onto a plane, rank 1 onto a line, rank 0 (all zeros) onto a single point.\n\nReach for it to check whether data is really as many-dimensional as it looks - three sensors that always move together are rank 1, not 3 - or whether a square matrix can be inverted (only at full rank).\n\nLOOKS CAN DECEIVE:\nA smooth picture can have rank 1: every row of an outer product is the same row scaled, however many rows there are. Random noise of the same size has full rank.\n\nSYNTAX:\nnp.linalg.matrix_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nAny 2-D array - it need not be square. Each one that arrives is measured and sent. A 1-D list gives 1 (or 0 if it is all zeros). A stack of matrices gives one rank each.\n\nNEARLY DEPENDENT ROWS:\nThe count uses a small tolerance scaled to the matrix (numpy's singular value test), so rows that are almost but not exactly parallel still count as independent. Rows that are exact multiples count as one.\n\nOUTPUTS:\n\nmatrix rank:\nThe rank, a whole number.\n\nREADING THE DEMO:\nTop: a 3 x 3 matrix to edit, starting as the identity - rank 3. Type 1 0 0 into its second row so it copies the first: rank 2. Make all three rows the same: rank 1. Press zero on the vector: rank 0.\nBottom left: an 8 x 8 outer product of two ramps (made in make_outer) - a full picture, but rank 1. Bottom right: 8 x 8 random noise - rank 8. Click np.rand for new noise; the rank stays 8.\n\nRELATED:\nnp.linalg.det is 0 exactly when a square matrix is below full rank. np.outer always makes rank-1 matrices. np.linalg.solve needs full rank. t.linalg.svd gives the singular values the rank is counted from.",
                             "value_type": "str"
                         },
                         "1": {
@@ -304,7 +304,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Counts how many genuinely independent directions a matrix has - its\nrank.\n\nEach row of a matrix is a direction. If one row can be made by adding up\nmultiples of the others, it adds nothing new, and the rank is less than\nthe number of rows. A 3 x 3 matrix of rank 3 reaches every point in 3-D\nspace; rank 2 flattens everything onto a plane, rank 1 onto a line, rank\n0 (all zeros) onto a single point.\n\nReach for it to check whether data is really as many-dimensional as it\nlooks - three sensors that always move together are rank 1, not 3 - or\nwhether a square matrix can be inverted (only at full rank).\n\nLOOKS CAN DECEIVE:\nA smooth picture can have rank 1: every row of an outer product is the\nsame row scaled, however many rows there are. Random noise of the same\nsize has full rank.\n\nSYNTAX:\nnp.linalg.matrix_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nAny 2-D array - it need not be square. Each one that arrives is measured\nand sent. A 1-D list gives 1 (or 0 if it is all zeros). A stack of\nmatrices gives one rank each.\n\nNEARLY DEPENDENT ROWS:\nThe count uses a small tolerance scaled to the matrix (numpy's singular\nvalue test), so rows that are almost but not exactly parallel still\ncount as independent. Rows that are exact multiples count as one.\n\nOUTPUTS:\n\nmatrix rank:\nThe rank, a whole number.\n\nREADING THE DEMO:\nTop: a 3 x 3 matrix to edit, starting as the identity - rank 3. Type\n1 0 0 into its second row so it copies the first: rank 2. Make all three\nrows the same: rank 1. Press zero on the vector: rank 0.\nBottom left: an 8 x 8 outer product of two ramps (made in make_outer) -\na full picture, but rank 1. Bottom right: 8 x 8 random noise - rank 8.\nClick np.rand for new noise; the rank stays 8.\n\nRELATED:\nnp.linalg.det is 0 exactly when a square matrix is below full rank.\nnp.outer always makes rank-1 matrices. np.linalg.solve needs full rank.\nt.linalg.svd gives the singular values the rank is counted from."
+                    "text": "Counts how many genuinely independent directions a matrix has - its rank.\n\nEach row of a matrix is a direction. If one row can be made by adding up multiples of the others, it adds nothing new, and the rank is less than the number of rows. A 3 x 3 matrix of rank 3 reaches every point in 3-D space; rank 2 flattens everything onto a plane, rank 1 onto a line, rank 0 (all zeros) onto a single point.\n\nReach for it to check whether data is really as many-dimensional as it looks - three sensors that always move together are rank 1, not 3 - or whether a square matrix can be inverted (only at full rank).\n\nLOOKS CAN DECEIVE:\nA smooth picture can have rank 1: every row of an outer product is the same row scaled, however many rows there are. Random noise of the same size has full rank.\n\nSYNTAX:\nnp.linalg.matrix_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput:\nAny 2-D array - it need not be square. Each one that arrives is measured and sent. A 1-D list gives 1 (or 0 if it is all zeros). A stack of matrices gives one rank each.\n\nNEARLY DEPENDENT ROWS:\nThe count uses a small tolerance scaled to the matrix (numpy's singular value test), so rows that are almost but not exactly parallel still count as independent. Rows that are exact multiples count as one.\n\nOUTPUTS:\n\nmatrix rank:\nThe rank, a whole number.\n\nREADING THE DEMO:\nTop: a 3 x 3 matrix to edit, starting as the identity - rank 3. Type 1 0 0 into its second row so it copies the first: rank 2. Make all three rows the same: rank 1. Press zero on the vector: rank 0.\nBottom left: an 8 x 8 outer product of two ramps (made in make_outer) - a full picture, but rank 1. Bottom right: 8 x 8 random noise - rank 8. Click np.rand for new noise; the rank stays 8.\n\nRELATED:\nnp.linalg.det is 0 exactly when a square matrix is below full rank. np.outer always makes rank-1 matrices. np.linalg.solve needs full rank. t.linalg.svd gives the singular values the rank is counted from."
                 },
                 "3": {
                     "name": "load_bang",
@@ -790,8 +790,8 @@
                     "name": "help_link",
                     "id": 940,
                     "position_x": 30,
-                    "position_y": 1180,
-                    "width": 96,
+                    "position_y": 1214,
+                    "width": 98,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -802,8 +802,8 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 174,
-                    "position_y": 1180,
+                    "position_x": 144,
+                    "position_y": 1214,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -815,9 +815,9 @@
                 "21": {
                     "name": "help_link",
                     "id": 1014,
-                    "position_x": 279,
-                    "position_y": 1180,
-                    "width": 109,
+                    "position_x": 226,
+                    "position_y": 1214,
+                    "width": 110,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -828,9 +828,9 @@
                 "22": {
                     "name": "help_link",
                     "id": 1051,
-                    "position_x": 438,
-                    "position_y": 1180,
-                    "width": 90,
+                    "position_x": 352,
+                    "position_y": 1214,
+                    "width": 92,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -842,7 +842,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1088,
-                    "position_x": 584,
+                    "position_x": 30,
                     "position_y": 1180,
                     "width": 156,
                     "height": 30,
@@ -867,7 +867,7 @@
                     "name": "close",
                     "id": 1125,
                     "position_x": 24,
-                    "position_y": 1254,
+                    "position_y": 1288,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

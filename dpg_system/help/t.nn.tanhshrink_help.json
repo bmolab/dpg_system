@@ -1,5 +1,5 @@
 {
-    "height": 1152,
+    "height": 1186,
     "width": 1676,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Subtracts the tanh of every value from the value itself: x minus tanh x.\n\ntanh keeps small values and limits large ones; tanhshrink keeps what tanh\nthrows away. Near zero almost nothing comes through, and far from zero the\nvalue comes through less 1. It is a soft dead zone: small wobbles around\nzero are suppressed smoothly, while large values pass with a constant\noffset.\n\nTHE CURVE:\n0 gives 0, and near zero the curve is very flat (0.5 gives 0.04, 1 gives\n0.24). Further out it straightens into a line parallel to the input, 1\nbelow it on the right and 1 above it on the left (4 gives 3.0007).\nSymmetric about 0.\n\nSYNTAX:\nt.nn.tanhshrink\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.tanh is the part it subtracts. t.nn.softshrink and t.nn.hardshrink\nare dead zones with corners and a width you set.",
+                    "value": "Subtracts the tanh of every value from the value itself: x minus tanh x.\n\ntanh keeps small values and limits large ones; tanhshrink keeps what tanh throws away. Near zero almost nothing comes through, and far from zero the value comes through less 1. It is a soft dead zone: small wobbles around zero are suppressed smoothly, while large values pass with a constant offset.\n\nTHE CURVE:\n0 gives 0, and near zero the curve is very flat (0.5 gives 0.04, 1 gives 0.24). Further out it straightens into a line parallel to the input, 1 below it on the right and 1 above it on the left (4 gives 3.0007). Symmetric about 0.\n\nSYNTAX:\nt.nn.tanhshrink\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -4 to 4; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.tanh is the part it subtracts. t.nn.softshrink and t.nn.hardshrink are dead zones with corners and a width you set.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Subtracts the tanh of every value from the value itself: x minus tanh x.\n\ntanh keeps small values and limits large ones; tanhshrink keeps what tanh\nthrows away. Near zero almost nothing comes through, and far from zero the\nvalue comes through less 1. It is a soft dead zone: small wobbles around\nzero are suppressed smoothly, while large values pass with a constant\noffset.\n\nTHE CURVE:\n0 gives 0, and near zero the curve is very flat (0.5 gives 0.04, 1 gives\n0.24). Further out it straightens into a line parallel to the input, 1\nbelow it on the right and 1 above it on the left (4 gives 3.0007).\nSymmetric about 0.\n\nSYNTAX:\nt.nn.tanhshrink\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.tanh is the part it subtracts. t.nn.softshrink and t.nn.hardshrink\nare dead zones with corners and a width you set."
+            "text": "Subtracts the tanh of every value from the value itself: x minus tanh x.\n\ntanh keeps small values and limits large ones; tanhshrink keeps what tanh throws away. Near zero almost nothing comes through, and far from zero the value comes through less 1. It is a soft dead zone: small wobbles around zero are suppressed smoothly, while large values pass with a constant offset.\n\nTHE CURVE:\n0 gives 0, and near zero the curve is very flat (0.5 gives 0.04, 1 gives 0.24). Further out it straightens into a line parallel to the input, 1 below it on the right and 1 above it on the left (4 gives 3.0007). Symmetric about 0.\n\nSYNTAX:\nt.nn.tanhshrink\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -4 to 4; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.tanh is the part it subtracts. t.nn.softshrink and t.nn.hardshrink are dead zones with corners and a width you set."
         },
         "3": {
             "name": "metro",
@@ -379,8 +379,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 930,
-            "width": 72,
+            "position_y": 964,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -391,9 +391,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 143,
-            "position_y": 930,
-            "width": 109,
+            "position_x": 119,
+            "position_y": 964,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -404,9 +404,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 302,
-            "position_y": 930,
-            "width": 109,
+            "position_x": 245,
+            "position_y": 964,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -418,7 +418,7 @@
             "name": "help_link",
             "id": 866,
             "position_x": 30,
-            "position_y": 974,
+            "position_y": 1008,
             "width": 96,
             "height": 44,
             "visibility": "show_all",
@@ -431,8 +431,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 484,
-            "position_y": 974,
+            "position_x": 30,
+            "position_y": 930,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -456,7 +456,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 1048,
+            "position_y": 1082,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

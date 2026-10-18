@@ -1,5 +1,5 @@
 {
-    "height": 1001,
+    "height": 1035,
     "width": 1696,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a 1-D tensor whose values are spaced evenly in the logarithm.\n\nEach step MULTIPLIES by the same amount instead of adding the same\namount. That is the right spacing for anything that spans several orders\nof magnitude or that we perceive in ratios - frequency, loudness,\nbrightness, a decay time, a learning rate to sweep. Ten evenly spaced\nfrequencies from 20 to 20000 Hz put nearly all of them in the top octave;\nten logarithmically spaced ones put the same number in every decade.\n\nSTART AND STOP ARE POWERS OF TEN:\nThe values run from 10 to the power start up to 10 to the power stop.\nt.logspace 0 2 9 runs from 1 (10 to the 0) to 100 (10 to the 2): 1,\n1.78, 3.16, 5.62, 10, 17.8, 31.6, 56.2, 100. Every value is about 1.78\ntimes the one before, and 10 sits exactly in the middle. Both ends are\nincluded, and steps is the number of values, as in t.linspace. The base\nis always 10 - to go from 20 to 20000 use start 1.301 (the logarithm of\n20) and stop 4.301.\n\nSYNTAX:\nt.logspace <start: float> <stop: float> <steps: int> <dtype> <device>\nDefaults: 0.0, 1.0 and 50, float32 on cpu - that is 50 values from 1 to\n10.\n\nEXAMPLE:\nt.logspace 0 2 9\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the tensor. Changing start,\nstop or steps does not send by itself - the metro in the demo clicks the\nnode 20 times a second.\n\nstart / stop (drag floats):\nThe powers of ten at the two ends.\n\nsteps (drag int):\nHow many values. 0 sends an empty tensor; a negative count is an error.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.logspace 0 2 9 float16.\nOUTPUTS:\n\nlogspace out:\nThe 1-D tensor, steps values long.\n\nREADING THE DEMO:\nBoth strips cover 1 to 100 in 9 values on the same colour scale (0 dark\npurple, 100 yellow). The top one is t.logspace: it stays dark for most of\nits length and brightens only at the end, because the values crowd\ntogether at the bottom of the range and spread out at the top. The\nbottom one is t.linspace 1 100 9 for comparison - a straight ramp. The\nlist shows t.logspace's values. Drag stop on t.logspace down to 1 and the\ntop strip ends at 10, mostly dark purple on this scale.\n\nRELATED:\nt.linspace is the even-difference version. t.arange and t.range take a\nstep size. np.linspace is the NumPy linspace; there is no np.logspace\nnode.",
+                    "value": "Makes a 1-D tensor whose values are spaced evenly in the logarithm.\n\nEach step MULTIPLIES by the same amount instead of adding the same amount. That is the right spacing for anything that spans several orders of magnitude or that we perceive in ratios - frequency, loudness, brightness, a decay time, a learning rate to sweep. Ten evenly spaced frequencies from 20 to 20000 Hz put nearly all of them in the top octave;\nten logarithmically spaced ones put the same number in every decade.\n\nSTART AND STOP ARE POWERS OF TEN:\nThe values run from 10 to the power start up to 10 to the power stop. t.logspace 0 2 9 runs from 1 (10 to the 0) to 100 (10 to the 2): 1, 1.78, 3.16, 5.62, 10, 17.8, 31.6, 56.2, 100. Every value is about 1.78 times the one before, and 10 sits exactly in the middle. Both ends are included, and steps is the number of values, as in t.linspace. The base is always 10 - to go from 20 to 20000 use start 1.301 (the logarithm of 20) and stop 4.301.\n\nSYNTAX:\nt.logspace <start: float> <stop: float> <steps: int> <dtype> <device>\nDefaults: 0.0, 1.0 and 50, float32 on cpu - that is 50 values from 1 to\n10.\n\nEXAMPLE:\nt.logspace 0 2 9\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the tensor. Changing start, stop or steps does not send by itself - the metro in the demo clicks the node 20 times a second.\n\nstart / stop (drag floats):\nThe powers of ten at the two ends.\n\nsteps (drag int):\nHow many values. 0 sends an empty tensor; a negative count is an error.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.logspace 0 2 9 float16.\nOUTPUTS:\n\nlogspace out:\nThe 1-D tensor, steps values long.\n\nREADING THE DEMO:\nBoth strips cover 1 to 100 in 9 values on the same colour scale (0 dark purple, 100 yellow). The top one is t.logspace: it stays dark for most of its length and brightens only at the end, because the values crowd together at the bottom of the range and spread out at the top. The bottom one is t.linspace 1 100 9 for comparison - a straight ramp. The list shows t.logspace's values. Drag stop on t.logspace down to 1 and the top strip ends at 10, mostly dark purple on this scale.\n\nRELATED:\nt.linspace is the even-difference version. t.arange and t.range take a step size. np.linspace is the NumPy linspace; there is no np.logspace node.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a 1-D tensor whose values are spaced evenly in the logarithm.\n\nEach step MULTIPLIES by the same amount instead of adding the same\namount. That is the right spacing for anything that spans several orders\nof magnitude or that we perceive in ratios - frequency, loudness,\nbrightness, a decay time, a learning rate to sweep. Ten evenly spaced\nfrequencies from 20 to 20000 Hz put nearly all of them in the top octave;\nten logarithmically spaced ones put the same number in every decade.\n\nSTART AND STOP ARE POWERS OF TEN:\nThe values run from 10 to the power start up to 10 to the power stop.\nt.logspace 0 2 9 runs from 1 (10 to the 0) to 100 (10 to the 2): 1,\n1.78, 3.16, 5.62, 10, 17.8, 31.6, 56.2, 100. Every value is about 1.78\ntimes the one before, and 10 sits exactly in the middle. Both ends are\nincluded, and steps is the number of values, as in t.linspace. The base\nis always 10 - to go from 20 to 20000 use start 1.301 (the logarithm of\n20) and stop 4.301.\n\nSYNTAX:\nt.logspace <start: float> <stop: float> <steps: int> <dtype> <device>\nDefaults: 0.0, 1.0 and 50, float32 on cpu - that is 50 values from 1 to\n10.\n\nEXAMPLE:\nt.logspace 0 2 9\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the tensor. Changing start,\nstop or steps does not send by itself - the metro in the demo clicks the\nnode 20 times a second.\n\nstart / stop (drag floats):\nThe powers of ten at the two ends.\n\nsteps (drag int):\nHow many values. 0 sends an empty tensor; a negative count is an error.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.logspace 0 2 9 float16.\nOUTPUTS:\n\nlogspace out:\nThe 1-D tensor, steps values long.\n\nREADING THE DEMO:\nBoth strips cover 1 to 100 in 9 values on the same colour scale (0 dark\npurple, 100 yellow). The top one is t.logspace: it stays dark for most of\nits length and brightens only at the end, because the values crowd\ntogether at the bottom of the range and spread out at the top. The\nbottom one is t.linspace 1 100 9 for comparison - a straight ramp. The\nlist shows t.logspace's values. Drag stop on t.logspace down to 1 and the\ntop strip ends at 10, mostly dark purple on this scale.\n\nRELATED:\nt.linspace is the even-difference version. t.arange and t.range take a\nstep size. np.linspace is the NumPy linspace; there is no np.logspace\nnode."
+            "text": "Makes a 1-D tensor whose values are spaced evenly in the logarithm.\n\nEach step MULTIPLIES by the same amount instead of adding the same amount. That is the right spacing for anything that spans several orders of magnitude or that we perceive in ratios - frequency, loudness, brightness, a decay time, a learning rate to sweep. Ten evenly spaced frequencies from 20 to 20000 Hz put nearly all of them in the top octave;\nten logarithmically spaced ones put the same number in every decade.\n\nSTART AND STOP ARE POWERS OF TEN:\nThe values run from 10 to the power start up to 10 to the power stop. t.logspace 0 2 9 runs from 1 (10 to the 0) to 100 (10 to the 2): 1, 1.78, 3.16, 5.62, 10, 17.8, 31.6, 56.2, 100. Every value is about 1.78 times the one before, and 10 sits exactly in the middle. Both ends are included, and steps is the number of values, as in t.linspace. The base is always 10 - to go from 20 to 20000 use start 1.301 (the logarithm of 20) and stop 4.301.\n\nSYNTAX:\nt.logspace <start: float> <stop: float> <steps: int> <dtype> <device>\nDefaults: 0.0, 1.0 and 50, float32 on cpu - that is 50 values from 1 to\n10.\n\nEXAMPLE:\nt.logspace 0 2 9\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to produce the tensor. Changing start, stop or steps does not send by itself - the metro in the demo clicks the node 20 times a second.\n\nstart / stop (drag floats):\nThe powers of ten at the two ends.\n\nsteps (drag int):\nHow many values. 0 sends an empty tensor; a negative count is an error.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.logspace 0 2 9 float16.\nOUTPUTS:\n\nlogspace out:\nThe 1-D tensor, steps values long.\n\nREADING THE DEMO:\nBoth strips cover 1 to 100 in 9 values on the same colour scale (0 dark purple, 100 yellow). The top one is t.logspace: it stays dark for most of its length and brightens only at the end, because the values crowd together at the bottom of the range and spread out at the top. The bottom one is t.linspace 1 100 9 for comparison - a straight ramp. The list shows t.logspace's values. Drag stop on t.logspace down to 1 and the top strip ends at 10, mostly dark purple on this scale.\n\nRELATED:\nt.linspace is the even-difference version. t.arange and t.range take a step size. np.linspace is the NumPy linspace; there is no np.logspace node."
         },
         "3": {
             "name": "metro",
@@ -437,8 +437,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 720,
-            "width": 78,
+            "position_y": 754,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -449,8 +449,8 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 151,
-            "position_y": 720,
+            "position_x": 125,
+            "position_y": 754,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -462,8 +462,8 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 256,
-            "position_y": 720,
+            "position_x": 207,
+            "position_y": 754,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -475,9 +475,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 353,
-            "position_y": 720,
-            "width": 84,
+            "position_x": 283,
+            "position_y": 754,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -489,7 +489,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 524,
+            "position_x": 30,
             "position_y": 720,
             "width": 156,
             "height": 30,
@@ -514,7 +514,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 794,
+            "position_y": 828,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

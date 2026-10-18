@@ -1,5 +1,5 @@
 {
-    "height": 1408,
+    "height": 1442,
     "width": 1838,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Fills a tensor with random whole numbers from the GEOMETRIC distribution:\nhow many tries it takes to get the first success, keeping the tensor's shape.\n\nEach element becomes the number of the try on which a coin with\nsuccess chance p first comes up: 1 (success at once) is the most\nlikely, 2 next, and so on, each count (1 - p) times as likely as the\none before. It is the whole-number cousin of the exponential wait. Use\nit for random run lengths, repeat counts, or how many steps before a\nchange. There is no t.dist.geometric.\n\nSYNTAX:\nt.geometric\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its\nvalues are ignored, and it is not changed (the node fills a copy). A\nlist or number is turned into a tensor first. Every tensor that arrives\nis filled and sent; this is the only inlet that makes the node send.\nUnlike the other fills it also works on an integer tensor, and the\ncounts then come out as integers; on a float tensor they are floats\n(1.0, 2.0 ...), always whole.\n\np (drag float, also an inlet):\nThe chance of success on each try, kept by the widget between 0.000001\nand 0.999999. The average count is 1 / p. Default 0.5.\n\nThe parameters are drag floats on the node and also inlets. They are\nread when the next tensor arrives; setting one does not send. In the\ndemo each slider goes through 't bang float', which passes the number\nto the parameter first and THEN clicks the t.zeros, so a fresh tensor\narrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled\nwith fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens, and its 64 x 64\ntensor of zeros comes back from the node as 4096 samples; the zeros\nthemselves never show, only their shape matters. The heat_map (1 dark, 8 bright) shows the counts as stepped tones. The\nhistogram has one bar per count, 1 at the left to 20 at the right, each\nbar a fixed fraction of the one before: at p 0.5 half the samples are\n1, a quarter 2, an eighth 3. Drag p down and the bars spread to the\nright; up towards 1 and nearly everything is 1.\n\nRELATED:\nt.exponential is the continuous version. t.dist.poisson and\nt.poisson are the other whole-number counts. t.dist.bernoulli is a\nsingle try.",
+                    "value": "Fills a tensor with random whole numbers from the GEOMETRIC distribution:\nhow many tries it takes to get the first success, keeping the tensor's shape.\n\nEach element becomes the number of the try on which a coin with success chance p first comes up: 1 (success at once) is the most likely, 2 next, and so on, each count (1 - p) times as likely as the one before. It is the whole-number cousin of the exponential wait. Use it for random run lengths, repeat counts, or how many steps before a change. There is no t.dist.geometric.\n\nSYNTAX:\nt.geometric\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its values are ignored, and it is not changed (the node fills a copy). A list or number is turned into a tensor first. Every tensor that arrives is filled and sent; this is the only inlet that makes the node send. Unlike the other fills it also works on an integer tensor, and the counts then come out as integers; on a float tensor they are floats (1.0, 2.0 ...), always whole.\n\np (drag float, also an inlet):\nThe chance of success on each try, kept by the widget between 0.000001 and 0.999999. The average count is 1 / p. Default 0.5.\n\nThe parameters are drag floats on the node and also inlets. They are read when the next tensor arrives; setting one does not send. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the t.zeros, so a fresh tensor arrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled with fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens, and its 64 x 64 tensor of zeros comes back from the node as 4096 samples; the zeros themselves never show, only their shape matters. The heat_map (1 dark, 8 bright) shows the counts as stepped tones. The histogram has one bar per count, 1 at the left to 20 at the right, each bar a fixed fraction of the one before: at p 0.5 half the samples are 1, a quarter 2, an eighth 3. Drag p down and the bars spread to the right; up towards 1 and nearly everything is 1.\n\nRELATED:\nt.exponential is the continuous version. t.dist.poisson and t.poisson are the other whole-number counts. t.dist.bernoulli is a single try.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Fills a tensor with random whole numbers from the GEOMETRIC distribution:\nhow many tries it takes to get the first success, keeping the tensor's shape.\n\nEach element becomes the number of the try on which a coin with\nsuccess chance p first comes up: 1 (success at once) is the most\nlikely, 2 next, and so on, each count (1 - p) times as likely as the\none before. It is the whole-number cousin of the exponential wait. Use\nit for random run lengths, repeat counts, or how many steps before a\nchange. There is no t.dist.geometric.\n\nSYNTAX:\nt.geometric\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its\nvalues are ignored, and it is not changed (the node fills a copy). A\nlist or number is turned into a tensor first. Every tensor that arrives\nis filled and sent; this is the only inlet that makes the node send.\nUnlike the other fills it also works on an integer tensor, and the\ncounts then come out as integers; on a float tensor they are floats\n(1.0, 2.0 ...), always whole.\n\np (drag float, also an inlet):\nThe chance of success on each try, kept by the widget between 0.000001\nand 0.999999. The average count is 1 / p. Default 0.5.\n\nThe parameters are drag floats on the node and also inlets. They are\nread when the next tensor arrives; setting one does not send. In the\ndemo each slider goes through 't bang float', which passes the number\nto the parameter first and THEN clicks the t.zeros, so a fresh tensor\narrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled\nwith fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens, and its 64 x 64\ntensor of zeros comes back from the node as 4096 samples; the zeros\nthemselves never show, only their shape matters. The heat_map (1 dark, 8 bright) shows the counts as stepped tones. The\nhistogram has one bar per count, 1 at the left to 20 at the right, each\nbar a fixed fraction of the one before: at p 0.5 half the samples are\n1, a quarter 2, an eighth 3. Drag p down and the bars spread to the\nright; up towards 1 and nearly everything is 1.\n\nRELATED:\nt.exponential is the continuous version. t.dist.poisson and\nt.poisson are the other whole-number counts. t.dist.bernoulli is a\nsingle try."
+            "text": "Fills a tensor with random whole numbers from the GEOMETRIC distribution:\nhow many tries it takes to get the first success, keeping the tensor's shape.\n\nEach element becomes the number of the try on which a coin with success chance p first comes up: 1 (success at once) is the most likely, 2 next, and so on, each count (1 - p) times as likely as the one before. It is the whole-number cousin of the exponential wait. Use it for random run lengths, repeat counts, or how many steps before a change. There is no t.dist.geometric.\n\nSYNTAX:\nt.geometric\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its values are ignored, and it is not changed (the node fills a copy). A list or number is turned into a tensor first. Every tensor that arrives is filled and sent; this is the only inlet that makes the node send. Unlike the other fills it also works on an integer tensor, and the counts then come out as integers; on a float tensor they are floats (1.0, 2.0 ...), always whole.\n\np (drag float, also an inlet):\nThe chance of success on each try, kept by the widget between 0.000001 and 0.999999. The average count is 1 / p. Default 0.5.\n\nThe parameters are drag floats on the node and also inlets. They are read when the next tensor arrives; setting one does not send. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the t.zeros, so a fresh tensor arrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled with fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens, and its 64 x 64 tensor of zeros comes back from the node as 4096 samples; the zeros themselves never show, only their shape matters. The heat_map (1 dark, 8 bright) shows the counts as stepped tones. The histogram has one bar per count, 1 at the left to 20 at the right, each bar a fixed fraction of the one before: at p 0.5 half the samples are 1, a quarter 2, an eighth 3. Drag p down and the bars spread to the right; up towards 1 and nearly everything is 1.\n\nRELATED:\nt.exponential is the continuous version. t.dist.poisson and t.poisson are the other whole-number counts. t.dist.bernoulli is a single try."
         },
         "3": {
             "name": "load_bang",
@@ -459,8 +459,8 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 1230,
-            "width": 96,
+            "position_y": 1264,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -471,9 +471,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 174,
-            "position_y": 1230,
-            "width": 72,
+            "position_x": 144,
+            "position_y": 1264,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -484,9 +484,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 287,
-            "position_y": 1230,
-            "width": 103,
+            "position_x": 233,
+            "position_y": 1264,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -497,9 +497,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 438,
-            "position_y": 1230,
-            "width": 115,
+            "position_x": 353,
+            "position_y": 1264,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -510,9 +510,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 605,
-            "position_y": 1230,
-            "width": 53,
+            "position_x": 486,
+            "position_y": 1264,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -524,7 +524,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 684,
+            "position_x": 30,
             "position_y": 1230,
             "width": 156,
             "height": 30,
@@ -549,7 +549,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 1304,
+            "position_y": 1338,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

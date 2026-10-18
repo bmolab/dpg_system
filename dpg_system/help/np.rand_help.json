@@ -1,5 +1,5 @@
 {
-    "height": 921,
+    "height": 955,
     "width": 1702,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes an array of random numbers, spread evenly between min and max.\n\nEach click gives fresh numbers. Use it to test a chain with data that\nchanges, as noise to mix into a signal, for random positions or colours,\nor wherever a starting point should be different every time.\n\nThe numbers are UNIFORM: every value between min and max is equally\nlikely, so the picture has no structure at all - no value turns up more\noften than any other. For randomness with a shape (a bell curve, say)\nsee the t.dist nodes.\n\nSYNTAX:\nnp.rand <dim 0: int> <dim 1: int> ...\nOne number per dimension. np.rand 12 12 is a 12 by 12 array; np.rand 100\nis a row of 100. With no arguments you get a 1-element array. The NUMBER\nof dimensions is fixed when the node is made - to go from a row to a\ngrid, retype the node.\n\nEXAMPLE:\nnp.rand 12 12\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a new array - there is no need for a separate button node.\nOnly this inlet makes the node send.\n\nmin / max (drag floats, also inlets):\nThe range. Setting them does NOT make a new array by itself - the next\nclick uses them. In the demo each float goes through 't bang float', which\npasses the number to the inlet first and THEN clicks the node, so dragging\nit gives you a new array at once.\n\ndim 0, dim 1, ... (properties):\nThe size of each dimension, used on the next click.\n\ndtype (option):\nfloat32 (the default), float or double: any value from min up to (but\nnever exactly) max.\nint64: whole numbers from min to max, both included. Choosing it while max\nis 1 changes max to 32767.\nuint8: whole numbers 0 to 255. Choosing it raises a max below 255 to 255\nand a negative min to 0.\nbool: true or false at random; min and max are ignored.\n\nOUTPUTS:\n\nrandom array:\nThe new array, in the shape the dims give.\n\nREADING THE DEMO:\nload_bang makes the first array when the page opens; click the button on\nnp.rand itself for another. The heat_map colours 0 dark purple and 1\nyellow. Drag min and max towards each other and the noise flattens to a\nsingle colour; push max past 1 and the cells saturate yellow. np.amin and\nnp.amax report the smallest and largest values in each new array - always\ninside min and max.\n\nRELATED:\nt.rand is the PyTorch version. np.zeros and np.ones make arrays of one\nfixed value, np.linspace makes evenly spaced values instead of random\nones. random gives single random numbers, with a choice of distributions.",
+                    "value": "Makes an array of random numbers, spread evenly between min and max.\n\nEach click gives fresh numbers. Use it to test a chain with data that changes, as noise to mix into a signal, for random positions or colours, or wherever a starting point should be different every time.\n\nThe numbers are UNIFORM: every value between min and max is equally likely, so the picture has no structure at all - no value turns up more often than any other. For randomness with a shape (a bell curve, say) see the t.dist nodes.\n\nSYNTAX:\nnp.rand <dim 0: int> <dim 1: int> ...\nOne number per dimension. np.rand 12 12 is a 12 by 12 array; np.rand 100\nis a row of 100. With no arguments you get a 1-element array. The NUMBER\nof dimensions is fixed when the node is made - to go from a row to a\ngrid, retype the node.\n\nEXAMPLE:\nnp.rand 12 12\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a new array - there is no need for a separate button node. Only this inlet makes the node send.\n\nmin / max (drag floats, also inlets):\nThe range. Setting them does NOT make a new array by itself - the next click uses them. In the demo each float goes through 't bang float', which passes the number to the inlet first and THEN clicks the node, so dragging it gives you a new array at once.\n\ndim 0, dim 1, ... (properties):\nThe size of each dimension, used on the next click.\n\ndtype (option):\nfloat32 (the default), float or double: any value from min up to (but never exactly) max.\nint64: whole numbers from min to max, both included. Choosing it while max is 1 changes max to 32767.\nuint8: whole numbers 0 to 255. Choosing it raises a max below 255 to 255 and a negative min to 0.\nbool: true or false at random; min and max are ignored.\n\nOUTPUTS:\n\nrandom array:\nThe new array, in the shape the dims give.\n\nREADING THE DEMO:\nload_bang makes the first array when the page opens; click the button on np.rand itself for another. The heat_map colours 0 dark purple and 1 yellow. Drag min and max towards each other and the noise flattens to a single colour; push max past 1 and the cells saturate yellow. np.amin and np.amax report the smallest and largest values in each new array - always inside min and max.\n\nRELATED:\nt.rand is the PyTorch version. np.zeros and np.ones make arrays of one fixed value, np.linspace makes evenly spaced values instead of random ones. random gives single random numbers, with a choice of distributions.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes an array of random numbers, spread evenly between min and max.\n\nEach click gives fresh numbers. Use it to test a chain with data that\nchanges, as noise to mix into a signal, for random positions or colours,\nor wherever a starting point should be different every time.\n\nThe numbers are UNIFORM: every value between min and max is equally\nlikely, so the picture has no structure at all - no value turns up more\noften than any other. For randomness with a shape (a bell curve, say)\nsee the t.dist nodes.\n\nSYNTAX:\nnp.rand <dim 0: int> <dim 1: int> ...\nOne number per dimension. np.rand 12 12 is a 12 by 12 array; np.rand 100\nis a row of 100. With no arguments you get a 1-element array. The NUMBER\nof dimensions is fixed when the node is made - to go from a row to a\ngrid, retype the node.\n\nEXAMPLE:\nnp.rand 12 12\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a new array - there is no need for a separate button node.\nOnly this inlet makes the node send.\n\nmin / max (drag floats, also inlets):\nThe range. Setting them does NOT make a new array by itself - the next\nclick uses them. In the demo each float goes through 't bang float', which\npasses the number to the inlet first and THEN clicks the node, so dragging\nit gives you a new array at once.\n\ndim 0, dim 1, ... (properties):\nThe size of each dimension, used on the next click.\n\ndtype (option):\nfloat32 (the default), float or double: any value from min up to (but\nnever exactly) max.\nint64: whole numbers from min to max, both included. Choosing it while max\nis 1 changes max to 32767.\nuint8: whole numbers 0 to 255. Choosing it raises a max below 255 to 255\nand a negative min to 0.\nbool: true or false at random; min and max are ignored.\n\nOUTPUTS:\n\nrandom array:\nThe new array, in the shape the dims give.\n\nREADING THE DEMO:\nload_bang makes the first array when the page opens; click the button on\nnp.rand itself for another. The heat_map colours 0 dark purple and 1\nyellow. Drag min and max towards each other and the noise flattens to a\nsingle colour; push max past 1 and the cells saturate yellow. np.amin and\nnp.amax report the smallest and largest values in each new array - always\ninside min and max.\n\nRELATED:\nt.rand is the PyTorch version. np.zeros and np.ones make arrays of one\nfixed value, np.linspace makes evenly spaced values instead of random\nones. random gives single random numbers, with a choice of distributions."
+            "text": "Makes an array of random numbers, spread evenly between min and max.\n\nEach click gives fresh numbers. Use it to test a chain with data that changes, as noise to mix into a signal, for random positions or colours, or wherever a starting point should be different every time.\n\nThe numbers are UNIFORM: every value between min and max is equally likely, so the picture has no structure at all - no value turns up more often than any other. For randomness with a shape (a bell curve, say) see the t.dist nodes.\n\nSYNTAX:\nnp.rand <dim 0: int> <dim 1: int> ...\nOne number per dimension. np.rand 12 12 is a 12 by 12 array; np.rand 100\nis a row of 100. With no arguments you get a 1-element array. The NUMBER\nof dimensions is fixed when the node is made - to go from a row to a\ngrid, retype the node.\n\nEXAMPLE:\nnp.rand 12 12\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a new array - there is no need for a separate button node. Only this inlet makes the node send.\n\nmin / max (drag floats, also inlets):\nThe range. Setting them does NOT make a new array by itself - the next click uses them. In the demo each float goes through 't bang float', which passes the number to the inlet first and THEN clicks the node, so dragging it gives you a new array at once.\n\ndim 0, dim 1, ... (properties):\nThe size of each dimension, used on the next click.\n\ndtype (option):\nfloat32 (the default), float or double: any value from min up to (but never exactly) max.\nint64: whole numbers from min to max, both included. Choosing it while max is 1 changes max to 32767.\nuint8: whole numbers 0 to 255. Choosing it raises a max below 255 to 255 and a negative min to 0.\nbool: true or false at random; min and max are ignored.\n\nOUTPUTS:\n\nrandom array:\nThe new array, in the shape the dims give.\n\nREADING THE DEMO:\nload_bang makes the first array when the page opens; click the button on np.rand itself for another. The heat_map colours 0 dark purple and 1 yellow. Drag min and max towards each other and the noise flattens to a single colour; push max past 1 and the cells saturate yellow. np.amin and np.amax report the smallest and largest values in each new array - always inside min and max.\n\nRELATED:\nt.rand is the PyTorch version. np.zeros and np.ones make arrays of one fixed value, np.linspace makes evenly spaced values instead of random ones. random gives single random numbers, with a choice of distributions."
         },
         "3": {
             "name": "load_bang",
@@ -512,8 +512,8 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 660,
-            "width": 53,
+            "position_y": 694,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -524,9 +524,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 120,
-            "position_y": 660,
-            "width": 84,
+            "position_x": 100,
+            "position_y": 694,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -537,8 +537,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 248,
-            "position_y": 660,
+            "position_x": 201,
+            "position_y": 694,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -550,8 +550,8 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 353,
-            "position_y": 660,
+            "position_x": 283,
+            "position_y": 694,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -563,9 +563,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 450,
-            "position_y": 660,
-            "width": 53,
+            "position_x": 359,
+            "position_y": 694,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -577,7 +577,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 529,
+            "position_x": 30,
             "position_y": 660,
             "width": 156,
             "height": 30,
@@ -602,7 +602,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 734,
+            "position_y": 768,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

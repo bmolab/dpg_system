@@ -1,5 +1,5 @@
 {
-    "height": 1062,
+    "height": 1096,
     "width": 1593,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Computes the inverse of the standard normal cumulative distribution\nfunction for every element of a tensor: given a probability p, the value\nthat a normal variable falls below with probability p.\n\nIt turns a percentile into a z-score - ndtri(0.975) = 1.96, the familiar\n95% two-sided cut-off - and turns evenly spread random numbers into normally\ndistributed ones.\n\nTHE CURVE:\nDefined only between 0 and 1: 0 at 0.5, nearly straight through the\nmiddle and shooting off near both ends - -3.09 at 0.001, 3.09 at 0.999.\n\nSYNTAX:\nt.special.ndtri\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 and 1 give minus and plus infinity; outside 0 to 1 gives NaN (not a\nnumber). The demo runs from 0.001 to 0.999.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (0.001 to 0.999 here), and the\nupper plot draws them: a straight ramp. The lower plot is ndtri of each\nof those 200 values, so it is the graph of the function from 0.001 to 0.999,\ndrawn from -3.5 (bottom) to 3.5 (top). Drag start and stop on t.linspace\nto look at another stretch (inside 0 to 1).\n\nRELATED:\nt.special.ndtr is the function it undoes. t.special.erfinv is the same\nshape on the error function's scale.",
+                    "value": "Computes the inverse of the standard normal cumulative distribution function for every element of a tensor: given a probability p, the value that a normal variable falls below with probability p.\n\nIt turns a percentile into a z-score - ndtri(0.975) = 1.96, the familiar 95% two-sided cut-off - and turns evenly spread random numbers into normally distributed ones.\n\nTHE CURVE:\nDefined only between 0 and 1: 0 at 0.5, nearly straight through the middle and shooting off near both ends - -3.09 at 0.001, 3.09 at 0.999.\n\nSYNTAX:\nt.special.ndtri\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 and 1 give minus and plus infinity; outside 0 to 1 gives NaN (not a number). The demo runs from 0.001 to 0.999.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (0.001 to 0.999 here), and the upper plot draws them: a straight ramp. The lower plot is ndtri of each of those 200 values, so it is the graph of the function from 0.001 to 0.999, drawn from -3.5 (bottom) to 3.5 (top). Drag start and stop on t.linspace to look at another stretch (inside 0 to 1).\n\nRELATED:\nt.special.ndtr is the function it undoes. t.special.erfinv is the same shape on the error function's scale.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Computes the inverse of the standard normal cumulative distribution\nfunction for every element of a tensor: given a probability p, the value\nthat a normal variable falls below with probability p.\n\nIt turns a percentile into a z-score - ndtri(0.975) = 1.96, the familiar\n95% two-sided cut-off - and turns evenly spread random numbers into normally\ndistributed ones.\n\nTHE CURVE:\nDefined only between 0 and 1: 0 at 0.5, nearly straight through the\nmiddle and shooting off near both ends - -3.09 at 0.001, 3.09 at 0.999.\n\nSYNTAX:\nt.special.ndtri\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 and 1 give minus and plus infinity; outside 0 to 1 gives NaN (not a\nnumber). The demo runs from 0.001 to 0.999.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (0.001 to 0.999 here), and the\nupper plot draws them: a straight ramp. The lower plot is ndtri of each\nof those 200 values, so it is the graph of the function from 0.001 to 0.999,\ndrawn from -3.5 (bottom) to 3.5 (top). Drag start and stop on t.linspace\nto look at another stretch (inside 0 to 1).\n\nRELATED:\nt.special.ndtr is the function it undoes. t.special.erfinv is the same\nshape on the error function's scale."
+            "text": "Computes the inverse of the standard normal cumulative distribution function for every element of a tensor: given a probability p, the value that a normal variable falls below with probability p.\n\nIt turns a percentile into a z-score - ndtri(0.975) = 1.96, the familiar 95% two-sided cut-off - and turns evenly spread random numbers into normally distributed ones.\n\nTHE CURVE:\nDefined only between 0 and 1: 0 at 0.5, nearly straight through the middle and shooting off near both ends - -3.09 at 0.001, 3.09 at 0.999.\n\nSYNTAX:\nt.special.ndtri\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 and 1 give minus and plus infinity; outside 0 to 1 gives NaN (not a number). The demo runs from 0.001 to 0.999.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (0.001 to 0.999 here), and the upper plot draws them: a straight ramp. The lower plot is ndtri of each of those 200 values, so it is the graph of the function from 0.001 to 0.999, drawn from -3.5 (bottom) to 3.5 (top). Drag start and stop on t.linspace to look at another stretch (inside 0 to 1).\n\nRELATED:\nt.special.ndtr is the function it undoes. t.special.erfinv is the same shape on the error function's scale."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 103,
+            "position_y": 874,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 181,
-            "position_y": 840,
-            "width": 115,
+            "position_x": 150,
+            "position_y": 874,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -457,9 +457,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 348,
-            "position_y": 840,
-            "width": 121,
+            "position_x": 283,
+            "position_y": 874,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -471,7 +471,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 884,
+            "position_y": 918,
             "width": 96,
             "height": 44,
             "visibility": "show_all",
@@ -484,8 +484,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 495,
-            "position_y": 884,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -509,7 +509,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 958,
+            "position_y": 992,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

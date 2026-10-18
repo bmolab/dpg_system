@@ -1,5 +1,5 @@
 {
-    "height": 1093,
+    "height": 1127,
     "width": 1778,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Measures how wrong a choice between categories is: given one score per\ncategory and the right answer, it is low when the right category has by\nfar the highest score and high when another one does.\n\nThe scores are raw numbers, any size, one per category (what a\nclassifier puts out before softmax). Internally they are turned into\nprobabilities with softmax, and the loss is minus the log of the\nprobability given to the right answer. With scores [2.0 0.5 0.1] the\nfirst category gets 0.73 of the probability:\n\n    right answer 0  ->  0.32     confident and right\n    right answer 1  ->  1.82\n    right answer 2  ->  2.22     confident and wrong\n\nBeing confidently wrong costs far more than being unsure, so it rewards\nwell-placed confidence, not just right guesses. 0 would need all of the\nprobability on the right answer. e to the minus the loss is the\nprobability the right answer got.\n\nSYNTAX:\nt.cross_entropy_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (a list or a NumPy array is turned into a float32 tensor):\none row of one score per category, or several rows, one per item, as\nan items x categories tensor. Receiving it computes the loss and sends.\n\ntarget:\nThe right answer. A COLD inlet: it is only stored, so set it BEFORE\nthe scores. Either one whole number per row - the index of the right\ncategory, counting from 0 - or, for an answer that is a blend, a full\nrow of probabilities the same shape as the scores. The node tells them\napart by shape. Nothing is sent until a target has arrived; an index\npast the last category prints an error.\n\nOUTPUTS:\n\nloss:\nOne plain float, never negative. For several rows it is the AVERAGE\nover the rows (unlike t.mse_loss and t.l1_loss, which add up).\n\nREADING THE DEMO:\nThe vector node holds the scores for three categories, [2.0 0.5 0.1]:\ndrag any of them. The strip shows them as softmax probabilities (the\nnode does that conversion itself; t.nn.softmax is only here to show\nit). The int box is the right answer; it goes through 't bang int' so\nthe index is stored first, then the scores are re-sent. Answer 0: 0.32.\nAnswer 2: 2.22. Raise the third score above the others and answer 2\nbecomes cheap.\n\nRELATED:\nt.nn.softmax turns scores into the probabilities used here.\nt.nn.log_softmax gives their logs: the loss is minus the log\nprobability of the right answer. t.mse_loss and t.l1_loss compare\nnumbers rather than choices. np.argmax picks the highest score.",
+                    "value": "Measures how wrong a choice between categories is: given one score per category and the right answer, it is low when the right category has by far the highest score and high when another one does.\n\nThe scores are raw numbers, any size, one per category (what a classifier puts out before softmax). Internally they are turned into probabilities with softmax, and the loss is minus the log of the probability given to the right answer. With scores [2.0 0.5 0.1] the first category gets 0.73 of the probability:\n\n    right answer 0  ->  0.32     confident and right\n    right answer 1  ->  1.82\n    right answer 2  ->  2.22     confident and wrong\n\nBeing confidently wrong costs far more than being unsure, so it rewards well-placed confidence, not just right guesses. 0 would need all of the probability on the right answer. e to the minus the loss is the probability the right answer got.\n\nSYNTAX:\nt.cross_entropy_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (a list or a NumPy array is turned into a float32 tensor):\none row of one score per category, or several rows, one per item, as an items x categories tensor. Receiving it computes the loss and sends.\n\ntarget:\nThe right answer. A COLD inlet: it is only stored, so set it BEFORE the scores. Either one whole number per row - the index of the right category, counting from 0 - or, for an answer that is a blend, a full row of probabilities the same shape as the scores. The node tells them apart by shape. Nothing is sent until a target has arrived; an index past the last category prints an error.\n\nOUTPUTS:\n\nloss:\nOne plain float, never negative. For several rows it is the AVERAGE over the rows (unlike t.mse_loss and t.l1_loss, which add up).\n\nREADING THE DEMO:\nThe vector node holds the scores for three categories, [2.0 0.5 0.1]:\ndrag any of them. The strip shows them as softmax probabilities (the node does that conversion itself; t.nn.softmax is only here to show it). The int box is the right answer; it goes through 't bang int' so the index is stored first, then the scores are re-sent. Answer 0: 0.32.\nAnswer 2: 2.22. Raise the third score above the others and answer 2 becomes cheap.\n\nRELATED:\nt.nn.softmax turns scores into the probabilities used here.\nt.nn.log_softmax gives their logs: the loss is minus the log probability of the right answer. t.mse_loss and t.l1_loss compare numbers rather than choices. np.argmax picks the highest score.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Measures how wrong a choice between categories is: given one score per\ncategory and the right answer, it is low when the right category has by\nfar the highest score and high when another one does.\n\nThe scores are raw numbers, any size, one per category (what a\nclassifier puts out before softmax). Internally they are turned into\nprobabilities with softmax, and the loss is minus the log of the\nprobability given to the right answer. With scores [2.0 0.5 0.1] the\nfirst category gets 0.73 of the probability:\n\n    right answer 0  ->  0.32     confident and right\n    right answer 1  ->  1.82\n    right answer 2  ->  2.22     confident and wrong\n\nBeing confidently wrong costs far more than being unsure, so it rewards\nwell-placed confidence, not just right guesses. 0 would need all of the\nprobability on the right answer. e to the minus the loss is the\nprobability the right answer got.\n\nSYNTAX:\nt.cross_entropy_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (a list or a NumPy array is turned into a float32 tensor):\none row of one score per category, or several rows, one per item, as\nan items x categories tensor. Receiving it computes the loss and sends.\n\ntarget:\nThe right answer. A COLD inlet: it is only stored, so set it BEFORE\nthe scores. Either one whole number per row - the index of the right\ncategory, counting from 0 - or, for an answer that is a blend, a full\nrow of probabilities the same shape as the scores. The node tells them\napart by shape. Nothing is sent until a target has arrived; an index\npast the last category prints an error.\n\nOUTPUTS:\n\nloss:\nOne plain float, never negative. For several rows it is the AVERAGE\nover the rows (unlike t.mse_loss and t.l1_loss, which add up).\n\nREADING THE DEMO:\nThe vector node holds the scores for three categories, [2.0 0.5 0.1]:\ndrag any of them. The strip shows them as softmax probabilities (the\nnode does that conversion itself; t.nn.softmax is only here to show\nit). The int box is the right answer; it goes through 't bang int' so\nthe index is stored first, then the scores are re-sent. Answer 0: 0.32.\nAnswer 2: 2.22. Raise the third score above the others and answer 2\nbecomes cheap.\n\nRELATED:\nt.nn.softmax turns scores into the probabilities used here.\nt.nn.log_softmax gives their logs: the loss is minus the log\nprobability of the right answer. t.mse_loss and t.l1_loss compare\nnumbers rather than choices. np.argmax picks the highest score."
+            "text": "Measures how wrong a choice between categories is: given one score per category and the right answer, it is low when the right category has by far the highest score and high when another one does.\n\nThe scores are raw numbers, any size, one per category (what a classifier puts out before softmax). Internally they are turned into probabilities with softmax, and the loss is minus the log of the probability given to the right answer. With scores [2.0 0.5 0.1] the first category gets 0.73 of the probability:\n\n    right answer 0  ->  0.32     confident and right\n    right answer 1  ->  1.82\n    right answer 2  ->  2.22     confident and wrong\n\nBeing confidently wrong costs far more than being unsure, so it rewards well-placed confidence, not just right guesses. 0 would need all of the probability on the right answer. e to the minus the loss is the probability the right answer got.\n\nSYNTAX:\nt.cross_entropy_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (a list or a NumPy array is turned into a float32 tensor):\none row of one score per category, or several rows, one per item, as an items x categories tensor. Receiving it computes the loss and sends.\n\ntarget:\nThe right answer. A COLD inlet: it is only stored, so set it BEFORE the scores. Either one whole number per row - the index of the right category, counting from 0 - or, for an answer that is a blend, a full row of probabilities the same shape as the scores. The node tells them apart by shape. Nothing is sent until a target has arrived; an index past the last category prints an error.\n\nOUTPUTS:\n\nloss:\nOne plain float, never negative. For several rows it is the AVERAGE over the rows (unlike t.mse_loss and t.l1_loss, which add up).\n\nREADING THE DEMO:\nThe vector node holds the scores for three categories, [2.0 0.5 0.1]:\ndrag any of them. The strip shows them as softmax probabilities (the node does that conversion itself; t.nn.softmax is only here to show it). The int box is the right answer; it goes through 't bang int' so the index is stored first, then the scores are re-sent. Answer 0: 0.32.\nAnswer 2: 2.22. Raise the third score above the others and answer 2 becomes cheap.\n\nRELATED:\nt.nn.softmax turns scores into the probabilities used here.\nt.nn.log_softmax gives their logs: the loss is minus the log probability of the right answer. t.mse_loss and t.l1_loss compare numbers rather than choices. np.argmax picks the highest score."
         },
         "3": {
             "name": "load_bang",
@@ -449,8 +449,8 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 610,
-            "width": 90,
+            "position_y": 644,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -461,9 +461,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 166,
-            "position_y": 610,
-            "width": 115,
+            "position_x": 138,
+            "position_y": 644,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -474,9 +474,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 333,
-            "position_y": 610,
-            "width": 78,
+            "position_x": 271,
+            "position_y": 644,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -487,9 +487,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 454,
-            "position_y": 610,
-            "width": 72,
+            "position_x": 366,
+            "position_y": 644,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -501,7 +501,7 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 654,
+            "position_y": 688,
             "width": 72,
             "height": 44,
             "visibility": "show_all",
@@ -514,8 +514,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 624,
-            "position_y": 654,
+            "position_x": 30,
+            "position_y": 610,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -539,7 +539,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 728,
+            "position_y": 762,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

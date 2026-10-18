@@ -1,5 +1,5 @@
 {
-    "height": 821,
+    "height": 855,
     "width": 1738,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes the identity matrix: an n by n square of zeros with ones down the diagonal.\n\nMultiplying by the identity changes nothing, the way multiplying a\nnumber by 1 does - so it is the starting point for a transformation\n(a 4 by 4 identity is \"no rotation, no move, no scale\") and the neutral\nelement when you build one up step by step. As a picture it is a single\ndiagonal line, which also makes it a handy mask: it keeps the diagonal\nof whatever you multiply it with element by element.\n\nSYNTAX:\nt.eye <n: int> <dtype> <device>\nDefault n is 4. It is always square. n is the first number among the\narguments, so a dtype can come with or without it: 't.eye bool' is a 4\nby 4 bool identity, 't.eye 6 bool' a 6 by 6.\n\nEXAMPLE:\nt.eye 6\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the matrix. Nothing else makes the node send.\n\nn (whole number, also an inlet):\nThe number of rows and columns. Setting it does not send - the metro in\nthe demo clicks the node 10 times a second, so a new n shows at once.\n0 sends an empty tensor.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.eye 6 bool.\nA bool dtype gives true on the diagonal, false elsewhere.\n\nOUTPUTS:\n\neye tensor:\nThe n by n tensor.\n\nREADING THE DEMO:\nThe heat_map uses colour 'hot': 0 is black, 1 white, so the diagonal is\na white line from top left to bottom right - row 0 is at the top. Each\ncell prints its value. Type a different n into the node and the square\ngrows or shrinks.\n\nRELATED:\nt.diag puts any values on the diagonal (or reads them off). t.zeros and\nt.ones fill the whole square; t.full fills it with one value. t.tril\nand t.triu keep the lower or upper triangle of a matrix.",
+                    "value": "Makes the identity matrix: an n by n square of zeros with ones down the diagonal.\n\nMultiplying by the identity changes nothing, the way multiplying a number by 1 does - so it is the starting point for a transformation (a 4 by 4 identity is \"no rotation, no move, no scale\") and the neutral element when you build one up step by step. As a picture it is a single diagonal line, which also makes it a handy mask: it keeps the diagonal of whatever you multiply it with element by element.\n\nSYNTAX:\nt.eye <n: int> <dtype> <device>\nDefault n is 4. It is always square. n is the first number among the\narguments, so a dtype can come with or without it: 't.eye bool' is a 4\nby 4 bool identity, 't.eye 6 bool' a 6 by 6.\n\nEXAMPLE:\nt.eye 6\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, to send the matrix. Nothing else makes the node send.\n\nn (whole number, also an inlet):\nThe number of rows and columns. Setting it does not send - the metro in the demo clicks the node 10 times a second, so a new n shows at once. 0 sends an empty tensor.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.eye 6 bool.\nA bool dtype gives true on the diagonal, false elsewhere.\n\nOUTPUTS:\n\neye tensor:\nThe n by n tensor.\n\nREADING THE DEMO:\nThe heat_map uses colour 'hot': 0 is black, 1 white, so the diagonal is a white line from top left to bottom right - row 0 is at the top. Each cell prints its value. Type a different n into the node and the square grows or shrinks.\n\nRELATED:\nt.diag puts any values on the diagonal (or reads them off). t.zeros and t.ones fill the whole square; t.full fills it with one value. t.tril and t.triu keep the lower or upper triangle of a matrix.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes the identity matrix: an n by n square of zeros with ones down the diagonal.\n\nMultiplying by the identity changes nothing, the way multiplying a\nnumber by 1 does - so it is the starting point for a transformation\n(a 4 by 4 identity is \"no rotation, no move, no scale\") and the neutral\nelement when you build one up step by step. As a picture it is a single\ndiagonal line, which also makes it a handy mask: it keeps the diagonal\nof whatever you multiply it with element by element.\n\nSYNTAX:\nt.eye <n: int> <dtype> <device>\nDefault n is 4. It is always square. n is the first number among the\narguments, so a dtype can come with or without it: 't.eye bool' is a 4\nby 4 bool identity, 't.eye 6 bool' a 6 by 6.\n\nEXAMPLE:\nt.eye 6\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the matrix. Nothing else makes the node send.\n\nn (whole number, also an inlet):\nThe number of rows and columns. Setting it does not send - the metro in\nthe demo clicks the node 10 times a second, so a new n shows at once.\n0 sends an empty tensor.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.eye 6 bool.\nA bool dtype gives true on the diagonal, false elsewhere.\n\nOUTPUTS:\n\neye tensor:\nThe n by n tensor.\n\nREADING THE DEMO:\nThe heat_map uses colour 'hot': 0 is black, 1 white, so the diagonal is\na white line from top left to bottom right - row 0 is at the top. Each\ncell prints its value. Type a different n into the node and the square\ngrows or shrinks.\n\nRELATED:\nt.diag puts any values on the diagonal (or reads them off). t.zeros and\nt.ones fill the whole square; t.full fills it with one value. t.tril\nand t.triu keep the lower or upper triangle of a matrix."
+            "text": "Makes the identity matrix: an n by n square of zeros with ones down the diagonal.\n\nMultiplying by the identity changes nothing, the way multiplying a number by 1 does - so it is the starting point for a transformation (a 4 by 4 identity is \"no rotation, no move, no scale\") and the neutral element when you build one up step by step. As a picture it is a single diagonal line, which also makes it a handy mask: it keeps the diagonal of whatever you multiply it with element by element.\n\nSYNTAX:\nt.eye <n: int> <dtype> <device>\nDefault n is 4. It is always square. n is the first number among the\narguments, so a dtype can come with or without it: 't.eye bool' is a 4\nby 4 bool identity, 't.eye 6 bool' a 6 by 6.\n\nEXAMPLE:\nt.eye 6\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, to send the matrix. Nothing else makes the node send.\n\nn (whole number, also an inlet):\nThe number of rows and columns. Setting it does not send - the metro in the demo clicks the node 10 times a second, so a new n shows at once. 0 sends an empty tensor.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.eye 6 bool.\nA bool dtype gives true on the diagonal, false elsewhere.\n\nOUTPUTS:\n\neye tensor:\nThe n by n tensor.\n\nREADING THE DEMO:\nThe heat_map uses colour 'hot': 0 is black, 1 white, so the diagonal is a white line from top left to bottom right - row 0 is at the top. Each cell prints its value. Type a different n into the node and the square grows or shrinks.\n\nRELATED:\nt.diag puts any values on the diagonal (or reads them off). t.zeros and t.ones fill the whole square; t.full fills it with one value. t.tril and t.triu keep the lower or upper triangle of a matrix."
         },
         "3": {
             "name": "metro",
@@ -272,8 +272,8 @@
             "name": "help_link",
             "id": 570,
             "position_x": 30,
-            "position_y": 460,
-            "width": 53,
+            "position_y": 494,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -284,8 +284,8 @@
         "10": {
             "name": "help_link",
             "id": 607,
-            "position_x": 120,
-            "position_y": 460,
+            "position_x": 100,
+            "position_y": 494,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -297,9 +297,9 @@
         "11": {
             "name": "help_link",
             "id": 644,
-            "position_x": 217,
-            "position_y": 460,
-            "width": 53,
+            "position_x": 176,
+            "position_y": 494,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -310,9 +310,9 @@
         "12": {
             "name": "help_link",
             "id": 681,
-            "position_x": 307,
-            "position_y": 460,
-            "width": 53,
+            "position_x": 246,
+            "position_y": 494,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -323,9 +323,9 @@
         "13": {
             "name": "help_link",
             "id": 718,
-            "position_x": 397,
-            "position_y": 460,
-            "width": 53,
+            "position_x": 316,
+            "position_y": 494,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -337,7 +337,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 755,
-            "position_x": 554,
+            "position_x": 30,
             "position_y": 460,
             "width": 156,
             "height": 30,
@@ -362,7 +362,7 @@
             "name": "close",
             "id": 792,
             "position_x": 24,
-            "position_y": 534,
+            "position_y": 568,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

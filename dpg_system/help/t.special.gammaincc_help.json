@@ -1,5 +1,5 @@
 {
-    "height": 1082,
+    "height": 1116,
     "width": 1727,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Computes the regularised upper incomplete gamma function, element by\nelement, of a shape a (first input) and a value x (second input).\n\nIt is the upper tail of a gamma distribution with shape a: the chance of a\nvalue of x or more - how surprising a reading this large is. For whole\nnumbers it is also the Poisson distribution added up: with an average rate\nm, the chance of fewer than k events is gammaincc(k, m).\n\nTHE CURVE:\nFor each a, a falling S from 1 at x = 0 to 0 as x grows - the mirror of\ngammainc, and the two always sum to 1. With a = 1 it is e to the minus x\n(0.368 at x = 1). Larger a holds it near 1 for longer. Computed directly,\nso far-out tails stay accurate instead of being 1 minus nearly 1.\n\nSYNTAX:\nt.special.gammaincc\n\nINPUTS and PARAMETERS:\n\ntensor 1 in:\na, the shape - a tensor, or a single number applied to every x. Receiving\nit triggers the node. a should be positive: a = 0 gives a flat line (NaN\nat x = 0), and negative a gives NaN (not a number) everywhere.\n\ntensor 2 in:\nx, where to evaluate - a tensor, or a single number. It is only stored when\nit arrives, so send it BEFORE a. It is converted to a's dtype and device.\nThe two inputs are matched element by element, or broadcast when one is a\nsingle value. x must be 0 or more; negative x gives NaN.\n\nOUTPUTS:\n\ntensor out:\nThe result, between 0 and 1, in the broadcast shape of the two inputs.\n\nREADING THE DEMO:\nWhen the page opens, load_bang sends a bang to t.linspace first (200 values\nof x from 0 to 10 into the cold second input, drawn in the upper plot) and\nthen 1.0 to the float, which sends it to the first input and draws the\ncurve. Drag a and the curve redraws: small a rises early and fast, large a\nlater and more gently. To change the x range, drag start and stop on\nt.linspace, click its button, then nudge a - x alone does not trigger.\n\nRELATED:\nt.special.gammainc is the lower part; the two sum to 1.\nt.special.gammaln is the log of the complete gamma function.\nt.dist.gamma and t.dist.poisson sample from the distributions involved.",
+                    "value": "Computes the regularised upper incomplete gamma function, element by element, of a shape a (first input) and a value x (second input).\n\nIt is the upper tail of a gamma distribution with shape a: the chance of a value of x or more - how surprising a reading this large is. For whole numbers it is also the Poisson distribution added up: with an average rate m, the chance of fewer than k events is gammaincc(k, m).\n\nTHE CURVE:\nFor each a, a falling S from 1 at x = 0 to 0 as x grows - the mirror of gammainc, and the two always sum to 1. With a = 1 it is e to the minus x (0.368 at x = 1). Larger a holds it near 1 for longer. Computed directly, so far-out tails stay accurate instead of being 1 minus nearly 1.\n\nSYNTAX:\nt.special.gammaincc\n\nINPUTS and PARAMETERS:\n\ntensor 1 in:\na, the shape - a tensor, or a single number applied to every x. Receiving it triggers the node. a should be positive: a = 0 gives a flat line (NaN at x = 0), and negative a gives NaN (not a number) everywhere.\n\ntensor 2 in:\nx, where to evaluate - a tensor, or a single number. It is only stored when it arrives, so send it BEFORE a. It is converted to a's dtype and device. The two inputs are matched element by element, or broadcast when one is a single value. x must be 0 or more; negative x gives NaN.\n\nOUTPUTS:\n\ntensor out:\nThe result, between 0 and 1, in the broadcast shape of the two inputs.\n\nREADING THE DEMO:\nWhen the page opens, load_bang sends a bang to t.linspace first (200 values of x from 0 to 10 into the cold second input, drawn in the upper plot) and then 1.0 to the float, which sends it to the first input and draws the curve. Drag a and the curve redraws: small a rises early and fast, large a later and more gently. To change the x range, drag start and stop on t.linspace, click its button, then nudge a - x alone does not trigger.\n\nRELATED:\nt.special.gammainc is the lower part; the two sum to 1. t.special.gammaln is the log of the complete gamma function. t.dist.gamma and t.dist.poisson sample from the distributions involved.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Computes the regularised upper incomplete gamma function, element by\nelement, of a shape a (first input) and a value x (second input).\n\nIt is the upper tail of a gamma distribution with shape a: the chance of a\nvalue of x or more - how surprising a reading this large is. For whole\nnumbers it is also the Poisson distribution added up: with an average rate\nm, the chance of fewer than k events is gammaincc(k, m).\n\nTHE CURVE:\nFor each a, a falling S from 1 at x = 0 to 0 as x grows - the mirror of\ngammainc, and the two always sum to 1. With a = 1 it is e to the minus x\n(0.368 at x = 1). Larger a holds it near 1 for longer. Computed directly,\nso far-out tails stay accurate instead of being 1 minus nearly 1.\n\nSYNTAX:\nt.special.gammaincc\n\nINPUTS and PARAMETERS:\n\ntensor 1 in:\na, the shape - a tensor, or a single number applied to every x. Receiving\nit triggers the node. a should be positive: a = 0 gives a flat line (NaN\nat x = 0), and negative a gives NaN (not a number) everywhere.\n\ntensor 2 in:\nx, where to evaluate - a tensor, or a single number. It is only stored when\nit arrives, so send it BEFORE a. It is converted to a's dtype and device.\nThe two inputs are matched element by element, or broadcast when one is a\nsingle value. x must be 0 or more; negative x gives NaN.\n\nOUTPUTS:\n\ntensor out:\nThe result, between 0 and 1, in the broadcast shape of the two inputs.\n\nREADING THE DEMO:\nWhen the page opens, load_bang sends a bang to t.linspace first (200 values\nof x from 0 to 10 into the cold second input, drawn in the upper plot) and\nthen 1.0 to the float, which sends it to the first input and draws the\ncurve. Drag a and the curve redraws: small a rises early and fast, large a\nlater and more gently. To change the x range, drag start and stop on\nt.linspace, click its button, then nudge a - x alone does not trigger.\n\nRELATED:\nt.special.gammainc is the lower part; the two sum to 1.\nt.special.gammaln is the log of the complete gamma function.\nt.dist.gamma and t.dist.poisson sample from the distributions involved."
+            "text": "Computes the regularised upper incomplete gamma function, element by element, of a shape a (first input) and a value x (second input).\n\nIt is the upper tail of a gamma distribution with shape a: the chance of a value of x or more - how surprising a reading this large is. For whole numbers it is also the Poisson distribution added up: with an average rate m, the chance of fewer than k events is gammaincc(k, m).\n\nTHE CURVE:\nFor each a, a falling S from 1 at x = 0 to 0 as x grows - the mirror of gammainc, and the two always sum to 1. With a = 1 it is e to the minus x (0.368 at x = 1). Larger a holds it near 1 for longer. Computed directly, so far-out tails stay accurate instead of being 1 minus nearly 1.\n\nSYNTAX:\nt.special.gammaincc\n\nINPUTS and PARAMETERS:\n\ntensor 1 in:\na, the shape - a tensor, or a single number applied to every x. Receiving it triggers the node. a should be positive: a = 0 gives a flat line (NaN at x = 0), and negative a gives NaN (not a number) everywhere.\n\ntensor 2 in:\nx, where to evaluate - a tensor, or a single number. It is only stored when it arrives, so send it BEFORE a. It is converted to a's dtype and device. The two inputs are matched element by element, or broadcast when one is a single value. x must be 0 or more; negative x gives NaN.\n\nOUTPUTS:\n\ntensor out:\nThe result, between 0 and 1, in the broadcast shape of the two inputs.\n\nREADING THE DEMO:\nWhen the page opens, load_bang sends a bang to t.linspace first (200 values of x from 0 to 10 into the cold second input, drawn in the upper plot) and then 1.0 to the float, which sends it to the first input and draws the curve. Drag a and the curve redraws: small a rises early and fast, large a later and more gently. To change the x range, drag start and stop on t.linspace, click its button, then nudge a - x alone does not trigger.\n\nRELATED:\nt.special.gammainc is the lower part; the two sum to 1. t.special.gammaln is the log of the complete gamma function. t.dist.gamma and t.dist.poisson sample from the distributions involved."
         },
         "3": {
             "name": "load_bang",
@@ -461,8 +461,8 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 860,
-            "width": 127,
+            "position_y": 894,
+            "width": 129,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -473,9 +473,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 212,
-            "position_y": 860,
-            "width": 121,
+            "position_x": 175,
+            "position_y": 894,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -486,9 +486,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 386,
-            "position_y": 860,
-            "width": 90,
+            "position_x": 314,
+            "position_y": 894,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -500,7 +500,7 @@
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 904,
+            "position_y": 938,
             "width": 103,
             "height": 44,
             "visibility": "show_all",
@@ -513,8 +513,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 940,
-            "position_x": 584,
-            "position_y": 904,
+            "position_x": 30,
+            "position_y": 860,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -538,7 +538,7 @@
             "name": "close",
             "id": 977,
             "position_x": 24,
-            "position_y": 978,
+            "position_y": 1012,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

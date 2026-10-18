@@ -227,7 +227,7 @@
             }
         },
         "1": {
-            "height": 1045,
+            "height": 1079,
             "width": 1721,
             "position": [
                 100,
@@ -294,7 +294,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Gives how much two vectors point the same way, with their sizes taken\nout: the cosine of the angle between them.\n\n1 means the same direction, 0 at right angles, -1 opposite. Size does\nnot matter: [3 4] and [6 8] point the same way and score 1. So two poses\nthat are the same shape at different scales, or two movements that are\nthe same gesture at different strengths, still read as alike. Reach for\nit to compare directions, poses or feature vectors when magnitude would\nget in the way.\n\nIt is the dot product of the two vectors divided by both their lengths\n(np.dot of two unit vectors gives the same number).\n\nSYNTAX:\nt.cosine_similarity\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput 1:\nThe first vector (a list or a NumPy array is turned into a float32\ntensor). Receiving it calculates and sends.\n\ninput 2:\nThe second vector, the same length as the first. It is only stored:\nsend it before input 1, and it is then used for every input 1 that\nfollows until a new one arrives. Nothing is sent until it has\narrived. In the demo B goes through 't bang list', so that moving B\nalso makes A re-send.\n\nTwo 1-D vectors give one number. Two tables of the same shape are\ncompared column by column (each column is one vector), giving one\ncosine per column. A vector of all zeros has no direction and gives 0.\nLengths that do not match print an error and send nothing.\n\nOUTPUTS:\n\noutput:\nThe cosine, a plain float from -1 to 1 - or, for two tables, a 1-D\ntensor with one cosine per column.\n\nREADING THE DEMO:\nVector A is two sliders packed into [x y], starting at [3 4]. Vector B\nis the angle on the slider turned into a direction (make_direction\ngives [cos, sin]). B is stored in input 2 first, then the bang from\n't bang list' makes A re-send, so moving either one updates the answer.\nWith B at 53 degrees it points almost exactly along [3 4] and the\nanswer is near 1. Turn B to 143 degrees (right angles): 0. To 233:\n-1. Now make A shorter in the same direction - [1.5 2] - and nothing\nchanges: only the direction counts.\n\nRELATED:\nnp.dot is the same calculation without dividing by the lengths.\nt.normalize makes vectors length 1, after which the dot product is the\ncosine. t.dist and t.length compare positions and sizes instead.",
+                            "value": "Gives how much two vectors point the same way, with their sizes taken out: the cosine of the angle between them.\n\n1 means the same direction, 0 at right angles, -1 opposite. Size does not matter: [3 4] and [6 8] point the same way and score 1. So two poses that are the same shape at different scales, or two movements that are the same gesture at different strengths, still read as alike. Reach for it to compare directions, poses or feature vectors when magnitude would get in the way.\n\nIt is the dot product of the two vectors divided by both their lengths (np.dot of two unit vectors gives the same number).\n\nSYNTAX:\nt.cosine_similarity\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput 1:\nThe first vector (a list or a NumPy array is turned into a float32 tensor). Receiving it calculates and sends.\n\ninput 2:\nThe second vector, the same length as the first. It is only stored:\nsend it before input 1, and it is then used for every input 1 that follows until a new one arrives. Nothing is sent until it has arrived. In the demo B goes through 't bang list', so that moving B also makes A re-send.\n\nTwo 1-D vectors give one number. Two tables of the same shape are compared column by column (each column is one vector), giving one cosine per column. A vector of all zeros has no direction and gives 0. Lengths that do not match print an error and send nothing.\n\nOUTPUTS:\n\noutput:\nThe cosine, a plain float from -1 to 1 - or, for two tables, a 1-D tensor with one cosine per column.\n\nREADING THE DEMO:\nVector A is two sliders packed into [x y], starting at [3 4]. Vector B is the angle on the slider turned into a direction (make_direction gives [cos, sin]). B is stored in input 2 first, then the bang from 't bang list' makes A re-send, so moving either one updates the answer. With B at 53 degrees it points almost exactly along [3 4] and the answer is near 1. Turn B to 143 degrees (right angles): 0. To 233: -1. Now make A shorter in the same direction - [1.5 2] - and nothing changes: only the direction counts.\n\nRELATED:\nnp.dot is the same calculation without dividing by the lengths. t.normalize makes vectors length 1, after which the dot product is the cosine. t.dist and t.length compare positions and sizes instead.",
                             "value_type": "str"
                         },
                         "1": {
@@ -318,7 +318,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Gives how much two vectors point the same way, with their sizes taken\nout: the cosine of the angle between them.\n\n1 means the same direction, 0 at right angles, -1 opposite. Size does\nnot matter: [3 4] and [6 8] point the same way and score 1. So two poses\nthat are the same shape at different scales, or two movements that are\nthe same gesture at different strengths, still read as alike. Reach for\nit to compare directions, poses or feature vectors when magnitude would\nget in the way.\n\nIt is the dot product of the two vectors divided by both their lengths\n(np.dot of two unit vectors gives the same number).\n\nSYNTAX:\nt.cosine_similarity\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput 1:\nThe first vector (a list or a NumPy array is turned into a float32\ntensor). Receiving it calculates and sends.\n\ninput 2:\nThe second vector, the same length as the first. It is only stored:\nsend it before input 1, and it is then used for every input 1 that\nfollows until a new one arrives. Nothing is sent until it has\narrived. In the demo B goes through 't bang list', so that moving B\nalso makes A re-send.\n\nTwo 1-D vectors give one number. Two tables of the same shape are\ncompared column by column (each column is one vector), giving one\ncosine per column. A vector of all zeros has no direction and gives 0.\nLengths that do not match print an error and send nothing.\n\nOUTPUTS:\n\noutput:\nThe cosine, a plain float from -1 to 1 - or, for two tables, a 1-D\ntensor with one cosine per column.\n\nREADING THE DEMO:\nVector A is two sliders packed into [x y], starting at [3 4]. Vector B\nis the angle on the slider turned into a direction (make_direction\ngives [cos, sin]). B is stored in input 2 first, then the bang from\n't bang list' makes A re-send, so moving either one updates the answer.\nWith B at 53 degrees it points almost exactly along [3 4] and the\nanswer is near 1. Turn B to 143 degrees (right angles): 0. To 233:\n-1. Now make A shorter in the same direction - [1.5 2] - and nothing\nchanges: only the direction counts.\n\nRELATED:\nnp.dot is the same calculation without dividing by the lengths.\nt.normalize makes vectors length 1, after which the dot product is the\ncosine. t.dist and t.length compare positions and sizes instead."
+                    "text": "Gives how much two vectors point the same way, with their sizes taken out: the cosine of the angle between them.\n\n1 means the same direction, 0 at right angles, -1 opposite. Size does not matter: [3 4] and [6 8] point the same way and score 1. So two poses that are the same shape at different scales, or two movements that are the same gesture at different strengths, still read as alike. Reach for it to compare directions, poses or feature vectors when magnitude would get in the way.\n\nIt is the dot product of the two vectors divided by both their lengths (np.dot of two unit vectors gives the same number).\n\nSYNTAX:\nt.cosine_similarity\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ninput 1:\nThe first vector (a list or a NumPy array is turned into a float32 tensor). Receiving it calculates and sends.\n\ninput 2:\nThe second vector, the same length as the first. It is only stored:\nsend it before input 1, and it is then used for every input 1 that follows until a new one arrives. Nothing is sent until it has arrived. In the demo B goes through 't bang list', so that moving B also makes A re-send.\n\nTwo 1-D vectors give one number. Two tables of the same shape are compared column by column (each column is one vector), giving one cosine per column. A vector of all zeros has no direction and gives 0. Lengths that do not match print an error and send nothing.\n\nOUTPUTS:\n\noutput:\nThe cosine, a plain float from -1 to 1 - or, for two tables, a 1-D tensor with one cosine per column.\n\nREADING THE DEMO:\nVector A is two sliders packed into [x y], starting at [3 4]. Vector B is the angle on the slider turned into a direction (make_direction gives [cos, sin]). B is stored in input 2 first, then the bang from 't bang list' makes A re-send, so moving either one updates the answer. With B at 53 degrees it points almost exactly along [3 4] and the answer is near 1. Turn B to 143 degrees (right angles): 0. To 233: -1. Now make A shorter in the same direction - [1.5 2] - and nothing changes: only the direction counts.\n\nRELATED:\nnp.dot is the same calculation without dividing by the lengths. t.normalize makes vectors length 1, after which the dot product is the cosine. t.dist and t.length compare positions and sizes instead."
                 },
                 "3": {
                     "name": "load_bang",
@@ -701,8 +701,8 @@
                     "name": "help_link",
                     "id": 940,
                     "position_x": 30,
-                    "position_y": 770,
-                    "width": 53,
+                    "position_y": 804,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -713,9 +713,9 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 120,
-                    "position_y": 770,
-                    "width": 84,
+                    "position_x": 100,
+                    "position_y": 804,
+                    "width": 85,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -726,9 +726,9 @@
                 "21": {
                     "name": "help_link",
                     "id": 1014,
-                    "position_x": 248,
-                    "position_y": 770,
-                    "width": 53,
+                    "position_x": 201,
+                    "position_y": 804,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -739,8 +739,8 @@
                 "22": {
                     "name": "help_link",
                     "id": 1051,
-                    "position_x": 338,
-                    "position_y": 770,
+                    "position_x": 271,
+                    "position_y": 804,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -752,8 +752,8 @@
                 "23": {
                     "name": "help_link",
                     "id": 1088,
-                    "position_x": 443,
-                    "position_y": 770,
+                    "position_x": 353,
+                    "position_y": 804,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -766,8 +766,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1125,
-                    "position_x": 616,
-                    "position_y": 814,
+                    "position_x": 30,
+                    "position_y": 770,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -791,7 +791,7 @@
                     "name": "close",
                     "id": 1162,
                     "position_x": 24,
-                    "position_y": 844,
+                    "position_y": 878,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

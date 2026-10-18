@@ -1,5 +1,5 @@
 {
-    "height": 1077,
+    "height": 1111,
     "width": 1839,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Measures how far a tensor is from a target as one number: the sum of\nthe plain sizes of the differences, element by element (L1, or absolute\nerror, added up rather than averaged).\n\n0 means identical. Every difference counts its own size: one value off\nby 4 costs 4, and four values off by 1 also cost 4. So one wild value\ndoes not swamp the reading the way it does with t.mse_loss - L1 is the\nrobust one, for when the occasional outlier is noise rather than the\npoint. Below a difference of 1 it is the LARGER of the two: off by 0.4\ncosts 0.40 here and 0.16 with t.mse_loss.\n\nReach for it to measure drift from a reference when outliers should\nnot dominate, or as the thing a training loop minimises when you want\nthat robustness.\n\nA SUM, NOT AN AVERAGE:\nIt adds up rather than averaging, so the number grows with the size of\nthe tensor. Divide by the element count yourself if you need numbers\nthat compare across sizes.\n\nSYNTAX:\nt.l1_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got (a list or a NumPy array is turned into a float32\ntensor). Receiving it computes the loss and sends it.\n\ntarget:\nWhat you wanted, converted to the type of the input. It is a COLD\ninlet: it is only stored, so set it BEFORE sending the input - send\nthem the other way round and the answer is computed against the\nprevious target, which looks like the loss lagging one step behind.\nNothing is sent until a target has arrived. Same shape as the input,\nor one that broadcasts to it: a single number measures every value\nagainst that number (torch prints a warning about the size mismatch,\nand the answer is still right).\n\nOUTPUTS:\n\nloss:\nOne plain float. 0 when input and target are equal; never negative.\n\nREADING THE DEMO:\nThe vector node is the input: eight values, equal to the target\nexcept the first, which is 0.4 too high (0.6 against 0.2) - so the\nloss reads 0.40. The red-blue strip is the difference. Drag the first\nvalue back to 0.2 and the loss reads 0. Drag another value down by\n0.3 as well: 0.70 - up or down, every difference adds its size.\n\nRELATED:\nt.mse_loss squares the differences first, so big ones dominate.\nt.cross_entropy_loss is for choosing between categories. t.dist gives\nthe straight-line distance. np.abs and np.sum of the difference give\nthe same number by hand.",
+                    "value": "Measures how far a tensor is from a target as one number: the sum of the plain sizes of the differences, element by element (L1, or absolute error, added up rather than averaged).\n\n0 means identical. Every difference counts its own size: one value off by 4 costs 4, and four values off by 1 also cost 4. So one wild value does not swamp the reading the way it does with t.mse_loss - L1 is the robust one, for when the occasional outlier is noise rather than the point. Below a difference of 1 it is the LARGER of the two: off by 0.4 costs 0.40 here and 0.16 with t.mse_loss.\n\nReach for it to measure drift from a reference when outliers should not dominate, or as the thing a training loop minimises when you want that robustness.\n\nA SUM, NOT AN AVERAGE:\nIt adds up rather than averaging, so the number grows with the size of the tensor. Divide by the element count yourself if you need numbers that compare across sizes.\n\nSYNTAX:\nt.l1_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got (a list or a NumPy array is turned into a float32 tensor). Receiving it computes the loss and sends it.\n\ntarget:\nWhat you wanted, converted to the type of the input. It is a COLD inlet: it is only stored, so set it BEFORE sending the input - send them the other way round and the answer is computed against the previous target, which looks like the loss lagging one step behind. Nothing is sent until a target has arrived. Same shape as the input, or one that broadcasts to it: a single number measures every value against that number (torch prints a warning about the size mismatch, and the answer is still right).\n\nOUTPUTS:\n\nloss:\nOne plain float. 0 when input and target are equal; never negative.\n\nREADING THE DEMO:\nThe vector node is the input: eight values, equal to the target except the first, which is 0.4 too high (0.6 against 0.2) - so the loss reads 0.40. The red-blue strip is the difference. Drag the first value back to 0.2 and the loss reads 0. Drag another value down by 0.3 as well: 0.70 - up or down, every difference adds its size.\n\nRELATED:\nt.mse_loss squares the differences first, so big ones dominate. t.cross_entropy_loss is for choosing between categories. t.dist gives the straight-line distance. np.abs and np.sum of the difference give the same number by hand.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Measures how far a tensor is from a target as one number: the sum of\nthe plain sizes of the differences, element by element (L1, or absolute\nerror, added up rather than averaged).\n\n0 means identical. Every difference counts its own size: one value off\nby 4 costs 4, and four values off by 1 also cost 4. So one wild value\ndoes not swamp the reading the way it does with t.mse_loss - L1 is the\nrobust one, for when the occasional outlier is noise rather than the\npoint. Below a difference of 1 it is the LARGER of the two: off by 0.4\ncosts 0.40 here and 0.16 with t.mse_loss.\n\nReach for it to measure drift from a reference when outliers should\nnot dominate, or as the thing a training loop minimises when you want\nthat robustness.\n\nA SUM, NOT AN AVERAGE:\nIt adds up rather than averaging, so the number grows with the size of\nthe tensor. Divide by the element count yourself if you need numbers\nthat compare across sizes.\n\nSYNTAX:\nt.l1_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got (a list or a NumPy array is turned into a float32\ntensor). Receiving it computes the loss and sends it.\n\ntarget:\nWhat you wanted, converted to the type of the input. It is a COLD\ninlet: it is only stored, so set it BEFORE sending the input - send\nthem the other way round and the answer is computed against the\nprevious target, which looks like the loss lagging one step behind.\nNothing is sent until a target has arrived. Same shape as the input,\nor one that broadcasts to it: a single number measures every value\nagainst that number (torch prints a warning about the size mismatch,\nand the answer is still right).\n\nOUTPUTS:\n\nloss:\nOne plain float. 0 when input and target are equal; never negative.\n\nREADING THE DEMO:\nThe vector node is the input: eight values, equal to the target\nexcept the first, which is 0.4 too high (0.6 against 0.2) - so the\nloss reads 0.40. The red-blue strip is the difference. Drag the first\nvalue back to 0.2 and the loss reads 0. Drag another value down by\n0.3 as well: 0.70 - up or down, every difference adds its size.\n\nRELATED:\nt.mse_loss squares the differences first, so big ones dominate.\nt.cross_entropy_loss is for choosing between categories. t.dist gives\nthe straight-line distance. np.abs and np.sum of the difference give\nthe same number by hand."
+            "text": "Measures how far a tensor is from a target as one number: the sum of the plain sizes of the differences, element by element (L1, or absolute error, added up rather than averaged).\n\n0 means identical. Every difference counts its own size: one value off by 4 costs 4, and four values off by 1 also cost 4. So one wild value does not swamp the reading the way it does with t.mse_loss - L1 is the robust one, for when the occasional outlier is noise rather than the point. Below a difference of 1 it is the LARGER of the two: off by 0.4 costs 0.40 here and 0.16 with t.mse_loss.\n\nReach for it to measure drift from a reference when outliers should not dominate, or as the thing a training loop minimises when you want that robustness.\n\nA SUM, NOT AN AVERAGE:\nIt adds up rather than averaging, so the number grows with the size of the tensor. Divide by the element count yourself if you need numbers that compare across sizes.\n\nSYNTAX:\nt.l1_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got (a list or a NumPy array is turned into a float32 tensor). Receiving it computes the loss and sends it.\n\ntarget:\nWhat you wanted, converted to the type of the input. It is a COLD inlet: it is only stored, so set it BEFORE sending the input - send them the other way round and the answer is computed against the previous target, which looks like the loss lagging one step behind. Nothing is sent until a target has arrived. Same shape as the input, or one that broadcasts to it: a single number measures every value against that number (torch prints a warning about the size mismatch, and the answer is still right).\n\nOUTPUTS:\n\nloss:\nOne plain float. 0 when input and target are equal; never negative.\n\nREADING THE DEMO:\nThe vector node is the input: eight values, equal to the target except the first, which is 0.4 too high (0.6 against 0.2) - so the loss reads 0.40. The red-blue strip is the difference. Drag the first value back to 0.2 and the loss reads 0. Drag another value down by 0.3 as well: 0.70 - up or down, every difference adds its size.\n\nRELATED:\nt.mse_loss squares the differences first, so big ones dominate. t.cross_entropy_loss is for choosing between categories. t.dist gives the straight-line distance. np.abs and np.sum of the difference give the same number by hand."
         },
         "3": {
             "name": "load_bang",
@@ -584,8 +584,8 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 780,
-            "width": 78,
+            "position_y": 814,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -596,9 +596,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 151,
-            "position_y": 780,
-            "width": 139,
+            "position_x": 125,
+            "position_y": 814,
+            "width": 142,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -609,9 +609,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 349,
-            "position_y": 780,
-            "width": 53,
+            "position_x": 283,
+            "position_y": 814,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -622,9 +622,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 439,
-            "position_y": 780,
-            "width": 103,
+            "position_x": 353,
+            "position_y": 814,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -636,8 +636,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1088,
-            "position_x": 704,
-            "position_y": 824,
+            "position_x": 30,
+            "position_y": 780,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -661,7 +661,7 @@
             "name": "close",
             "id": 1125,
             "position_x": 24,
-            "position_y": 854,
+            "position_y": 888,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

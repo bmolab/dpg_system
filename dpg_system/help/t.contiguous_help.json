@@ -1,5 +1,5 @@
 {
-    "height": 1348,
+    "height": 1382,
     "width": 1901,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor contiguous: if its values are not stored row after\nrow in memory, it copies them so that they are. The numbers, and the\nshape, do not change.\n\nMost operations do not care how a tensor is stored. t.view does: it\nonly reinterprets memory, so it fails on a tensor that is not contiguous\n(after a transpose, for instance), and some other code - exporting the\ndata, handing it to a library - expects contiguous memory too. Put\nt.contiguous just before such a node.\n\nWHAT CONTIGUOUS MEANS:\nA tensor's values live in one flat run of memory, and its shape says how\nto read that run as rows and columns. A fresh tensor is stored row after\nrow, in order - contiguous. t.t, t.transpose, t.permute and slicing out\nsome columns (t.narrow on dimension 1) do not move any values: they\nchange how the same memory is read, which is why they cost nothing at\nany size. The result shows the right numbers, but they are no longer\nstored row after row - it is not contiguous.\n\nSYNTAX:\nt.contiguous\n\nEXAMPLE:\nt.contiguous\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is sent on. If it is already\ncontiguous it is passed through unchanged, with no copy; otherwise a\ncontiguous copy is sent. A list or NumPy array is turned into a tensor\nfirst (and is then contiguous already).\n\nOUTPUTS:\n\ntensor out:\nThe same numbers and shape, stored row after row.\n\nREADING THE DEMO:\nt.rand makes a 4 by 8 tensor (click t.rand's own button for new values)\nand t.t transposes it to 8 by 4. The left picture is the transposed\ntensor; t.is_contiguous says False. t.view -1, asked to lay it out as\none row, fails (the console prints the reason) and its strip stays\nempty. After t.contiguous the picture is identical, t.is_contiguous says\nTrue, and the same t.view -1 now works.\n\nRELATED:\nt.is_contiguous only asks the question. t.reshape is t.view that copies\nby itself when it has to, so it works on anything. t.t and t.transpose\nmake non-contiguous tensors. NumPy has no node for this: np nodes\ntake care of memory layout themselves.",
+                    "value": "Makes a tensor contiguous: if its values are not stored row after row in memory, it copies them so that they are. The numbers, and the shape, do not change.\n\nMost operations do not care how a tensor is stored. t.view does: it only reinterprets memory, so it fails on a tensor that is not contiguous (after a transpose, for instance), and some other code - exporting the data, handing it to a library - expects contiguous memory too. Put t.contiguous just before such a node.\n\nWHAT CONTIGUOUS MEANS:\nA tensor's values live in one flat run of memory, and its shape says how to read that run as rows and columns. A fresh tensor is stored row after row, in order - contiguous. t.t, t.transpose, t.permute and slicing out some columns (t.narrow on dimension 1) do not move any values: they change how the same memory is read, which is why they cost nothing at any size. The result shows the right numbers, but they are no longer stored row after row - it is not contiguous.\n\nSYNTAX:\nt.contiguous\n\nEXAMPLE:\nt.contiguous\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is sent on. If it is already contiguous it is passed through unchanged, with no copy; otherwise a contiguous copy is sent. A list or NumPy array is turned into a tensor first (and is then contiguous already).\n\nOUTPUTS:\n\ntensor out:\nThe same numbers and shape, stored row after row.\n\nREADING THE DEMO:\nt.rand makes a 4 by 8 tensor (click t.rand's own button for new values) and t.t transposes it to 8 by 4. The left picture is the transposed tensor; t.is_contiguous says False. t.view -1, asked to lay it out as one row, fails (the console prints the reason) and its strip stays empty. After t.contiguous the picture is identical, t.is_contiguous says True, and the same t.view -1 now works.\n\nRELATED:\nt.is_contiguous only asks the question. t.reshape is t.view that copies by itself when it has to, so it works on anything. t.t and t.transpose make non-contiguous tensors. NumPy has no node for this: np nodes take care of memory layout themselves.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor contiguous: if its values are not stored row after\nrow in memory, it copies them so that they are. The numbers, and the\nshape, do not change.\n\nMost operations do not care how a tensor is stored. t.view does: it\nonly reinterprets memory, so it fails on a tensor that is not contiguous\n(after a transpose, for instance), and some other code - exporting the\ndata, handing it to a library - expects contiguous memory too. Put\nt.contiguous just before such a node.\n\nWHAT CONTIGUOUS MEANS:\nA tensor's values live in one flat run of memory, and its shape says how\nto read that run as rows and columns. A fresh tensor is stored row after\nrow, in order - contiguous. t.t, t.transpose, t.permute and slicing out\nsome columns (t.narrow on dimension 1) do not move any values: they\nchange how the same memory is read, which is why they cost nothing at\nany size. The result shows the right numbers, but they are no longer\nstored row after row - it is not contiguous.\n\nSYNTAX:\nt.contiguous\n\nEXAMPLE:\nt.contiguous\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is sent on. If it is already\ncontiguous it is passed through unchanged, with no copy; otherwise a\ncontiguous copy is sent. A list or NumPy array is turned into a tensor\nfirst (and is then contiguous already).\n\nOUTPUTS:\n\ntensor out:\nThe same numbers and shape, stored row after row.\n\nREADING THE DEMO:\nt.rand makes a 4 by 8 tensor (click t.rand's own button for new values)\nand t.t transposes it to 8 by 4. The left picture is the transposed\ntensor; t.is_contiguous says False. t.view -1, asked to lay it out as\none row, fails (the console prints the reason) and its strip stays\nempty. After t.contiguous the picture is identical, t.is_contiguous says\nTrue, and the same t.view -1 now works.\n\nRELATED:\nt.is_contiguous only asks the question. t.reshape is t.view that copies\nby itself when it has to, so it works on anything. t.t and t.transpose\nmake non-contiguous tensors. NumPy has no node for this: np nodes\ntake care of memory layout themselves."
+            "text": "Makes a tensor contiguous: if its values are not stored row after row in memory, it copies them so that they are. The numbers, and the shape, do not change.\n\nMost operations do not care how a tensor is stored. t.view does: it only reinterprets memory, so it fails on a tensor that is not contiguous (after a transpose, for instance), and some other code - exporting the data, handing it to a library - expects contiguous memory too. Put t.contiguous just before such a node.\n\nWHAT CONTIGUOUS MEANS:\nA tensor's values live in one flat run of memory, and its shape says how to read that run as rows and columns. A fresh tensor is stored row after row, in order - contiguous. t.t, t.transpose, t.permute and slicing out some columns (t.narrow on dimension 1) do not move any values: they change how the same memory is read, which is why they cost nothing at any size. The result shows the right numbers, but they are no longer stored row after row - it is not contiguous.\n\nSYNTAX:\nt.contiguous\n\nEXAMPLE:\nt.contiguous\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every tensor that arrives is sent on. If it is already contiguous it is passed through unchanged, with no copy; otherwise a contiguous copy is sent. A list or NumPy array is turned into a tensor first (and is then contiguous already).\n\nOUTPUTS:\n\ntensor out:\nThe same numbers and shape, stored row after row.\n\nREADING THE DEMO:\nt.rand makes a 4 by 8 tensor (click t.rand's own button for new values) and t.t transposes it to 8 by 4. The left picture is the transposed tensor; t.is_contiguous says False. t.view -1, asked to lay it out as one row, fails (the console prints the reason) and its strip stays empty. After t.contiguous the picture is identical, t.is_contiguous says True, and the same t.view -1 now works.\n\nRELATED:\nt.is_contiguous only asks the question. t.reshape is t.view that copies by itself when it has to, so it works on anything. t.t and t.transpose make non-contiguous tensors. NumPy has no node for this: np nodes take care of memory layout themselves."
         },
         "3": {
             "name": "load_bang",
@@ -594,8 +594,8 @@
             "name": "help_link",
             "id": 1051,
             "position_x": 30,
-            "position_y": 1170,
-            "width": 109,
+            "position_y": 1204,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -606,9 +606,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 189,
-            "position_y": 1170,
-            "width": 53,
+            "position_x": 156,
+            "position_y": 1204,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -619,9 +619,9 @@
         "24": {
             "name": "help_link",
             "id": 1125,
-            "position_x": 279,
-            "position_y": 1170,
-            "width": 72,
+            "position_x": 226,
+            "position_y": 1204,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -632,9 +632,9 @@
         "25": {
             "name": "help_link",
             "id": 1162,
-            "position_x": 392,
-            "position_y": 1170,
-            "width": 84,
+            "position_x": 315,
+            "position_y": 1204,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -645,8 +645,8 @@
         "26": {
             "name": "help_link",
             "id": 1199,
-            "position_x": 520,
-            "position_y": 1170,
+            "position_x": 416,
+            "position_y": 1204,
             "width": 35,
             "height": 44,
             "visibility": "show_all",
@@ -659,7 +659,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1236,
-            "position_x": 864,
+            "position_x": 30,
             "position_y": 1170,
             "width": 156,
             "height": 30,
@@ -684,7 +684,7 @@
             "name": "close",
             "id": 1273,
             "position_x": 24,
-            "position_y": 1244,
+            "position_y": 1278,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

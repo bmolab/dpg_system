@@ -1,5 +1,5 @@
 {
-    "height": 1126,
+    "height": 1160,
     "width": 1580,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Counts how many values of a tensor fall into each of a number of\nequal bins between min and max: a histogram.\n\nA mean says where the middle is; a histogram shows the whole spread -\nwhether the values cluster, whether there are two groups, how long the\ntails are. For anything measured rather than computed, that shape is\nusually the interesting thing. Feed it a window of recent values (from\nnp.rolling_buffer, say) and it becomes a picture of what a movement has\nactually been doing: a mean stays put while a single peak splits in two.\n\nSYNTAX:\nt.histc\nNo arguments: set the bins and the range on the node.\n\nEXAMPLE:\nt.histc\n\nINPUTS and PARAMETERS:\n\n(first inlet):\nThe values, any shape - they are all counted together. A list or NumPy\narray is turned into a float32 tensor. Every input is counted and sent -\nthe only inlet that makes the node send. The values must be floating\npoint: an integer tensor (t.rand with dtype int64, say) is refused with\nan error. Send it through t.to float32 first.\n\nbin count (drag int):\nHow many bins. Default 100, at least 1.\n\nmin / max (drag floats):\nThe range the bins span, cut into equal widths. Values below min or above\nmax are NOT counted at all - a histogram that seems to be missing data\nusually has its range set too narrow. A value exactly at max goes in the\nlast bin. Defaults 0 and 0: when min and max are equal the node uses the\nlowest and highest values of each input instead, so the range follows\nthe data and two histograms are no longer comparable bin for bin.\n\nChanging any of these does not send by itself; the next input uses it.\nIn the demo a metro sends fresh values four times a second, so the bars\nfollow your drags.\n\nOUTPUTS:\n\nhistogram tensor out:\nThe counts, one per bin, lowest bin first, as a 1-D float32 tensor of\nlength bin count. They add up to the number of values inside the range.\n\nREADING THE DEMO:\nt.dist.normal draws 1000 values from a bell curve centred on loc (0) with\nspread scale (1). The upper plot shows them one after another as dots:\nnoise, with no visible shape. t.histc puts them in 32 bins from -4 to 4,\neach a quarter wide, and the lower plot shows the count in each bin as a\nbar: the bell appears, about 100 values high in the middle bins.\n\nDrag scale on t.dist.normal up to 2 and the bell spreads out and gets\nlower (the same 1000 values over more bins); past about 2, the tails run\noff the edges and are no longer counted. Drag loc to 2 and the bell\nslides right. Drag bin count down to 8: coarser bars, each counting more.\nSet min and max both to 0 and the bins stretch to fit whatever came in.\n\nRELATED:\nt.bincount counts whole numbers exactly, one bin per value, with no\nrange to set. t.bucketize says WHICH bin each value falls in, with\nboundaries you choose. np.rolling_buffer collects a window of a stream\nto count. t.cumsum of a histogram gives the cumulative distribution.",
+                    "value": "Counts how many values of a tensor fall into each of a number of equal bins between min and max: a histogram.\n\nA mean says where the middle is; a histogram shows the whole spread - whether the values cluster, whether there are two groups, how long the tails are. For anything measured rather than computed, that shape is usually the interesting thing. Feed it a window of recent values (from np.rolling_buffer, say) and it becomes a picture of what a movement has actually been doing: a mean stays put while a single peak splits in two.\n\nSYNTAX:\nt.histc\nNo arguments: set the bins and the range on the node.\n\nEXAMPLE:\nt.histc\n\nINPUTS and PARAMETERS:\n\n(first inlet):\nThe values, any shape - they are all counted together. A list or NumPy array is turned into a float32 tensor. Every input is counted and sent - the only inlet that makes the node send. The values must be floating point: an integer tensor (t.rand with dtype int64, say) is refused with an error. Send it through t.to float32 first.\n\nbin count (drag int):\nHow many bins. Default 100, at least 1.\n\nmin / max (drag floats):\nThe range the bins span, cut into equal widths. Values below min or above max are NOT counted at all - a histogram that seems to be missing data usually has its range set too narrow. A value exactly at max goes in the last bin. Defaults 0 and 0: when min and max are equal the node uses the lowest and highest values of each input instead, so the range follows the data and two histograms are no longer comparable bin for bin.\n\nChanging any of these does not send by itself; the next input uses it. In the demo a metro sends fresh values four times a second, so the bars follow your drags.\n\nOUTPUTS:\n\nhistogram tensor out:\nThe counts, one per bin, lowest bin first, as a 1-D float32 tensor of length bin count. They add up to the number of values inside the range.\n\nREADING THE DEMO:\nt.dist.normal draws 1000 values from a bell curve centred on loc (0) with spread scale (1). The upper plot shows them one after another as dots: noise, with no visible shape. t.histc puts them in 32 bins from -4 to 4, each a quarter wide, and the lower plot shows the count in each bin as a bar: the bell appears, about 100 values high in the middle bins.\n\nDrag scale on t.dist.normal up to 2 and the bell spreads out and gets lower (the same 1000 values over more bins); past about 2, the tails run off the edges and are no longer counted. Drag loc to 2 and the bell slides right. Drag bin count down to 8: coarser bars, each counting more. Set min and max both to 0 and the bins stretch to fit whatever came in.\n\nRELATED:\nt.bincount counts whole numbers exactly, one bin per value, with no range to set. t.bucketize says WHICH bin each value falls in, with boundaries you choose. np.rolling_buffer collects a window of a stream to count. t.cumsum of a histogram gives the cumulative distribution.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Counts how many values of a tensor fall into each of a number of\nequal bins between min and max: a histogram.\n\nA mean says where the middle is; a histogram shows the whole spread -\nwhether the values cluster, whether there are two groups, how long the\ntails are. For anything measured rather than computed, that shape is\nusually the interesting thing. Feed it a window of recent values (from\nnp.rolling_buffer, say) and it becomes a picture of what a movement has\nactually been doing: a mean stays put while a single peak splits in two.\n\nSYNTAX:\nt.histc\nNo arguments: set the bins and the range on the node.\n\nEXAMPLE:\nt.histc\n\nINPUTS and PARAMETERS:\n\n(first inlet):\nThe values, any shape - they are all counted together. A list or NumPy\narray is turned into a float32 tensor. Every input is counted and sent -\nthe only inlet that makes the node send. The values must be floating\npoint: an integer tensor (t.rand with dtype int64, say) is refused with\nan error. Send it through t.to float32 first.\n\nbin count (drag int):\nHow many bins. Default 100, at least 1.\n\nmin / max (drag floats):\nThe range the bins span, cut into equal widths. Values below min or above\nmax are NOT counted at all - a histogram that seems to be missing data\nusually has its range set too narrow. A value exactly at max goes in the\nlast bin. Defaults 0 and 0: when min and max are equal the node uses the\nlowest and highest values of each input instead, so the range follows\nthe data and two histograms are no longer comparable bin for bin.\n\nChanging any of these does not send by itself; the next input uses it.\nIn the demo a metro sends fresh values four times a second, so the bars\nfollow your drags.\n\nOUTPUTS:\n\nhistogram tensor out:\nThe counts, one per bin, lowest bin first, as a 1-D float32 tensor of\nlength bin count. They add up to the number of values inside the range.\n\nREADING THE DEMO:\nt.dist.normal draws 1000 values from a bell curve centred on loc (0) with\nspread scale (1). The upper plot shows them one after another as dots:\nnoise, with no visible shape. t.histc puts them in 32 bins from -4 to 4,\neach a quarter wide, and the lower plot shows the count in each bin as a\nbar: the bell appears, about 100 values high in the middle bins.\n\nDrag scale on t.dist.normal up to 2 and the bell spreads out and gets\nlower (the same 1000 values over more bins); past about 2, the tails run\noff the edges and are no longer counted. Drag loc to 2 and the bell\nslides right. Drag bin count down to 8: coarser bars, each counting more.\nSet min and max both to 0 and the bins stretch to fit whatever came in.\n\nRELATED:\nt.bincount counts whole numbers exactly, one bin per value, with no\nrange to set. t.bucketize says WHICH bin each value falls in, with\nboundaries you choose. np.rolling_buffer collects a window of a stream\nto count. t.cumsum of a histogram gives the cumulative distribution."
+            "text": "Counts how many values of a tensor fall into each of a number of equal bins between min and max: a histogram.\n\nA mean says where the middle is; a histogram shows the whole spread - whether the values cluster, whether there are two groups, how long the tails are. For anything measured rather than computed, that shape is usually the interesting thing. Feed it a window of recent values (from np.rolling_buffer, say) and it becomes a picture of what a movement has actually been doing: a mean stays put while a single peak splits in two.\n\nSYNTAX:\nt.histc\nNo arguments: set the bins and the range on the node.\n\nEXAMPLE:\nt.histc\n\nINPUTS and PARAMETERS:\n\n(first inlet):\nThe values, any shape - they are all counted together. A list or NumPy array is turned into a float32 tensor. Every input is counted and sent - the only inlet that makes the node send. The values must be floating point: an integer tensor (t.rand with dtype int64, say) is refused with an error. Send it through t.to float32 first.\n\nbin count (drag int):\nHow many bins. Default 100, at least 1.\n\nmin / max (drag floats):\nThe range the bins span, cut into equal widths. Values below min or above max are NOT counted at all - a histogram that seems to be missing data usually has its range set too narrow. A value exactly at max goes in the last bin. Defaults 0 and 0: when min and max are equal the node uses the lowest and highest values of each input instead, so the range follows the data and two histograms are no longer comparable bin for bin.\n\nChanging any of these does not send by itself; the next input uses it. In the demo a metro sends fresh values four times a second, so the bars follow your drags.\n\nOUTPUTS:\n\nhistogram tensor out:\nThe counts, one per bin, lowest bin first, as a 1-D float32 tensor of length bin count. They add up to the number of values inside the range.\n\nREADING THE DEMO:\nt.dist.normal draws 1000 values from a bell curve centred on loc (0) with spread scale (1). The upper plot shows them one after another as dots: noise, with no visible shape. t.histc puts them in 32 bins from -4 to 4, each a quarter wide, and the lower plot shows the count in each bin as a bar: the bell appears, about 100 values high in the middle bins.\n\nDrag scale on t.dist.normal up to 2 and the bell spreads out and gets lower (the same 1000 values over more bins); past about 2, the tails run off the edges and are no longer counted. Drag loc to 2 and the bell slides right. Drag bin count down to 8: coarser bars, each counting more. Set min and max both to 0 and the bins stretch to fit whatever came in.\n\nRELATED:\nt.bincount counts whole numbers exactly, one bin per value, with no range to set. t.bucketize says WHICH bin each value falls in, with boundaries you choose. np.rolling_buffer collects a window of a stream to count. t.cumsum of a histogram gives the cumulative distribution."
         },
         "3": {
             "name": "metro",
@@ -433,8 +433,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 890,
-            "width": 78,
+            "position_y": 924,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -445,9 +445,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 151,
-            "position_y": 890,
-            "width": 84,
+            "position_x": 125,
+            "position_y": 924,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -458,9 +458,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 279,
-            "position_y": 890,
-            "width": 121,
+            "position_x": 226,
+            "position_y": 924,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -472,7 +472,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 934,
+            "position_y": 968,
             "width": 96,
             "height": 44,
             "visibility": "show_all",
@@ -485,7 +485,7 @@
             "name": "help_link",
             "id": 866,
             "position_x": 174,
-            "position_y": 934,
+            "position_y": 968,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -498,8 +498,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 426,
-            "position_y": 934,
+            "position_x": 30,
+            "position_y": 890,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -523,7 +523,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 1008,
+            "position_y": 1042,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

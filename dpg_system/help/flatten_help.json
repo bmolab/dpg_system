@@ -1,5 +1,5 @@
 {
-    "height": 1128,
+    "height": 1162,
     "width": 1728,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Collapses an array of any shape into one long row of all its values.\n\nflatten and np.ravel are two names for the same node. Use it when a node\nwants a plain list of numbers - a plot, a list display, a send to another\nprogram - or to undo a reshape. The values are not changed, only laid\nend to end.\n\nTHE ORDER:\norder C (the default) reads row by row, as the array prints: all of row\n0, then all of row 1, and so on. A ramp that np.reshape folded into rows\ncomes back out exactly as it went in.\norder F reads column by column instead: down column 0, then column 1.\norder A and K read the numbers in the order they sit in memory. For\nalmost every array in a patch that is the same as C; they differ only\nfor an array that came straight out of np.transpose, where they read it\nas F would.\n\nSYNTAX:\nflatten <order>\nnp.ravel <order>\norder is C, F, A or K; default C.\n\nEXAMPLE:\nflatten F\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it\nis what makes the node send.\n\norder (menu):\nAs above. Changing it does not send by itself - the next array uses it.\nIn the demo the metro re-sends the ramp, so the strip changes at once.\n\nOUTPUTS:\n\nflattened array:\nA 1-D array of every value, shape [rows x columns x ...].\n\nREADING THE DEMO:\nThe ramp is folded into 3 rows of 4 (the middle heat_map), then\nflattened. With order C the bottom strip is the original ramp again,\n0 rising to 1. Switch order to F and it reads down the columns instead:\n0, 0.36, 0.73, then 0.09, 0.45, 0.82 ... - three short climbs, one per\ncolumn. The shape is [12] either way.\n\nRELATED:\nnp.reshape is the reverse, and np.reshape -1 does the same as flatten C.\nnp.squeeze removes just one length-1 axis rather than all structure.\nnp.transpose swaps rows and columns first, if you want to flatten the\nother way without changing order. t.reshape covers the PyTorch versions\n(t.flatten, t.ravel).",
+                    "value": "Collapses an array of any shape into one long row of all its values.\n\nflatten and np.ravel are two names for the same node. Use it when a node wants a plain list of numbers - a plot, a list display, a send to another program - or to undo a reshape. The values are not changed, only laid end to end.\n\nTHE ORDER:\norder C (the default) reads row by row, as the array prints: all of row 0, then all of row 1, and so on. A ramp that np.reshape folded into rows comes back out exactly as it went in.\norder F reads column by column instead: down column 0, then column 1. order A and K read the numbers in the order they sit in memory. For almost every array in a patch that is the same as C; they differ only for an array that came straight out of np.transpose, where they read it as F would.\n\nSYNTAX:\nflatten <order>\nnp.ravel <order>\norder is C, F, A or K; default C.\n\nEXAMPLE:\nflatten F\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it is what makes the node send.\n\norder (menu):\nAs above. Changing it does not send by itself - the next array uses it. In the demo the metro re-sends the ramp, so the strip changes at once.\n\nOUTPUTS:\n\nflattened array:\nA 1-D array of every value, shape [rows x columns x ...].\n\nREADING THE DEMO:\nThe ramp is folded into 3 rows of 4 (the middle heat_map), then flattened. With order C the bottom strip is the original ramp again, 0 rising to 1. Switch order to F and it reads down the columns instead: 0, 0.36, 0.73, then 0.09, 0.45, 0.82 ... - three short climbs, one per column. The shape is [12] either way.\n\nRELATED:\nnp.reshape is the reverse, and np.reshape -1 does the same as flatten C. np.squeeze removes just one length-1 axis rather than all structure. np.transpose swaps rows and columns first, if you want to flatten the other way without changing order. t.reshape covers the PyTorch versions (t.flatten, t.ravel).",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Collapses an array of any shape into one long row of all its values.\n\nflatten and np.ravel are two names for the same node. Use it when a node\nwants a plain list of numbers - a plot, a list display, a send to another\nprogram - or to undo a reshape. The values are not changed, only laid\nend to end.\n\nTHE ORDER:\norder C (the default) reads row by row, as the array prints: all of row\n0, then all of row 1, and so on. A ramp that np.reshape folded into rows\ncomes back out exactly as it went in.\norder F reads column by column instead: down column 0, then column 1.\norder A and K read the numbers in the order they sit in memory. For\nalmost every array in a patch that is the same as C; they differ only\nfor an array that came straight out of np.transpose, where they read it\nas F would.\n\nSYNTAX:\nflatten <order>\nnp.ravel <order>\norder is C, F, A or K; default C.\n\nEXAMPLE:\nflatten F\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it\nis what makes the node send.\n\norder (menu):\nAs above. Changing it does not send by itself - the next array uses it.\nIn the demo the metro re-sends the ramp, so the strip changes at once.\n\nOUTPUTS:\n\nflattened array:\nA 1-D array of every value, shape [rows x columns x ...].\n\nREADING THE DEMO:\nThe ramp is folded into 3 rows of 4 (the middle heat_map), then\nflattened. With order C the bottom strip is the original ramp again,\n0 rising to 1. Switch order to F and it reads down the columns instead:\n0, 0.36, 0.73, then 0.09, 0.45, 0.82 ... - three short climbs, one per\ncolumn. The shape is [12] either way.\n\nRELATED:\nnp.reshape is the reverse, and np.reshape -1 does the same as flatten C.\nnp.squeeze removes just one length-1 axis rather than all structure.\nnp.transpose swaps rows and columns first, if you want to flatten the\nother way without changing order. t.reshape covers the PyTorch versions\n(t.flatten, t.ravel)."
+            "text": "Collapses an array of any shape into one long row of all its values.\n\nflatten and np.ravel are two names for the same node. Use it when a node wants a plain list of numbers - a plot, a list display, a send to another program - or to undo a reshape. The values are not changed, only laid end to end.\n\nTHE ORDER:\norder C (the default) reads row by row, as the array prints: all of row 0, then all of row 1, and so on. A ramp that np.reshape folded into rows comes back out exactly as it went in.\norder F reads column by column instead: down column 0, then column 1. order A and K read the numbers in the order they sit in memory. For almost every array in a patch that is the same as C; they differ only for an array that came straight out of np.transpose, where they read it as F would.\n\nSYNTAX:\nflatten <order>\nnp.ravel <order>\norder is C, F, A or K; default C.\n\nEXAMPLE:\nflatten F\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it is what makes the node send.\n\norder (menu):\nAs above. Changing it does not send by itself - the next array uses it. In the demo the metro re-sends the ramp, so the strip changes at once.\n\nOUTPUTS:\n\nflattened array:\nA 1-D array of every value, shape [rows x columns x ...].\n\nREADING THE DEMO:\nThe ramp is folded into 3 rows of 4 (the middle heat_map), then flattened. With order C the bottom strip is the original ramp again, 0 rising to 1. Switch order to F and it reads down the columns instead: 0, 0.36, 0.73, then 0.09, 0.45, 0.82 ... - three short climbs, one per column. The shape is [12] either way.\n\nRELATED:\nnp.reshape is the reverse, and np.reshape -1 does the same as flatten C. np.squeeze removes just one length-1 axis rather than all structure. np.transpose swaps rows and columns first, if you want to flatten the other way without changing order. t.reshape covers the PyTorch versions (t.flatten, t.ravel)."
         },
         "3": {
             "name": "metro",
@@ -431,8 +431,8 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 950,
-            "width": 78,
+            "position_y": 984,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -443,9 +443,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 151,
-            "position_y": 950,
-            "width": 78,
+            "position_x": 125,
+            "position_y": 984,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -456,9 +456,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 272,
-            "position_y": 950,
-            "width": 90,
+            "position_x": 220,
+            "position_y": 984,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -469,8 +469,8 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 408,
-            "position_y": 950,
+            "position_x": 328,
+            "position_y": 984,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -482,9 +482,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 513,
-            "position_y": 950,
-            "width": 72,
+            "position_x": 410,
+            "position_y": 984,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -496,7 +496,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 977,
-            "position_x": 611,
+            "position_x": 30,
             "position_y": 950,
             "width": 156,
             "height": 30,
@@ -521,7 +521,7 @@
             "name": "close",
             "id": 1014,
             "position_x": 24,
-            "position_y": 1024,
+            "position_y": 1058,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

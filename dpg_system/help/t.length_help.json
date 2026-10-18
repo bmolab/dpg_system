@@ -1,5 +1,5 @@
 {
-    "height": 1272,
+    "height": 1306,
     "width": 1493,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Gives the length of a tensor: the square root of the sum of all its\nsquared values - its straight-line distance from zero.\n\n[3 4] has length 5; [1 1 1] has length 1.73. Reach for it to measure how\nfar something has moved, how fast (the length of a velocity), or how\nstrong a force is regardless of its direction. It is the number that\nt.normalize divides by.\n\nTHE WHOLE TENSOR IS ONE VECTOR:\nt.length does not work along an axis. Every value counts as one\ncoordinate of a single long vector, and one number comes back: a 4 x 4\ntensor gives the length of its 16 values together. For one length per\nrow use np.linalg.norm with an axis.\n\nt.length and t.dist are the same node class, but not the same\noperation: t.length has one inlet and measures from zero; t.dist has a\nsecond inlet and measures between two tensors.\n\nSYNTAX:\nt.length\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or a NumPy array is turned into a float32 tensor).\nEach one that arrives is measured and sent. An empty tensor sends\nnothing.\n\nOUTPUTS:\n\nlength:\nThe length, as a plain float.\n\nREADING THE DEMO:\nTop: the two sliders are the x and y of a point; pak makes them the\nlist [x y]. It starts at [3 4], whose length is 5. Move either slider\nand the length follows; put both at 0 and it reads 0. The length never\ngoes negative - [-3 -4] is 5 too.\nBottom: t.rand makes a 4 x 4 tensor of random values from 0 to 1 (click\nthe t.rand node for a new one). t.length gives ONE number for all 16.\n\nRELATED:\nt.dist measures between two tensors. t.normalize divides a tensor by\nthis length. t.cdist gives the distances between many points at once.\nnp.linalg.norm is the NumPy version, and can measure along an axis.",
+                    "value": "Gives the length of a tensor: the square root of the sum of all its squared values - its straight-line distance from zero.\n\n[3 4] has length 5; [1 1 1] has length 1.73. Reach for it to measure how far something has moved, how fast (the length of a velocity), or how strong a force is regardless of its direction. It is the number that t.normalize divides by.\n\nTHE WHOLE TENSOR IS ONE VECTOR:\nt.length does not work along an axis. Every value counts as one coordinate of a single long vector, and one number comes back: a 4 x 4 tensor gives the length of its 16 values together. For one length per row use np.linalg.norm with an axis.\n\nt.length and t.dist are the same node class, but not the same operation: t.length has one inlet and measures from zero; t.dist has a second inlet and measures between two tensors.\n\nSYNTAX:\nt.length\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or a NumPy array is turned into a float32 tensor). Each one that arrives is measured and sent. An empty tensor sends nothing.\n\nOUTPUTS:\n\nlength:\nThe length, as a plain float.\n\nREADING THE DEMO:\nTop: the two sliders are the x and y of a point; pak makes them the list [x y]. It starts at [3 4], whose length is 5. Move either slider and the length follows; put both at 0 and it reads 0. The length never goes negative - [-3 -4] is 5 too.\nBottom: t.rand makes a 4 x 4 tensor of random values from 0 to 1 (click the t.rand node for a new one). t.length gives ONE number for all 16.\n\nRELATED:\nt.dist measures between two tensors. t.normalize divides a tensor by this length. t.cdist gives the distances between many points at once. np.linalg.norm is the NumPy version, and can measure along an axis.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Gives the length of a tensor: the square root of the sum of all its\nsquared values - its straight-line distance from zero.\n\n[3 4] has length 5; [1 1 1] has length 1.73. Reach for it to measure how\nfar something has moved, how fast (the length of a velocity), or how\nstrong a force is regardless of its direction. It is the number that\nt.normalize divides by.\n\nTHE WHOLE TENSOR IS ONE VECTOR:\nt.length does not work along an axis. Every value counts as one\ncoordinate of a single long vector, and one number comes back: a 4 x 4\ntensor gives the length of its 16 values together. For one length per\nrow use np.linalg.norm with an axis.\n\nt.length and t.dist are the same node class, but not the same\noperation: t.length has one inlet and measures from zero; t.dist has a\nsecond inlet and measures between two tensors.\n\nSYNTAX:\nt.length\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or a NumPy array is turned into a float32 tensor).\nEach one that arrives is measured and sent. An empty tensor sends\nnothing.\n\nOUTPUTS:\n\nlength:\nThe length, as a plain float.\n\nREADING THE DEMO:\nTop: the two sliders are the x and y of a point; pak makes them the\nlist [x y]. It starts at [3 4], whose length is 5. Move either slider\nand the length follows; put both at 0 and it reads 0. The length never\ngoes negative - [-3 -4] is 5 too.\nBottom: t.rand makes a 4 x 4 tensor of random values from 0 to 1 (click\nthe t.rand node for a new one). t.length gives ONE number for all 16.\n\nRELATED:\nt.dist measures between two tensors. t.normalize divides a tensor by\nthis length. t.cdist gives the distances between many points at once.\nnp.linalg.norm is the NumPy version, and can measure along an axis."
+            "text": "Gives the length of a tensor: the square root of the sum of all its squared values - its straight-line distance from zero.\n\n[3 4] has length 5; [1 1 1] has length 1.73. Reach for it to measure how far something has moved, how fast (the length of a velocity), or how strong a force is regardless of its direction. It is the number that t.normalize divides by.\n\nTHE WHOLE TENSOR IS ONE VECTOR:\nt.length does not work along an axis. Every value counts as one coordinate of a single long vector, and one number comes back: a 4 x 4 tensor gives the length of its 16 values together. For one length per row use np.linalg.norm with an axis.\n\nt.length and t.dist are the same node class, but not the same operation: t.length has one inlet and measures from zero; t.dist has a second inlet and measures between two tensors.\n\nSYNTAX:\nt.length\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or a NumPy array is turned into a float32 tensor). Each one that arrives is measured and sent. An empty tensor sends nothing.\n\nOUTPUTS:\n\nlength:\nThe length, as a plain float.\n\nREADING THE DEMO:\nTop: the two sliders are the x and y of a point; pak makes them the list [x y]. It starts at [3 4], whose length is 5. Move either slider and the length follows; put both at 0 and it reads 0. The length never goes negative - [-3 -4] is 5 too.\nBottom: t.rand makes a 4 x 4 tensor of random values from 0 to 1 (click the t.rand node for a new one). t.length gives ONE number for all 16.\n\nRELATED:\nt.dist measures between two tensors. t.normalize divides a tensor by this length. t.cdist gives the distances between many points at once. np.linalg.norm is the NumPy version, and can measure along an axis."
         },
         "3": {
             "name": "load_bang",
@@ -466,8 +466,8 @@
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 1050,
-            "width": 53,
+            "position_y": 1084,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -478,9 +478,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 120,
-            "position_y": 1050,
-            "width": 84,
+            "position_x": 100,
+            "position_y": 1084,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -491,8 +491,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 248,
-            "position_y": 1050,
+            "position_x": 201,
+            "position_y": 1084,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -504,9 +504,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 345,
-            "position_y": 1050,
-            "width": 103,
+            "position_x": 277,
+            "position_y": 1084,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -518,7 +518,7 @@
             "name": "help_link",
             "id": 1051,
             "position_x": 30,
-            "position_y": 1094,
+            "position_y": 1128,
             "width": 158,
             "height": 44,
             "visibility": "show_all",
@@ -531,8 +531,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1088,
-            "position_x": 474,
-            "position_y": 1094,
+            "position_x": 30,
+            "position_y": 1050,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -556,7 +556,7 @@
             "name": "close",
             "id": 1125,
             "position_x": 24,
-            "position_y": 1168,
+            "position_y": 1202,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

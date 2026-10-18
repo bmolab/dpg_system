@@ -1,5 +1,5 @@
 {
-    "height": 1301,
+    "height": 1335,
     "width": 1767,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor of random samples from the LOG-NORMAL distribution: always\npositive, bunched low, with a long tail of large values.\n\nEach sample is e raised to the power of a normal (bell-curve) sample,\nso the LOGARITHMS of the values form a bell. It suits quantities that\ngrow by multiplying rather than adding - sizes, durations, prices,\nloudness, the spacing of events - where a value twice the typical one\nis as likely as one half of it, and nothing is ever negative.\n\nSYNTAX:\nt.dist.log_normal <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.log_normal 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.log_normal 64 64); with none it is [1], a single sample.\nA list or tensor of numbers, or a single number, sent into the inlet\nworks too. A new shape does not send by itself - the next click uses\nit.\n\nloc (drag float, also an inlet):\nThe middle of the bell of the LOGARITHMS, not of the values. The median\nvalue is e to the power loc (loc 0 gives a median of 1). Any number.\nDefault 0.\n\nscale (drag float, also an inlet):\nThe spread of the logarithms. Must be above 0. Small values give a\nnearly symmetrical hump; larger ones a sharp peak near 0 and a very long\ntail. Default 1.\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A parameter that must be above 0\nhas a drag float that stops at 0.000001. A value the distribution\ncannot take (see each parameter) - 0 or below sent into such an inlet,\nsay - prints a message in the console, and the node goes on sampling\nwith the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. The heat_map (0 dark, 5 bright) is mostly dark with scattered bright\nspecks - the tail. The histogram rises steeply from 0, peaks below 1\nand trails off to the right; samples above 10 run off its right edge.\nRaise loc and the whole shape stretches to the right; lower scale and\nthe tail shortens into a lopsided hump.\n\nRELATED:\nt.log_normal fills an existing tensor with the same distribution.\nt.dist.normal is the bell it is built on. t.dist.gamma, t.dist.weibull\nand t.dist.pareto are other positive distributions with a long tail.",
+                    "value": "Makes a tensor of random samples from the LOG-NORMAL distribution: always positive, bunched low, with a long tail of large values.\n\nEach sample is e raised to the power of a normal (bell-curve) sample, so the LOGARITHMS of the values form a bell. It suits quantities that grow by multiplying rather than adding - sizes, durations, prices, loudness, the spacing of events - where a value twice the typical one is as likely as one half of it, and nothing is ever negative.\n\nSYNTAX:\nt.dist.log_normal <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.log_normal 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.log_normal 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nloc (drag float, also an inlet):\nThe middle of the bell of the LOGARITHMS, not of the values. The median value is e to the power loc (loc 0 gives a median of 1). Any number. Default 0.\n\nscale (drag float, also an inlet):\nThe spread of the logarithms. Must be above 0. Small values give a nearly symmetrical hump; larger ones a sharp peak near 0 and a very long tail. Default 1.\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. The heat_map (0 dark, 5 bright) is mostly dark with scattered bright specks - the tail. The histogram rises steeply from 0, peaks below 1 and trails off to the right; samples above 10 run off its right edge. Raise loc and the whole shape stretches to the right; lower scale and the tail shortens into a lopsided hump.\n\nRELATED:\nt.log_normal fills an existing tensor with the same distribution. t.dist.normal is the bell it is built on. t.dist.gamma, t.dist.weibull and t.dist.pareto are other positive distributions with a long tail.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor of random samples from the LOG-NORMAL distribution: always\npositive, bunched low, with a long tail of large values.\n\nEach sample is e raised to the power of a normal (bell-curve) sample,\nso the LOGARITHMS of the values form a bell. It suits quantities that\ngrow by multiplying rather than adding - sizes, durations, prices,\nloudness, the spacing of events - where a value twice the typical one\nis as likely as one half of it, and nothing is ever negative.\n\nSYNTAX:\nt.dist.log_normal <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.log_normal 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.log_normal 64 64); with none it is [1], a single sample.\nA list or tensor of numbers, or a single number, sent into the inlet\nworks too. A new shape does not send by itself - the next click uses\nit.\n\nloc (drag float, also an inlet):\nThe middle of the bell of the LOGARITHMS, not of the values. The median\nvalue is e to the power loc (loc 0 gives a median of 1). Any number.\nDefault 0.\n\nscale (drag float, also an inlet):\nThe spread of the logarithms. Must be above 0. Small values give a\nnearly symmetrical hump; larger ones a sharp peak near 0 and a very long\ntail. Default 1.\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A parameter that must be above 0\nhas a drag float that stops at 0.000001. A value the distribution\ncannot take (see each parameter) - 0 or below sent into such an inlet,\nsay - prints a message in the console, and the node goes on sampling\nwith the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. The heat_map (0 dark, 5 bright) is mostly dark with scattered bright\nspecks - the tail. The histogram rises steeply from 0, peaks below 1\nand trails off to the right; samples above 10 run off its right edge.\nRaise loc and the whole shape stretches to the right; lower scale and\nthe tail shortens into a lopsided hump.\n\nRELATED:\nt.log_normal fills an existing tensor with the same distribution.\nt.dist.normal is the bell it is built on. t.dist.gamma, t.dist.weibull\nand t.dist.pareto are other positive distributions with a long tail."
+            "text": "Makes a tensor of random samples from the LOG-NORMAL distribution: always positive, bunched low, with a long tail of large values.\n\nEach sample is e raised to the power of a normal (bell-curve) sample, so the LOGARITHMS of the values form a bell. It suits quantities that grow by multiplying rather than adding - sizes, durations, prices, loudness, the spacing of events - where a value twice the typical one is as likely as one half of it, and nothing is ever negative.\n\nSYNTAX:\nt.dist.log_normal <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.log_normal 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.log_normal 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nloc (drag float, also an inlet):\nThe middle of the bell of the LOGARITHMS, not of the values. The median value is e to the power loc (loc 0 gives a median of 1). Any number. Default 0.\n\nscale (drag float, also an inlet):\nThe spread of the logarithms. Must be above 0. Small values give a nearly symmetrical hump; larger ones a sharp peak near 0 and a very long tail. Default 1.\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. The heat_map (0 dark, 5 bright) is mostly dark with scattered bright specks - the tail. The histogram rises steeply from 0, peaks below 1 and trails off to the right; samples above 10 run off its right edge. Raise loc and the whole shape stretches to the right; lower scale and the tail shortens into a lopsided hump.\n\nRELATED:\nt.log_normal fills an existing tensor with the same distribution. t.dist.normal is the bell it is built on. t.dist.gamma, t.dist.weibull and t.dist.pareto are other positive distributions with a long tail."
         },
         "3": {
             "name": "load_bang",
@@ -503,8 +503,8 @@
             "name": "help_link",
             "id": 866,
             "position_x": 30,
-            "position_y": 1090,
-            "width": 90,
+            "position_y": 1124,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -515,9 +515,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 166,
-            "position_y": 1090,
-            "width": 96,
+            "position_x": 138,
+            "position_y": 1124,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -528,9 +528,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 310,
-            "position_y": 1090,
-            "width": 90,
+            "position_x": 252,
+            "position_y": 1124,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -541,9 +541,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 446,
-            "position_y": 1090,
-            "width": 96,
+            "position_x": 360,
+            "position_y": 1124,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -554,9 +554,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 590,
-            "position_y": 1090,
-            "width": 53,
+            "position_x": 474,
+            "position_y": 1124,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -568,7 +568,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1051,
-            "position_x": 669,
+            "position_x": 30,
             "position_y": 1090,
             "width": 156,
             "height": 30,
@@ -593,7 +593,7 @@
             "name": "close",
             "id": 1088,
             "position_x": 24,
-            "position_y": 1164,
+            "position_y": 1198,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

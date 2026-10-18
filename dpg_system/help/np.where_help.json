@@ -1,5 +1,5 @@
 {
-    "height": 1418,
+    "height": 1452,
     "width": 1802,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Builds a new array cell by cell: where the condition is true it takes the value from 'if true', elsewhere from 'if false'.\n\nThink of it as a stencil or a masked blend rather than a lookup. Feed it a\ncomparison as the condition and you have \"use this where the reading is\ngood and that where it is not\" across a whole array in one step - no\nloop, no branching. Replace bad readings with a fallback, paste one image\ninto another through a mask, zero everything below a threshold.\n\nSYNTAX:\nnp.where\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ncondition:\nThe mask. Usually the result of a comparison node (>, <, ==) on an array,\nbut any array works: a non-zero value counts as true. This is the only\ninlet that makes the node send.\n\nif true / if false:\nThe values to choose from. Each can be an array the same shape as the\ncondition, or a single number used everywhere - 'if false' 0 blanks every\ncell the condition rejects. These inlets are cold: they are stored, and\nused when the next condition arrives. Send them FIRST.\n\nThe node sends NOTHING until both 'if true' and 'if false' have received\nsomething. A np.where with one branch unwired stays silent and gives no\nsign why. If the shapes cannot be matched up (a 10 x 10 condition with a\n6 x 6 'if true'), nothing is sent either; with verbose on the console\nnames the shapes.\n\nOUTPUTS:\n\nselected:\nAn array the shape of the condition, each cell from one source or the\nother.\n\nREADING THE DEMO:\nnp.grid makes a 10 x 10 square of points from -1 to 1. Two pictures come\nout of it: 'if true' is the x of each point (dark on the left, bright on\nthe right), 'if false' is the y (dark at the top, bright at the bottom).\nnp.linalg.norm gives each point's distance from the centre, and < 0.75\nturns that into the condition: a white disc, true inside, black outside.\nThe result shows the left-to-right ramp inside the disc and the top-to-\nbottom ramp around it. Drag the number on the < node and the disc grows\nor shrinks.\n\nThe 't array array' fires right to left, so both pictures reach np.where\nbefore the condition does - the order matters, because only the condition\nmakes it send.\n\nRELATED:\nnp.argwhere answers a different question about the same mask: not what\nvalues to use, but WHERE the true cells are. The comparison nodes (>, <,\n...) make the condition. np.clip limits values without a mask. In PyTorch,\nt.masked_select (on the t.index_select page) takes out just the values\nwhere a mask is true. np.[] selects by position.",
+                    "value": "Builds a new array cell by cell: where the condition is true it takes the value from 'if true', elsewhere from 'if false'.\n\nThink of it as a stencil or a masked blend rather than a lookup. Feed it a comparison as the condition and you have \"use this where the reading is good and that where it is not\" across a whole array in one step - no loop, no branching. Replace bad readings with a fallback, paste one image into another through a mask, zero everything below a threshold.\n\nSYNTAX:\nnp.where\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ncondition:\nThe mask. Usually the result of a comparison node (>, <, ==) on an array, but any array works: a non-zero value counts as true. This is the only inlet that makes the node send.\n\nif true / if false:\nThe values to choose from. Each can be an array the same shape as the condition, or a single number used everywhere - 'if false' 0 blanks every cell the condition rejects. These inlets are cold: they are stored, and used when the next condition arrives. Send them FIRST.\n\nThe node sends NOTHING until both 'if true' and 'if false' have received something. A np.where with one branch unwired stays silent and gives no sign why. If the shapes cannot be matched up (a 10 x 10 condition with a 6 x 6 'if true'), nothing is sent either; with verbose on the console names the shapes.\n\nOUTPUTS:\n\nselected:\nAn array the shape of the condition, each cell from one source or the other.\n\nREADING THE DEMO:\nnp.grid makes a 10 x 10 square of points from -1 to 1. Two pictures come out of it: 'if true' is the x of each point (dark on the left, bright on the right), 'if false' is the y (dark at the top, bright at the bottom). np.linalg.norm gives each point's distance from the centre, and < 0.75 turns that into the condition: a white disc, true inside, black outside. The result shows the left-to-right ramp inside the disc and the top-to- bottom ramp around it. Drag the number on the < node and the disc grows or shrinks.\n\nThe 't array array' fires right to left, so both pictures reach np.where before the condition does - the order matters, because only the condition makes it send.\n\nRELATED:\nnp.argwhere answers a different question about the same mask: not what values to use, but WHERE the true cells are. The comparison nodes (>, <, ...) make the condition. np.clip limits values without a mask. In PyTorch, t.masked_select (on the t.index_select page) takes out just the values where a mask is true. np.[] selects by position.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Builds a new array cell by cell: where the condition is true it takes the value from 'if true', elsewhere from 'if false'.\n\nThink of it as a stencil or a masked blend rather than a lookup. Feed it a\ncomparison as the condition and you have \"use this where the reading is\ngood and that where it is not\" across a whole array in one step - no\nloop, no branching. Replace bad readings with a fallback, paste one image\ninto another through a mask, zero everything below a threshold.\n\nSYNTAX:\nnp.where\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ncondition:\nThe mask. Usually the result of a comparison node (>, <, ==) on an array,\nbut any array works: a non-zero value counts as true. This is the only\ninlet that makes the node send.\n\nif true / if false:\nThe values to choose from. Each can be an array the same shape as the\ncondition, or a single number used everywhere - 'if false' 0 blanks every\ncell the condition rejects. These inlets are cold: they are stored, and\nused when the next condition arrives. Send them FIRST.\n\nThe node sends NOTHING until both 'if true' and 'if false' have received\nsomething. A np.where with one branch unwired stays silent and gives no\nsign why. If the shapes cannot be matched up (a 10 x 10 condition with a\n6 x 6 'if true'), nothing is sent either; with verbose on the console\nnames the shapes.\n\nOUTPUTS:\n\nselected:\nAn array the shape of the condition, each cell from one source or the\nother.\n\nREADING THE DEMO:\nnp.grid makes a 10 x 10 square of points from -1 to 1. Two pictures come\nout of it: 'if true' is the x of each point (dark on the left, bright on\nthe right), 'if false' is the y (dark at the top, bright at the bottom).\nnp.linalg.norm gives each point's distance from the centre, and < 0.75\nturns that into the condition: a white disc, true inside, black outside.\nThe result shows the left-to-right ramp inside the disc and the top-to-\nbottom ramp around it. Drag the number on the < node and the disc grows\nor shrinks.\n\nThe 't array array' fires right to left, so both pictures reach np.where\nbefore the condition does - the order matters, because only the condition\nmakes it send.\n\nRELATED:\nnp.argwhere answers a different question about the same mask: not what\nvalues to use, but WHERE the true cells are. The comparison nodes (>, <,\n...) make the condition. np.clip limits values without a mask. In PyTorch,\nt.masked_select (on the t.index_select page) takes out just the values\nwhere a mask is true. np.[] selects by position."
+            "text": "Builds a new array cell by cell: where the condition is true it takes the value from 'if true', elsewhere from 'if false'.\n\nThink of it as a stencil or a masked blend rather than a lookup. Feed it a comparison as the condition and you have \"use this where the reading is good and that where it is not\" across a whole array in one step - no loop, no branching. Replace bad readings with a fallback, paste one image into another through a mask, zero everything below a threshold.\n\nSYNTAX:\nnp.where\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ncondition:\nThe mask. Usually the result of a comparison node (>, <, ==) on an array, but any array works: a non-zero value counts as true. This is the only inlet that makes the node send.\n\nif true / if false:\nThe values to choose from. Each can be an array the same shape as the condition, or a single number used everywhere - 'if false' 0 blanks every cell the condition rejects. These inlets are cold: they are stored, and used when the next condition arrives. Send them FIRST.\n\nThe node sends NOTHING until both 'if true' and 'if false' have received something. A np.where with one branch unwired stays silent and gives no sign why. If the shapes cannot be matched up (a 10 x 10 condition with a 6 x 6 'if true'), nothing is sent either; with verbose on the console names the shapes.\n\nOUTPUTS:\n\nselected:\nAn array the shape of the condition, each cell from one source or the other.\n\nREADING THE DEMO:\nnp.grid makes a 10 x 10 square of points from -1 to 1. Two pictures come out of it: 'if true' is the x of each point (dark on the left, bright on the right), 'if false' is the y (dark at the top, bright at the bottom). np.linalg.norm gives each point's distance from the centre, and < 0.75 turns that into the condition: a white disc, true inside, black outside. The result shows the left-to-right ramp inside the disc and the top-to- bottom ramp around it. Drag the number on the < node and the disc grows or shrinks.\n\nThe 't array array' fires right to left, so both pictures reach np.where before the condition does - the order matters, because only the condition makes it send.\n\nRELATED:\nnp.argwhere answers a different question about the same mask: not what values to use, but WHERE the true cells are. The comparison nodes (>, <, ...) make the condition. np.clip limits values without a mask. In PyTorch, t.masked_select (on the t.index_select page) takes out just the values where a mask is true. np.[] selects by position."
         },
         "3": {
             "name": "metro",
@@ -604,8 +604,8 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1240,
-            "width": 84,
+            "position_y": 1274,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -616,8 +616,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 158,
-            "position_y": 1240,
+            "position_x": 131,
+            "position_y": 1274,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -629,8 +629,8 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 255,
-            "position_y": 1240,
+            "position_x": 207,
+            "position_y": 1274,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -642,9 +642,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 352,
-            "position_y": 1240,
-            "width": 103,
+            "position_x": 283,
+            "position_y": 1274,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -655,9 +655,9 @@
         "24": {
             "name": "help_link",
             "id": 1125,
-            "position_x": 503,
-            "position_y": 1240,
-            "width": 47,
+            "position_x": 403,
+            "position_y": 1274,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -669,7 +669,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1162,
-            "position_x": 704,
+            "position_x": 30,
             "position_y": 1240,
             "width": 156,
             "height": 30,
@@ -694,7 +694,7 @@
             "name": "close",
             "id": 1199,
             "position_x": 24,
-            "position_y": 1314,
+            "position_y": 1348,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

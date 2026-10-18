@@ -1,5 +1,5 @@
 {
-    "height": 1278,
+    "height": 1312,
     "width": 1645,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Rounds every value of a tensor UP to the whole number at or above\nit - up the number line, so 2.3 becomes 3 and -2.7 becomes -2.\n\nUse it when a part counts as a whole: how many pages, buffers or beats\nare needed to hold a length, where anything over an exact number needs\none more. Each element is rounded on its own, so the output has the\nshape of the input.\n\nCEIL IS NOT \"AWAY FROM ZERO\":\nFor negative values ceil still goes UP, which is towards zero: -2.7\nbecomes -2. There is no node that rounds away from zero directly; t.ceil\nof the size with t.copysign to restore the sign does it.\n\nSYNTAX:\nt.ceil\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a\nfloat32 tensor first. Every input is processed and sent - this is the\nonly inlet that makes the node send. An empty tensor sends nothing.\n\nOUTPUTS:\n\noutput:\nThe tensor rounded up, the same shape and type as the input - still\nfloats, just with whole-number values. An integer tensor comes back\nunchanged.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.ceil turns it into a\nstaircase that always sits ON or ABOVE the ramp: each step jumps up as\nsoon as the ramp passes a whole number. Compare it with t.floor's page,\nwhere the same staircase sits one step lower. The message shows values\neither side of zero going up.\n\nRELATED:\nt.floor goes down instead, t.trunc towards zero, t.round to the nearest.\nceil does the same for numbers and NumPy arrays (np.ceil shares its\npage).",
+                    "value": "Rounds every value of a tensor UP to the whole number at or above it - up the number line, so 2.3 becomes 3 and -2.7 becomes -2.\n\nUse it when a part counts as a whole: how many pages, buffers or beats are needed to hold a length, where anything over an exact number needs one more. Each element is rounded on its own, so the output has the shape of the input.\n\nCEIL IS NOT \"AWAY FROM ZERO\":\nFor negative values ceil still goes UP, which is towards zero: -2.7 becomes -2. There is no node that rounds away from zero directly; t.ceil of the size with t.copysign to restore the sign does it.\n\nSYNTAX:\nt.ceil\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a float32 tensor first. Every input is processed and sent - this is the only inlet that makes the node send. An empty tensor sends nothing.\n\nOUTPUTS:\n\noutput:\nThe tensor rounded up, the same shape and type as the input - still floats, just with whole-number values. An integer tensor comes back unchanged.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.ceil turns it into a staircase that always sits ON or ABOVE the ramp: each step jumps up as soon as the ramp passes a whole number. Compare it with t.floor's page, where the same staircase sits one step lower. The message shows values either side of zero going up.\n\nRELATED:\nt.floor goes down instead, t.trunc towards zero, t.round to the nearest. ceil does the same for numbers and NumPy arrays (np.ceil shares its page).",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Rounds every value of a tensor UP to the whole number at or above\nit - up the number line, so 2.3 becomes 3 and -2.7 becomes -2.\n\nUse it when a part counts as a whole: how many pages, buffers or beats\nare needed to hold a length, where anything over an exact number needs\none more. Each element is rounded on its own, so the output has the\nshape of the input.\n\nCEIL IS NOT \"AWAY FROM ZERO\":\nFor negative values ceil still goes UP, which is towards zero: -2.7\nbecomes -2. There is no node that rounds away from zero directly; t.ceil\nof the size with t.copysign to restore the sign does it.\n\nSYNTAX:\nt.ceil\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a\nfloat32 tensor first. Every input is processed and sent - this is the\nonly inlet that makes the node send. An empty tensor sends nothing.\n\nOUTPUTS:\n\noutput:\nThe tensor rounded up, the same shape and type as the input - still\nfloats, just with whole-number values. An integer tensor comes back\nunchanged.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.ceil turns it into a\nstaircase that always sits ON or ABOVE the ramp: each step jumps up as\nsoon as the ramp passes a whole number. Compare it with t.floor's page,\nwhere the same staircase sits one step lower. The message shows values\neither side of zero going up.\n\nRELATED:\nt.floor goes down instead, t.trunc towards zero, t.round to the nearest.\nceil does the same for numbers and NumPy arrays (np.ceil shares its\npage)."
+            "text": "Rounds every value of a tensor UP to the whole number at or above it - up the number line, so 2.3 becomes 3 and -2.7 becomes -2.\n\nUse it when a part counts as a whole: how many pages, buffers or beats are needed to hold a length, where anything over an exact number needs one more. Each element is rounded on its own, so the output has the shape of the input.\n\nCEIL IS NOT \"AWAY FROM ZERO\":\nFor negative values ceil still goes UP, which is towards zero: -2.7 becomes -2. There is no node that rounds away from zero directly; t.ceil of the size with t.copysign to restore the sign does it.\n\nSYNTAX:\nt.ceil\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a float32 tensor first. Every input is processed and sent - this is the only inlet that makes the node send. An empty tensor sends nothing.\n\nOUTPUTS:\n\noutput:\nThe tensor rounded up, the same shape and type as the input - still floats, just with whole-number values. An integer tensor comes back unchanged.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.ceil turns it into a staircase that always sits ON or ABOVE the ramp: each step jumps up as soon as the ramp passes a whole number. Compare it with t.floor's page, where the same staircase sits one step lower. The message shows values either side of zero going up.\n\nRELATED:\nt.floor goes down instead, t.trunc towards zero, t.round to the nearest. ceil does the same for numbers and NumPy arrays (np.ceil shares its page)."
         },
         "3": {
             "name": "metro",
@@ -507,7 +507,7 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 1100,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -519,8 +519,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 127,
-            "position_y": 1100,
+            "position_x": 106,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -532,8 +532,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 224,
-            "position_y": 1100,
+            "position_x": 182,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -545,9 +545,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 321,
-            "position_y": 1100,
-            "width": 78,
+            "position_x": 258,
+            "position_y": 1134,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -558,8 +558,8 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 442,
-            "position_y": 1100,
+            "position_x": 353,
+            "position_y": 1134,
             "width": 41,
             "height": 44,
             "visibility": "show_all",
@@ -572,8 +572,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 509,
-            "position_y": 1144,
+            "position_x": 30,
+            "position_y": 1100,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -597,7 +597,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 1174,
+            "position_y": 1208,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

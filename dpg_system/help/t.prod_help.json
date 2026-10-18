@@ -1,5 +1,5 @@
 {
-    "height": 1448,
+    "height": 1482,
     "width": 1834,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Multiplies the values of a tensor together - all of them, or each row\nor each column separately.\n\nUse it to combine factors: gains applied one after another, survival\nprobabilities, the number of cells in a shape (the product of its\nsizes). A single 0 anywhere makes the product 0, and many values below\n1 shrink it fast, so it is most useful on a few numbers near 1 or on\nsmall whole numbers.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number\ntyped after the name (t.prod 0) chooses a dim to reduce along and adds a\ndim inlet and a keep_dims checkbox to the node - it is the argument that creates them,\nso a node made without one cannot be given a dim later (retype it).\nFor a table of rows and columns, dim 0 reduces DOWN each column (one\nanswer per column) and dim 1 ALONG each row (one answer per row). The\ndim named is the one that disappears: a 6 by 8 tensor gives 8 answers\non dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is\nthe last dim.\n\nSYNTAX:\nt.prod <dim: int>\nDefault: no dim - the whole tensor.\n\nEXAMPLE:\nt.prod 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is multiplied out and the answer sent - this\nis the only inlet that makes the node send. A list or a NumPy array is\nfirst turned into a float32 tensor on the cpu; a tensor is used as it\nis, on its own device, and the answer stays there. An empty tensor is\nignored: nothing is sent.\nAny dtype is accepted. A NaN makes every product it is part of NaN.\nWhole numbers multiply in int64, which wraps around silently past about\n9 million million million; floats overflow to inf.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor\nuses it. A dim the tensor does not have (2 or more for a table, or 1\nfor a 1-D tensor) is an error: the console prints \"Dimension out of\nrange\" and nothing is sent.\n\nkeep_dims (checkbox, only when an argument was given; default off):\nOff, the reduced dim is removed: 6 by 8 reduced on dim 0 has shape [8].\nOn, it is kept with length 1: shape [1, 8] on dim 0, [6, 1] on dim 1.\nKeep it when the answer must line up against the original again - to\nsubtract each row's product from that row, for instance.\n\nOUTPUTS:\n\noutput:\nWith no dim, one number (a 0-dimensional tensor); with a dim, a tensor\nof products with that dim removed (or kept at length 1). Whole numbers\nand bools give int64; floats keep their dtype.\n\nREADING THE DEMO:\nt.rand makes 3 rows by 4 columns of whole numbers 1 to 3 (int64),\nwritten in the cells; click its button for new ones. The plain t.prod\nmultiplies all 12 (at most 3 to the 12th, 531441). The slider sets the\ndim of the second node through 't bang int' (number first, then a bang\nthat re-sends the held tensor). At dim 0 each cell of the strip is a\ncolumn's product of 3 values (up to 27), at dim 1 a row's product of 4\n(up to 81); t.info shows the shape, [4] or [3].\n\nRELATED:\nt.sum adds instead of multiplying. t.cumprod keeps the running product\nat every step. t.mean, t.max and t.min are the other reductions. There\nis no NumPy np.prod node; np.cumprod's last value is the same product.",
+                    "value": "Multiplies the values of a tensor together - all of them, or each row or each column separately.\n\nUse it to combine factors: gains applied one after another, survival probabilities, the number of cells in a shape (the product of its sizes). A single 0 anywhere makes the product 0, and many values below 1 shrink it fast, so it is most useful on a few numbers near 1 or on small whole numbers.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number typed after the name (t.prod 0) chooses a dim to reduce along and adds a dim inlet and a keep_dims checkbox to the node - it is the argument that creates them, so a node made without one cannot be given a dim later (retype it). For a table of rows and columns, dim 0 reduces DOWN each column (one answer per column) and dim 1 ALONG each row (one answer per row). The dim named is the one that disappears: a 6 by 8 tensor gives 8 answers on dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is the last dim.\n\nSYNTAX:\nt.prod <dim: int>\nDefault: no dim - the whole tensor.\n\nEXAMPLE:\nt.prod 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is multiplied out and the answer sent - this is the only inlet that makes the node send. A list or a NumPy array is first turned into a float32 tensor on the cpu; a tensor is used as it is, on its own device, and the answer stays there. An empty tensor is ignored: nothing is sent.\nAny dtype is accepted. A NaN makes every product it is part of NaN. Whole numbers multiply in int64, which wraps around silently past about 9 million million million; floats overflow to inf.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor uses it. A dim the tensor does not have (2 or more for a table, or 1 for a 1-D tensor) is an error: the console prints \"Dimension out of range\" and nothing is sent.\n\nkeep_dims (checkbox, only when an argument was given; default off):\nOff, the reduced dim is removed: 6 by 8 reduced on dim 0 has shape [8]. On, it is kept with length 1: shape [1, 8] on dim 0, [6, 1] on dim 1. Keep it when the answer must line up against the original again - to subtract each row's product from that row, for instance.\n\nOUTPUTS:\n\noutput:\nWith no dim, one number (a 0-dimensional tensor); with a dim, a tensor of products with that dim removed (or kept at length 1). Whole numbers and bools give int64; floats keep their dtype.\n\nREADING THE DEMO:\nt.rand makes 3 rows by 4 columns of whole numbers 1 to 3 (int64), written in the cells; click its button for new ones. The plain t.prod multiplies all 12 (at most 3 to the 12th, 531441). The slider sets the dim of the second node through 't bang int' (number first, then a bang that re-sends the held tensor). At dim 0 each cell of the strip is a column's product of 3 values (up to 27), at dim 1 a row's product of 4 (up to 81); t.info shows the shape, [4] or [3].\n\nRELATED:\nt.sum adds instead of multiplying. t.cumprod keeps the running product at every step. t.mean, t.max and t.min are the other reductions. There is no NumPy np.prod node; np.cumprod's last value is the same product.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Multiplies the values of a tensor together - all of them, or each row\nor each column separately.\n\nUse it to combine factors: gains applied one after another, survival\nprobabilities, the number of cells in a shape (the product of its\nsizes). A single 0 anywhere makes the product 0, and many values below\n1 shrink it fast, so it is most useful on a few numbers near 1 or on\nsmall whole numbers.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number\ntyped after the name (t.prod 0) chooses a dim to reduce along and adds a\ndim inlet and a keep_dims checkbox to the node - it is the argument that creates them,\nso a node made without one cannot be given a dim later (retype it).\nFor a table of rows and columns, dim 0 reduces DOWN each column (one\nanswer per column) and dim 1 ALONG each row (one answer per row). The\ndim named is the one that disappears: a 6 by 8 tensor gives 8 answers\non dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is\nthe last dim.\n\nSYNTAX:\nt.prod <dim: int>\nDefault: no dim - the whole tensor.\n\nEXAMPLE:\nt.prod 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is multiplied out and the answer sent - this\nis the only inlet that makes the node send. A list or a NumPy array is\nfirst turned into a float32 tensor on the cpu; a tensor is used as it\nis, on its own device, and the answer stays there. An empty tensor is\nignored: nothing is sent.\nAny dtype is accepted. A NaN makes every product it is part of NaN.\nWhole numbers multiply in int64, which wraps around silently past about\n9 million million million; floats overflow to inf.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor\nuses it. A dim the tensor does not have (2 or more for a table, or 1\nfor a 1-D tensor) is an error: the console prints \"Dimension out of\nrange\" and nothing is sent.\n\nkeep_dims (checkbox, only when an argument was given; default off):\nOff, the reduced dim is removed: 6 by 8 reduced on dim 0 has shape [8].\nOn, it is kept with length 1: shape [1, 8] on dim 0, [6, 1] on dim 1.\nKeep it when the answer must line up against the original again - to\nsubtract each row's product from that row, for instance.\n\nOUTPUTS:\n\noutput:\nWith no dim, one number (a 0-dimensional tensor); with a dim, a tensor\nof products with that dim removed (or kept at length 1). Whole numbers\nand bools give int64; floats keep their dtype.\n\nREADING THE DEMO:\nt.rand makes 3 rows by 4 columns of whole numbers 1 to 3 (int64),\nwritten in the cells; click its button for new ones. The plain t.prod\nmultiplies all 12 (at most 3 to the 12th, 531441). The slider sets the\ndim of the second node through 't bang int' (number first, then a bang\nthat re-sends the held tensor). At dim 0 each cell of the strip is a\ncolumn's product of 3 values (up to 27), at dim 1 a row's product of 4\n(up to 81); t.info shows the shape, [4] or [3].\n\nRELATED:\nt.sum adds instead of multiplying. t.cumprod keeps the running product\nat every step. t.mean, t.max and t.min are the other reductions. There\nis no NumPy np.prod node; np.cumprod's last value is the same product."
+            "text": "Multiplies the values of a tensor together - all of them, or each row or each column separately.\n\nUse it to combine factors: gains applied one after another, survival probabilities, the number of cells in a shape (the product of its sizes). A single 0 anywhere makes the product 0, and many values below 1 shrink it fast, so it is most useful on a few numbers near 1 or on small whole numbers.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number typed after the name (t.prod 0) chooses a dim to reduce along and adds a dim inlet and a keep_dims checkbox to the node - it is the argument that creates them, so a node made without one cannot be given a dim later (retype it). For a table of rows and columns, dim 0 reduces DOWN each column (one answer per column) and dim 1 ALONG each row (one answer per row). The dim named is the one that disappears: a 6 by 8 tensor gives 8 answers on dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is the last dim.\n\nSYNTAX:\nt.prod <dim: int>\nDefault: no dim - the whole tensor.\n\nEXAMPLE:\nt.prod 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is multiplied out and the answer sent - this is the only inlet that makes the node send. A list or a NumPy array is first turned into a float32 tensor on the cpu; a tensor is used as it is, on its own device, and the answer stays there. An empty tensor is ignored: nothing is sent.\nAny dtype is accepted. A NaN makes every product it is part of NaN. Whole numbers multiply in int64, which wraps around silently past about 9 million million million; floats overflow to inf.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor uses it. A dim the tensor does not have (2 or more for a table, or 1 for a 1-D tensor) is an error: the console prints \"Dimension out of range\" and nothing is sent.\n\nkeep_dims (checkbox, only when an argument was given; default off):\nOff, the reduced dim is removed: 6 by 8 reduced on dim 0 has shape [8]. On, it is kept with length 1: shape [1, 8] on dim 0, [6, 1] on dim 1. Keep it when the answer must line up against the original again - to subtract each row's product from that row, for instance.\n\nOUTPUTS:\n\noutput:\nWith no dim, one number (a 0-dimensional tensor); with a dim, a tensor of products with that dim removed (or kept at length 1). Whole numbers and bools give int64; floats keep their dtype.\n\nREADING THE DEMO:\nt.rand makes 3 rows by 4 columns of whole numbers 1 to 3 (int64), written in the cells; click its button for new ones. The plain t.prod multiplies all 12 (at most 3 to the 12th, 531441). The slider sets the dim of the second node through 't bang int' (number first, then a bang that re-sends the held tensor). At dim 0 each cell of the strip is a column's product of 3 values (up to 27), at dim 1 a row's product of 4 (up to 81); t.info shows the shape, [4] or [3].\n\nRELATED:\nt.sum adds instead of multiplying. t.cumprod keeps the running product at every step. t.mean, t.max and t.min are the other reductions. There is no NumPy np.prod node; np.cumprod's last value is the same product."
         },
         "3": {
             "name": "load_bang",
@@ -613,8 +613,8 @@
             "name": "help_link",
             "id": 1088,
             "position_x": 30,
-            "position_y": 1270,
-            "width": 47,
+            "position_y": 1304,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -625,9 +625,9 @@
         "24": {
             "name": "help_link",
             "id": 1125,
-            "position_x": 112,
-            "position_y": 1270,
-            "width": 72,
+            "position_x": 94,
+            "position_y": 1304,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -638,9 +638,9 @@
         "25": {
             "name": "help_link",
             "id": 1162,
-            "position_x": 225,
-            "position_y": 1270,
-            "width": 53,
+            "position_x": 183,
+            "position_y": 1304,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -651,9 +651,9 @@
         "26": {
             "name": "help_link",
             "id": 1199,
-            "position_x": 315,
-            "position_y": 1270,
-            "width": 78,
+            "position_x": 253,
+            "position_y": 1304,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -664,9 +664,9 @@
         "27": {
             "name": "help_link",
             "id": 1236,
-            "position_x": 436,
-            "position_y": 1270,
-            "width": 47,
+            "position_x": 348,
+            "position_y": 1304,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -678,7 +678,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1273,
-            "position_x": 686,
+            "position_x": 30,
             "position_y": 1270,
             "width": 156,
             "height": 30,
@@ -703,7 +703,7 @@
             "name": "close",
             "id": 1310,
             "position_x": 24,
-            "position_y": 1344,
+            "position_y": 1378,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

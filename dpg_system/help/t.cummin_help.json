@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 991,
+            "height": 1025,
             "width": 1606,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Replaces each value of a tensor with the smallest value seen so far:\na running minimum, the low-water mark.\n\nRunning it along time gives, at every instant, the smallest value that\nhas occurred up to then - a floor that never lets go. It\nanswers 'has this ever dropped below X, and when did it first\ndo so?', and its second outlet says WHERE each record was set.\n\nSYNTAX:\nt.cummin <dim: int>\nDefault dim 0, the FIRST axis - for a 2-D tensor, down each column.\nGive an axis as the argument - t.cummin 1, or -1 for the last - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.cummin\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is scanned and sent - the only inlet that makes the node send. An\naxis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end.\n\nOUTPUTS:\n\noutput:\nThe running minimum, the same shape as the input. It can only\nfall or stay level, never rise.\n\nindices:\nFor each position, WHERE the smallest value so far was found (an int64\nposition along the axis), the same shape as the input. It stays put\nwhile the record stands and jumps forward each time a new one is set.\nWith equal values it points at the later one. The indices are sent just\nbefore the output.\n\nREADING THE DEMO:\nmake_walk sends a random walk of 200 steps twice a second (open it to\nsee how). t.stack puts t.cummin's output and the walk itself into one\n2-row tensor, and the upper plot draws both: the walk wanders, and the\nt.cummin line steps down in a staircase - level while the walk is\nabove its lowest, stepping down each time the walk sets a new low.\nAt the start the two lines are one.\n\nThe lower plot is the indices outlet: the position, 0 to 199, of the\ncurrent record. Each flat stretch is a record that stood; each jump is\na new low being set.\n\nRELATED:\nt.cummax is the running maximum. t.min gives only the final\nsmallest value (and, along an axis, where it is). t.cumsum is the running total.\nt.logcumsumexp is a smooth version of the running maximum.",
+                            "value": "Replaces each value of a tensor with the smallest value seen so far:\na running minimum, the low-water mark.\n\nRunning it along time gives, at every instant, the smallest value that has occurred up to then - a floor that never lets go. It answers 'has this ever dropped below X, and when did it first do so?', and its second outlet says WHERE each record was set.\n\nSYNTAX:\nt.cummin <dim: int>\nDefault dim 0, the FIRST axis - for a 2-D tensor, down each column.\nGive an axis as the argument - t.cummin 1, or -1 for the last - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.cummin\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is scanned and sent - the only inlet that makes the node send. An axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end.\n\nOUTPUTS:\n\noutput:\nThe running minimum, the same shape as the input. It can only fall or stay level, never rise.\n\nindices:\nFor each position, WHERE the smallest value so far was found (an int64 position along the axis), the same shape as the input. It stays put while the record stands and jumps forward each time a new one is set. With equal values it points at the later one. The indices are sent just before the output.\n\nREADING THE DEMO:\nmake_walk sends a random walk of 200 steps twice a second (open it to see how). t.stack puts t.cummin's output and the walk itself into one 2-row tensor, and the upper plot draws both: the walk wanders, and the t.cummin line steps down in a staircase - level while the walk is above its lowest, stepping down each time the walk sets a new low. At the start the two lines are one.\n\nThe lower plot is the indices outlet: the position, 0 to 199, of the current record. Each flat stretch is a record that stood; each jump is a new low being set.\n\nRELATED:\nt.cummax is the running maximum. t.min gives only the final smallest value (and, along an axis, where it is). t.cumsum is the running total. t.logcumsumexp is a smooth version of the running maximum.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Replaces each value of a tensor with the smallest value seen so far:\na running minimum, the low-water mark.\n\nRunning it along time gives, at every instant, the smallest value that\nhas occurred up to then - a floor that never lets go. It\nanswers 'has this ever dropped below X, and when did it first\ndo so?', and its second outlet says WHERE each record was set.\n\nSYNTAX:\nt.cummin <dim: int>\nDefault dim 0, the FIRST axis - for a 2-D tensor, down each column.\nGive an axis as the argument - t.cummin 1, or -1 for the last - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.cummin\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is scanned and sent - the only inlet that makes the node send. An\naxis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end.\n\nOUTPUTS:\n\noutput:\nThe running minimum, the same shape as the input. It can only\nfall or stay level, never rise.\n\nindices:\nFor each position, WHERE the smallest value so far was found (an int64\nposition along the axis), the same shape as the input. It stays put\nwhile the record stands and jumps forward each time a new one is set.\nWith equal values it points at the later one. The indices are sent just\nbefore the output.\n\nREADING THE DEMO:\nmake_walk sends a random walk of 200 steps twice a second (open it to\nsee how). t.stack puts t.cummin's output and the walk itself into one\n2-row tensor, and the upper plot draws both: the walk wanders, and the\nt.cummin line steps down in a staircase - level while the walk is\nabove its lowest, stepping down each time the walk sets a new low.\nAt the start the two lines are one.\n\nThe lower plot is the indices outlet: the position, 0 to 199, of the\ncurrent record. Each flat stretch is a record that stood; each jump is\na new low being set.\n\nRELATED:\nt.cummax is the running maximum. t.min gives only the final\nsmallest value (and, along an axis, where it is). t.cumsum is the running total.\nt.logcumsumexp is a smooth version of the running maximum."
+                    "text": "Replaces each value of a tensor with the smallest value seen so far:\na running minimum, the low-water mark.\n\nRunning it along time gives, at every instant, the smallest value that has occurred up to then - a floor that never lets go. It answers 'has this ever dropped below X, and when did it first do so?', and its second outlet says WHERE each record was set.\n\nSYNTAX:\nt.cummin <dim: int>\nDefault dim 0, the FIRST axis - for a 2-D tensor, down each column.\nGive an axis as the argument - t.cummin 1, or -1 for the last - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.cummin\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is scanned and sent - the only inlet that makes the node send. An axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end.\n\nOUTPUTS:\n\noutput:\nThe running minimum, the same shape as the input. It can only fall or stay level, never rise.\n\nindices:\nFor each position, WHERE the smallest value so far was found (an int64 position along the axis), the same shape as the input. It stays put while the record stands and jumps forward each time a new one is set. With equal values it points at the later one. The indices are sent just before the output.\n\nREADING THE DEMO:\nmake_walk sends a random walk of 200 steps twice a second (open it to see how). t.stack puts t.cummin's output and the walk itself into one 2-row tensor, and the upper plot draws both: the walk wanders, and the t.cummin line steps down in a staircase - level while the walk is above its lowest, stepping down each time the walk sets a new low. At the start the two lines are one.\n\nThe lower plot is the indices outlet: the position, 0 to 199, of the current record. Each flat stretch is a record that stood; each jump is a new low being set.\n\nRELATED:\nt.cummax is the running maximum. t.min gives only the final smallest value (and, along an axis, where it is). t.cumsum is the running total. t.logcumsumexp is a smooth version of the running maximum."
                 },
                 "3": {
                     "name": "p",
@@ -602,7 +602,7 @@
                     "name": "help_link",
                     "id": 681,
                     "position_x": 30,
-                    "position_y": 810,
+                    "position_y": 844,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -614,9 +614,9 @@
                 "13": {
                     "name": "help_link",
                     "id": 718,
-                    "position_x": 135,
-                    "position_y": 810,
-                    "width": 47,
+                    "position_x": 112,
+                    "position_y": 844,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -627,8 +627,8 @@
                 "14": {
                     "name": "help_link",
                     "id": 755,
-                    "position_x": 217,
-                    "position_y": 810,
+                    "position_x": 176,
+                    "position_y": 844,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -640,9 +640,9 @@
                 "15": {
                     "name": "help_link",
                     "id": 792,
-                    "position_x": 322,
-                    "position_y": 810,
-                    "width": 103,
+                    "position_x": 258,
+                    "position_y": 844,
+                    "width": 104,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -654,8 +654,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 829,
-                    "position_x": 451,
-                    "position_y": 854,
+                    "position_x": 30,
+                    "position_y": 810,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -679,7 +679,7 @@
                     "name": "close",
                     "id": 866,
                     "position_x": 24,
-                    "position_y": 884,
+                    "position_y": 918,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

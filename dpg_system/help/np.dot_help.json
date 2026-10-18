@@ -227,7 +227,7 @@
             }
         },
         "1": {
-            "height": 1045,
+            "height": 1079,
             "width": 1811,
             "position": [
                 100,
@@ -294,7 +294,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Gives the dot product of two vectors: multiply them element by\nelement and add up - one number that says how much they point the same\nway.\n\nFor two vectors of length 1 the dot product is the cosine of the angle\nbetween them: 1 when they point the same way, 0 at right angles, -1 when\nopposite. For longer vectors it is scaled by both lengths. With one of\nthem a unit direction, it is the PROJECTION: how far the other reaches\nalong that direction - the component of a movement along an axis, of a\nforce along a surface, of a pose along a learned direction.\n\nReach for it to compare directions (similarity), to project onto an axis,\nor to test for right angles (dot 0).\n\nFOR ARRAYS OF MORE THAN ONE DIMENSION:\n2-D with 2-D is matrix multiplication, the same as np.matmul. A set of\nvectors (N rows of 3) with one vector of 3 gives N dot products - every\nrow against the same direction at once.\n\nSYNTAX:\nnp.dot\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector (a list is turned into an array). Receiving it\ncalculates and sends.\n\nin 2:\nThe second vector. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has. The lengths must match (for 2-D, the\ncolumns of in 1 must match the rows of in 2), or an error is printed and\nnothing is sent.\n\nOUTPUTS:\n\ndot product:\nA float for two vectors; an array for the larger cases.\n\nREADING THE DEMO:\nin 1 is the vector a, which starts as [1 0], pointing along x; drag its\nnumbers. in 2 is b, a vector of length 1 at the angle on the slider\n(make_direction turns the angle into [cos, sin]). The dot product reads\n1 at 0 degrees, 0 at 90, -1 at 180 - the cosine of the angle between\nthem. Make a longer, [2 0], and every reading doubles. 'b' goes through\n't bang array': the array is stored in in 2 first, then the bang makes\na re-send, so turning the slider updates the answer.\n\nRELATED:\nnp.inner is the same for vectors but pairs rows with rows for 2-D\narrays. np.matmul is the matrix product. np.linalg.norm gives a length\n(the square root of a vector dotted with itself). np.cross gives the\nvector at right angles to both. t.cosine_similarity gives the cosine\ndirectly, whatever the lengths.",
+                            "value": "Gives the dot product of two vectors: multiply them element by element and add up - one number that says how much they point the same way.\n\nFor two vectors of length 1 the dot product is the cosine of the angle between them: 1 when they point the same way, 0 at right angles, -1 when opposite. For longer vectors it is scaled by both lengths. With one of them a unit direction, it is the PROJECTION: how far the other reaches along that direction - the component of a movement along an axis, of a force along a surface, of a pose along a learned direction.\n\nReach for it to compare directions (similarity), to project onto an axis, or to test for right angles (dot 0).\n\nFOR ARRAYS OF MORE THAN ONE DIMENSION:\n2-D with 2-D is matrix multiplication, the same as np.matmul. A set of vectors (N rows of 3) with one vector of 3 gives N dot products - every row against the same direction at once.\n\nSYNTAX:\nnp.dot\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector (a list is turned into an array). Receiving it calculates and sends.\n\nin 2:\nThe second vector. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has. The lengths must match (for 2-D, the columns of in 1 must match the rows of in 2), or an error is printed and nothing is sent.\n\nOUTPUTS:\n\ndot product:\nA float for two vectors; an array for the larger cases.\n\nREADING THE DEMO:\nin 1 is the vector a, which starts as [1 0], pointing along x; drag its numbers. in 2 is b, a vector of length 1 at the angle on the slider (make_direction turns the angle into [cos, sin]). The dot product reads 1 at 0 degrees, 0 at 90, -1 at 180 - the cosine of the angle between them. Make a longer, [2 0], and every reading doubles. 'b' goes through 't bang array': the array is stored in in 2 first, then the bang makes a re-send, so turning the slider updates the answer.\n\nRELATED:\nnp.inner is the same for vectors but pairs rows with rows for 2-D arrays. np.matmul is the matrix product. np.linalg.norm gives a length (the square root of a vector dotted with itself). np.cross gives the vector at right angles to both. t.cosine_similarity gives the cosine directly, whatever the lengths.",
                             "value_type": "str"
                         },
                         "1": {
@@ -318,7 +318,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Gives the dot product of two vectors: multiply them element by\nelement and add up - one number that says how much they point the same\nway.\n\nFor two vectors of length 1 the dot product is the cosine of the angle\nbetween them: 1 when they point the same way, 0 at right angles, -1 when\nopposite. For longer vectors it is scaled by both lengths. With one of\nthem a unit direction, it is the PROJECTION: how far the other reaches\nalong that direction - the component of a movement along an axis, of a\nforce along a surface, of a pose along a learned direction.\n\nReach for it to compare directions (similarity), to project onto an axis,\nor to test for right angles (dot 0).\n\nFOR ARRAYS OF MORE THAN ONE DIMENSION:\n2-D with 2-D is matrix multiplication, the same as np.matmul. A set of\nvectors (N rows of 3) with one vector of 3 gives N dot products - every\nrow against the same direction at once.\n\nSYNTAX:\nnp.dot\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector (a list is turned into an array). Receiving it\ncalculates and sends.\n\nin 2:\nThe second vector. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has. The lengths must match (for 2-D, the\ncolumns of in 1 must match the rows of in 2), or an error is printed and\nnothing is sent.\n\nOUTPUTS:\n\ndot product:\nA float for two vectors; an array for the larger cases.\n\nREADING THE DEMO:\nin 1 is the vector a, which starts as [1 0], pointing along x; drag its\nnumbers. in 2 is b, a vector of length 1 at the angle on the slider\n(make_direction turns the angle into [cos, sin]). The dot product reads\n1 at 0 degrees, 0 at 90, -1 at 180 - the cosine of the angle between\nthem. Make a longer, [2 0], and every reading doubles. 'b' goes through\n't bang array': the array is stored in in 2 first, then the bang makes\na re-send, so turning the slider updates the answer.\n\nRELATED:\nnp.inner is the same for vectors but pairs rows with rows for 2-D\narrays. np.matmul is the matrix product. np.linalg.norm gives a length\n(the square root of a vector dotted with itself). np.cross gives the\nvector at right angles to both. t.cosine_similarity gives the cosine\ndirectly, whatever the lengths."
+                    "text": "Gives the dot product of two vectors: multiply them element by element and add up - one number that says how much they point the same way.\n\nFor two vectors of length 1 the dot product is the cosine of the angle between them: 1 when they point the same way, 0 at right angles, -1 when opposite. For longer vectors it is scaled by both lengths. With one of them a unit direction, it is the PROJECTION: how far the other reaches along that direction - the component of a movement along an axis, of a force along a surface, of a pose along a learned direction.\n\nReach for it to compare directions (similarity), to project onto an axis, or to test for right angles (dot 0).\n\nFOR ARRAYS OF MORE THAN ONE DIMENSION:\n2-D with 2-D is matrix multiplication, the same as np.matmul. A set of vectors (N rows of 3) with one vector of 3 gives N dot products - every row against the same direction at once.\n\nSYNTAX:\nnp.dot\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector (a list is turned into an array). Receiving it calculates and sends.\n\nin 2:\nThe second vector. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has. The lengths must match (for 2-D, the columns of in 1 must match the rows of in 2), or an error is printed and nothing is sent.\n\nOUTPUTS:\n\ndot product:\nA float for two vectors; an array for the larger cases.\n\nREADING THE DEMO:\nin 1 is the vector a, which starts as [1 0], pointing along x; drag its numbers. in 2 is b, a vector of length 1 at the angle on the slider (make_direction turns the angle into [cos, sin]). The dot product reads 1 at 0 degrees, 0 at 90, -1 at 180 - the cosine of the angle between them. Make a longer, [2 0], and every reading doubles. 'b' goes through 't bang array': the array is stored in in 2 first, then the bang makes a re-send, so turning the slider updates the answer.\n\nRELATED:\nnp.inner is the same for vectors but pairs rows with rows for 2-D arrays. np.matmul is the matrix product. np.linalg.norm gives a length (the square root of a vector dotted with itself). np.cross gives the vector at right angles to both. t.cosine_similarity gives the cosine directly, whatever the lengths."
                 },
                 "3": {
                     "name": "load_bang",
@@ -609,7 +609,7 @@
                     "name": "help_link",
                     "id": 792,
                     "position_x": 30,
-                    "position_y": 580,
+                    "position_y": 614,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -621,9 +621,9 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 135,
-                    "position_y": 580,
-                    "width": 72,
+                    "position_x": 112,
+                    "position_y": 614,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -634,9 +634,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 248,
-                    "position_y": 580,
-                    "width": 103,
+                    "position_x": 201,
+                    "position_y": 614,
+                    "width": 104,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -647,8 +647,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 399,
-                    "position_y": 580,
+                    "position_x": 321,
+                    "position_y": 614,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -660,9 +660,9 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 504,
-                    "position_y": 580,
-                    "width": 133,
+                    "position_x": 403,
+                    "position_y": 614,
+                    "width": 136,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -674,7 +674,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 977,
-                    "position_x": 663,
+                    "position_x": 30,
                     "position_y": 580,
                     "width": 156,
                     "height": 30,
@@ -699,7 +699,7 @@
                     "name": "close",
                     "id": 1014,
                     "position_x": 24,
-                    "position_y": 654,
+                    "position_y": 688,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 1316,
+    "height": 1350,
     "width": 1767,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor of random ANGLES from the VON MISES distribution: a bell curve\nwrapped round the circle, in radians.\n\nIt is what a bell curve becomes when the values are directions: the\nsamples cluster around one angle, and the far side of the circle is\nwhere the two tails meet. Use it for random headings, wind directions,\nphases, or jitter on a rotation. The samples are in radians, from -pi\nto pi (-3.14 to 3.14), whatever loc is.\n\nSYNTAX:\nt.dist.von_mises <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.von_mises 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.von_mises 64 64); with none it is [1], a single sample.\nA list or tensor of numbers, or a single number, sent into the inlet\nworks too. A new shape does not send by itself - the next click uses\nit.\n\nconcentration (drag float, also an inlet):\nHow tightly the angles cluster. Must be above 0. Near 0 every\ndirection is equally likely; around 10 they are within about a third\nof a radian (18 degrees) of loc. Default 1. (It is the first parameter\non this node, before loc.)\n\nloc (drag float, also an inlet):\nThe favoured direction, in radians. Values beyond pi are wrapped round.\nDefault 1 (not 0).\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A parameter that must be above 0\nhas a drag float that stops at 0.000001. A value the distribution\ncannot take (see each parameter) - 0 or below sent into such an inlet,\nsay - prints a message in the console, and the node goes on sampling\nwith the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. The histogram spans the full circle, -pi on the left to pi on the\nright. At concentration 1 it is a broad hump around loc 1 with a low\nfloor reaching right round; drag concentration up and it narrows to a\npeak; down towards 0 and it flattens to uniform. Drag loc past either\nend and the hump wraps round to the other side - the two ends of the\nplot are the same direction. The heat_map (-pi dark, pi bright) shows\nthe angles as tones.\n\nRELATED:\nt.dist.normal is the straight-line version; t.dist.uniform with low\n-3.14 and high 3.14 gives a uniformly random direction.",
+                    "value": "Makes a tensor of random ANGLES from the VON MISES distribution: a bell curve wrapped round the circle, in radians.\n\nIt is what a bell curve becomes when the values are directions: the samples cluster around one angle, and the far side of the circle is where the two tails meet. Use it for random headings, wind directions, phases, or jitter on a rotation. The samples are in radians, from -pi to pi (-3.14 to 3.14), whatever loc is.\n\nSYNTAX:\nt.dist.von_mises <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.von_mises 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.von_mises 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nconcentration (drag float, also an inlet):\nHow tightly the angles cluster. Must be above 0. Near 0 every direction is equally likely; around 10 they are within about a third of a radian (18 degrees) of loc. Default 1. (It is the first parameter on this node, before loc.)\n\nloc (drag float, also an inlet):\nThe favoured direction, in radians. Values beyond pi are wrapped round. Default 1 (not 0).\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. The histogram spans the full circle, -pi on the left to pi on the right. At concentration 1 it is a broad hump around loc 1 with a low floor reaching right round; drag concentration up and it narrows to a peak; down towards 0 and it flattens to uniform. Drag loc past either end and the hump wraps round to the other side - the two ends of the plot are the same direction. The heat_map (-pi dark, pi bright) shows the angles as tones.\n\nRELATED:\nt.dist.normal is the straight-line version; t.dist.uniform with low -3.14 and high 3.14 gives a uniformly random direction.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor of random ANGLES from the VON MISES distribution: a bell curve\nwrapped round the circle, in radians.\n\nIt is what a bell curve becomes when the values are directions: the\nsamples cluster around one angle, and the far side of the circle is\nwhere the two tails meet. Use it for random headings, wind directions,\nphases, or jitter on a rotation. The samples are in radians, from -pi\nto pi (-3.14 to 3.14), whatever loc is.\n\nSYNTAX:\nt.dist.von_mises <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.von_mises 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.von_mises 64 64); with none it is [1], a single sample.\nA list or tensor of numbers, or a single number, sent into the inlet\nworks too. A new shape does not send by itself - the next click uses\nit.\n\nconcentration (drag float, also an inlet):\nHow tightly the angles cluster. Must be above 0. Near 0 every\ndirection is equally likely; around 10 they are within about a third\nof a radian (18 degrees) of loc. Default 1. (It is the first parameter\non this node, before loc.)\n\nloc (drag float, also an inlet):\nThe favoured direction, in radians. Values beyond pi are wrapped round.\nDefault 1 (not 0).\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A parameter that must be above 0\nhas a drag float that stops at 0.000001. A value the distribution\ncannot take (see each parameter) - 0 or below sent into such an inlet,\nsay - prints a message in the console, and the node goes on sampling\nwith the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. The histogram spans the full circle, -pi on the left to pi on the\nright. At concentration 1 it is a broad hump around loc 1 with a low\nfloor reaching right round; drag concentration up and it narrows to a\npeak; down towards 0 and it flattens to uniform. Drag loc past either\nend and the hump wraps round to the other side - the two ends of the\nplot are the same direction. The heat_map (-pi dark, pi bright) shows\nthe angles as tones.\n\nRELATED:\nt.dist.normal is the straight-line version; t.dist.uniform with low\n-3.14 and high 3.14 gives a uniformly random direction."
+            "text": "Makes a tensor of random ANGLES from the VON MISES distribution: a bell curve wrapped round the circle, in radians.\n\nIt is what a bell curve becomes when the values are directions: the samples cluster around one angle, and the far side of the circle is where the two tails meet. Use it for random headings, wind directions, phases, or jitter on a rotation. The samples are in radians, from -pi to pi (-3.14 to 3.14), whatever loc is.\n\nSYNTAX:\nt.dist.von_mises <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.von_mises 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.von_mises 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nconcentration (drag float, also an inlet):\nHow tightly the angles cluster. Must be above 0. Near 0 every direction is equally likely; around 10 they are within about a third of a radian (18 degrees) of loc. Default 1. (It is the first parameter on this node, before loc.)\n\nloc (drag float, also an inlet):\nThe favoured direction, in radians. Values beyond pi are wrapped round. Default 1 (not 0).\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. The histogram spans the full circle, -pi on the left to pi on the right. At concentration 1 it is a broad hump around loc 1 with a low floor reaching right round; drag concentration up and it narrows to a peak; down towards 0 and it flattens to uniform. Drag loc past either end and the hump wraps round to the other side - the two ends of the plot are the same direction. The heat_map (-pi dark, pi bright) shows the angles as tones.\n\nRELATED:\nt.dist.normal is the straight-line version; t.dist.uniform with low -3.14 and high 3.14 gives a uniformly random direction."
         },
         "3": {
             "name": "load_bang",
@@ -503,8 +503,8 @@
             "name": "help_link",
             "id": 866,
             "position_x": 30,
-            "position_y": 1090,
-            "width": 96,
+            "position_y": 1124,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -515,9 +515,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 174,
-            "position_y": 1090,
-            "width": 103,
+            "position_x": 144,
+            "position_y": 1124,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -528,9 +528,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 325,
-            "position_y": 1090,
-            "width": 53,
+            "position_x": 264,
+            "position_y": 1124,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -541,8 +541,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 415,
-            "position_y": 1090,
+            "position_x": 334,
+            "position_y": 1124,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -555,7 +555,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 656,
+            "position_x": 30,
             "position_y": 1090,
             "width": 156,
             "height": 30,
@@ -580,7 +580,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 1164,
+            "position_y": 1198,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

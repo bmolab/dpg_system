@@ -1,5 +1,5 @@
 {
-    "height": 1045,
+    "height": 1079,
     "width": 1652,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Solves A x = b: given a matrix A and a result b, finds the x that A\nturns into b.\n\nIt answers \"which input gives this output?\" for any linear relation, and\nit answers a set of simultaneous equations in one step. If 2 apples and 1\npear cost 5, and 1 apple and 3 pears cost 10, then A is the table of\nquantities [2 1] [1 3], b is the prices [5 10], and x - the price of one\napple and one pear - comes out as [1 3].\n\nIt gives the same answer as np.linalg.inv of A times b, but faster and\nmore accurately, because it never forms the inverse.\n\nSYNTAX:\nnp.linalg.solve\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nA matrix:\nThe square matrix A - one row per equation, one column per unknown.\nReceiving it solves and sends. It must be square; a matrix that is not\nsends nothing.\n\nb:\nThe right-hand side: a list with one number per row of A. It is only\nstored, so it must arrive BEFORE A, and nothing is sent until it has.\nb may also be a matrix with one column per separate problem, all solved\nat once against the same A.\n\nIf A is singular (its determinant is 0 - the equations contradict or\nrepeat each other) there is no single answer and nothing is sent; nor\nis anything sent if b does not match A's size. The reason is printed\nonly in verbose mode.\n\nOUTPUTS:\n\nx:\nThe solution, the same shape as b.\n\nREADING THE DEMO:\nThe left vector node is A, the right one b; drag any number in either.\nx is the answer, and the check underneath multiplies A by x\n(np.matmul) - it always gives b back. Make A's rows parallel (bottom row\n4 2) and no x is sent: those two equations say the same thing twice and\ncannot pin down two unknowns. x keeps the last answer, and the check,\nmultiplying the new A by that old x, no longer matches b.\nWiring: b's 't bang array' stores b first, then bangs A so it re-sends.\nA's 't array array' reaches np.linalg.solve first, so x is waiting in\nnp.matmul's second inlet when A arrives at its first.\n\nRELATED:\nnp.linalg.inv gives the undoing matrix itself. np.matmul applies a\nmatrix - here, to check the answer. np.linalg.det tells you in advance\nwhether there is a unique answer. np.dot is matrix multiplication for\n2-D arrays too.",
+                    "value": "Solves A x = b: given a matrix A and a result b, finds the x that A turns into b.\n\nIt answers \"which input gives this output?\" for any linear relation, and it answers a set of simultaneous equations in one step. If 2 apples and 1 pear cost 5, and 1 apple and 3 pears cost 10, then A is the table of quantities [2 1] [1 3], b is the prices [5 10], and x - the price of one apple and one pear - comes out as [1 3].\n\nIt gives the same answer as np.linalg.inv of A times b, but faster and more accurately, because it never forms the inverse.\n\nSYNTAX:\nnp.linalg.solve\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nA matrix:\nThe square matrix A - one row per equation, one column per unknown. Receiving it solves and sends. It must be square; a matrix that is not sends nothing.\n\nb:\nThe right-hand side: a list with one number per row of A. It is only stored, so it must arrive BEFORE A, and nothing is sent until it has. b may also be a matrix with one column per separate problem, all solved at once against the same A.\n\nIf A is singular (its determinant is 0 - the equations contradict or repeat each other) there is no single answer and nothing is sent; nor is anything sent if b does not match A's size. The reason is printed only in verbose mode.\n\nOUTPUTS:\n\nx:\nThe solution, the same shape as b.\n\nREADING THE DEMO:\nThe left vector node is A, the right one b; drag any number in either. x is the answer, and the check underneath multiplies A by x (np.matmul) - it always gives b back. Make A's rows parallel (bottom row 4 2) and no x is sent: those two equations say the same thing twice and cannot pin down two unknowns. x keeps the last answer, and the check, multiplying the new A by that old x, no longer matches b.\nWiring: b's 't bang array' stores b first, then bangs A so it re-sends. A's 't array array' reaches np.linalg.solve first, so x is waiting in np.matmul's second inlet when A arrives at its first.\n\nRELATED:\nnp.linalg.inv gives the undoing matrix itself. np.matmul applies a matrix - here, to check the answer. np.linalg.det tells you in advance whether there is a unique answer. np.dot is matrix multiplication for 2-D arrays too.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Solves A x = b: given a matrix A and a result b, finds the x that A\nturns into b.\n\nIt answers \"which input gives this output?\" for any linear relation, and\nit answers a set of simultaneous equations in one step. If 2 apples and 1\npear cost 5, and 1 apple and 3 pears cost 10, then A is the table of\nquantities [2 1] [1 3], b is the prices [5 10], and x - the price of one\napple and one pear - comes out as [1 3].\n\nIt gives the same answer as np.linalg.inv of A times b, but faster and\nmore accurately, because it never forms the inverse.\n\nSYNTAX:\nnp.linalg.solve\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nA matrix:\nThe square matrix A - one row per equation, one column per unknown.\nReceiving it solves and sends. It must be square; a matrix that is not\nsends nothing.\n\nb:\nThe right-hand side: a list with one number per row of A. It is only\nstored, so it must arrive BEFORE A, and nothing is sent until it has.\nb may also be a matrix with one column per separate problem, all solved\nat once against the same A.\n\nIf A is singular (its determinant is 0 - the equations contradict or\nrepeat each other) there is no single answer and nothing is sent; nor\nis anything sent if b does not match A's size. The reason is printed\nonly in verbose mode.\n\nOUTPUTS:\n\nx:\nThe solution, the same shape as b.\n\nREADING THE DEMO:\nThe left vector node is A, the right one b; drag any number in either.\nx is the answer, and the check underneath multiplies A by x\n(np.matmul) - it always gives b back. Make A's rows parallel (bottom row\n4 2) and no x is sent: those two equations say the same thing twice and\ncannot pin down two unknowns. x keeps the last answer, and the check,\nmultiplying the new A by that old x, no longer matches b.\nWiring: b's 't bang array' stores b first, then bangs A so it re-sends.\nA's 't array array' reaches np.linalg.solve first, so x is waiting in\nnp.matmul's second inlet when A arrives at its first.\n\nRELATED:\nnp.linalg.inv gives the undoing matrix itself. np.matmul applies a\nmatrix - here, to check the answer. np.linalg.det tells you in advance\nwhether there is a unique answer. np.dot is matrix multiplication for\n2-D arrays too."
+            "text": "Solves A x = b: given a matrix A and a result b, finds the x that A turns into b.\n\nIt answers \"which input gives this output?\" for any linear relation, and it answers a set of simultaneous equations in one step. If 2 apples and 1 pear cost 5, and 1 apple and 3 pears cost 10, then A is the table of quantities [2 1] [1 3], b is the prices [5 10], and x - the price of one apple and one pear - comes out as [1 3].\n\nIt gives the same answer as np.linalg.inv of A times b, but faster and more accurately, because it never forms the inverse.\n\nSYNTAX:\nnp.linalg.solve\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nA matrix:\nThe square matrix A - one row per equation, one column per unknown. Receiving it solves and sends. It must be square; a matrix that is not sends nothing.\n\nb:\nThe right-hand side: a list with one number per row of A. It is only stored, so it must arrive BEFORE A, and nothing is sent until it has. b may also be a matrix with one column per separate problem, all solved at once against the same A.\n\nIf A is singular (its determinant is 0 - the equations contradict or repeat each other) there is no single answer and nothing is sent; nor is anything sent if b does not match A's size. The reason is printed only in verbose mode.\n\nOUTPUTS:\n\nx:\nThe solution, the same shape as b.\n\nREADING THE DEMO:\nThe left vector node is A, the right one b; drag any number in either. x is the answer, and the check underneath multiplies A by x (np.matmul) - it always gives b back. Make A's rows parallel (bottom row 4 2) and no x is sent: those two equations say the same thing twice and cannot pin down two unknowns. x keeps the last answer, and the check, multiplying the new A by that old x, no longer matches b.\nWiring: b's 't bang array' stores b first, then bangs A so it re-sends. A's 't array array' reaches np.linalg.solve first, so x is waiting in np.matmul's second inlet when A arrives at its first.\n\nRELATED:\nnp.linalg.inv gives the undoing matrix itself. np.matmul applies a matrix - here, to check the answer. np.linalg.det tells you in advance whether there is a unique answer. np.dot is matrix multiplication for 2-D arrays too."
         },
         "3": {
             "name": "load_bang",
@@ -398,8 +398,8 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 850,
-            "width": 96,
+            "position_y": 884,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -410,9 +410,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 174,
-            "position_y": 850,
-            "width": 72,
+            "position_x": 144,
+            "position_y": 884,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -423,9 +423,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 287,
-            "position_y": 850,
-            "width": 96,
+            "position_x": 233,
+            "position_y": 884,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -436,9 +436,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 431,
-            "position_y": 850,
-            "width": 53,
+            "position_x": 347,
+            "position_y": 884,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -450,7 +450,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 977,
-            "position_x": 566,
+            "position_x": 30,
             "position_y": 850,
             "width": 156,
             "height": 30,
@@ -475,7 +475,7 @@
             "name": "close",
             "id": 1014,
             "position_x": 24,
-            "position_y": 924,
+            "position_y": 958,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

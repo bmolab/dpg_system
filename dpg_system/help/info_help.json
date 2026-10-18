@@ -84,7 +84,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "\nThe info node analyzes incoming data and displays its metadata. \n\nIt identifies data types (int, float, string), array shapes, tensor devices, \nand list lengths. \n\nIt is primarily used for debugging to verify that data is flowing in the format you expect.\n\nSYNTAX:\n\ninfo\n\nEXAMPLE:\n\ninfo\n\nINPUTS AND PARAMETERS:\n\nin: \nThe data to be analyzed. \nEvery time data arrives here, the text display on the node updates.\n\n(display):\nA text field showing the analysis.\nFor primitives (int/float/strings), it shows the type and value.\nFor lists, it shows the length.\nFor arrays/tensors, it shows shape, data type, and device (CPU/GPU).",
+                    "value": "\nThe info node analyzes incoming data and displays its metadata. \n\nIt identifies data types (int, float, string), array shapes, tensor devices,  and list lengths. \n\nIt is primarily used for debugging to verify that data is flowing in the format you expect.\n\nSYNTAX:\n\ninfo\n\nEXAMPLE:\n\ninfo\n\nINPUTS AND PARAMETERS:\n\nin: \nThe data to be analyzed. \nEvery time data arrives here, the text display on the node updates.\n\n(display):\nA text field showing the analysis.\nFor primitives (int/float/strings), it shows the type and value. For lists, it shows the length.\nFor arrays/tensors, it shows shape, data type, and device (CPU/GPU).",
                     "value_type": "string"
                 },
                 "1": {
@@ -108,7 +108,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "\nThe info node analyzes incoming data and displays its metadata. \n\nIt identifies data types (int, float, string), array shapes, tensor devices, \nand list lengths. \n\nIt is primarily used for debugging to verify that data is flowing in the format you expect.\n\nSYNTAX:\n\ninfo\n\nEXAMPLE:\n\ninfo\n\nINPUTS AND PARAMETERS:\n\nin: \nThe data to be analyzed. \nEvery time data arrives here, the text display on the node updates.\n\n(display):\nA text field showing the analysis.\nFor primitives (int/float/strings), it shows the type and value.\nFor lists, it shows the length.\nFor arrays/tensors, it shows shape, data type, and device (CPU/GPU)."
+            "text": "\nThe info node analyzes incoming data and displays its metadata. \n\nIt identifies data types (int, float, string), array shapes, tensor devices,  and list lengths. \n\nIt is primarily used for debugging to verify that data is flowing in the format you expect.\n\nSYNTAX:\n\ninfo\n\nEXAMPLE:\n\ninfo\n\nINPUTS AND PARAMETERS:\n\nin: \nThe data to be analyzed. \nEvery time data arrives here, the text display on the node updates.\n\n(display):\nA text field showing the analysis.\nFor primitives (int/float/strings), it shows the type and value. For lists, it shows the length.\nFor arrays/tensors, it shows shape, data type, and device (CPU/GPU)."
         },
         "4": {
             "name": "info",

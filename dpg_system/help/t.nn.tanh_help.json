@@ -1,5 +1,5 @@
 {
-    "height": 1152,
+    "height": 1186,
     "width": 1688,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Squeezes every value into the range -1 to 1 along a smooth S-shaped\ncurve, the hyperbolic tangent.\n\nIt is the classic soft limiter: small values pass almost unchanged (near\nzero the curve follows the input), large values are held just inside -1\nor 1, and there is no corner anywhere. Use it to tame a signal that\nsometimes runs too large without clipping it flat, or to map an unbounded\ncontrol onto a symmetric range.\n\nTHE CURVE:\n0 gives 0, and near zero the output is almost the input (0.1 gives 0.0997).\nFurther out it bends over: 1 gives 0.76, 2 gives 0.96, 4 gives 0.9993.\nIt is symmetric - minus x gives minus the answer for x. It is the sigmoid\nstretched to twice the height and shifted down: tanh of x equals 2 times\nsigmoid of 2x, minus 1.\n\nSYNTAX:\nt.nn.tanh\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -2 to 2; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.sigmoid is the same S from 0 to 1. t.nn.softsign is a gentler S\nthat approaches its limits more slowly. t.nn.hardtanh is the straight-line\nversion, flat outside -1..1. t.nn.tanhshrink is what tanh takes away (x\nminus tanh x). t.special.erf is another S from -1 to 1, a little\nsteeper.",
+                    "value": "Squeezes every value into the range -1 to 1 along a smooth S-shaped curve, the hyperbolic tangent.\n\nIt is the classic soft limiter: small values pass almost unchanged (near zero the curve follows the input), large values are held just inside -1 or 1, and there is no corner anywhere. Use it to tame a signal that sometimes runs too large without clipping it flat, or to map an unbounded control onto a symmetric range.\n\nTHE CURVE:\n0 gives 0, and near zero the output is almost the input (0.1 gives 0.0997). Further out it bends over: 1 gives 0.76, 2 gives 0.96, 4 gives 0.9993. It is symmetric - minus x gives minus the answer for x. It is the sigmoid stretched to twice the height and shifted down: tanh of x equals 2 times sigmoid of 2x, minus 1.\n\nSYNTAX:\nt.nn.tanh\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -2 to 2; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.sigmoid is the same S from 0 to 1. t.nn.softsign is a gentler S that approaches its limits more slowly. t.nn.hardtanh is the straight-line version, flat outside -1..1. t.nn.tanhshrink is what tanh takes away (x minus tanh x). t.special.erf is another S from -1 to 1, a little steeper.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Squeezes every value into the range -1 to 1 along a smooth S-shaped\ncurve, the hyperbolic tangent.\n\nIt is the classic soft limiter: small values pass almost unchanged (near\nzero the curve follows the input), large values are held just inside -1\nor 1, and there is no corner anywhere. Use it to tame a signal that\nsometimes runs too large without clipping it flat, or to map an unbounded\ncontrol onto a symmetric range.\n\nTHE CURVE:\n0 gives 0, and near zero the output is almost the input (0.1 gives 0.0997).\nFurther out it bends over: 1 gives 0.76, 2 gives 0.96, 4 gives 0.9993.\nIt is symmetric - minus x gives minus the answer for x. It is the sigmoid\nstretched to twice the height and shifted down: tanh of x equals 2 times\nsigmoid of 2x, minus 1.\n\nSYNTAX:\nt.nn.tanh\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -2 to 2; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.sigmoid is the same S from 0 to 1. t.nn.softsign is a gentler S\nthat approaches its limits more slowly. t.nn.hardtanh is the straight-line\nversion, flat outside -1..1. t.nn.tanhshrink is what tanh takes away (x\nminus tanh x). t.special.erf is another S from -1 to 1, a little\nsteeper."
+            "text": "Squeezes every value into the range -1 to 1 along a smooth S-shaped curve, the hyperbolic tangent.\n\nIt is the classic soft limiter: small values pass almost unchanged (near zero the curve follows the input), large values are held just inside -1 or 1, and there is no corner anywhere. Use it to tame a signal that sometimes runs too large without clipping it flat, or to map an unbounded control onto a symmetric range.\n\nTHE CURVE:\n0 gives 0, and near zero the output is almost the input (0.1 gives 0.0997). Further out it bends over: 1 gives 0.76, 2 gives 0.96, 4 gives 0.9993. It is symmetric - minus x gives minus the answer for x. It is the sigmoid stretched to twice the height and shifted down: tanh of x equals 2 times sigmoid of 2x, minus 1.\n\nSYNTAX:\nt.nn.tanh\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -2 to 2; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.sigmoid is the same S from 0 to 1. t.nn.softsign is a gentler S that approaches its limits more slowly. t.nn.hardtanh is the straight-line version, flat outside -1..1. t.nn.tanhshrink is what tanh takes away (x minus tanh x). t.special.erf is another S from -1 to 1, a little steeper."
         },
         "3": {
             "name": "metro",
@@ -379,8 +379,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 930,
-            "width": 90,
+            "position_y": 964,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -391,9 +391,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 166,
-            "position_y": 930,
-            "width": 96,
+            "position_x": 138,
+            "position_y": 964,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -404,9 +404,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 310,
-            "position_y": 930,
-            "width": 96,
+            "position_x": 252,
+            "position_y": 964,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -418,7 +418,7 @@
             "name": "help_link",
             "id": 866,
             "position_x": 30,
-            "position_y": 974,
+            "position_y": 1008,
             "width": 109,
             "height": 44,
             "visibility": "show_all",
@@ -431,7 +431,7 @@
             "name": "help_link",
             "id": 903,
             "position_x": 189,
-            "position_y": 974,
+            "position_y": 1008,
             "width": 96,
             "height": 44,
             "visibility": "show_all",
@@ -444,8 +444,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 940,
-            "position_x": 484,
-            "position_y": 974,
+            "position_x": 30,
+            "position_y": 930,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -469,7 +469,7 @@
             "name": "close",
             "id": 977,
             "position_x": 24,
-            "position_y": 1048,
+            "position_y": 1082,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

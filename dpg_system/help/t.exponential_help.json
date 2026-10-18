@@ -1,5 +1,5 @@
 {
-    "height": 1408,
+    "height": 1442,
     "width": 1822,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Fills a tensor with random samples from the EXPONENTIAL distribution - the\nwait for an event that comes at a steady random rate - keeping the tensor's shape.\n\nEach element becomes an independent waiting time: short ones the most\nlikely, long ones rarer and rarer. Use it for random gaps between\nevents, or for positive noise that is usually small, the size of data\nyou already have. To make the samples without an input tensor, use\nt.dist.exponential.\n\nSYNTAX:\nt.exponential\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its\nvalues are ignored, and it is not changed (the node fills a copy). A\nlist or number is turned into a tensor first. Every tensor that arrives\nis filled and sent; this is the only inlet that makes the node send.\nThe input must have a floating-point dtype (float32, the default for\nthe t.* generators, is right). An integer tensor - from t.zeros with\ndtype int64, say - prints an error in the console and nothing is sent.\n\nlambda (drag float, also an inlet):\nThe rate of the events. The average wait is 1 / lambda. The widget will\nnot go below 0.000001. Default 1.\n\nThe parameters are drag floats on the node and also inlets. They are\nread when the next tensor arrives; setting one does not send. In the\ndemo each slider goes through 't bang float', which passes the number\nto the parameter first and THEN clicks the t.zeros, so a fresh tensor\narrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled\nwith fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens, and its 64 x 64\ntensor of zeros comes back from the node as 4096 samples; the zeros\nthemselves never show, only their shape matters. The heat_map (0 dark, 3 bright) is mostly dark with brighter specks.\nThe histogram is tallest at 0 and falls away in a smooth curve. Raise\nlambda and it crowds against 0; lower it and it stretches out.\n\nRELATED:\nt.dist.exponential makes the same samples from a typed shape.\nt.geometric is the whole-number version (how many tries until the\nfirst success). t.poisson counts events instead of timing them.",
+                    "value": "Fills a tensor with random samples from the EXPONENTIAL distribution - the wait for an event that comes at a steady random rate - keeping the tensor's shape.\n\nEach element becomes an independent waiting time: short ones the most likely, long ones rarer and rarer. Use it for random gaps between events, or for positive noise that is usually small, the size of data you already have. To make the samples without an input tensor, use t.dist.exponential.\n\nSYNTAX:\nt.exponential\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its values are ignored, and it is not changed (the node fills a copy). A list or number is turned into a tensor first. Every tensor that arrives is filled and sent; this is the only inlet that makes the node send. The input must have a floating-point dtype (float32, the default for the t.* generators, is right). An integer tensor - from t.zeros with dtype int64, say - prints an error in the console and nothing is sent.\n\nlambda (drag float, also an inlet):\nThe rate of the events. The average wait is 1 / lambda. The widget will not go below 0.000001. Default 1.\n\nThe parameters are drag floats on the node and also inlets. They are read when the next tensor arrives; setting one does not send. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the t.zeros, so a fresh tensor arrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled with fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens, and its 64 x 64 tensor of zeros comes back from the node as 4096 samples; the zeros themselves never show, only their shape matters. The heat_map (0 dark, 3 bright) is mostly dark with brighter specks. The histogram is tallest at 0 and falls away in a smooth curve. Raise lambda and it crowds against 0; lower it and it stretches out.\n\nRELATED:\nt.dist.exponential makes the same samples from a typed shape. t.geometric is the whole-number version (how many tries until the first success). t.poisson counts events instead of timing them.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Fills a tensor with random samples from the EXPONENTIAL distribution - the\nwait for an event that comes at a steady random rate - keeping the tensor's shape.\n\nEach element becomes an independent waiting time: short ones the most\nlikely, long ones rarer and rarer. Use it for random gaps between\nevents, or for positive noise that is usually small, the size of data\nyou already have. To make the samples without an input tensor, use\nt.dist.exponential.\n\nSYNTAX:\nt.exponential\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its\nvalues are ignored, and it is not changed (the node fills a copy). A\nlist or number is turned into a tensor first. Every tensor that arrives\nis filled and sent; this is the only inlet that makes the node send.\nThe input must have a floating-point dtype (float32, the default for\nthe t.* generators, is right). An integer tensor - from t.zeros with\ndtype int64, say - prints an error in the console and nothing is sent.\n\nlambda (drag float, also an inlet):\nThe rate of the events. The average wait is 1 / lambda. The widget will\nnot go below 0.000001. Default 1.\n\nThe parameters are drag floats on the node and also inlets. They are\nread when the next tensor arrives; setting one does not send. In the\ndemo each slider goes through 't bang float', which passes the number\nto the parameter first and THEN clicks the t.zeros, so a fresh tensor\narrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled\nwith fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens, and its 64 x 64\ntensor of zeros comes back from the node as 4096 samples; the zeros\nthemselves never show, only their shape matters. The heat_map (0 dark, 3 bright) is mostly dark with brighter specks.\nThe histogram is tallest at 0 and falls away in a smooth curve. Raise\nlambda and it crowds against 0; lower it and it stretches out.\n\nRELATED:\nt.dist.exponential makes the same samples from a typed shape.\nt.geometric is the whole-number version (how many tries until the\nfirst success). t.poisson counts events instead of timing them."
+            "text": "Fills a tensor with random samples from the EXPONENTIAL distribution - the wait for an event that comes at a steady random rate - keeping the tensor's shape.\n\nEach element becomes an independent waiting time: short ones the most likely, long ones rarer and rarer. Use it for random gaps between events, or for positive noise that is usually small, the size of data you already have. To make the samples without an input tensor, use t.dist.exponential.\n\nSYNTAX:\nt.exponential\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to fill. Only its SHAPE, dtype and device are used - its values are ignored, and it is not changed (the node fills a copy). A list or number is turned into a tensor first. Every tensor that arrives is filled and sent; this is the only inlet that makes the node send. The input must have a floating-point dtype (float32, the default for the t.* generators, is right). An integer tensor - from t.zeros with dtype int64, say - prints an error in the console and nothing is sent.\n\nlambda (drag float, also an inlet):\nThe rate of the events. The average wait is 1 / lambda. The widget will not go below 0.000001. Default 1.\n\nThe parameters are drag floats on the node and also inlets. They are read when the next tensor arrives; setting one does not send. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the t.zeros, so a fresh tensor arrives and is filled at once.\n\nOUTPUTS:\n\ntensor out:\nA new tensor, the same shape, dtype and device as the input, filled with fresh independent samples.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang clicks t.zeros once when the page opens, and its 64 x 64 tensor of zeros comes back from the node as 4096 samples; the zeros themselves never show, only their shape matters. The heat_map (0 dark, 3 bright) is mostly dark with brighter specks. The histogram is tallest at 0 and falls away in a smooth curve. Raise lambda and it crowds against 0; lower it and it stretches out.\n\nRELATED:\nt.dist.exponential makes the same samples from a typed shape. t.geometric is the whole-number version (how many tries until the first success). t.poisson counts events instead of timing them."
         },
         "3": {
             "name": "load_bang",
@@ -459,8 +459,8 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 1230,
-            "width": 127,
+            "position_y": 1264,
+            "width": 129,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -471,9 +471,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 212,
-            "position_y": 1230,
-            "width": 84,
+            "position_x": 175,
+            "position_y": 1264,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -484,9 +484,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 340,
-            "position_y": 1230,
-            "width": 72,
+            "position_x": 276,
+            "position_y": 1264,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -497,9 +497,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 453,
-            "position_y": 1230,
-            "width": 90,
+            "position_x": 365,
+            "position_y": 1264,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -510,9 +510,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 589,
-            "position_y": 1230,
-            "width": 53,
+            "position_x": 473,
+            "position_y": 1264,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -524,7 +524,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 668,
+            "position_x": 30,
             "position_y": 1230,
             "width": 156,
             "height": 30,
@@ -549,7 +549,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 1304,
+            "position_y": 1338,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

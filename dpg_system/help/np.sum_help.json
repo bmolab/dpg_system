@@ -1,5 +1,5 @@
 {
-    "height": 1071,
+    "height": 1105,
     "width": 1942,
     "position": [
         100,
@@ -68,7 +68,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Adds up the values in an array - all of them, or each row or each\ncolumn separately.\n\nUse it for a total (the energy in a frame, the number of active cells in\na mask - True counts as 1), a row or column total (the activity of each\njoint over a window, the profile of an image projected onto one axis),\nor as the first step of an average you want to weight yourself.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.sum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.sum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into\nan array; a single number is sent back as itself while axis is None.\nAn empty array sums to 0. If the array holds a NaN (not-a-number), the total it is part of\nis NaN - use np.nansum to skip them.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.sum 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\nsum:\nWith axis None, one number; with an axis, an array of totals, one per\nrow or column. Whole numbers sum to whole numbers (int64), floats to\nfloats of the same type; True and False sum to a count.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in\nthe cells; click its button for new ones and every total follows.\nnp.sum 1 adds along each ROW: the 6 totals stand beside the picture\n(the expand_dims node only turns them into a column so each sits next\nto its row). np.sum 0 adds down each COLUMN: 8 totals in the strip\nunderneath, one under each column. np.sum with axis None adds all 48\ncells - the same number as adding up either set of totals.\n\nRELATED:\nnp.nansum skips NaN values. np.mean is the sum divided by the count.\nnp.cumsum keeps the running total at every step instead of only the\nend. np.any tells you whether anything is non-zero at all. t.sum (on\nthe t.mean page) is the PyTorch version.",
+                    "value": "Adds up the values in an array - all of them, or each row or each column separately.\n\nUse it for a total (the energy in a frame, the number of active cells in a mask - True counts as 1), a row or column total (the activity of each joint over a window, the profile of an image projected onto one axis), or as the first step of an average you want to weight yourself.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.sum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.sum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into an array; a single number is sent back as itself while axis is None. An empty array sums to 0. If the array holds a NaN (not-a-number), the total it is part of is NaN - use np.nansum to skip them.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.sum 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\nsum:\nWith axis None, one number; with an axis, an array of totals, one per row or column. Whole numbers sum to whole numbers (int64), floats to floats of the same type; True and False sum to a count.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in the cells; click its button for new ones and every total follows. np.sum 1 adds along each ROW: the 6 totals stand beside the picture (the expand_dims node only turns them into a column so each sits next to its row). np.sum 0 adds down each COLUMN: 8 totals in the strip underneath, one under each column. np.sum with axis None adds all 48 cells - the same number as adding up either set of totals.\n\nRELATED:\nnp.nansum skips NaN values. np.mean is the sum divided by the count. np.cumsum keeps the running total at every step instead of only the end. np.any tells you whether anything is non-zero at all. t.sum (on the t.mean page) is the PyTorch version.",
                     "value_type": "string"
                 },
                 "1": {
@@ -92,7 +92,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "Adds up the values in an array - all of them, or each row or each\ncolumn separately.\n\nUse it for a total (the energy in a frame, the number of active cells in\na mask - True counts as 1), a row or column total (the activity of each\njoint over a window, the profile of an image projected onto one axis),\nor as the first step of an average you want to weight yourself.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.sum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.sum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into\nan array; a single number is sent back as itself while axis is None.\nAn empty array sums to 0. If the array holds a NaN (not-a-number), the total it is part of\nis NaN - use np.nansum to skip them.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.sum 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\nsum:\nWith axis None, one number; with an axis, an array of totals, one per\nrow or column. Whole numbers sum to whole numbers (int64), floats to\nfloats of the same type; True and False sum to a count.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in\nthe cells; click its button for new ones and every total follows.\nnp.sum 1 adds along each ROW: the 6 totals stand beside the picture\n(the expand_dims node only turns them into a column so each sits next\nto its row). np.sum 0 adds down each COLUMN: 8 totals in the strip\nunderneath, one under each column. np.sum with axis None adds all 48\ncells - the same number as adding up either set of totals.\n\nRELATED:\nnp.nansum skips NaN values. np.mean is the sum divided by the count.\nnp.cumsum keeps the running total at every step instead of only the\nend. np.any tells you whether anything is non-zero at all. t.sum (on\nthe t.mean page) is the PyTorch version."
+            "text": "Adds up the values in an array - all of them, or each row or each column separately.\n\nUse it for a total (the energy in a frame, the number of active cells in a mask - True counts as 1), a row or column total (the activity of each joint over a window, the profile of an image projected onto one axis), or as the first step of an average you want to weight yourself.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.sum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.sum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into an array; a single number is sent back as itself while axis is None. An empty array sums to 0. If the array holds a NaN (not-a-number), the total it is part of is NaN - use np.nansum to skip them.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.sum 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\nsum:\nWith axis None, one number; with an axis, an array of totals, one per row or column. Whole numbers sum to whole numbers (int64), floats to floats of the same type; True and False sum to a count.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in the cells; click its button for new ones and every total follows. np.sum 1 adds along each ROW: the 6 totals stand beside the picture (the expand_dims node only turns them into a column so each sits next to its row). np.sum 0 adds down each COLUMN: 8 totals in the strip underneath, one under each column. np.sum with axis None adds all 48 cells - the same number as adding up either set of totals.\n\nRELATED:\nnp.nansum skips NaN values. np.mean is the sum divided by the count. np.cumsum keeps the running total at every step instead of only the end. np.any tells you whether anything is non-zero at all. t.sum (on the t.mean page) is the PyTorch version."
         },
         "3": {
             "name": "load_bang",
@@ -542,8 +542,8 @@
             "id": 2032,
             "sid": 20,
             "position_x": 33,
-            "position_y": 778,
-            "width": 72,
+            "position_y": 812,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -571,8 +571,8 @@
             "name": "help_link",
             "id": 2043,
             "sid": 21,
-            "position_x": 146,
-            "position_y": 778,
+            "position_x": 122,
+            "position_y": 812,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -601,9 +601,9 @@
             "name": "help_link",
             "id": 2054,
             "sid": 22,
-            "position_x": 243,
-            "position_y": 778,
-            "width": 72,
+            "position_x": 198,
+            "position_y": 812,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -631,9 +631,9 @@
             "name": "help_link",
             "id": 2065,
             "sid": 23,
-            "position_x": 356,
-            "position_y": 778,
-            "width": 53,
+            "position_x": 287,
+            "position_y": 812,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -661,9 +661,9 @@
             "name": "help_link",
             "id": 2076,
             "sid": 24,
-            "position_x": 446,
-            "position_y": 778,
-            "width": 47,
+            "position_x": 357,
+            "position_y": 812,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -691,8 +691,8 @@
             "name": "comment",
             "id": 2087,
             "sid": 25,
-            "position_x": 574,
-            "position_y": 756,
+            "position_x": 33,
+            "position_y": 778,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -717,7 +717,7 @@
             "id": 2098,
             "sid": 26,
             "position_x": 29,
-            "position_y": 822,
+            "position_y": 856,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

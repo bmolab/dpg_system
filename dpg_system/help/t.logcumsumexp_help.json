@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1128,
+            "height": 1162,
             "width": 1587,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "A running total done in the log domain: each output value is the log\nof (e to the power of each value so far, all added up).\n\nTwo uses. First, when the values are LOG probabilities (or log\nlikelihoods, log energies), it gives the log of the running total of the\nunderlying amounts, without ever turning them back into ordinary numbers\n- which would underflow to 0 for very small probabilities, or overflow\nto infinity for large values. Second, it behaves like a SMOOTH running\nmaximum: once one value is well above the rest, the result follows it,\nlifted a little by its near rivals.\n\nHOW IT RELATES TO THE MAXIMUM:\nThe result is never below the largest value so far, and never more than\nthe log of the count above it. Values far below the leader add almost\nnothing; values tied with it add log 2, log 3 ... So it sits on, or just\nabove, t.cummax's staircase, with the corners rounded off.\n\nSYNTAX:\nt.logcumsumexp <dim: int>\nDefault dim 0, the FIRST axis - for a 2-D tensor, down each column. Give\nan axis as the argument and a dim box appears so it can be changed.\n\nEXAMPLE:\nt.logcumsumexp\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is processed and sent - the only inlet that makes the node send.\nIt must be floating point: an integer tensor is refused with an error.\nAn axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end.\n\nOUTPUTS:\n\noutput:\nThe running log-sum-exp, the same shape as the input. It only ever\nrises: each new value adds something positive inside the log.\n\nREADING THE DEMO:\nTop: make_walk sends a random walk of 200 steps twice a second. t.stack\nputs three rows together and the plot draws them: the walk, t.cummax of\nthe walk (its running maximum, a staircase), and t.logcumsumexp of the\nwalk. The logcumsumexp line rides on top of the staircase - right on it\nwhere the walk climbs to a fresh high, a little above it where the walk\nhangs around near its best, since each near-equal value adds to the\ntotal.\n\nBottom: eight 0s give 0 0.69 1.10 1.39 1.61 1.79 1.95 2.08 - the logs\nof 1, 2, 3 ... 8, since e to the 0 is 1 and the running total of 1s is\nthe count. Then 1000 1000 1000: e to the 1000 is far too large for any\nfloat, yet the answer comes out exactly as 1000, 1000.69, 1001.10 -\n1000 plus the logs of 1, 2, 3. Click either message.\n\nRELATED:\nt.cumsum is the plain running total. t.cummax is the hard-edged running\nmaximum. t.nn.log_softmax uses the same log-sum-exp across a whole axis\nat once.",
+                            "value": "A running total done in the log domain: each output value is the log of (e to the power of each value so far, all added up).\n\nTwo uses. First, when the values are LOG probabilities (or log likelihoods, log energies), it gives the log of the running total of the underlying amounts, without ever turning them back into ordinary numbers - which would underflow to 0 for very small probabilities, or overflow to infinity for large values. Second, it behaves like a SMOOTH running maximum: once one value is well above the rest, the result follows it, lifted a little by its near rivals.\n\nHOW IT RELATES TO THE MAXIMUM:\nThe result is never below the largest value so far, and never more than the log of the count above it. Values far below the leader add almost nothing; values tied with it add log 2, log 3 ... So it sits on, or just above, t.cummax's staircase, with the corners rounded off.\n\nSYNTAX:\nt.logcumsumexp <dim: int>\nDefault dim 0, the FIRST axis - for a 2-D tensor, down each column. Give\nan axis as the argument and a dim box appears so it can be changed.\n\nEXAMPLE:\nt.logcumsumexp\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is processed and sent - the only inlet that makes the node send. It must be floating point: an integer tensor is refused with an error. An axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end.\n\nOUTPUTS:\n\noutput:\nThe running log-sum-exp, the same shape as the input. It only ever rises: each new value adds something positive inside the log.\n\nREADING THE DEMO:\nTop: make_walk sends a random walk of 200 steps twice a second. t.stack puts three rows together and the plot draws them: the walk, t.cummax of the walk (its running maximum, a staircase), and t.logcumsumexp of the walk. The logcumsumexp line rides on top of the staircase - right on it where the walk climbs to a fresh high, a little above it where the walk hangs around near its best, since each near-equal value adds to the total.\n\nBottom: eight 0s give 0 0.69 1.10 1.39 1.61 1.79 1.95 2.08 - the logs of 1, 2, 3 ... 8, since e to the 0 is 1 and the running total of 1s is the count. Then 1000 1000 1000: e to the 1000 is far too large for any float, yet the answer comes out exactly as 1000, 1000.69, 1001.10 - 1000 plus the logs of 1, 2, 3. Click either message.\n\nRELATED:\nt.cumsum is the plain running total. t.cummax is the hard-edged running maximum. t.nn.log_softmax uses the same log-sum-exp across a whole axis at once.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "A running total done in the log domain: each output value is the log\nof (e to the power of each value so far, all added up).\n\nTwo uses. First, when the values are LOG probabilities (or log\nlikelihoods, log energies), it gives the log of the running total of the\nunderlying amounts, without ever turning them back into ordinary numbers\n- which would underflow to 0 for very small probabilities, or overflow\nto infinity for large values. Second, it behaves like a SMOOTH running\nmaximum: once one value is well above the rest, the result follows it,\nlifted a little by its near rivals.\n\nHOW IT RELATES TO THE MAXIMUM:\nThe result is never below the largest value so far, and never more than\nthe log of the count above it. Values far below the leader add almost\nnothing; values tied with it add log 2, log 3 ... So it sits on, or just\nabove, t.cummax's staircase, with the corners rounded off.\n\nSYNTAX:\nt.logcumsumexp <dim: int>\nDefault dim 0, the FIRST axis - for a 2-D tensor, down each column. Give\nan axis as the argument and a dim box appears so it can be changed.\n\nEXAMPLE:\nt.logcumsumexp\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is processed and sent - the only inlet that makes the node send.\nIt must be floating point: an integer tensor is refused with an error.\nAn axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end.\n\nOUTPUTS:\n\noutput:\nThe running log-sum-exp, the same shape as the input. It only ever\nrises: each new value adds something positive inside the log.\n\nREADING THE DEMO:\nTop: make_walk sends a random walk of 200 steps twice a second. t.stack\nputs three rows together and the plot draws them: the walk, t.cummax of\nthe walk (its running maximum, a staircase), and t.logcumsumexp of the\nwalk. The logcumsumexp line rides on top of the staircase - right on it\nwhere the walk climbs to a fresh high, a little above it where the walk\nhangs around near its best, since each near-equal value adds to the\ntotal.\n\nBottom: eight 0s give 0 0.69 1.10 1.39 1.61 1.79 1.95 2.08 - the logs\nof 1, 2, 3 ... 8, since e to the 0 is 1 and the running total of 1s is\nthe count. Then 1000 1000 1000: e to the 1000 is far too large for any\nfloat, yet the answer comes out exactly as 1000, 1000.69, 1001.10 -\n1000 plus the logs of 1, 2, 3. Click either message.\n\nRELATED:\nt.cumsum is the plain running total. t.cummax is the hard-edged running\nmaximum. t.nn.log_softmax uses the same log-sum-exp across a whole axis\nat once."
+                    "text": "A running total done in the log domain: each output value is the log of (e to the power of each value so far, all added up).\n\nTwo uses. First, when the values are LOG probabilities (or log likelihoods, log energies), it gives the log of the running total of the underlying amounts, without ever turning them back into ordinary numbers - which would underflow to 0 for very small probabilities, or overflow to infinity for large values. Second, it behaves like a SMOOTH running maximum: once one value is well above the rest, the result follows it, lifted a little by its near rivals.\n\nHOW IT RELATES TO THE MAXIMUM:\nThe result is never below the largest value so far, and never more than the log of the count above it. Values far below the leader add almost nothing; values tied with it add log 2, log 3 ... So it sits on, or just above, t.cummax's staircase, with the corners rounded off.\n\nSYNTAX:\nt.logcumsumexp <dim: int>\nDefault dim 0, the FIRST axis - for a 2-D tensor, down each column. Give\nan axis as the argument and a dim box appears so it can be changed.\n\nEXAMPLE:\nt.logcumsumexp\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is processed and sent - the only inlet that makes the node send. It must be floating point: an integer tensor is refused with an error. An axis the tensor does not have sends nothing.\n\ndim (int box, only with an argument):\nWhich axis to run along. Negative counts from the end.\n\nOUTPUTS:\n\noutput:\nThe running log-sum-exp, the same shape as the input. It only ever rises: each new value adds something positive inside the log.\n\nREADING THE DEMO:\nTop: make_walk sends a random walk of 200 steps twice a second. t.stack puts three rows together and the plot draws them: the walk, t.cummax of the walk (its running maximum, a staircase), and t.logcumsumexp of the walk. The logcumsumexp line rides on top of the staircase - right on it where the walk climbs to a fresh high, a little above it where the walk hangs around near its best, since each near-equal value adds to the total.\n\nBottom: eight 0s give 0 0.69 1.10 1.39 1.61 1.79 1.95 2.08 - the logs of 1, 2, 3 ... 8, since e to the 0 is 1 and the running total of 1s is the count. Then 1000 1000 1000: e to the 1000 is far too large for any float, yet the answer comes out exactly as 1000, 1000.69, 1001.10 - 1000 plus the logs of 1, 2, 3. Click either message.\n\nRELATED:\nt.cumsum is the plain running total. t.cummax is the hard-edged running maximum. t.nn.log_softmax uses the same log-sum-exp across a whole axis at once."
                 },
                 "3": {
                     "name": "p",
@@ -705,7 +705,7 @@
                     "name": "help_link",
                     "id": 977,
                     "position_x": 30,
-                    "position_y": 950,
+                    "position_y": 984,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -717,8 +717,8 @@
                 "21": {
                     "name": "help_link",
                     "id": 1014,
-                    "position_x": 135,
-                    "position_y": 950,
+                    "position_x": 112,
+                    "position_y": 984,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -730,9 +730,9 @@
                 "22": {
                     "name": "help_link",
                     "id": 1051,
-                    "position_x": 240,
-                    "position_y": 950,
-                    "width": 115,
+                    "position_x": 194,
+                    "position_y": 984,
+                    "width": 117,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -744,8 +744,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1088,
-                    "position_x": 426,
-                    "position_y": 994,
+                    "position_x": 30,
+                    "position_y": 950,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -769,7 +769,7 @@
                     "name": "close",
                     "id": 1125,
                     "position_x": 24,
-                    "position_y": 1024,
+                    "position_y": 1058,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

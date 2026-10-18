@@ -325,7 +325,7 @@
             }
         },
         "1": {
-            "height": 1058,
+            "height": 1092,
             "width": 1658,
             "position": [
                 100,
@@ -392,7 +392,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Swaps the last two axes of a tensor, and for complex numbers also\ntakes the conjugate.\n\nOn an ordinary (real) tensor it is a transpose of the LAST TWO axes,\nwhatever the tensor's size: a 7 by 6 becomes 6 by 7, and a stack of\npictures [2, 7, 6] becomes [2, 6, 7] - every picture transposed, the\nstack left in order. That is what t.t cannot do (it only takes 2-D\ntensors), which makes t.adjoint the way to transpose a whole batch of\nmatrices.\n\nFor a complex tensor it also flips the sign of every imaginary part (the\n\"conjugate transpose\", or Hermitian adjoint, of linear algebra). That\nonly matters if you are working with complex numbers, from t.fft for\ninstance.\n\nSYNTAX:\nt.adjoint\nNo arguments.\n\nINPUTS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first).\nReceiving it makes the node send. It needs at least 2 axes: a 1-D\ntensor is an error ('only supported on matrices or batches of\nmatrices' is printed, nothing is sent).\n\nOUTPUTS:\n\ntensor out:\nThe tensor with its last two axes swapped (and conjugated if complex).\nLike t.t, the memory is not moved, so it is not contiguous.\n\nREADING THE DEMO:\nmake_layers holds two pictures as one tensor [2, 7, 6]: the F and a\nramp. The left heat_map shows them one above the other. t.adjoint gives\n[2, 6, 7] (t.info), and the right heat_map shows both again, one above\nthe other - each turned on its side, the F still on top. (The two\nt.reshape nodes only lay the layers out for display.)\n\nRELATED:\nt.t transposes a 2-D tensor. t.transpose swaps any two axes you name;\nt.transpose -2 -1 is t.adjoint without the conjugate. t.permute\nreorders all the axes. np.transpose is the numpy version.",
+                            "value": "Swaps the last two axes of a tensor, and for complex numbers also takes the conjugate.\n\nOn an ordinary (real) tensor it is a transpose of the LAST TWO axes, whatever the tensor's size: a 7 by 6 becomes 6 by 7, and a stack of pictures [2, 7, 6] becomes [2, 6, 7] - every picture transposed, the stack left in order. That is what t.t cannot do (it only takes 2-D tensors), which makes t.adjoint the way to transpose a whole batch of matrices.\n\nFor a complex tensor it also flips the sign of every imaginary part (the \"conjugate transpose\", or Hermitian adjoint, of linear algebra). That only matters if you are working with complex numbers, from t.fft for instance.\n\nSYNTAX:\nt.adjoint\nNo arguments.\n\nINPUTS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first). Receiving it makes the node send. It needs at least 2 axes: a 1-D tensor is an error ('only supported on matrices or batches of matrices' is printed, nothing is sent).\n\nOUTPUTS:\n\ntensor out:\nThe tensor with its last two axes swapped (and conjugated if complex). Like t.t, the memory is not moved, so it is not contiguous.\n\nREADING THE DEMO:\nmake_layers holds two pictures as one tensor [2, 7, 6]: the F and a ramp. The left heat_map shows them one above the other. t.adjoint gives [2, 6, 7] (t.info), and the right heat_map shows both again, one above the other - each turned on its side, the F still on top. (The two t.reshape nodes only lay the layers out for display.)\n\nRELATED:\nt.t transposes a 2-D tensor. t.transpose swaps any two axes you name;\nt.transpose -2 -1 is t.adjoint without the conjugate. t.permute reorders all the axes. np.transpose is the numpy version.",
                             "value_type": "str"
                         },
                         "1": {
@@ -416,7 +416,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Swaps the last two axes of a tensor, and for complex numbers also\ntakes the conjugate.\n\nOn an ordinary (real) tensor it is a transpose of the LAST TWO axes,\nwhatever the tensor's size: a 7 by 6 becomes 6 by 7, and a stack of\npictures [2, 7, 6] becomes [2, 6, 7] - every picture transposed, the\nstack left in order. That is what t.t cannot do (it only takes 2-D\ntensors), which makes t.adjoint the way to transpose a whole batch of\nmatrices.\n\nFor a complex tensor it also flips the sign of every imaginary part (the\n\"conjugate transpose\", or Hermitian adjoint, of linear algebra). That\nonly matters if you are working with complex numbers, from t.fft for\ninstance.\n\nSYNTAX:\nt.adjoint\nNo arguments.\n\nINPUTS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first).\nReceiving it makes the node send. It needs at least 2 axes: a 1-D\ntensor is an error ('only supported on matrices or batches of\nmatrices' is printed, nothing is sent).\n\nOUTPUTS:\n\ntensor out:\nThe tensor with its last two axes swapped (and conjugated if complex).\nLike t.t, the memory is not moved, so it is not contiguous.\n\nREADING THE DEMO:\nmake_layers holds two pictures as one tensor [2, 7, 6]: the F and a\nramp. The left heat_map shows them one above the other. t.adjoint gives\n[2, 6, 7] (t.info), and the right heat_map shows both again, one above\nthe other - each turned on its side, the F still on top. (The two\nt.reshape nodes only lay the layers out for display.)\n\nRELATED:\nt.t transposes a 2-D tensor. t.transpose swaps any two axes you name;\nt.transpose -2 -1 is t.adjoint without the conjugate. t.permute\nreorders all the axes. np.transpose is the numpy version."
+                    "text": "Swaps the last two axes of a tensor, and for complex numbers also takes the conjugate.\n\nOn an ordinary (real) tensor it is a transpose of the LAST TWO axes, whatever the tensor's size: a 7 by 6 becomes 6 by 7, and a stack of pictures [2, 7, 6] becomes [2, 6, 7] - every picture transposed, the stack left in order. That is what t.t cannot do (it only takes 2-D tensors), which makes t.adjoint the way to transpose a whole batch of matrices.\n\nFor a complex tensor it also flips the sign of every imaginary part (the \"conjugate transpose\", or Hermitian adjoint, of linear algebra). That only matters if you are working with complex numbers, from t.fft for instance.\n\nSYNTAX:\nt.adjoint\nNo arguments.\n\nINPUTS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first). Receiving it makes the node send. It needs at least 2 axes: a 1-D tensor is an error ('only supported on matrices or batches of matrices' is printed, nothing is sent).\n\nOUTPUTS:\n\ntensor out:\nThe tensor with its last two axes swapped (and conjugated if complex). Like t.t, the memory is not moved, so it is not contiguous.\n\nREADING THE DEMO:\nmake_layers holds two pictures as one tensor [2, 7, 6]: the F and a ramp. The left heat_map shows them one above the other. t.adjoint gives [2, 6, 7] (t.info), and the right heat_map shows both again, one above the other - each turned on its side, the F still on top. (The two t.reshape nodes only lay the layers out for display.)\n\nRELATED:\nt.t transposes a 2-D tensor. t.transpose swaps any two axes you name;\nt.transpose -2 -1 is t.adjoint without the conjugate. t.permute reorders all the axes. np.transpose is the numpy version."
                 },
                 "3": {
                     "name": "p",
@@ -690,7 +690,7 @@
                     "name": "help_link",
                     "id": 755,
                     "position_x": 30,
-                    "position_y": 880,
+                    "position_y": 914,
                     "width": 35,
                     "height": 44,
                     "visibility": "show_all",
@@ -702,9 +702,9 @@
                 "15": {
                     "name": "help_link",
                     "id": 792,
-                    "position_x": 97,
-                    "position_y": 880,
-                    "width": 84,
+                    "position_x": 81,
+                    "position_y": 914,
+                    "width": 85,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -715,9 +715,9 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 225,
-                    "position_y": 880,
-                    "width": 72,
+                    "position_x": 182,
+                    "position_y": 914,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -728,9 +728,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 338,
-                    "position_y": 880,
-                    "width": 90,
+                    "position_x": 271,
+                    "position_y": 914,
+                    "width": 92,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -742,7 +742,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 903,
-                    "position_x": 609,
+                    "position_x": 30,
                     "position_y": 880,
                     "width": 156,
                     "height": 30,
@@ -767,7 +767,7 @@
                     "name": "close",
                     "id": 940,
                     "position_x": 24,
-                    "position_y": 954,
+                    "position_y": 988,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

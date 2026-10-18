@@ -217,7 +217,7 @@
             }
         },
         "1": {
-            "height": 1098,
+            "height": 1132,
             "width": 1659,
             "position": [
                 100,
@@ -284,7 +284,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Takes the size of each value from one tensor and its sign from\nanother: the result is as big as 'tensor in' and points the way 'sign\ntensor' points.\n\nIts everyday use is applying a curve to a signal that swings both ways.\nTake the size (abs), put it through the curve, and copy the original\nsign back. Without that last step a curve applied to a two-sided signal\nfolds the negative half over, and everything comes out positive. The\ndemo does exactly this with a power curve.\n\nNEGATIVE ZERO COUNTS AS NEGATIVE:\nThe sign is read from the sign bit, so a sign value of -0.0 makes the\nresult negative and 0.0 makes it positive. That matters when the sign\ncarries a direction that has momentarily stopped.\n\nSYNTAX:\nt.copysign\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhere the size comes from (a list or number is turned into a float32\ntensor). Receiving it does the work; its own sign is ignored.\n\nsign tensor:\nWhere the sign comes from - a tensor that broadcasts against tensor in,\nor a single number used for every element. It is converted to tensor\nin's type. It is only stored when it arrives, so send it FIRST; until it\nhas received something the node sends nothing. If both come from the\nsame source, connect the sign cord first, or every result carries the\nsigns from the time before.\n\nOUTPUTS:\n\ntensor with copied sign:\nThe sizes of tensor in with the signs of sign tensor, in the broadcast\nshape.\n\nREADING THE DEMO:\nmake_sine sends a sine (the thin original line on the plot). abs takes\nits size and ^ 2 squares it: a curve that should make small values\nsmaller and leave the peaks at 1. Alone, that folds the troughs up - the\nsquared line has every hump above zero. t.copysign gives each value back\nthe sign of the original sine, so the result is a squared sine that\nstill swings below zero. Drag the exponent on ^ (0.5 rounds the wave\nout, 3 sharpens it); the shape changes and the signs stay right.\n\nRELATED:\nabs gives the size and throws the sign away. ^ (power) is the curve in\nthe demo. t.maximum and t.clamp limit values instead of reshaping them.\nt.ceil with t.copysign rounds away from zero.",
+                            "value": "Takes the size of each value from one tensor and its sign from another: the result is as big as 'tensor in' and points the way 'sign tensor' points.\n\nIts everyday use is applying a curve to a signal that swings both ways. Take the size (abs), put it through the curve, and copy the original sign back. Without that last step a curve applied to a two-sided signal folds the negative half over, and everything comes out positive. The demo does exactly this with a power curve.\n\nNEGATIVE ZERO COUNTS AS NEGATIVE:\nThe sign is read from the sign bit, so a sign value of -0.0 makes the result negative and 0.0 makes it positive. That matters when the sign carries a direction that has momentarily stopped.\n\nSYNTAX:\nt.copysign\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhere the size comes from (a list or number is turned into a float32 tensor). Receiving it does the work; its own sign is ignored.\n\nsign tensor:\nWhere the sign comes from - a tensor that broadcasts against tensor in, or a single number used for every element. It is converted to tensor in's type. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing. If both come from the same source, connect the sign cord first, or every result carries the signs from the time before.\n\nOUTPUTS:\n\ntensor with copied sign:\nThe sizes of tensor in with the signs of sign tensor, in the broadcast shape.\n\nREADING THE DEMO:\nmake_sine sends a sine (the thin original line on the plot). abs takes its size and ^ 2 squares it: a curve that should make small values smaller and leave the peaks at 1. Alone, that folds the troughs up - the squared line has every hump above zero. t.copysign gives each value back the sign of the original sine, so the result is a squared sine that still swings below zero. Drag the exponent on ^ (0.5 rounds the wave out, 3 sharpens it); the shape changes and the signs stay right.\n\nRELATED:\nabs gives the size and throws the sign away. ^ (power) is the curve in the demo. t.maximum and t.clamp limit values instead of reshaping them. t.ceil with t.copysign rounds away from zero.",
                             "value_type": "str"
                         },
                         "1": {
@@ -308,7 +308,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Takes the size of each value from one tensor and its sign from\nanother: the result is as big as 'tensor in' and points the way 'sign\ntensor' points.\n\nIts everyday use is applying a curve to a signal that swings both ways.\nTake the size (abs), put it through the curve, and copy the original\nsign back. Without that last step a curve applied to a two-sided signal\nfolds the negative half over, and everything comes out positive. The\ndemo does exactly this with a power curve.\n\nNEGATIVE ZERO COUNTS AS NEGATIVE:\nThe sign is read from the sign bit, so a sign value of -0.0 makes the\nresult negative and 0.0 makes it positive. That matters when the sign\ncarries a direction that has momentarily stopped.\n\nSYNTAX:\nt.copysign\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhere the size comes from (a list or number is turned into a float32\ntensor). Receiving it does the work; its own sign is ignored.\n\nsign tensor:\nWhere the sign comes from - a tensor that broadcasts against tensor in,\nor a single number used for every element. It is converted to tensor\nin's type. It is only stored when it arrives, so send it FIRST; until it\nhas received something the node sends nothing. If both come from the\nsame source, connect the sign cord first, or every result carries the\nsigns from the time before.\n\nOUTPUTS:\n\ntensor with copied sign:\nThe sizes of tensor in with the signs of sign tensor, in the broadcast\nshape.\n\nREADING THE DEMO:\nmake_sine sends a sine (the thin original line on the plot). abs takes\nits size and ^ 2 squares it: a curve that should make small values\nsmaller and leave the peaks at 1. Alone, that folds the troughs up - the\nsquared line has every hump above zero. t.copysign gives each value back\nthe sign of the original sine, so the result is a squared sine that\nstill swings below zero. Drag the exponent on ^ (0.5 rounds the wave\nout, 3 sharpens it); the shape changes and the signs stay right.\n\nRELATED:\nabs gives the size and throws the sign away. ^ (power) is the curve in\nthe demo. t.maximum and t.clamp limit values instead of reshaping them.\nt.ceil with t.copysign rounds away from zero."
+                    "text": "Takes the size of each value from one tensor and its sign from another: the result is as big as 'tensor in' and points the way 'sign tensor' points.\n\nIts everyday use is applying a curve to a signal that swings both ways. Take the size (abs), put it through the curve, and copy the original sign back. Without that last step a curve applied to a two-sided signal folds the negative half over, and everything comes out positive. The demo does exactly this with a power curve.\n\nNEGATIVE ZERO COUNTS AS NEGATIVE:\nThe sign is read from the sign bit, so a sign value of -0.0 makes the result negative and 0.0 makes it positive. That matters when the sign carries a direction that has momentarily stopped.\n\nSYNTAX:\nt.copysign\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhere the size comes from (a list or number is turned into a float32 tensor). Receiving it does the work; its own sign is ignored.\n\nsign tensor:\nWhere the sign comes from - a tensor that broadcasts against tensor in, or a single number used for every element. It is converted to tensor in's type. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing. If both come from the same source, connect the sign cord first, or every result carries the signs from the time before.\n\nOUTPUTS:\n\ntensor with copied sign:\nThe sizes of tensor in with the signs of sign tensor, in the broadcast shape.\n\nREADING THE DEMO:\nmake_sine sends a sine (the thin original line on the plot). abs takes its size and ^ 2 squares it: a curve that should make small values smaller and leave the peaks at 1. Alone, that folds the troughs up - the squared line has every hump above zero. t.copysign gives each value back the sign of the original sine, so the result is a squared sine that still swings below zero. Drag the exponent on ^ (0.5 rounds the wave out, 3 sharpens it); the shape changes and the signs stay right.\n\nRELATED:\nabs gives the size and throws the sign away. ^ (power) is the curve in the demo. t.maximum and t.clamp limit values instead of reshaping them. t.ceil with t.copysign rounds away from zero."
                 },
                 "3": {
                     "name": "p",
@@ -612,7 +612,7 @@
                     "name": "help_link",
                     "id": 792,
                     "position_x": 30,
-                    "position_y": 920,
+                    "position_y": 954,
                     "width": 35,
                     "height": 44,
                     "visibility": "show_all",
@@ -624,9 +624,9 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 97,
-                    "position_y": 920,
-                    "width": 47,
+                    "position_x": 81,
+                    "position_y": 954,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -637,9 +637,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 179,
-                    "position_y": 920,
-                    "width": 72,
+                    "position_x": 145,
+                    "position_y": 954,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -650,8 +650,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 292,
-                    "position_y": 920,
+                    "position_x": 234,
+                    "position_y": 954,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -663,9 +663,9 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 389,
-                    "position_y": 920,
-                    "width": 53,
+                    "position_x": 310,
+                    "position_y": 954,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -677,8 +677,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 977,
-                    "position_x": 468,
-                    "position_y": 964,
+                    "position_x": 30,
+                    "position_y": 920,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -702,7 +702,7 @@
                     "name": "close",
                     "id": 1014,
                     "position_x": 24,
-                    "position_y": 994,
+                    "position_y": 1028,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

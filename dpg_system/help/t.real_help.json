@@ -258,7 +258,7 @@
             }
         },
         "1": {
-            "height": 938,
+            "height": 972,
             "width": 1670,
             "position": [
                 100,
@@ -325,7 +325,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Takes the real part out of a complex tensor, as an ordinary real\ntensor of the same shape.\n\nComplex tensors come out of t.fft and t.rfft, and most of what you want\nto do next needs real numbers: plotting, thresholding, feeding anything\nthat is not complex-aware. t.real and t.imag split the two halves;\nt.complex puts them back together.\n\nTHE REAL PART IS NOT THE SIZE:\nA complex value's size (its magnitude, what abs gives) is the length of\nthe two parts taken together. The real part alone depends on the\nphase: a component can be large and still have a real part near zero,\nif its angle happens to sit near a quarter turn. For \"how much of this frequency is\nthere\", use abs on the complex tensor, not t.real. The demo shows the\ndifference: a value of constant size whose real part swings.\n\nSYNTAX:\nt.real\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe complex tensor. A tensor that is not complex - including an ordinary\nfloat tensor, a list or a number - sends NOTHING, silently, rather than\nan answer of the value itself.\n\nOUTPUTS:\n\nreal tensor:\nThe real parts, as float32 from complex64 (float64 from complex128),\nthe same shape as the input.\n\nREADING THE DEMO:\nmake_turning sends one complex number of size 1, going round a circle\nonce every 4 seconds (the list shows it). The plot draws two lines: abs,\nflat at 1, and the real part from t.real, swinging as a cosine\nbetween -1 and 1. The size never changed; only the angle did.\n\nRELATED:\nt.imag takes the other half. t.complex builds a complex tensor from the\ntwo parts. abs gives the size. t.fft and t.rfft send complex tensors.",
+                            "value": "Takes the real part out of a complex tensor, as an ordinary real tensor of the same shape.\n\nComplex tensors come out of t.fft and t.rfft, and most of what you want to do next needs real numbers: plotting, thresholding, feeding anything that is not complex-aware. t.real and t.imag split the two halves;\nt.complex puts them back together.\n\nTHE REAL PART IS NOT THE SIZE:\nA complex value's size (its magnitude, what abs gives) is the length of the two parts taken together. The real part alone depends on the phase: a component can be large and still have a real part near zero, if its angle happens to sit near a quarter turn. For \"how much of this frequency is there\", use abs on the complex tensor, not t.real. The demo shows the difference: a value of constant size whose real part swings.\n\nSYNTAX:\nt.real\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe complex tensor. A tensor that is not complex - including an ordinary float tensor, a list or a number - sends NOTHING, silently, rather than an answer of the value itself.\n\nOUTPUTS:\n\nreal tensor:\nThe real parts, as float32 from complex64 (float64 from complex128), the same shape as the input.\n\nREADING THE DEMO:\nmake_turning sends one complex number of size 1, going round a circle once every 4 seconds (the list shows it). The plot draws two lines: abs, flat at 1, and the real part from t.real, swinging as a cosine between -1 and 1. The size never changed; only the angle did.\n\nRELATED:\nt.imag takes the other half. t.complex builds a complex tensor from the two parts. abs gives the size. t.fft and t.rfft send complex tensors.",
                             "value_type": "str"
                         },
                         "1": {
@@ -349,7 +349,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Takes the real part out of a complex tensor, as an ordinary real\ntensor of the same shape.\n\nComplex tensors come out of t.fft and t.rfft, and most of what you want\nto do next needs real numbers: plotting, thresholding, feeding anything\nthat is not complex-aware. t.real and t.imag split the two halves;\nt.complex puts them back together.\n\nTHE REAL PART IS NOT THE SIZE:\nA complex value's size (its magnitude, what abs gives) is the length of\nthe two parts taken together. The real part alone depends on the\nphase: a component can be large and still have a real part near zero,\nif its angle happens to sit near a quarter turn. For \"how much of this frequency is\nthere\", use abs on the complex tensor, not t.real. The demo shows the\ndifference: a value of constant size whose real part swings.\n\nSYNTAX:\nt.real\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe complex tensor. A tensor that is not complex - including an ordinary\nfloat tensor, a list or a number - sends NOTHING, silently, rather than\nan answer of the value itself.\n\nOUTPUTS:\n\nreal tensor:\nThe real parts, as float32 from complex64 (float64 from complex128),\nthe same shape as the input.\n\nREADING THE DEMO:\nmake_turning sends one complex number of size 1, going round a circle\nonce every 4 seconds (the list shows it). The plot draws two lines: abs,\nflat at 1, and the real part from t.real, swinging as a cosine\nbetween -1 and 1. The size never changed; only the angle did.\n\nRELATED:\nt.imag takes the other half. t.complex builds a complex tensor from the\ntwo parts. abs gives the size. t.fft and t.rfft send complex tensors."
+                    "text": "Takes the real part out of a complex tensor, as an ordinary real tensor of the same shape.\n\nComplex tensors come out of t.fft and t.rfft, and most of what you want to do next needs real numbers: plotting, thresholding, feeding anything that is not complex-aware. t.real and t.imag split the two halves;\nt.complex puts them back together.\n\nTHE REAL PART IS NOT THE SIZE:\nA complex value's size (its magnitude, what abs gives) is the length of the two parts taken together. The real part alone depends on the phase: a component can be large and still have a real part near zero, if its angle happens to sit near a quarter turn. For \"how much of this frequency is there\", use abs on the complex tensor, not t.real. The demo shows the difference: a value of constant size whose real part swings.\n\nSYNTAX:\nt.real\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe complex tensor. A tensor that is not complex - including an ordinary float tensor, a list or a number - sends NOTHING, silently, rather than an answer of the value itself.\n\nOUTPUTS:\n\nreal tensor:\nThe real parts, as float32 from complex64 (float64 from complex128), the same shape as the input.\n\nREADING THE DEMO:\nmake_turning sends one complex number of size 1, going round a circle once every 4 seconds (the list shows it). The plot draws two lines: abs, flat at 1, and the real part from t.real, swinging as a cosine between -1 and 1. The size never changed; only the angle did.\n\nRELATED:\nt.imag takes the other half. t.complex builds a complex tensor from the two parts. abs gives the size. t.fft and t.rfft send complex tensors."
                 },
                 "3": {
                     "name": "p",
@@ -592,8 +592,8 @@
                     "name": "help_link",
                     "id": 718,
                     "position_x": 30,
-                    "position_y": 760,
-                    "width": 53,
+                    "position_y": 794,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -604,9 +604,9 @@
                 "14": {
                     "name": "help_link",
                     "id": 755,
-                    "position_x": 120,
-                    "position_y": 760,
-                    "width": 72,
+                    "position_x": 100,
+                    "position_y": 794,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -617,8 +617,8 @@
                 "15": {
                     "name": "help_link",
                     "id": 792,
-                    "position_x": 233,
-                    "position_y": 760,
+                    "position_x": 189,
+                    "position_y": 794,
                     "width": 35,
                     "height": 44,
                     "visibility": "show_all",
@@ -630,9 +630,9 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 300,
-                    "position_y": 760,
-                    "width": 47,
+                    "position_x": 240,
+                    "position_y": 794,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -643,9 +643,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 382,
-                    "position_y": 760,
-                    "width": 53,
+                    "position_x": 304,
+                    "position_y": 794,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -657,8 +657,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 903,
-                    "position_x": 461,
-                    "position_y": 804,
+                    "position_x": 30,
+                    "position_y": 760,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -682,7 +682,7 @@
                     "name": "close",
                     "id": 940,
                     "position_x": 24,
-                    "position_y": 834,
+                    "position_y": 868,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

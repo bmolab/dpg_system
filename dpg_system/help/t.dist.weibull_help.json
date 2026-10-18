@@ -1,5 +1,5 @@
 {
-    "height": 1268,
+    "height": 1302,
     "width": 1837,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor of random samples from the WEIBULL distribution: positive\nvalues whose shape runs from a spike at 0 to a narrow hump.\n\nIt describes how long things last when the chance of failing changes\nwith age, and is the standard model for wind speeds and particle\nsizes. Concentration 1 is the exponential; below 1 it piles up at 0\nwith a long tail; around 3.5 it is close to a bell; above that it is a\nnarrow hump just below scale.\n\nSYNTAX:\nt.dist.weibull <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.weibull 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.weibull 64 64); with none it is [1], a single sample.\nA list or tensor of numbers, or a single number, sent into the inlet\nworks too. A new shape does not send by itself - the next click uses\nit.\n\nscale (drag float, also an inlet):\nStretches the whole shape; about two thirds of the samples fall below\nit. Must be above 0. Default 1.\n\nconcentration (drag float, also an inlet):\nThe shape. Must be above 0. Default 1 (the exponential).\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A parameter that must be above 0\nhas a drag float that stops at 0.000001. A value the distribution\ncannot take (see each parameter) - 0 or below sent into such an inlet,\nsay - prints a message in the console, and the node goes on sampling\nwith the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. The heat_map (0 dark, 3 bright) changes character as you drag\nconcentration: speckled and dark at 1, smooth mid tones at 5. The\nhistogram goes from a curve falling away from 0 (concentration 1) to a\nlopsided hump (2) to a narrow peak near scale (5). Drag scale to\nstretch it sideways.\n\nRELATED:\nt.dist.exponential is concentration 1. t.dist.gamma and\nt.dist.log_normal are other positive humps; t.dist.gumbel describes\nlargest values rather than lifetimes.",
+                    "value": "Makes a tensor of random samples from the WEIBULL distribution: positive values whose shape runs from a spike at 0 to a narrow hump.\n\nIt describes how long things last when the chance of failing changes with age, and is the standard model for wind speeds and particle sizes. Concentration 1 is the exponential; below 1 it piles up at 0 with a long tail; around 3.5 it is close to a bell; above that it is a narrow hump just below scale.\n\nSYNTAX:\nt.dist.weibull <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.weibull 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.weibull 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nscale (drag float, also an inlet):\nStretches the whole shape; about two thirds of the samples fall below it. Must be above 0. Default 1.\n\nconcentration (drag float, also an inlet):\nThe shape. Must be above 0. Default 1 (the exponential).\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. The heat_map (0 dark, 3 bright) changes character as you drag concentration: speckled and dark at 1, smooth mid tones at 5. The histogram goes from a curve falling away from 0 (concentration 1) to a lopsided hump (2) to a narrow peak near scale (5). Drag scale to stretch it sideways.\n\nRELATED:\nt.dist.exponential is concentration 1. t.dist.gamma and t.dist.log_normal are other positive humps; t.dist.gumbel describes largest values rather than lifetimes.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor of random samples from the WEIBULL distribution: positive\nvalues whose shape runs from a spike at 0 to a narrow hump.\n\nIt describes how long things last when the chance of failing changes\nwith age, and is the standard model for wind speeds and particle\nsizes. Concentration 1 is the exponential; below 1 it piles up at 0\nwith a long tail; around 3.5 it is close to a bell; above that it is a\nnarrow hump just below scale.\n\nSYNTAX:\nt.dist.weibull <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.weibull 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.weibull 64 64); with none it is [1], a single sample.\nA list or tensor of numbers, or a single number, sent into the inlet\nworks too. A new shape does not send by itself - the next click uses\nit.\n\nscale (drag float, also an inlet):\nStretches the whole shape; about two thirds of the samples fall below\nit. Must be above 0. Default 1.\n\nconcentration (drag float, also an inlet):\nThe shape. Must be above 0. Default 1 (the exponential).\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A parameter that must be above 0\nhas a drag float that stops at 0.000001. A value the distribution\ncannot take (see each parameter) - 0 or below sent into such an inlet,\nsay - prints a message in the console, and the node goes on sampling\nwith the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. The heat_map (0 dark, 3 bright) changes character as you drag\nconcentration: speckled and dark at 1, smooth mid tones at 5. The\nhistogram goes from a curve falling away from 0 (concentration 1) to a\nlopsided hump (2) to a narrow peak near scale (5). Drag scale to\nstretch it sideways.\n\nRELATED:\nt.dist.exponential is concentration 1. t.dist.gamma and\nt.dist.log_normal are other positive humps; t.dist.gumbel describes\nlargest values rather than lifetimes."
+            "text": "Makes a tensor of random samples from the WEIBULL distribution: positive values whose shape runs from a spike at 0 to a narrow hump.\n\nIt describes how long things last when the chance of failing changes with age, and is the standard model for wind speeds and particle sizes. Concentration 1 is the exponential; below 1 it piles up at 0 with a long tail; around 3.5 it is close to a bell; above that it is a narrow hump just below scale.\n\nSYNTAX:\nt.dist.weibull <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.weibull 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it anything, for a fresh tensor of samples. Only this inlet makes the node send.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64 by 64 grid, [1000] a row of a thousand. Numbers typed after the node name set it (t.dist.weibull 64 64); with none it is [1], a single sample. A list or tensor of numbers, or a single number, sent into the inlet works too. A new shape does not send by itself - the next click uses it.\n\nscale (drag float, also an inlet):\nStretches the whole shape; about two thirds of the samples fall below it. Must be above 0. Default 1.\n\nconcentration (drag float, also an inlet):\nThe shape. Must be above 0. Default 1 (the exponential).\n\nEach parameter is a drag float on the node and also an inlet. Setting one rebuilds the distribution but does NOT send; the next click samples from it. In the demo each slider goes through 't bang float', which passes the number to the parameter first and THEN clicks the node, so dragging a slider re-samples at once. A parameter that must be above 0 has a drag float that stops at 0.000001. A value the distribution cannot take (see each parameter) - 0 or below sent into such an inlet, say - prints a message in the console, and the node goes on sampling with the last parameters that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh independent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and counts how many of the 4096 samples land in each; the bar plot draws the counts, the first bin at the left. Its shape is the shape of the distribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the node's own button for more. The heat_map (0 dark, 3 bright) changes character as you drag concentration: speckled and dark at 1, smooth mid tones at 5. The histogram goes from a curve falling away from 0 (concentration 1) to a lopsided hump (2) to a narrow peak near scale (5). Drag scale to stretch it sideways.\n\nRELATED:\nt.dist.exponential is concentration 1. t.dist.gamma and t.dist.log_normal are other positive humps; t.dist.gumbel describes largest values rather than lifetimes."
         },
         "3": {
             "name": "load_bang",
@@ -503,8 +503,8 @@
             "name": "help_link",
             "id": 866,
             "position_x": 30,
-            "position_y": 1090,
-            "width": 127,
+            "position_y": 1124,
+            "width": 129,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -515,9 +515,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 212,
-            "position_y": 1090,
-            "width": 90,
+            "position_x": 175,
+            "position_y": 1124,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -528,9 +528,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 348,
-            "position_y": 1090,
-            "width": 121,
+            "position_x": 283,
+            "position_y": 1124,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -541,9 +541,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 522,
-            "position_y": 1090,
-            "width": 96,
+            "position_x": 422,
+            "position_y": 1124,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -554,9 +554,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 666,
-            "position_y": 1090,
-            "width": 53,
+            "position_x": 536,
+            "position_y": 1124,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -568,7 +568,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1051,
-            "position_x": 745,
+            "position_x": 30,
             "position_y": 1090,
             "width": 156,
             "height": 30,
@@ -593,7 +593,7 @@
             "name": "close",
             "id": 1088,
             "position_x": 24,
-            "position_y": 1164,
+            "position_y": 1198,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

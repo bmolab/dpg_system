@@ -1,5 +1,5 @@
 {
-    "height": 1058,
+    "height": 1092,
     "width": 1949,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Answers True if ANY value in a tensor is true (non-zero), False only\nif every one is zero.\n\nIts usual job is the end of a test: compare a tensor with something,\nthen ask \"did it happen anywhere?\" - is any joint moving faster than a\nlimit, has any sensor dropped out, is any pixel above the threshold. It\nturns a whole mask into one yes or no you can gate on.\n\nSYNTAX:\nt.any\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor - usually a mask from a comparison (t.gt, t.lt, ...). Every\none that arrives is tested and the answer sent; it is the only inlet.\nAny shape is accepted and the WHOLE tensor is always tested: there is no\ndim, so you get one True or False, never one per row. A value counts as\ntrue when it is not zero - so negative numbers and NaN are true. A list\nor NumPy array is turned into a float32 tensor first; an empty tensor\nis ignored (nothing is sent).\n\nOUTPUTS:\n\nany:\nTrue or False, as a 0-dimensional bool tensor (a toggle shows it).\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1. t.gt\ncompares each with the slider (which starts at 0.5) and draws the\nanswer as a mask: white where the value is above the threshold, black\nwhere it is not. t.any looks at the mask and lights the toggle if even\nONE cell is white. Drag the slider up: cells go dark one by one, and\nt.any stays True until the very last one - the largest value - goes\ndark. Click t.rand's button for new values.\n\nRELATED:\nt.all is the opposite question: true only if EVERY value is true.\nt.count_nonzero counts how many are true; t.argwhere says which.\nAsking whether t.max of the tensor is above the threshold is the same\ntest. np.any is the NumPy version.",
+                    "value": "Answers True if ANY value in a tensor is true (non-zero), False only if every one is zero.\n\nIts usual job is the end of a test: compare a tensor with something, then ask \"did it happen anywhere?\" - is any joint moving faster than a limit, has any sensor dropped out, is any pixel above the threshold. It turns a whole mask into one yes or no you can gate on.\n\nSYNTAX:\nt.any\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor - usually a mask from a comparison (t.gt, t.lt, ...). Every one that arrives is tested and the answer sent; it is the only inlet. Any shape is accepted and the WHOLE tensor is always tested: there is no dim, so you get one True or False, never one per row. A value counts as true when it is not zero - so negative numbers and NaN are true. A list or NumPy array is turned into a float32 tensor first; an empty tensor is ignored (nothing is sent).\n\nOUTPUTS:\n\nany:\nTrue or False, as a 0-dimensional bool tensor (a toggle shows it).\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1. t.gt compares each with the slider (which starts at 0.5) and draws the answer as a mask: white where the value is above the threshold, black where it is not. t.any looks at the mask and lights the toggle if even ONE cell is white. Drag the slider up: cells go dark one by one, and t.any stays True until the very last one - the largest value - goes dark. Click t.rand's button for new values.\n\nRELATED:\nt.all is the opposite question: true only if EVERY value is true. t.count_nonzero counts how many are true; t.argwhere says which. Asking whether t.max of the tensor is above the threshold is the same test. np.any is the NumPy version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Answers True if ANY value in a tensor is true (non-zero), False only\nif every one is zero.\n\nIts usual job is the end of a test: compare a tensor with something,\nthen ask \"did it happen anywhere?\" - is any joint moving faster than a\nlimit, has any sensor dropped out, is any pixel above the threshold. It\nturns a whole mask into one yes or no you can gate on.\n\nSYNTAX:\nt.any\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor - usually a mask from a comparison (t.gt, t.lt, ...). Every\none that arrives is tested and the answer sent; it is the only inlet.\nAny shape is accepted and the WHOLE tensor is always tested: there is no\ndim, so you get one True or False, never one per row. A value counts as\ntrue when it is not zero - so negative numbers and NaN are true. A list\nor NumPy array is turned into a float32 tensor first; an empty tensor\nis ignored (nothing is sent).\n\nOUTPUTS:\n\nany:\nTrue or False, as a 0-dimensional bool tensor (a toggle shows it).\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1. t.gt\ncompares each with the slider (which starts at 0.5) and draws the\nanswer as a mask: white where the value is above the threshold, black\nwhere it is not. t.any looks at the mask and lights the toggle if even\nONE cell is white. Drag the slider up: cells go dark one by one, and\nt.any stays True until the very last one - the largest value - goes\ndark. Click t.rand's button for new values.\n\nRELATED:\nt.all is the opposite question: true only if EVERY value is true.\nt.count_nonzero counts how many are true; t.argwhere says which.\nAsking whether t.max of the tensor is above the threshold is the same\ntest. np.any is the NumPy version."
+            "text": "Answers True if ANY value in a tensor is true (non-zero), False only if every one is zero.\n\nIts usual job is the end of a test: compare a tensor with something, then ask \"did it happen anywhere?\" - is any joint moving faster than a limit, has any sensor dropped out, is any pixel above the threshold. It turns a whole mask into one yes or no you can gate on.\n\nSYNTAX:\nt.any\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor - usually a mask from a comparison (t.gt, t.lt, ...). Every one that arrives is tested and the answer sent; it is the only inlet. Any shape is accepted and the WHOLE tensor is always tested: there is no dim, so you get one True or False, never one per row. A value counts as true when it is not zero - so negative numbers and NaN are true. A list or NumPy array is turned into a float32 tensor first; an empty tensor is ignored (nothing is sent).\n\nOUTPUTS:\n\nany:\nTrue or False, as a 0-dimensional bool tensor (a toggle shows it).\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1. t.gt compares each with the slider (which starts at 0.5) and draws the answer as a mask: white where the value is above the threshold, black where it is not. t.any looks at the mask and lights the toggle if even ONE cell is white. Drag the slider up: cells go dark one by one, and t.any stays True until the very last one - the largest value - goes dark. Click t.rand's button for new values.\n\nRELATED:\nt.all is the opposite question: true only if EVERY value is true. t.count_nonzero counts how many are true; t.argwhere says which. Asking whether t.max of the tensor is above the threshold is the same test. np.any is the NumPy version."
         },
         "3": {
             "name": "load_bang",
@@ -547,8 +547,8 @@
             "name": "help_link",
             "id": 1014,
             "position_x": 30,
-            "position_y": 880,
-            "width": 53,
+            "position_y": 914,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -559,9 +559,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 120,
-            "position_y": 880,
-            "width": 47,
+            "position_x": 100,
+            "position_y": 914,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -572,9 +572,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 202,
-            "position_y": 880,
-            "width": 109,
+            "position_x": 164,
+            "position_y": 914,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -585,9 +585,9 @@
         "24": {
             "name": "help_link",
             "id": 1125,
-            "position_x": 361,
-            "position_y": 880,
-            "width": 78,
+            "position_x": 290,
+            "position_y": 914,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -598,8 +598,8 @@
         "25": {
             "name": "help_link",
             "id": 1162,
-            "position_x": 482,
-            "position_y": 880,
+            "position_x": 385,
+            "position_y": 914,
             "width": 41,
             "height": 44,
             "visibility": "show_all",
@@ -612,7 +612,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1199,
-            "position_x": 826,
+            "position_x": 30,
             "position_y": 880,
             "width": 156,
             "height": 30,
@@ -637,7 +637,7 @@
             "name": "close",
             "id": 1236,
             "position_x": 24,
-            "position_y": 954,
+            "position_y": 988,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

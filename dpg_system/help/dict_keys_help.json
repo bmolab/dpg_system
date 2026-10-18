@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The dict_keys node reports the keys of a dictionary, as a list.\n\nUse it to see what is in a dictionary you did not build yourself - the output of\nan OSC query, a JSON file, a language model - before deciding what to take out.\n\nSYNTAX:\ndict_keys\n\nINPUTS and PARAMETERS:\n\ndict in:\nThe dictionary. Anything that is not a dictionary is ignored.\n\nOUTPUTS:\n\nkeys out:\nThe keys, in the order they were added. Only the top level is listed; keys of\ndictionaries inside it are not.\n\nRELATED:\ndict_stream sends the keys together with their values, one entry at a time.\ndict_search lets a person browse a nested dictionary by typing.",
+                    "value": "The dict_keys node reports the keys of a dictionary, as a list.\n\nUse it to see what is in a dictionary you did not build yourself - the output of an OSC query, a JSON file, a language model - before deciding what to take out.\n\nSYNTAX:\ndict_keys\n\nINPUTS and PARAMETERS:\n\ndict in:\nThe dictionary. Anything that is not a dictionary is ignored.\n\nOUTPUTS:\n\nkeys out:\nThe keys, in the order they were added. Only the top level is listed; keys of dictionaries inside it are not.\n\nRELATED:\ndict_stream sends the keys together with their values, one entry at a time. dict_search lets a person browse a nested dictionary by typing.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "The dict_keys node reports the keys of a dictionary, as a list.\n\nUse it to see what is in a dictionary you did not build yourself - the output of\nan OSC query, a JSON file, a language model - before deciding what to take out.\n\nSYNTAX:\ndict_keys\n\nINPUTS and PARAMETERS:\n\ndict in:\nThe dictionary. Anything that is not a dictionary is ignored.\n\nOUTPUTS:\n\nkeys out:\nThe keys, in the order they were added. Only the top level is listed; keys of\ndictionaries inside it are not.\n\nRELATED:\ndict_stream sends the keys together with their values, one entry at a time.\ndict_search lets a person browse a nested dictionary by typing."
+            "text": "The dict_keys node reports the keys of a dictionary, as a list.\n\nUse it to see what is in a dictionary you did not build yourself - the output of an OSC query, a JSON file, a language model - before deciding what to take out.\n\nSYNTAX:\ndict_keys\n\nINPUTS and PARAMETERS:\n\ndict in:\nThe dictionary. Anything that is not a dictionary is ignored.\n\nOUTPUTS:\n\nkeys out:\nThe keys, in the order they were added. Only the top level is listed; keys of dictionaries inside it are not.\n\nRELATED:\ndict_stream sends the keys together with their values, one entry at a time. dict_search lets a person browse a nested dictionary by typing."
         },
         "3": {
             "name": "button",

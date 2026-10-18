@@ -1,5 +1,5 @@
 {
-    "height": 1258,
+    "height": 1292,
     "width": 1568,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Counts how many times each whole number occurs: the first value of\nthe output is how many 0s there were, the next how many 1s, and so on up\nto the largest value in the input.\n\nUse it when the values ARE categories rather than measurements - labels,\njoint ids, note numbers, states, the band numbers t.bucketize gives -\nand you want exact counts with no bins or range to choose. It is the\nhistogram for whole numbers.\n\nSYNTAX:\nt.bincount\nNo arguments.\n\nEXAMPLE:\nt.bincount\n\nINPUTS and PARAMETERS:\n\nint tensor in:\nThe whole numbers, any shape - a 2-D tensor is flattened and all its\nvalues counted together. Every input is counted and sent - the only\ninlet that makes the node send. Values that are not whole numbers are\ncut toward zero first (2.7 counts as a 2). Lists arrive as floats and\nare cut the same way.\n\nNEGATIVE VALUES ARE COUNTED AS 0:\ntorch.bincount refuses negative numbers, so the node raises them to 0\nbefore counting - every negative value adds one to the count of 0s,\nsilently. Shift the values up first (+ 5, say) if the input can go below\n0 and you want it counted honestly.\n\nOUTPUTS:\n\nbin count tensor out:\nThe counts, as int64, one per whole number from 0 to the largest value\nin the input - so the output is as long as the largest value plus one,\nand its length changes when the largest value does. Numbers that never\noccur get 0.\n\nREADING THE DEMO:\nTop: 0 1 1 3 3 3 5 holds one 0, two 1s, no 2s, three 3s, no 4s and one\n5, and t.bincount sends exactly that: 1 2 0 3 0 1. Edit the message and\nclick it.\n\nBottom: t.rand (dtype int64) makes 2 rows of 2000 whole numbers from 0\nto 9 - two throws of a ten-sided die, 2000 times over, a new set four\ntimes a second. (For whole numbers t.rand's max is never reached.)\nt.sum 0 adds the two rows: 2000 totals from 0 to 18. The plot shows how\noften each total came up, as a bar per number: a triangle peaking at 9,\nabout 200 times, falling to about 20 at 0 and 18 - there are ten ways to\nthrow 9 and only one to throw 0. Drag max on t.rand down to 4 and the\noutput gets SHORTER (totals 0 to 6 only): its length follows the largest\nvalue that occurs.\n\nRELATED:\nt.histc counts measurements in equal bins over a range you set.\nt.bucketize turns measurements into band numbers you can then count\nhere. t.argmax of the counts is the most common value. t.rand makes random\nwhole numbers when its dtype is int64.",
+                    "value": "Counts how many times each whole number occurs: the first value of the output is how many 0s there were, the next how many 1s, and so on up to the largest value in the input.\n\nUse it when the values ARE categories rather than measurements - labels, joint ids, note numbers, states, the band numbers t.bucketize gives - and you want exact counts with no bins or range to choose. It is the histogram for whole numbers.\n\nSYNTAX:\nt.bincount\nNo arguments.\n\nEXAMPLE:\nt.bincount\n\nINPUTS and PARAMETERS:\n\nint tensor in:\nThe whole numbers, any shape - a 2-D tensor is flattened and all its values counted together. Every input is counted and sent - the only inlet that makes the node send. Values that are not whole numbers are cut toward zero first (2.7 counts as a 2). Lists arrive as floats and are cut the same way.\n\nNEGATIVE VALUES ARE COUNTED AS 0:\ntorch.bincount refuses negative numbers, so the node raises them to 0 before counting - every negative value adds one to the count of 0s, silently. Shift the values up first (+ 5, say) if the input can go below 0 and you want it counted honestly.\n\nOUTPUTS:\n\nbin count tensor out:\nThe counts, as int64, one per whole number from 0 to the largest value in the input - so the output is as long as the largest value plus one, and its length changes when the largest value does. Numbers that never occur get 0.\n\nREADING THE DEMO:\nTop: 0 1 1 3 3 3 5 holds one 0, two 1s, no 2s, three 3s, no 4s and one 5, and t.bincount sends exactly that: 1 2 0 3 0 1. Edit the message and click it.\n\nBottom: t.rand (dtype int64) makes 2 rows of 2000 whole numbers from 0 to 9 - two throws of a ten-sided die, 2000 times over, a new set four times a second. (For whole numbers t.rand's max is never reached.) t.sum 0 adds the two rows: 2000 totals from 0 to 18. The plot shows how often each total came up, as a bar per number: a triangle peaking at 9, about 200 times, falling to about 20 at 0 and 18 - there are ten ways to throw 9 and only one to throw 0. Drag max on t.rand down to 4 and the output gets SHORTER (totals 0 to 6 only): its length follows the largest value that occurs.\n\nRELATED:\nt.histc counts measurements in equal bins over a range you set. t.bucketize turns measurements into band numbers you can then count here. t.argmax of the counts is the most common value. t.rand makes random whole numbers when its dtype is int64.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Counts how many times each whole number occurs: the first value of\nthe output is how many 0s there were, the next how many 1s, and so on up\nto the largest value in the input.\n\nUse it when the values ARE categories rather than measurements - labels,\njoint ids, note numbers, states, the band numbers t.bucketize gives -\nand you want exact counts with no bins or range to choose. It is the\nhistogram for whole numbers.\n\nSYNTAX:\nt.bincount\nNo arguments.\n\nEXAMPLE:\nt.bincount\n\nINPUTS and PARAMETERS:\n\nint tensor in:\nThe whole numbers, any shape - a 2-D tensor is flattened and all its\nvalues counted together. Every input is counted and sent - the only\ninlet that makes the node send. Values that are not whole numbers are\ncut toward zero first (2.7 counts as a 2). Lists arrive as floats and\nare cut the same way.\n\nNEGATIVE VALUES ARE COUNTED AS 0:\ntorch.bincount refuses negative numbers, so the node raises them to 0\nbefore counting - every negative value adds one to the count of 0s,\nsilently. Shift the values up first (+ 5, say) if the input can go below\n0 and you want it counted honestly.\n\nOUTPUTS:\n\nbin count tensor out:\nThe counts, as int64, one per whole number from 0 to the largest value\nin the input - so the output is as long as the largest value plus one,\nand its length changes when the largest value does. Numbers that never\noccur get 0.\n\nREADING THE DEMO:\nTop: 0 1 1 3 3 3 5 holds one 0, two 1s, no 2s, three 3s, no 4s and one\n5, and t.bincount sends exactly that: 1 2 0 3 0 1. Edit the message and\nclick it.\n\nBottom: t.rand (dtype int64) makes 2 rows of 2000 whole numbers from 0\nto 9 - two throws of a ten-sided die, 2000 times over, a new set four\ntimes a second. (For whole numbers t.rand's max is never reached.)\nt.sum 0 adds the two rows: 2000 totals from 0 to 18. The plot shows how\noften each total came up, as a bar per number: a triangle peaking at 9,\nabout 200 times, falling to about 20 at 0 and 18 - there are ten ways to\nthrow 9 and only one to throw 0. Drag max on t.rand down to 4 and the\noutput gets SHORTER (totals 0 to 6 only): its length follows the largest\nvalue that occurs.\n\nRELATED:\nt.histc counts measurements in equal bins over a range you set.\nt.bucketize turns measurements into band numbers you can then count\nhere. t.argmax of the counts is the most common value. t.rand makes random\nwhole numbers when its dtype is int64."
+            "text": "Counts how many times each whole number occurs: the first value of the output is how many 0s there were, the next how many 1s, and so on up to the largest value in the input.\n\nUse it when the values ARE categories rather than measurements - labels, joint ids, note numbers, states, the band numbers t.bucketize gives - and you want exact counts with no bins or range to choose. It is the histogram for whole numbers.\n\nSYNTAX:\nt.bincount\nNo arguments.\n\nEXAMPLE:\nt.bincount\n\nINPUTS and PARAMETERS:\n\nint tensor in:\nThe whole numbers, any shape - a 2-D tensor is flattened and all its values counted together. Every input is counted and sent - the only inlet that makes the node send. Values that are not whole numbers are cut toward zero first (2.7 counts as a 2). Lists arrive as floats and are cut the same way.\n\nNEGATIVE VALUES ARE COUNTED AS 0:\ntorch.bincount refuses negative numbers, so the node raises them to 0 before counting - every negative value adds one to the count of 0s, silently. Shift the values up first (+ 5, say) if the input can go below 0 and you want it counted honestly.\n\nOUTPUTS:\n\nbin count tensor out:\nThe counts, as int64, one per whole number from 0 to the largest value in the input - so the output is as long as the largest value plus one, and its length changes when the largest value does. Numbers that never occur get 0.\n\nREADING THE DEMO:\nTop: 0 1 1 3 3 3 5 holds one 0, two 1s, no 2s, three 3s, no 4s and one 5, and t.bincount sends exactly that: 1 2 0 3 0 1. Edit the message and click it.\n\nBottom: t.rand (dtype int64) makes 2 rows of 2000 whole numbers from 0 to 9 - two throws of a ten-sided die, 2000 times over, a new set four times a second. (For whole numbers t.rand's max is never reached.) t.sum 0 adds the two rows: 2000 totals from 0 to 18. The plot shows how often each total came up, as a bar per number: a triangle peaking at 9, about 200 times, falling to about 20 at 0 and 18 - there are ten ways to throw 9 and only one to throw 0. Drag max on t.rand down to 4 and the output gets SHORTER (totals 0 to 6 only): its length follows the largest value that occurs.\n\nRELATED:\nt.histc counts measurements in equal bins over a range you set. t.bucketize turns measurements into band numbers you can then count here. t.argmax of the counts is the most common value. t.rand makes random whole numbers when its dtype is int64."
         },
         "3": {
             "name": "load_bang",
@@ -467,7 +467,7 @@
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 1080,
+            "position_y": 1114,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -479,9 +479,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 127,
-            "position_y": 1080,
-            "width": 84,
+            "position_x": 106,
+            "position_y": 1114,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -492,8 +492,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 255,
-            "position_y": 1080,
+            "position_x": 207,
+            "position_y": 1114,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -505,9 +505,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 360,
-            "position_y": 1080,
-            "width": 53,
+            "position_x": 289,
+            "position_y": 1114,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -519,8 +519,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1051,
-            "position_x": 439,
-            "position_y": 1124,
+            "position_x": 30,
+            "position_y": 1080,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -544,7 +544,7 @@
             "name": "close",
             "id": 1088,
             "position_x": 24,
-            "position_y": 1154,
+            "position_y": 1188,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

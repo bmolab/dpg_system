@@ -1,5 +1,5 @@
 {
-    "height": 941,
+    "height": 975,
     "width": 1634,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Puts the values of an array in order, smallest first.\n\nUse it to rank values, to find the middle or the extremes by position, to\ntidy a list before display, or to turn scattered values into a smooth\nramp. A 2-D array is sorted one row (or one column) at a time - each\nline on its own, not the array as a whole.\n\nSYNTAX:\nnp.sort <axis: int>\nDefault axis -1, the last axis: each row is sorted.\n\nEXAMPLE:\nnp.sort 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is sorted\nand sent; only this inlet makes the node send.\n\naxis (int box, also an inlet):\nWhich way to sort. On a 2-D array, -1 or 1 sorts along each ROW (each\nrow runs dark to bright, left to right); 0 or -2 sorts down each COLUMN.\nNegative numbers count from the end, as in numpy. An axis the array does\nnot have sends nothing. There is no setting that sorts the whole array\nas one list - flatten it first (np.ravel), then sort.\nChanging axis does NOT send by itself; in the demo a metro re-sends the\nsame array ten times a second (through var), so a new axis shows at once.\n\ndescending (checkbox, under show options):\nLargest first. The sorted result is simply reversed along the axis.\n\nOUTPUTS:\n\nsorted:\nThe same values, in order, in the same shape as the input.\n\nREADING THE DEMO:\nnp.rand makes a 10 by 10 array of noise; click its button for fresh\nnumbers. var holds the latest array and the metro re-sends it, so both\nheat_maps show the same numbers. With axis -1 every row of the right\npicture runs purple to yellow; type 0 and every column does instead.\nTurn on descending (show options) and the ramps run the other way.\n\nRELATED:\nnp.argsort gives WHERE each sorted value came from instead of the values.\nnp.flip reverses an order. t.argsort is the PyTorch counterpart of\nnp.argsort, with its own descending switch.",
+                    "value": "Puts the values of an array in order, smallest first.\n\nUse it to rank values, to find the middle or the extremes by position, to tidy a list before display, or to turn scattered values into a smooth ramp. A 2-D array is sorted one row (or one column) at a time - each line on its own, not the array as a whole.\n\nSYNTAX:\nnp.sort <axis: int>\nDefault axis -1, the last axis: each row is sorted.\n\nEXAMPLE:\nnp.sort 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is sorted and sent; only this inlet makes the node send.\n\naxis (int box, also an inlet):\nWhich way to sort. On a 2-D array, -1 or 1 sorts along each ROW (each row runs dark to bright, left to right); 0 or -2 sorts down each COLUMN. Negative numbers count from the end, as in numpy. An axis the array does not have sends nothing. There is no setting that sorts the whole array as one list - flatten it first (np.ravel), then sort. Changing axis does NOT send by itself; in the demo a metro re-sends the same array ten times a second (through var), so a new axis shows at once.\n\ndescending (checkbox, under show options):\nLargest first. The sorted result is simply reversed along the axis.\n\nOUTPUTS:\n\nsorted:\nThe same values, in order, in the same shape as the input.\n\nREADING THE DEMO:\nnp.rand makes a 10 by 10 array of noise; click its button for fresh numbers. var holds the latest array and the metro re-sends it, so both heat_maps show the same numbers. With axis -1 every row of the right picture runs purple to yellow; type 0 and every column does instead. Turn on descending (show options) and the ramps run the other way.\n\nRELATED:\nnp.argsort gives WHERE each sorted value came from instead of the values. np.flip reverses an order. t.argsort is the PyTorch counterpart of np.argsort, with its own descending switch.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Puts the values of an array in order, smallest first.\n\nUse it to rank values, to find the middle or the extremes by position, to\ntidy a list before display, or to turn scattered values into a smooth\nramp. A 2-D array is sorted one row (or one column) at a time - each\nline on its own, not the array as a whole.\n\nSYNTAX:\nnp.sort <axis: int>\nDefault axis -1, the last axis: each row is sorted.\n\nEXAMPLE:\nnp.sort 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is sorted\nand sent; only this inlet makes the node send.\n\naxis (int box, also an inlet):\nWhich way to sort. On a 2-D array, -1 or 1 sorts along each ROW (each\nrow runs dark to bright, left to right); 0 or -2 sorts down each COLUMN.\nNegative numbers count from the end, as in numpy. An axis the array does\nnot have sends nothing. There is no setting that sorts the whole array\nas one list - flatten it first (np.ravel), then sort.\nChanging axis does NOT send by itself; in the demo a metro re-sends the\nsame array ten times a second (through var), so a new axis shows at once.\n\ndescending (checkbox, under show options):\nLargest first. The sorted result is simply reversed along the axis.\n\nOUTPUTS:\n\nsorted:\nThe same values, in order, in the same shape as the input.\n\nREADING THE DEMO:\nnp.rand makes a 10 by 10 array of noise; click its button for fresh\nnumbers. var holds the latest array and the metro re-sends it, so both\nheat_maps show the same numbers. With axis -1 every row of the right\npicture runs purple to yellow; type 0 and every column does instead.\nTurn on descending (show options) and the ramps run the other way.\n\nRELATED:\nnp.argsort gives WHERE each sorted value came from instead of the values.\nnp.flip reverses an order. t.argsort is the PyTorch counterpart of\nnp.argsort, with its own descending switch."
+            "text": "Puts the values of an array in order, smallest first.\n\nUse it to rank values, to find the middle or the extremes by position, to tidy a list before display, or to turn scattered values into a smooth ramp. A 2-D array is sorted one row (or one column) at a time - each line on its own, not the array as a whole.\n\nSYNTAX:\nnp.sort <axis: int>\nDefault axis -1, the last axis: each row is sorted.\n\nEXAMPLE:\nnp.sort 0\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is sorted and sent; only this inlet makes the node send.\n\naxis (int box, also an inlet):\nWhich way to sort. On a 2-D array, -1 or 1 sorts along each ROW (each row runs dark to bright, left to right); 0 or -2 sorts down each COLUMN. Negative numbers count from the end, as in numpy. An axis the array does not have sends nothing. There is no setting that sorts the whole array as one list - flatten it first (np.ravel), then sort. Changing axis does NOT send by itself; in the demo a metro re-sends the same array ten times a second (through var), so a new axis shows at once.\n\ndescending (checkbox, under show options):\nLargest first. The sorted result is simply reversed along the axis.\n\nOUTPUTS:\n\nsorted:\nThe same values, in order, in the same shape as the input.\n\nREADING THE DEMO:\nnp.rand makes a 10 by 10 array of noise; click its button for fresh numbers. var holds the latest array and the metro re-sends it, so both heat_maps show the same numbers. With axis -1 every row of the right picture runs purple to yellow; type 0 and every column does instead. Turn on descending (show options) and the ramps run the other way.\n\nRELATED:\nnp.argsort gives WHERE each sorted value came from instead of the values. np.flip reverses an order. t.argsort is the PyTorch counterpart of np.argsort, with its own descending switch."
         },
         "3": {
             "name": "load_bang",
@@ -424,8 +424,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 750,
-            "width": 78,
+            "position_y": 784,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -436,8 +436,8 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 151,
-            "position_y": 750,
+            "position_x": 125,
+            "position_y": 784,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -449,9 +449,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 248,
-            "position_y": 750,
-            "width": 72,
+            "position_x": 201,
+            "position_y": 784,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -463,7 +463,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 554,
+            "position_x": 30,
             "position_y": 750,
             "width": 156,
             "height": 30,
@@ -488,7 +488,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 824,
+            "position_y": 858,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 1278,
+    "height": 1312,
     "width": 1630,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Keeps only the fractional part of every value in a tensor - what is\nleft after the whole number is taken away: 2.7 gives 0.7, 12.25 gives\n0.25.\n\nFeed it a value that climbs steadily and the output is a sawtooth: it\nrises from 0 towards 1, drops back to 0 at every whole number, and rises\nagain. That is how to make a repeating phase out of a counter or a\nclock, or a position within a cell out of a position in space. Each\nelement is processed on its own, so the output has the shape of the\ninput.\n\nTHE SIGN STAYS:\nt.frac is the value minus t.trunc of it, so the fraction of a negative\nvalue is negative: -2.3 gives -0.3, not 0.7. The sawtooth below zero\ntherefore runs from 0 down towards -1. If you want a phase that is\nalways between 0 and 1, use the value minus t.floor of it instead (or\nthe mod node by 1, for numbers and NumPy arrays).\n\nSYNTAX:\nt.frac\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a\nfloat32 tensor first. Every input is processed and sent - this is the\nonly inlet that makes the node send. It must be a floating-point tensor:\nan integer tensor raises an error and sends nothing.\n\nOUTPUTS:\n\noutput:\nThe fractional parts, the same shape as the input, each between -1 and\n1 with the sign of the value it came from.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.frac turns it into a\nsawtooth. Right of zero each tooth climbs from 0 towards 1 and drops\nback at every whole number. Left of zero the teeth hang BELOW the line,\nfrom 0 down towards -1 - the sign kept. The message shows the same\nfraction coming out with opposite signs.\n\nRELATED:\nt.trunc is the other half: the whole part. t.trunc plus t.frac is the\noriginal value. t.floor and t.round are the other ways to a whole\nnumber. mod 1 gives an always-positive fraction for numbers and NumPy\narrays.",
+                    "value": "Keeps only the fractional part of every value in a tensor - what is left after the whole number is taken away: 2.7 gives 0.7, 12.25 gives 0.25.\n\nFeed it a value that climbs steadily and the output is a sawtooth: it rises from 0 towards 1, drops back to 0 at every whole number, and rises again. That is how to make a repeating phase out of a counter or a clock, or a position within a cell out of a position in space. Each element is processed on its own, so the output has the shape of the input.\n\nTHE SIGN STAYS:\nt.frac is the value minus t.trunc of it, so the fraction of a negative value is negative: -2.3 gives -0.3, not 0.7. The sawtooth below zero therefore runs from 0 down towards -1. If you want a phase that is always between 0 and 1, use the value minus t.floor of it instead (or the mod node by 1, for numbers and NumPy arrays).\n\nSYNTAX:\nt.frac\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a float32 tensor first. Every input is processed and sent - this is the only inlet that makes the node send. It must be a floating-point tensor: an integer tensor raises an error and sends nothing.\n\nOUTPUTS:\n\noutput:\nThe fractional parts, the same shape as the input, each between -1 and 1 with the sign of the value it came from.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.frac turns it into a sawtooth. Right of zero each tooth climbs from 0 towards 1 and drops back at every whole number. Left of zero the teeth hang BELOW the line, from 0 down towards -1 - the sign kept. The message shows the same fraction coming out with opposite signs.\n\nRELATED:\nt.trunc is the other half: the whole part. t.trunc plus t.frac is the original value. t.floor and t.round are the other ways to a whole number. mod 1 gives an always-positive fraction for numbers and NumPy arrays.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Keeps only the fractional part of every value in a tensor - what is\nleft after the whole number is taken away: 2.7 gives 0.7, 12.25 gives\n0.25.\n\nFeed it a value that climbs steadily and the output is a sawtooth: it\nrises from 0 towards 1, drops back to 0 at every whole number, and rises\nagain. That is how to make a repeating phase out of a counter or a\nclock, or a position within a cell out of a position in space. Each\nelement is processed on its own, so the output has the shape of the\ninput.\n\nTHE SIGN STAYS:\nt.frac is the value minus t.trunc of it, so the fraction of a negative\nvalue is negative: -2.3 gives -0.3, not 0.7. The sawtooth below zero\ntherefore runs from 0 down towards -1. If you want a phase that is\nalways between 0 and 1, use the value minus t.floor of it instead (or\nthe mod node by 1, for numbers and NumPy arrays).\n\nSYNTAX:\nt.frac\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a\nfloat32 tensor first. Every input is processed and sent - this is the\nonly inlet that makes the node send. It must be a floating-point tensor:\nan integer tensor raises an error and sends nothing.\n\nOUTPUTS:\n\noutput:\nThe fractional parts, the same shape as the input, each between -1 and\n1 with the sign of the value it came from.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.frac turns it into a\nsawtooth. Right of zero each tooth climbs from 0 towards 1 and drops\nback at every whole number. Left of zero the teeth hang BELOW the line,\nfrom 0 down towards -1 - the sign kept. The message shows the same\nfraction coming out with opposite signs.\n\nRELATED:\nt.trunc is the other half: the whole part. t.trunc plus t.frac is the\noriginal value. t.floor and t.round are the other ways to a whole\nnumber. mod 1 gives an always-positive fraction for numbers and NumPy\narrays."
+            "text": "Keeps only the fractional part of every value in a tensor - what is left after the whole number is taken away: 2.7 gives 0.7, 12.25 gives 0.25.\n\nFeed it a value that climbs steadily and the output is a sawtooth: it rises from 0 towards 1, drops back to 0 at every whole number, and rises again. That is how to make a repeating phase out of a counter or a clock, or a position within a cell out of a position in space. Each element is processed on its own, so the output has the shape of the input.\n\nTHE SIGN STAYS:\nt.frac is the value minus t.trunc of it, so the fraction of a negative value is negative: -2.3 gives -0.3, not 0.7. The sawtooth below zero therefore runs from 0 down towards -1. If you want a phase that is always between 0 and 1, use the value minus t.floor of it instead (or the mod node by 1, for numbers and NumPy arrays).\n\nSYNTAX:\nt.frac\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a float32 tensor first. Every input is processed and sent - this is the only inlet that makes the node send. It must be a floating-point tensor: an integer tensor raises an error and sends nothing.\n\nOUTPUTS:\n\noutput:\nThe fractional parts, the same shape as the input, each between -1 and 1 with the sign of the value it came from.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.frac turns it into a sawtooth. Right of zero each tooth climbs from 0 towards 1 and drops back at every whole number. Left of zero the teeth hang BELOW the line, from 0 down towards -1 - the sign kept. The message shows the same fraction coming out with opposite signs.\n\nRELATED:\nt.trunc is the other half: the whole part. t.trunc plus t.frac is the original value. t.floor and t.round are the other ways to a whole number. mod 1 gives an always-positive fraction for numbers and NumPy arrays."
         },
         "3": {
             "name": "metro",
@@ -507,7 +507,7 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 1100,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -519,8 +519,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 127,
-            "position_y": 1100,
+            "position_x": 106,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -532,8 +532,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 224,
-            "position_y": 1100,
+            "position_x": 182,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -545,8 +545,8 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 321,
-            "position_y": 1100,
+            "position_x": 258,
+            "position_y": 1134,
             "width": 35,
             "height": 44,
             "visibility": "show_all",
@@ -558,9 +558,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 388,
-            "position_y": 1100,
-            "width": 47,
+            "position_x": 309,
+            "position_y": 1134,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -572,8 +572,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 494,
-            "position_y": 1144,
+            "position_x": 30,
+            "position_y": 1100,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -597,7 +597,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 1174,
+            "position_y": 1208,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

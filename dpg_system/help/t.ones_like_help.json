@@ -1,5 +1,5 @@
 {
-    "height": 981,
+    "height": 1015,
     "width": 1629,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor of ones the same shape as the tensor you send it.\n\nUse it when a neutral tensor - weights that change nothing, a mask that\nlets everything through - must match data you already have. Times a\nnumber, it becomes a constant of that shape. Typing the shape into\nt.ones breaks the moment the data changes size; t.ones_like follows it.\n\nSYNTAX:\nt.ones_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.ones_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node\nsend - a stream of tensors gives a stream of outputs, each matching the\none that came in. A list, NumPy array or number has a shape too and\nworks the same way: a list of 5 numbers gives 5 values, a list of\nlists a 2-D tensor, a single number a 1-element tensor. A bang sends a\nnew tensor in the shape last received.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.ones_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.ones_like also copies the input's dtype and\ndevice. This node does not: the output is always the dtype and device\nset on the node (float32 on cpu unless you change them). Feed it a\nfloat16 tensor on mps and you get float32 on cpu back. Set dtype and\ndevice here to match if the two tensors will meet later.\n\nOUTPUTS:\n\ntensor of ones:\nA tensor the same shape as the input.\n\nREADING THE DEMO:\nA metro clicks t.linspace, whose ramp (top strip) feeds t.ones_like.\nThe bottom strip is the result: the same number of cells, all 1 (all\nyellow). Drag steps on t.linspace: both strips divide together, and\nt.info shows the shape following.\n\nRELATED:\nt.ones makes ones in a shape you type. t.zeros_like and t.rand_like\ncopy the shape the same way with zeros or random values. t.full fills\nwith any value.",
+                    "value": "Makes a tensor of ones the same shape as the tensor you send it.\n\nUse it when a neutral tensor - weights that change nothing, a mask that lets everything through - must match data you already have. Times a number, it becomes a constant of that shape. Typing the shape into t.ones breaks the moment the data changes size; t.ones_like follows it.\n\nSYNTAX:\nt.ones_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.ones_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node send - a stream of tensors gives a stream of outputs, each matching the one that came in. A list, NumPy array or number has a shape too and works the same way: a list of 5 numbers gives 5 values, a list of lists a 2-D tensor, a single number a 1-element tensor. A bang sends a new tensor in the shape last received.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.ones_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.ones_like also copies the input's dtype and device. This node does not: the output is always the dtype and device set on the node (float32 on cpu unless you change them). Feed it a float16 tensor on mps and you get float32 on cpu back. Set dtype and device here to match if the two tensors will meet later.\n\nOUTPUTS:\n\ntensor of ones:\nA tensor the same shape as the input.\n\nREADING THE DEMO:\nA metro clicks t.linspace, whose ramp (top strip) feeds t.ones_like. The bottom strip is the result: the same number of cells, all 1 (all yellow). Drag steps on t.linspace: both strips divide together, and t.info shows the shape following.\n\nRELATED:\nt.ones makes ones in a shape you type. t.zeros_like and t.rand_like copy the shape the same way with zeros or random values. t.full fills with any value.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor of ones the same shape as the tensor you send it.\n\nUse it when a neutral tensor - weights that change nothing, a mask that\nlets everything through - must match data you already have. Times a\nnumber, it becomes a constant of that shape. Typing the shape into\nt.ones breaks the moment the data changes size; t.ones_like follows it.\n\nSYNTAX:\nt.ones_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.ones_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node\nsend - a stream of tensors gives a stream of outputs, each matching the\none that came in. A list, NumPy array or number has a shape too and\nworks the same way: a list of 5 numbers gives 5 values, a list of\nlists a 2-D tensor, a single number a 1-element tensor. A bang sends a\nnew tensor in the shape last received.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.ones_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.ones_like also copies the input's dtype and\ndevice. This node does not: the output is always the dtype and device\nset on the node (float32 on cpu unless you change them). Feed it a\nfloat16 tensor on mps and you get float32 on cpu back. Set dtype and\ndevice here to match if the two tensors will meet later.\n\nOUTPUTS:\n\ntensor of ones:\nA tensor the same shape as the input.\n\nREADING THE DEMO:\nA metro clicks t.linspace, whose ramp (top strip) feeds t.ones_like.\nThe bottom strip is the result: the same number of cells, all 1 (all\nyellow). Drag steps on t.linspace: both strips divide together, and\nt.info shows the shape following.\n\nRELATED:\nt.ones makes ones in a shape you type. t.zeros_like and t.rand_like\ncopy the shape the same way with zeros or random values. t.full fills\nwith any value."
+            "text": "Makes a tensor of ones the same shape as the tensor you send it.\n\nUse it when a neutral tensor - weights that change nothing, a mask that lets everything through - must match data you already have. Times a number, it becomes a constant of that shape. Typing the shape into t.ones breaks the moment the data changes size; t.ones_like follows it.\n\nSYNTAX:\nt.ones_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.ones_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node send - a stream of tensors gives a stream of outputs, each matching the one that came in. A list, NumPy array or number has a shape too and works the same way: a list of 5 numbers gives 5 values, a list of lists a 2-D tensor, a single number a 1-element tensor. A bang sends a new tensor in the shape last received.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations want. The menu also offers float16, int64, uint8, bool, complex64 and complex128; 'float' is the same as float32, and each name appears a second time with a 'torch.' prefix, which means the same thing. There is no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the machine has them. Tensors on different devices cannot be combined, so keep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless you are training something. Only float and complex tensors can carry it: ticked with an integer or bool dtype, the node raises an error and sends nothing.\n\nA dtype or device name can also be typed as an argument, after the numbers - for example t.ones_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.ones_like also copies the input's dtype and device. This node does not: the output is always the dtype and device set on the node (float32 on cpu unless you change them). Feed it a float16 tensor on mps and you get float32 on cpu back. Set dtype and device here to match if the two tensors will meet later.\n\nOUTPUTS:\n\ntensor of ones:\nA tensor the same shape as the input.\n\nREADING THE DEMO:\nA metro clicks t.linspace, whose ramp (top strip) feeds t.ones_like. The bottom strip is the result: the same number of cells, all 1 (all yellow). Drag steps on t.linspace: both strips divide together, and t.info shows the shape following.\n\nRELATED:\nt.ones makes ones in a shape you type. t.zeros_like and t.rand_like copy the shape the same way with zeros or random values. t.full fills with any value."
         },
         "3": {
             "name": "metro",
@@ -384,8 +384,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 790,
-            "width": 53,
+            "position_y": 824,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -396,9 +396,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 120,
-            "position_y": 790,
-            "width": 90,
+            "position_x": 100,
+            "position_y": 824,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -409,9 +409,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 256,
-            "position_y": 790,
-            "width": 84,
+            "position_x": 208,
+            "position_y": 824,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -422,9 +422,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 384,
-            "position_y": 790,
-            "width": 53,
+            "position_x": 309,
+            "position_y": 824,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -436,7 +436,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 524,
+            "position_x": 30,
             "position_y": 790,
             "width": 156,
             "height": 30,
@@ -461,7 +461,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 864,
+            "position_y": 898,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

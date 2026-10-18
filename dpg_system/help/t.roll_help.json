@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1041,
+            "height": 1075,
             "width": 1635,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Shifts everything in a tensor along a dimension, and what falls off one end comes back at the other.\n\nNothing is lost: it is a rotation of the order, not a shift into empty\nspace. Use it to scroll a pattern round, to offset a sequence against\nitself by a fixed number of steps (a circular delay), or to step through\na circular list. If you want old values to fall off and zeros to arrive,\nthat is not this node.\n\nSYNTAX:\nt.roll <shifts: int> <dims: int>\nDefaults: shifts 1, dims 0.\n\nEXAMPLE:\nt.roll 2 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nEach tensor that arrives is rolled and sent. Only this inlet sends.\n\nshifts (text field, also an inlet):\nHow many places to move. Positive moves towards the end (down for dim 0,\nright for dim 1), negative the other way. A shift larger than the\ndimension goes round again: on 6 columns, 7 is the same as 1. Give a\nlist (2, 1) to roll several dimensions at once.\n\ndims (text field, also an inlet):\nWhich dimension each shift applies to: 0 rows, 1 columns; negative\ncounts from the end. With a list of shifts give a list of dims of the\nsame length (0, 1). If the two lists differ in length the tensor is\npassed through unrolled (with verbose on, the console says why).\n\nChanging shifts or dims does NOT send by itself - in the demo a metro\ninside make_F re-sends the F ten times a second, so the picture follows\nyour edits.\n\nOUTPUTS:\n\nrolled tensor:\nSame shape and values as the input, moved round. A new tensor.\n\nREADING THE DEMO:\nt.roll 2 1 moves every column 2 places to the right; the two columns\npushed off the right edge come back on the left, so the F's stem now\nsits in the middle. Type 0 into dims and it rolls down instead, its top\nbar wrapping to the bottom. Type 2, 3 into shifts and 1, 0 into dims to\nroll both ways at once.\n\nRELATED:\nt.flip reverses instead of shifting. t.repeat and t.tile make copies.\nt.cat joins tensors. np.roll is the numpy version (one axis at a time).",
+                            "value": "Shifts everything in a tensor along a dimension, and what falls off one end comes back at the other.\n\nNothing is lost: it is a rotation of the order, not a shift into empty space. Use it to scroll a pattern round, to offset a sequence against itself by a fixed number of steps (a circular delay), or to step through a circular list. If you want old values to fall off and zeros to arrive, that is not this node.\n\nSYNTAX:\nt.roll <shifts: int> <dims: int>\nDefaults: shifts 1, dims 0.\n\nEXAMPLE:\nt.roll 2 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor). Each tensor that arrives is rolled and sent. Only this inlet sends.\n\nshifts (text field, also an inlet):\nHow many places to move. Positive moves towards the end (down for dim 0, right for dim 1), negative the other way. A shift larger than the dimension goes round again: on 6 columns, 7 is the same as 1. Give a list (2, 1) to roll several dimensions at once.\n\ndims (text field, also an inlet):\nWhich dimension each shift applies to: 0 rows, 1 columns; negative counts from the end. With a list of shifts give a list of dims of the same length (0, 1). If the two lists differ in length the tensor is passed through unrolled (with verbose on, the console says why).\n\nChanging shifts or dims does NOT send by itself - in the demo a metro inside make_F re-sends the F ten times a second, so the picture follows your edits.\n\nOUTPUTS:\n\nrolled tensor:\nSame shape and values as the input, moved round. A new tensor.\n\nREADING THE DEMO:\nt.roll 2 1 moves every column 2 places to the right; the two columns pushed off the right edge come back on the left, so the F's stem now sits in the middle. Type 0 into dims and it rolls down instead, its top bar wrapping to the bottom. Type 2, 3 into shifts and 1, 0 into dims to roll both ways at once.\n\nRELATED:\nt.flip reverses instead of shifting. t.repeat and t.tile make copies. t.cat joins tensors. np.roll is the numpy version (one axis at a time).",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Shifts everything in a tensor along a dimension, and what falls off one end comes back at the other.\n\nNothing is lost: it is a rotation of the order, not a shift into empty\nspace. Use it to scroll a pattern round, to offset a sequence against\nitself by a fixed number of steps (a circular delay), or to step through\na circular list. If you want old values to fall off and zeros to arrive,\nthat is not this node.\n\nSYNTAX:\nt.roll <shifts: int> <dims: int>\nDefaults: shifts 1, dims 0.\n\nEXAMPLE:\nt.roll 2 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nEach tensor that arrives is rolled and sent. Only this inlet sends.\n\nshifts (text field, also an inlet):\nHow many places to move. Positive moves towards the end (down for dim 0,\nright for dim 1), negative the other way. A shift larger than the\ndimension goes round again: on 6 columns, 7 is the same as 1. Give a\nlist (2, 1) to roll several dimensions at once.\n\ndims (text field, also an inlet):\nWhich dimension each shift applies to: 0 rows, 1 columns; negative\ncounts from the end. With a list of shifts give a list of dims of the\nsame length (0, 1). If the two lists differ in length the tensor is\npassed through unrolled (with verbose on, the console says why).\n\nChanging shifts or dims does NOT send by itself - in the demo a metro\ninside make_F re-sends the F ten times a second, so the picture follows\nyour edits.\n\nOUTPUTS:\n\nrolled tensor:\nSame shape and values as the input, moved round. A new tensor.\n\nREADING THE DEMO:\nt.roll 2 1 moves every column 2 places to the right; the two columns\npushed off the right edge come back on the left, so the F's stem now\nsits in the middle. Type 0 into dims and it rolls down instead, its top\nbar wrapping to the bottom. Type 2, 3 into shifts and 1, 0 into dims to\nroll both ways at once.\n\nRELATED:\nt.flip reverses instead of shifting. t.repeat and t.tile make copies.\nt.cat joins tensors. np.roll is the numpy version (one axis at a time)."
+                    "text": "Shifts everything in a tensor along a dimension, and what falls off one end comes back at the other.\n\nNothing is lost: it is a rotation of the order, not a shift into empty space. Use it to scroll a pattern round, to offset a sequence against itself by a fixed number of steps (a circular delay), or to step through a circular list. If you want old values to fall off and zeros to arrive, that is not this node.\n\nSYNTAX:\nt.roll <shifts: int> <dims: int>\nDefaults: shifts 1, dims 0.\n\nEXAMPLE:\nt.roll 2 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor). Each tensor that arrives is rolled and sent. Only this inlet sends.\n\nshifts (text field, also an inlet):\nHow many places to move. Positive moves towards the end (down for dim 0, right for dim 1), negative the other way. A shift larger than the dimension goes round again: on 6 columns, 7 is the same as 1. Give a list (2, 1) to roll several dimensions at once.\n\ndims (text field, also an inlet):\nWhich dimension each shift applies to: 0 rows, 1 columns; negative counts from the end. With a list of shifts give a list of dims of the same length (0, 1). If the two lists differ in length the tensor is passed through unrolled (with verbose on, the console says why).\n\nChanging shifts or dims does NOT send by itself - in the demo a metro inside make_F re-sends the F ten times a second, so the picture follows your edits.\n\nOUTPUTS:\n\nrolled tensor:\nSame shape and values as the input, moved round. A new tensor.\n\nREADING THE DEMO:\nt.roll 2 1 moves every column 2 places to the right; the two columns pushed off the right edge come back on the left, so the F's stem now sits in the middle. Type 0 into dims and it rolls down instead, its top bar wrapping to the bottom. Type 2, 3 into shifts and 1, 0 into dims to roll both ways at once.\n\nRELATED:\nt.flip reverses instead of shifting. t.repeat and t.tile make copies. t.cat joins tensors. np.roll is the numpy version (one axis at a time)."
                 },
                 "3": {
                     "name": "p",
@@ -527,8 +527,8 @@
                     "name": "help_link",
                     "id": 607,
                     "position_x": 30,
-                    "position_y": 640,
-                    "width": 53,
+                    "position_y": 674,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -539,8 +539,8 @@
                 "11": {
                     "name": "help_link",
                     "id": 644,
-                    "position_x": 120,
-                    "position_y": 640,
+                    "position_x": 100,
+                    "position_y": 674,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -552,9 +552,9 @@
                 "12": {
                     "name": "help_link",
                     "id": 681,
-                    "position_x": 225,
-                    "position_y": 640,
-                    "width": 47,
+                    "position_x": 182,
+                    "position_y": 674,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -565,8 +565,8 @@
                 "13": {
                     "name": "help_link",
                     "id": 718,
-                    "position_x": 307,
-                    "position_y": 640,
+                    "position_x": 246,
+                    "position_y": 674,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -579,7 +579,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 755,
-                    "position_x": 494,
+                    "position_x": 30,
                     "position_y": 640,
                     "width": 156,
                     "height": 30,
@@ -604,7 +604,7 @@
                     "name": "close",
                     "id": 792,
                     "position_x": 24,
-                    "position_y": 714,
+                    "position_y": 748,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

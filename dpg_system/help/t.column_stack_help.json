@@ -1,5 +1,5 @@
 {
-    "height": 1688,
+    "height": 1722,
     "width": 1706,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Joins tensors side by side as COLUMNS: each 1-D input becomes one\ncolumn of the result.\n\nTwo rows of 8 become an 8 by 2 table - the first input down the left,\nthe second down the right. That is the usual way to pair up x and y\nlists into points (8 points, each an x and a y), or to gather several\nsignals into one table with a column per signal.\n\nHOW IT DIFFERS FROM t.hstack:\nt.hstack lays two rows of 8 end to end, as ONE row of 16. t.column_stack\nfirst stands each 1-D input up as a column of 8, then puts the columns\nside by side. For 2-D inputs the two agree: two 7 by 6 pictures become\n7 by 12 either way.\n\nINPUTS OF DIFFERENT WIDTHS:\nThe inputs need only the same number of ROWS. A 2-D input adds all of\nits columns, so an 8 by 2 table and a row of 8 join into 8 by 3 - which\nis how to add one more column to a table you already have (the second\nhalf of the demo). Inputs with different numbers of rows cannot be\njoined: the console prints an error and nothing is sent.\n\nSYNTAX:\nt.column_stack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.column_stack\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it becomes the left-hand column(s). Receiving it\nmakes the node join and send. A list or numpy array becomes a float32\ntensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order, to the right. They are only stored, so they must\narrive BEFORE tensor 1. Each is converted to tensor 1's dtype and\ndevice. Until something has reached tensor 2, tensor 1 comes out on its\nown as a single column ([8] becomes [8, 1]).\n\nOUTPUTS:\n\nstacked tensors:\nThe table: as many rows as the inputs, and one column per 1-D input\nplus all the columns of each 2-D input.\n\nREADING THE DEMO:\ntensor 1 is a ramp rising across 8 values (drag stop on its\nt.linspace); tensor 2 the same ramp falling, made once when the patch\nopens. The first t.column_stack gives 8 rows of 2: rising down the left,\nfalling down the right. That 8 by 2 table then goes into a second\nt.column_stack beside a row of 8 values all 0.5, and comes out 8 by 3 -\nthe two columns and a third, all one middle colour.\n\nRELATED:\nt.hstack joins side by side without turning rows into columns. t.stack\nwith dim 1 also makes the columns from 1-D inputs, but needs every input\nthe same shape. t.vstack joins as rows. np.stack (axis 1) is the numpy\nway to make the columns.",
+                    "value": "Joins tensors side by side as COLUMNS: each 1-D input becomes one column of the result.\n\nTwo rows of 8 become an 8 by 2 table - the first input down the left, the second down the right. That is the usual way to pair up x and y lists into points (8 points, each an x and a y), or to gather several signals into one table with a column per signal.\n\nHOW IT DIFFERS FROM t.hstack:\nt.hstack lays two rows of 8 end to end, as ONE row of 16. t.column_stack first stands each 1-D input up as a column of 8, then puts the columns side by side. For 2-D inputs the two agree: two 7 by 6 pictures become 7 by 12 either way.\n\nINPUTS OF DIFFERENT WIDTHS:\nThe inputs need only the same number of ROWS. A 2-D input adds all of its columns, so an 8 by 2 table and a row of 8 join into 8 by 3 - which is how to add one more column to a table you already have (the second half of the demo). Inputs with different numbers of rows cannot be joined: the console prints an error and nothing is sent.\n\nSYNTAX:\nt.column_stack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.column_stack\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it becomes the left-hand column(s). Receiving it makes the node join and send. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order, to the right. They are only stored, so they must arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and device. Until something has reached tensor 2, tensor 1 comes out on its own as a single column ([8] becomes [8, 1]).\n\nOUTPUTS:\n\nstacked tensors:\nThe table: as many rows as the inputs, and one column per 1-D input plus all the columns of each 2-D input.\n\nREADING THE DEMO:\ntensor 1 is a ramp rising across 8 values (drag stop on its t.linspace); tensor 2 the same ramp falling, made once when the patch opens. The first t.column_stack gives 8 rows of 2: rising down the left, falling down the right. That 8 by 2 table then goes into a second t.column_stack beside a row of 8 values all 0.5, and comes out 8 by 3 - the two columns and a third, all one middle colour.\n\nRELATED:\nt.hstack joins side by side without turning rows into columns. t.stack with dim 1 also makes the columns from 1-D inputs, but needs every input the same shape. t.vstack joins as rows. np.stack (axis 1) is the numpy way to make the columns.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Joins tensors side by side as COLUMNS: each 1-D input becomes one\ncolumn of the result.\n\nTwo rows of 8 become an 8 by 2 table - the first input down the left,\nthe second down the right. That is the usual way to pair up x and y\nlists into points (8 points, each an x and a y), or to gather several\nsignals into one table with a column per signal.\n\nHOW IT DIFFERS FROM t.hstack:\nt.hstack lays two rows of 8 end to end, as ONE row of 16. t.column_stack\nfirst stands each 1-D input up as a column of 8, then puts the columns\nside by side. For 2-D inputs the two agree: two 7 by 6 pictures become\n7 by 12 either way.\n\nINPUTS OF DIFFERENT WIDTHS:\nThe inputs need only the same number of ROWS. A 2-D input adds all of\nits columns, so an 8 by 2 table and a row of 8 join into 8 by 3 - which\nis how to add one more column to a table you already have (the second\nhalf of the demo). Inputs with different numbers of rows cannot be\njoined: the console prints an error and nothing is sent.\n\nSYNTAX:\nt.column_stack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.column_stack\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it becomes the left-hand column(s). Receiving it\nmakes the node join and send. A list or numpy array becomes a float32\ntensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order, to the right. They are only stored, so they must\narrive BEFORE tensor 1. Each is converted to tensor 1's dtype and\ndevice. Until something has reached tensor 2, tensor 1 comes out on its\nown as a single column ([8] becomes [8, 1]).\n\nOUTPUTS:\n\nstacked tensors:\nThe table: as many rows as the inputs, and one column per 1-D input\nplus all the columns of each 2-D input.\n\nREADING THE DEMO:\ntensor 1 is a ramp rising across 8 values (drag stop on its\nt.linspace); tensor 2 the same ramp falling, made once when the patch\nopens. The first t.column_stack gives 8 rows of 2: rising down the left,\nfalling down the right. That 8 by 2 table then goes into a second\nt.column_stack beside a row of 8 values all 0.5, and comes out 8 by 3 -\nthe two columns and a third, all one middle colour.\n\nRELATED:\nt.hstack joins side by side without turning rows into columns. t.stack\nwith dim 1 also makes the columns from 1-D inputs, but needs every input\nthe same shape. t.vstack joins as rows. np.stack (axis 1) is the numpy\nway to make the columns."
+            "text": "Joins tensors side by side as COLUMNS: each 1-D input becomes one column of the result.\n\nTwo rows of 8 become an 8 by 2 table - the first input down the left, the second down the right. That is the usual way to pair up x and y lists into points (8 points, each an x and a y), or to gather several signals into one table with a column per signal.\n\nHOW IT DIFFERS FROM t.hstack:\nt.hstack lays two rows of 8 end to end, as ONE row of 16. t.column_stack first stands each 1-D input up as a column of 8, then puts the columns side by side. For 2-D inputs the two agree: two 7 by 6 pictures become 7 by 12 either way.\n\nINPUTS OF DIFFERENT WIDTHS:\nThe inputs need only the same number of ROWS. A 2-D input adds all of its columns, so an 8 by 2 table and a row of 8 join into 8 by 3 - which is how to add one more column to a table you already have (the second half of the demo). Inputs with different numbers of rows cannot be joined: the console prints an error and nothing is sent.\n\nSYNTAX:\nt.column_stack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.column_stack\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it becomes the left-hand column(s). Receiving it makes the node join and send. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order, to the right. They are only stored, so they must arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and device. Until something has reached tensor 2, tensor 1 comes out on its own as a single column ([8] becomes [8, 1]).\n\nOUTPUTS:\n\nstacked tensors:\nThe table: as many rows as the inputs, and one column per 1-D input plus all the columns of each 2-D input.\n\nREADING THE DEMO:\ntensor 1 is a ramp rising across 8 values (drag stop on its t.linspace); tensor 2 the same ramp falling, made once when the patch opens. The first t.column_stack gives 8 rows of 2: rising down the left, falling down the right. That 8 by 2 table then goes into a second t.column_stack beside a row of 8 values all 0.5, and comes out 8 by 3 - the two columns and a third, all one middle colour.\n\nRELATED:\nt.hstack joins side by side without turning rows into columns. t.stack with dim 1 also makes the columns from 1-D inputs, but needs every input the same shape. t.vstack joins as rows. np.stack (axis 1) is the numpy way to make the columns."
         },
         "3": {
             "name": "metro",
@@ -549,7 +549,7 @@
             "name": "help_link",
             "id": 1014,
             "position_x": 30,
-            "position_y": 1510,
+            "position_y": 1544,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -561,8 +561,8 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 135,
-            "position_y": 1510,
+            "position_x": 112,
+            "position_y": 1544,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -574,8 +574,8 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 232,
-            "position_y": 1510,
+            "position_x": 188,
+            "position_y": 1544,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -587,8 +587,8 @@
         "24": {
             "name": "help_link",
             "id": 1125,
-            "position_x": 337,
-            "position_y": 1510,
+            "position_x": 270,
+            "position_y": 1544,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -601,7 +601,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1162,
-            "position_x": 546,
+            "position_x": 30,
             "position_y": 1510,
             "width": 156,
             "height": 30,
@@ -626,7 +626,7 @@
             "name": "close",
             "id": 1199,
             "position_x": 24,
-            "position_y": 1584,
+            "position_y": 1618,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

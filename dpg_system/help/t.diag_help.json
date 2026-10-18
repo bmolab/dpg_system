@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1101,
+            "height": 1135,
             "width": 1897,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Goes both ways between a matrix and its diagonal: a matrix in gives its diagonal as a vector; a vector in gives a square matrix with that vector on the diagonal.\n\nWhich you get depends only on what you send: 2-D in, 1-D out; 1-D in,\n2-D out. The diagonal of a covariance matrix is each channel's variance\non its own, with the cross-terms removed - so t.diag after t.cov or\nt.corrcoef separates \"how much does each vary\" from \"what does it vary\nwith\". Going the other way, t.diag of a list of gains makes a matrix\nthat scales each channel by its own gain.\n\nSYNTAX:\nt.diag\nIt takes no arguments; set which diag in its box.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA matrix (2-D) or a vector (1-D). A list or numpy array is converted to\na float32 tensor. Sends on arrival. Any other number of dimensions is\nrefused by PyTorch with an error in the console.\n\nwhich diag (int box):\nWhich diagonal: 0 the main one (top left to bottom right), 1 the one\njust above it, -1 just below, and so on. For a matrix this picks the\ndiagonal read out (one shorter for each step away from the middle). For\na vector it places the vector on that diagonal, and the matrix grows to\nfit: 5 values on diagonal 1 give a 6 x 6 matrix. Changing it does not\nsend; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe diagonal (from a matrix) or the matrix (from a vector).\n\nREADING THE DEMO:\nLeft: the numbered 10 x 10 source (tens digit the row, units digit the\ncolumn). Its diagonal is 0 11 22 ... 99. Set which diag to 1 and it reads\n1 12 23 ... 89, nine values; -1 reads 10 21 ... 98.\nRight: the vector 1 2 3 4 5 becomes a 5 x 5 matrix, zero except the\ndiagonal. Set its which diag to 1 and the values move up a step and the\nmatrix becomes 6 x 6.\n\nRELATED:\nt.tril and t.triu keep a triangle of a matrix, on either side of the\nsame diagonals. t.eye makes the identity matrix (ones on the diagonal).\nt.corrcoef gives a matrix whose diagonal is all ones.",
+                            "value": "Goes both ways between a matrix and its diagonal: a matrix in gives its diagonal as a vector; a vector in gives a square matrix with that vector on the diagonal.\n\nWhich you get depends only on what you send: 2-D in, 1-D out; 1-D in, 2-D out. The diagonal of a covariance matrix is each channel's variance on its own, with the cross-terms removed - so t.diag after t.cov or t.corrcoef separates \"how much does each vary\" from \"what does it vary with\". Going the other way, t.diag of a list of gains makes a matrix that scales each channel by its own gain.\n\nSYNTAX:\nt.diag\nIt takes no arguments; set which diag in its box.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA matrix (2-D) or a vector (1-D). A list or numpy array is converted to a float32 tensor. Sends on arrival. Any other number of dimensions is refused by PyTorch with an error in the console.\n\nwhich diag (int box):\nWhich diagonal: 0 the main one (top left to bottom right), 1 the one just above it, -1 just below, and so on. For a matrix this picks the diagonal read out (one shorter for each step away from the middle). For a vector it places the vector on that diagonal, and the matrix grows to fit: 5 values on diagonal 1 give a 6 x 6 matrix. Changing it does not send; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe diagonal (from a matrix) or the matrix (from a vector).\n\nREADING THE DEMO:\nLeft: the numbered 10 x 10 source (tens digit the row, units digit the column). Its diagonal is 0 11 22 ... 99. Set which diag to 1 and it reads 1 12 23 ... 89, nine values; -1 reads 10 21 ... 98.\nRight: the vector 1 2 3 4 5 becomes a 5 x 5 matrix, zero except the diagonal. Set its which diag to 1 and the values move up a step and the matrix becomes 6 x 6.\n\nRELATED:\nt.tril and t.triu keep a triangle of a matrix, on either side of the same diagonals. t.eye makes the identity matrix (ones on the diagonal). t.corrcoef gives a matrix whose diagonal is all ones.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Goes both ways between a matrix and its diagonal: a matrix in gives its diagonal as a vector; a vector in gives a square matrix with that vector on the diagonal.\n\nWhich you get depends only on what you send: 2-D in, 1-D out; 1-D in,\n2-D out. The diagonal of a covariance matrix is each channel's variance\non its own, with the cross-terms removed - so t.diag after t.cov or\nt.corrcoef separates \"how much does each vary\" from \"what does it vary\nwith\". Going the other way, t.diag of a list of gains makes a matrix\nthat scales each channel by its own gain.\n\nSYNTAX:\nt.diag\nIt takes no arguments; set which diag in its box.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA matrix (2-D) or a vector (1-D). A list or numpy array is converted to\na float32 tensor. Sends on arrival. Any other number of dimensions is\nrefused by PyTorch with an error in the console.\n\nwhich diag (int box):\nWhich diagonal: 0 the main one (top left to bottom right), 1 the one\njust above it, -1 just below, and so on. For a matrix this picks the\ndiagonal read out (one shorter for each step away from the middle). For\na vector it places the vector on that diagonal, and the matrix grows to\nfit: 5 values on diagonal 1 give a 6 x 6 matrix. Changing it does not\nsend; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe diagonal (from a matrix) or the matrix (from a vector).\n\nREADING THE DEMO:\nLeft: the numbered 10 x 10 source (tens digit the row, units digit the\ncolumn). Its diagonal is 0 11 22 ... 99. Set which diag to 1 and it reads\n1 12 23 ... 89, nine values; -1 reads 10 21 ... 98.\nRight: the vector 1 2 3 4 5 becomes a 5 x 5 matrix, zero except the\ndiagonal. Set its which diag to 1 and the values move up a step and the\nmatrix becomes 6 x 6.\n\nRELATED:\nt.tril and t.triu keep a triangle of a matrix, on either side of the\nsame diagonals. t.eye makes the identity matrix (ones on the diagonal).\nt.corrcoef gives a matrix whose diagonal is all ones."
+                    "text": "Goes both ways between a matrix and its diagonal: a matrix in gives its diagonal as a vector; a vector in gives a square matrix with that vector on the diagonal.\n\nWhich you get depends only on what you send: 2-D in, 1-D out; 1-D in, 2-D out. The diagonal of a covariance matrix is each channel's variance on its own, with the cross-terms removed - so t.diag after t.cov or t.corrcoef separates \"how much does each vary\" from \"what does it vary with\". Going the other way, t.diag of a list of gains makes a matrix that scales each channel by its own gain.\n\nSYNTAX:\nt.diag\nIt takes no arguments; set which diag in its box.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA matrix (2-D) or a vector (1-D). A list or numpy array is converted to a float32 tensor. Sends on arrival. Any other number of dimensions is refused by PyTorch with an error in the console.\n\nwhich diag (int box):\nWhich diagonal: 0 the main one (top left to bottom right), 1 the one just above it, -1 just below, and so on. For a matrix this picks the diagonal read out (one shorter for each step away from the middle). For a vector it places the vector on that diagonal, and the matrix grows to fit: 5 values on diagonal 1 give a 6 x 6 matrix. Changing it does not send; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe diagonal (from a matrix) or the matrix (from a vector).\n\nREADING THE DEMO:\nLeft: the numbered 10 x 10 source (tens digit the row, units digit the column). Its diagonal is 0 11 22 ... 99. Set which diag to 1 and it reads 1 12 23 ... 89, nine values; -1 reads 10 21 ... 98.\nRight: the vector 1 2 3 4 5 becomes a 5 x 5 matrix, zero except the diagonal. Set its which diag to 1 and the values move up a step and the matrix becomes 6 x 6.\n\nRELATED:\nt.tril and t.triu keep a triangle of a matrix, on either side of the same diagonals. t.eye makes the identity matrix (ones on the diagonal). t.corrcoef gives a matrix whose diagonal is all ones."
                 },
                 "3": {
                     "name": "p",
@@ -793,8 +793,8 @@
                     "name": "help_link",
                     "id": 903,
                     "position_x": 30,
-                    "position_y": 880,
-                    "width": 53,
+                    "position_y": 914,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -805,9 +805,9 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 120,
-                    "position_y": 880,
-                    "width": 53,
+                    "position_x": 100,
+                    "position_y": 914,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -818,9 +818,9 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 210,
-                    "position_y": 880,
-                    "width": 47,
+                    "position_x": 170,
+                    "position_y": 914,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -831,9 +831,9 @@
                 "21": {
                     "name": "help_link",
                     "id": 1014,
-                    "position_x": 292,
-                    "position_y": 880,
-                    "width": 78,
+                    "position_x": 234,
+                    "position_y": 914,
+                    "width": 79,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -845,7 +845,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1051,
-                    "position_x": 774,
+                    "position_x": 30,
                     "position_y": 880,
                     "width": 156,
                     "height": 30,
@@ -870,7 +870,7 @@
                     "name": "close",
                     "id": 1088,
                     "position_x": 24,
-                    "position_y": 954,
+                    "position_y": 988,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

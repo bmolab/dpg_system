@@ -1,5 +1,5 @@
 {
-    "height": 1029,
+    "height": 1063,
     "width": 1750,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Gives the cross product of two 3-D vectors: a third vector at right\nangles to both.\n\nIts direction is perpendicular to the plane the two inputs lie in, and\nits length is the area of the parallelogram they span - largest when\nthey are at right angles, 0 when they are parallel (then there is no\nsingle plane, and no perpendicular). Order matters: in 1 x in 2 points\nthe opposite way from in 2 x in 1 (the right-hand rule: fingers from in\n1 towards in 2, thumb along the result).\n\nReach for it to find a surface normal from two edges of a triangle, the\naxis to turn about to get from one direction to another, or which way\nis \"up\" given a forward and a sideways direction.\n\nSYNTAX:\nnp.cross\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector, 3 numbers (a list is turned into an array). Receiving\nit calculates and sends.\n\nin 2:\nThe second vector. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has.\nSets of vectors work row by row: N rows of 3 with N rows of 3 (or with\none vector of 3) give N cross products. Two 2-D vectors give a single\nnumber (the z of the result) and numpy warns that this form is going\naway. Other lengths are an error: it is printed and nothing is sent.\n\nOUTPUTS:\n\ncross product:\nThe perpendicular vector, 3 numbers (N rows of 3 for sets).\n\nREADING THE DEMO:\na and b start as the x and y directions, [1 0 0] and [0 1 0]; their\ncross product is [0 0 1], the z direction. Drag any of their numbers.\nThe two np.dot nodes check the result against each input, and both stay\nat 0 - the cross product is always at right angles to a and to b.\nnp.linalg.norm gives its length: 1 for x and y, smaller as you swing b\ntowards a, 0 when they are parallel.\nWiring: b goes through 't bang array' - stored first, then the bang\nmakes a re-send - and a's 't array array' stores a in the first check\nbefore the cross product is worked out.\n\nRELATED:\nnp.dot measures how much two vectors agree; the cross product is what\nthey do not share. np.linalg.norm gives the cross product's length (the\narea). np.linalg.det of the 3 x 3 matrix with rows a, b, c is the\nvolume they span - the dot of c with a x b. np.outer is unrelated\ndespite the name.",
+                    "value": "Gives the cross product of two 3-D vectors: a third vector at right angles to both.\n\nIts direction is perpendicular to the plane the two inputs lie in, and its length is the area of the parallelogram they span - largest when they are at right angles, 0 when they are parallel (then there is no single plane, and no perpendicular). Order matters: in 1 x in 2 points the opposite way from in 2 x in 1 (the right-hand rule: fingers from in 1 towards in 2, thumb along the result).\n\nReach for it to find a surface normal from two edges of a triangle, the axis to turn about to get from one direction to another, or which way is \"up\" given a forward and a sideways direction.\n\nSYNTAX:\nnp.cross\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector, 3 numbers (a list is turned into an array). Receiving it calculates and sends.\n\nin 2:\nThe second vector. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has.\nSets of vectors work row by row: N rows of 3 with N rows of 3 (or with one vector of 3) give N cross products. Two 2-D vectors give a single number (the z of the result) and numpy warns that this form is going away. Other lengths are an error: it is printed and nothing is sent.\n\nOUTPUTS:\n\ncross product:\nThe perpendicular vector, 3 numbers (N rows of 3 for sets).\n\nREADING THE DEMO:\na and b start as the x and y directions, [1 0 0] and [0 1 0]; their cross product is [0 0 1], the z direction. Drag any of their numbers. The two np.dot nodes check the result against each input, and both stay at 0 - the cross product is always at right angles to a and to b.\nnp.linalg.norm gives its length: 1 for x and y, smaller as you swing b towards a, 0 when they are parallel.\nWiring: b goes through 't bang array' - stored first, then the bang makes a re-send - and a's 't array array' stores a in the first check before the cross product is worked out.\n\nRELATED:\nnp.dot measures how much two vectors agree; the cross product is what they do not share. np.linalg.norm gives the cross product's length (the area). np.linalg.det of the 3 x 3 matrix with rows a, b, c is the volume they span - the dot of c with a x b. np.outer is unrelated despite the name.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Gives the cross product of two 3-D vectors: a third vector at right\nangles to both.\n\nIts direction is perpendicular to the plane the two inputs lie in, and\nits length is the area of the parallelogram they span - largest when\nthey are at right angles, 0 when they are parallel (then there is no\nsingle plane, and no perpendicular). Order matters: in 1 x in 2 points\nthe opposite way from in 2 x in 1 (the right-hand rule: fingers from in\n1 towards in 2, thumb along the result).\n\nReach for it to find a surface normal from two edges of a triangle, the\naxis to turn about to get from one direction to another, or which way\nis \"up\" given a forward and a sideways direction.\n\nSYNTAX:\nnp.cross\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector, 3 numbers (a list is turned into an array). Receiving\nit calculates and sends.\n\nin 2:\nThe second vector. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has.\nSets of vectors work row by row: N rows of 3 with N rows of 3 (or with\none vector of 3) give N cross products. Two 2-D vectors give a single\nnumber (the z of the result) and numpy warns that this form is going\naway. Other lengths are an error: it is printed and nothing is sent.\n\nOUTPUTS:\n\ncross product:\nThe perpendicular vector, 3 numbers (N rows of 3 for sets).\n\nREADING THE DEMO:\na and b start as the x and y directions, [1 0 0] and [0 1 0]; their\ncross product is [0 0 1], the z direction. Drag any of their numbers.\nThe two np.dot nodes check the result against each input, and both stay\nat 0 - the cross product is always at right angles to a and to b.\nnp.linalg.norm gives its length: 1 for x and y, smaller as you swing b\ntowards a, 0 when they are parallel.\nWiring: b goes through 't bang array' - stored first, then the bang\nmakes a re-send - and a's 't array array' stores a in the first check\nbefore the cross product is worked out.\n\nRELATED:\nnp.dot measures how much two vectors agree; the cross product is what\nthey do not share. np.linalg.norm gives the cross product's length (the\narea). np.linalg.det of the 3 x 3 matrix with rows a, b, c is the\nvolume they span - the dot of c with a x b. np.outer is unrelated\ndespite the name."
+            "text": "Gives the cross product of two 3-D vectors: a third vector at right angles to both.\n\nIts direction is perpendicular to the plane the two inputs lie in, and its length is the area of the parallelogram they span - largest when they are at right angles, 0 when they are parallel (then there is no single plane, and no perpendicular). Order matters: in 1 x in 2 points the opposite way from in 2 x in 1 (the right-hand rule: fingers from in 1 towards in 2, thumb along the result).\n\nReach for it to find a surface normal from two edges of a triangle, the axis to turn about to get from one direction to another, or which way is \"up\" given a forward and a sideways direction.\n\nSYNTAX:\nnp.cross\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector, 3 numbers (a list is turned into an array). Receiving it calculates and sends.\n\nin 2:\nThe second vector. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has.\nSets of vectors work row by row: N rows of 3 with N rows of 3 (or with one vector of 3) give N cross products. Two 2-D vectors give a single number (the z of the result) and numpy warns that this form is going away. Other lengths are an error: it is printed and nothing is sent.\n\nOUTPUTS:\n\ncross product:\nThe perpendicular vector, 3 numbers (N rows of 3 for sets).\n\nREADING THE DEMO:\na and b start as the x and y directions, [1 0 0] and [0 1 0]; their cross product is [0 0 1], the z direction. Drag any of their numbers. The two np.dot nodes check the result against each input, and both stay at 0 - the cross product is always at right angles to a and to b.\nnp.linalg.norm gives its length: 1 for x and y, smaller as you swing b towards a, 0 when they are parallel.\nWiring: b goes through 't bang array' - stored first, then the bang makes a re-send - and a's 't array array' stores a in the first check before the cross product is worked out.\n\nRELATED:\nnp.dot measures how much two vectors agree; the cross product is what they do not share. np.linalg.norm gives the cross product's length (the area). np.linalg.det of the 3 x 3 matrix with rows a, b, c is the volume they span - the dot of c with a x b. np.outer is unrelated despite the name."
         },
         "3": {
             "name": "load_bang",
@@ -493,8 +493,8 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 800,
-            "width": 53,
+            "position_y": 834,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -505,9 +505,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 120,
-            "position_y": 800,
-            "width": 103,
+            "position_x": 100,
+            "position_y": 834,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -518,9 +518,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 271,
-            "position_y": 800,
-            "width": 96,
+            "position_x": 220,
+            "position_y": 834,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -531,8 +531,8 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 415,
-            "position_y": 800,
+            "position_x": 334,
+            "position_y": 834,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -545,7 +545,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 566,
+            "position_x": 30,
             "position_y": 800,
             "width": 156,
             "height": 30,
@@ -570,7 +570,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 874,
+            "position_y": 908,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

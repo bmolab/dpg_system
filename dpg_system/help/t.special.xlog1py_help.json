@@ -1,5 +1,5 @@
 {
-    "height": 1038,
+    "height": 1072,
     "width": 1757,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Computes x times the natural log of (1 + y), element by element - and\ngives 0 whenever x is 0, even where the log is infinite.\n\nIt is the term that appears in log-likelihoods and entropies of the form\nx log(1 + y), kept accurate for tiny y (as t.special.log1p is) and free of\nthe NaN that 0 times minus infinity would give.\n\nTHE CURVE:\nFor a fixed x it is just log(1 + y) scaled by x: 0 at y = 0, rising ever\nmore slowly to the right, plunging towards minus infinity as y approaches\n-1. Negative x flips it upside down. At x = 0 it is flat 0 everywhere -\nincluding y = -1, where a hand-written x * log(1 + y) gives NaN.\n\nSYNTAX:\nt.special.xlog1py\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the multiplier - a tensor, or a single number applied to every y.\nReceiving it triggers the node.\n\ntensor 2 or number in:\ny - a tensor, or a single number. It is only stored when it arrives, so\nsend it BEFORE x. It is converted to x's dtype and device. The two are\nmatched element by element, or broadcast when one is a single value.\n\nOUTPUTS:\n\ntensor out:\nThe result, in the broadcast shape of the two inputs.\n\nWHERE IT IS DEFINED:\ny below -1 gives NaN (not a number) unless x is 0. y = -1 gives minus\ninfinity for positive x and 0 for x = 0.\n\nREADING THE DEMO:\nWhen the page opens, load_bang sends a bang to t.linspace first (200 values\nof y from -0.9 to 4 into the cold second input, drawn in the upper plot)\nand then 1.0 to the float, which sends x and draws log(1 + y). Drag x: the\ncurve scales, flattens to 0 at x = 0 and turns over for negative x. To\nchange the y range, drag start and stop on t.linspace, click its button,\nthen nudge x - y alone does not trigger.\n\nRELATED:\nt.special.xlogy is the same with log(y). t.special.log1p is log(1 + y)\nwithout the multiplier; t.special.expm1 is its inverse.",
+                    "value": "Computes x times the natural log of (1 + y), element by element - and gives 0 whenever x is 0, even where the log is infinite.\n\nIt is the term that appears in log-likelihoods and entropies of the form x log(1 + y), kept accurate for tiny y (as t.special.log1p is) and free of the NaN that 0 times minus infinity would give.\n\nTHE CURVE:\nFor a fixed x it is just log(1 + y) scaled by x: 0 at y = 0, rising ever more slowly to the right, plunging towards minus infinity as y approaches -1. Negative x flips it upside down. At x = 0 it is flat 0 everywhere - including y = -1, where a hand-written x * log(1 + y) gives NaN.\n\nSYNTAX:\nt.special.xlog1py\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the multiplier - a tensor, or a single number applied to every y. Receiving it triggers the node.\n\ntensor 2 or number in:\ny - a tensor, or a single number. It is only stored when it arrives, so send it BEFORE x. It is converted to x's dtype and device. The two are matched element by element, or broadcast when one is a single value.\n\nOUTPUTS:\n\ntensor out:\nThe result, in the broadcast shape of the two inputs.\n\nWHERE IT IS DEFINED:\ny below -1 gives NaN (not a number) unless x is 0. y = -1 gives minus infinity for positive x and 0 for x = 0.\n\nREADING THE DEMO:\nWhen the page opens, load_bang sends a bang to t.linspace first (200 values of y from -0.9 to 4 into the cold second input, drawn in the upper plot) and then 1.0 to the float, which sends x and draws log(1 + y). Drag x: the curve scales, flattens to 0 at x = 0 and turns over for negative x. To change the y range, drag start and stop on t.linspace, click its button, then nudge x - y alone does not trigger.\n\nRELATED:\nt.special.xlogy is the same with log(y). t.special.log1p is log(1 + y) without the multiplier; t.special.expm1 is its inverse.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Computes x times the natural log of (1 + y), element by element - and\ngives 0 whenever x is 0, even where the log is infinite.\n\nIt is the term that appears in log-likelihoods and entropies of the form\nx log(1 + y), kept accurate for tiny y (as t.special.log1p is) and free of\nthe NaN that 0 times minus infinity would give.\n\nTHE CURVE:\nFor a fixed x it is just log(1 + y) scaled by x: 0 at y = 0, rising ever\nmore slowly to the right, plunging towards minus infinity as y approaches\n-1. Negative x flips it upside down. At x = 0 it is flat 0 everywhere -\nincluding y = -1, where a hand-written x * log(1 + y) gives NaN.\n\nSYNTAX:\nt.special.xlog1py\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the multiplier - a tensor, or a single number applied to every y.\nReceiving it triggers the node.\n\ntensor 2 or number in:\ny - a tensor, or a single number. It is only stored when it arrives, so\nsend it BEFORE x. It is converted to x's dtype and device. The two are\nmatched element by element, or broadcast when one is a single value.\n\nOUTPUTS:\n\ntensor out:\nThe result, in the broadcast shape of the two inputs.\n\nWHERE IT IS DEFINED:\ny below -1 gives NaN (not a number) unless x is 0. y = -1 gives minus\ninfinity for positive x and 0 for x = 0.\n\nREADING THE DEMO:\nWhen the page opens, load_bang sends a bang to t.linspace first (200 values\nof y from -0.9 to 4 into the cold second input, drawn in the upper plot)\nand then 1.0 to the float, which sends x and draws log(1 + y). Drag x: the\ncurve scales, flattens to 0 at x = 0 and turns over for negative x. To\nchange the y range, drag start and stop on t.linspace, click its button,\nthen nudge x - y alone does not trigger.\n\nRELATED:\nt.special.xlogy is the same with log(y). t.special.log1p is log(1 + y)\nwithout the multiplier; t.special.expm1 is its inverse."
+            "text": "Computes x times the natural log of (1 + y), element by element - and gives 0 whenever x is 0, even where the log is infinite.\n\nIt is the term that appears in log-likelihoods and entropies of the form x log(1 + y), kept accurate for tiny y (as t.special.log1p is) and free of the NaN that 0 times minus infinity would give.\n\nTHE CURVE:\nFor a fixed x it is just log(1 + y) scaled by x: 0 at y = 0, rising ever more slowly to the right, plunging towards minus infinity as y approaches -1. Negative x flips it upside down. At x = 0 it is flat 0 everywhere - including y = -1, where a hand-written x * log(1 + y) gives NaN.\n\nSYNTAX:\nt.special.xlog1py\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the multiplier - a tensor, or a single number applied to every y. Receiving it triggers the node.\n\ntensor 2 or number in:\ny - a tensor, or a single number. It is only stored when it arrives, so send it BEFORE x. It is converted to x's dtype and device. The two are matched element by element, or broadcast when one is a single value.\n\nOUTPUTS:\n\ntensor out:\nThe result, in the broadcast shape of the two inputs.\n\nWHERE IT IS DEFINED:\ny below -1 gives NaN (not a number) unless x is 0. y = -1 gives minus infinity for positive x and 0 for x = 0.\n\nREADING THE DEMO:\nWhen the page opens, load_bang sends a bang to t.linspace first (200 values of y from -0.9 to 4 into the cold second input, drawn in the upper plot) and then 1.0 to the float, which sends x and draws log(1 + y). Drag x: the curve scales, flattens to 0 at x = 0 and turns over for negative x. To change the y range, drag start and stop on t.linspace, click its button, then nudge x - y alone does not trigger.\n\nRELATED:\nt.special.xlogy is the same with log(y). t.special.log1p is log(1 + y) without the multiplier; t.special.expm1 is its inverse."
         },
         "3": {
             "name": "load_bang",
@@ -461,8 +461,8 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 860,
-            "width": 109,
+            "position_y": 894,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -473,9 +473,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 189,
-            "position_y": 860,
-            "width": 109,
+            "position_x": 156,
+            "position_y": 894,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -486,9 +486,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 348,
-            "position_y": 860,
-            "width": 109,
+            "position_x": 282,
+            "position_y": 894,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -500,8 +500,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 584,
-            "position_y": 904,
+            "position_x": 30,
+            "position_y": 860,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -525,7 +525,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 934,
+            "position_y": 968,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

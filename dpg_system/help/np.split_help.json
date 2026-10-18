@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1068,
+            "height": 1102,
             "width": 1725,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Cuts an array into a number of pieces along one axis, and sends\neach piece from its own outlet.\n\nUse it to separate an array that holds several things side by side -\nthe left and right halves of an image, the x, y and z columns of a list\nof points, the first and second half of a recording.\n\nTHE NUMBER OF PIECES IS FIXED:\nIt is the first argument, and it decides how many outlets the node has\n(array 0, array 1, ...), so it cannot change on a live node - retype the\nnode to change it. The smallest is 2. If the axis does not divide evenly,\nthe first pieces get one extra: 7 rows in 3 pieces are 3, 2 and 2.\n\nSYNTAX:\nnp.split <pieces: int> <axis: int>\nDefaults: 2 pieces, axis 0.\n\nEXAMPLE:\nnp.split 3\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is cut\nand the pieces sent, array 0 first. Only this inlet makes the node send.\n\naxis (int box, also an inlet):\nWhich axis to cut across: 0 cuts the rows into groups (horizontal cuts),\n1 cuts the columns into groups (vertical cuts). Negative counts from the\nend. An axis the array does not have - or one shorter than the number of\npieces - sends nothing. Changing it does NOT send by itself; in the demo\na metro inside make_F re-sends the F ten times a second.\n\nOUTPUTS:\n\narray 0, array 1, ...:\nThe pieces, in order. Each has the same number of dimensions as the\ninput; only the length along the axis is smaller.\n\nREADING THE DEMO:\nnp.split 3 cuts the 7 by 6 F into three bands of rows: the top 3 rows\n(the bar), then 2 and 2. The lists show each piece's shape. Type 1 into\naxis and it cuts the columns instead, three slices 2 columns wide: the\nstem, then the two halves of the arms.\n\nRELATED:\nnp.concatenate puts pieces back together. np.stack joins along a new\naxis. np.reshape refolds without cutting. t.chunk and t.tensor_split, on\nthe t.cat page, are the PyTorch versions.",
+                            "value": "Cuts an array into a number of pieces along one axis, and sends each piece from its own outlet.\n\nUse it to separate an array that holds several things side by side - the left and right halves of an image, the x, y and z columns of a list of points, the first and second half of a recording.\n\nTHE NUMBER OF PIECES IS FIXED:\nIt is the first argument, and it decides how many outlets the node has (array 0, array 1, ...), so it cannot change on a live node - retype the node to change it. The smallest is 2. If the axis does not divide evenly, the first pieces get one extra: 7 rows in 3 pieces are 3, 2 and 2.\n\nSYNTAX:\nnp.split <pieces: int> <axis: int>\nDefaults: 2 pieces, axis 0.\n\nEXAMPLE:\nnp.split 3\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is cut and the pieces sent, array 0 first. Only this inlet makes the node send.\n\naxis (int box, also an inlet):\nWhich axis to cut across: 0 cuts the rows into groups (horizontal cuts), 1 cuts the columns into groups (vertical cuts). Negative counts from the end. An axis the array does not have - or one shorter than the number of pieces - sends nothing. Changing it does NOT send by itself; in the demo a metro inside make_F re-sends the F ten times a second.\n\nOUTPUTS:\n\narray 0, array 1, ...:\nThe pieces, in order. Each has the same number of dimensions as the input; only the length along the axis is smaller.\n\nREADING THE DEMO:\nnp.split 3 cuts the 7 by 6 F into three bands of rows: the top 3 rows (the bar), then 2 and 2. The lists show each piece's shape. Type 1 into axis and it cuts the columns instead, three slices 2 columns wide: the stem, then the two halves of the arms.\n\nRELATED:\nnp.concatenate puts pieces back together. np.stack joins along a new axis. np.reshape refolds without cutting. t.chunk and t.tensor_split, on the t.cat page, are the PyTorch versions.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Cuts an array into a number of pieces along one axis, and sends\neach piece from its own outlet.\n\nUse it to separate an array that holds several things side by side -\nthe left and right halves of an image, the x, y and z columns of a list\nof points, the first and second half of a recording.\n\nTHE NUMBER OF PIECES IS FIXED:\nIt is the first argument, and it decides how many outlets the node has\n(array 0, array 1, ...), so it cannot change on a live node - retype the\nnode to change it. The smallest is 2. If the axis does not divide evenly,\nthe first pieces get one extra: 7 rows in 3 pieces are 3, 2 and 2.\n\nSYNTAX:\nnp.split <pieces: int> <axis: int>\nDefaults: 2 pieces, axis 0.\n\nEXAMPLE:\nnp.split 3\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is cut\nand the pieces sent, array 0 first. Only this inlet makes the node send.\n\naxis (int box, also an inlet):\nWhich axis to cut across: 0 cuts the rows into groups (horizontal cuts),\n1 cuts the columns into groups (vertical cuts). Negative counts from the\nend. An axis the array does not have - or one shorter than the number of\npieces - sends nothing. Changing it does NOT send by itself; in the demo\na metro inside make_F re-sends the F ten times a second.\n\nOUTPUTS:\n\narray 0, array 1, ...:\nThe pieces, in order. Each has the same number of dimensions as the\ninput; only the length along the axis is smaller.\n\nREADING THE DEMO:\nnp.split 3 cuts the 7 by 6 F into three bands of rows: the top 3 rows\n(the bar), then 2 and 2. The lists show each piece's shape. Type 1 into\naxis and it cuts the columns instead, three slices 2 columns wide: the\nstem, then the two halves of the arms.\n\nRELATED:\nnp.concatenate puts pieces back together. np.stack joins along a new\naxis. np.reshape refolds without cutting. t.chunk and t.tensor_split, on\nthe t.cat page, are the PyTorch versions."
+                    "text": "Cuts an array into a number of pieces along one axis, and sends each piece from its own outlet.\n\nUse it to separate an array that holds several things side by side - the left and right halves of an image, the x, y and z columns of a list of points, the first and second half of a recording.\n\nTHE NUMBER OF PIECES IS FIXED:\nIt is the first argument, and it decides how many outlets the node has (array 0, array 1, ...), so it cannot change on a live node - retype the node to change it. The smallest is 2. If the axis does not divide evenly, the first pieces get one extra: 7 rows in 3 pieces are 3, 2 and 2.\n\nSYNTAX:\nnp.split <pieces: int> <axis: int>\nDefaults: 2 pieces, axis 0.\n\nEXAMPLE:\nnp.split 3\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every array that arrives is cut and the pieces sent, array 0 first. Only this inlet makes the node send.\n\naxis (int box, also an inlet):\nWhich axis to cut across: 0 cuts the rows into groups (horizontal cuts), 1 cuts the columns into groups (vertical cuts). Negative counts from the end. An axis the array does not have - or one shorter than the number of pieces - sends nothing. Changing it does NOT send by itself; in the demo a metro inside make_F re-sends the F ten times a second.\n\nOUTPUTS:\n\narray 0, array 1, ...:\nThe pieces, in order. Each has the same number of dimensions as the input; only the length along the axis is smaller.\n\nREADING THE DEMO:\nnp.split 3 cuts the 7 by 6 F into three bands of rows: the top 3 rows (the bar), then 2 and 2. The lists show each piece's shape. Type 1 into axis and it cuts the columns instead, three slices 2 columns wide: the stem, then the two halves of the arms.\n\nRELATED:\nnp.concatenate puts pieces back together. np.stack joins along a new axis. np.reshape refolds without cutting. t.chunk and t.tensor_split, on the t.cat page, are the PyTorch versions."
                 },
                 "3": {
                     "name": "p",
@@ -733,8 +733,8 @@
                     "name": "help_link",
                     "id": 903,
                     "position_x": 30,
-                    "position_y": 890,
-                    "width": 103,
+                    "position_y": 924,
+                    "width": 104,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -745,8 +745,8 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 181,
-                    "position_y": 890,
+                    "position_x": 150,
+                    "position_y": 924,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -758,9 +758,9 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 286,
-                    "position_y": 890,
-                    "width": 78,
+                    "position_x": 232,
+                    "position_y": 924,
+                    "width": 79,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -771,9 +771,9 @@
                 "21": {
                     "name": "help_link",
                     "id": 1014,
-                    "position_x": 407,
-                    "position_y": 890,
-                    "width": 47,
+                    "position_x": 327,
+                    "position_y": 924,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -785,7 +785,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1051,
-                    "position_x": 584,
+                    "position_x": 30,
                     "position_y": 890,
                     "width": 156,
                     "height": 30,
@@ -810,7 +810,7 @@
                     "name": "close",
                     "id": 1088,
                     "position_x": 24,
-                    "position_y": 964,
+                    "position_y": 998,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

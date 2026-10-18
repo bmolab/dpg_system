@@ -217,7 +217,7 @@
             }
         },
         "1": {
-            "height": 946,
+            "height": 980,
             "width": 1719,
             "position": [
                 100,
@@ -284,7 +284,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Holds every value of a tensor inside two limits: anything below min\ncomes out as min, anything above max comes out as max, and everything in\nbetween passes untouched.\n\nUse it to keep values in range before they drive something that would\nmisbehave outside it - colours inside 0 to 1, a gain that must never go\nnegative, a denominator kept away from zero. It works on every element\nseparately, so the output has the same shape as the input.\n\nSYNTAX:\nt.clamp <min: float> <max: float>\nDefaults: min 0.0, max 1.0. Give BOTH numbers: with only one argument,\nboth limits keep their defaults.\n\nEXAMPLE:\nt.clamp -0.5 0.7\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to limit. A list, a NumPy array or a single number is turned\ninto a float32 tensor first (a single number becomes a one-value tensor).\nEvery input is clamped and sent - this is the only inlet that makes the\nnode send. An empty tensor sends nothing.\n\nmin / max (drag floats, also inlets):\nThe lower and upper limits, applied to every element. Because they are\ninlets they can be driven from the patch. Changing one does NOT send by\nitself - the next tensor uses it. In the demo make_sine re-sends the wave\nten times a second, so the plot follows your drags. If min is above max,\nevery value comes out as max.\n\nOUTPUTS:\n\noutput:\nThe clamped tensor, the same shape as the input. An integer tensor comes\nout as float, because the limits are floats.\n\nREADING THE DEMO:\nThe plot draws the wave and the clamped copy over each other. Inside the\nlimits the two lines are one; past them the wave carries on to 1 or -1\nwhile the copy runs flat along the limit - the top cut at 0.7, the bottom\nat -0.5. Drag max down towards min and the wave is squeezed into a band.\n\nA NOTE ON GRADIENTS:\nWhere a value is held at a limit the gradient through it is zero - the\noutput stops responding to the input. If something you are training has\nstopped learning, a saturated clamp is worth checking for.\n\nRELATED:\nt.maximum and t.minimum limit one side only, and against another tensor,\nso the limit can differ at every position. np.clip is the NumPy version;\nclamp does the same for single numbers and lists.",
+                            "value": "Holds every value of a tensor inside two limits: anything below min comes out as min, anything above max comes out as max, and everything in between passes untouched.\n\nUse it to keep values in range before they drive something that would misbehave outside it - colours inside 0 to 1, a gain that must never go negative, a denominator kept away from zero. It works on every element separately, so the output has the same shape as the input.\n\nSYNTAX:\nt.clamp <min: float> <max: float>\nDefaults: min 0.0, max 1.0. Give BOTH numbers: with only one argument,\nboth limits keep their defaults.\n\nEXAMPLE:\nt.clamp -0.5 0.7\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to limit. A list, a NumPy array or a single number is turned into a float32 tensor first (a single number becomes a one-value tensor). Every input is clamped and sent - this is the only inlet that makes the node send. An empty tensor sends nothing.\n\nmin / max (drag floats, also inlets):\nThe lower and upper limits, applied to every element. Because they are inlets they can be driven from the patch. Changing one does NOT send by itself - the next tensor uses it. In the demo make_sine re-sends the wave ten times a second, so the plot follows your drags. If min is above max, every value comes out as max.\n\nOUTPUTS:\n\noutput:\nThe clamped tensor, the same shape as the input. An integer tensor comes out as float, because the limits are floats.\n\nREADING THE DEMO:\nThe plot draws the wave and the clamped copy over each other. Inside the limits the two lines are one; past them the wave carries on to 1 or -1 while the copy runs flat along the limit - the top cut at 0.7, the bottom at -0.5. Drag max down towards min and the wave is squeezed into a band.\n\nA NOTE ON GRADIENTS:\nWhere a value is held at a limit the gradient through it is zero - the output stops responding to the input. If something you are training has stopped learning, a saturated clamp is worth checking for.\n\nRELATED:\nt.maximum and t.minimum limit one side only, and against another tensor, so the limit can differ at every position. np.clip is the NumPy version;\nclamp does the same for single numbers and lists.",
                             "value_type": "str"
                         },
                         "1": {
@@ -308,7 +308,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Holds every value of a tensor inside two limits: anything below min\ncomes out as min, anything above max comes out as max, and everything in\nbetween passes untouched.\n\nUse it to keep values in range before they drive something that would\nmisbehave outside it - colours inside 0 to 1, a gain that must never go\nnegative, a denominator kept away from zero. It works on every element\nseparately, so the output has the same shape as the input.\n\nSYNTAX:\nt.clamp <min: float> <max: float>\nDefaults: min 0.0, max 1.0. Give BOTH numbers: with only one argument,\nboth limits keep their defaults.\n\nEXAMPLE:\nt.clamp -0.5 0.7\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to limit. A list, a NumPy array or a single number is turned\ninto a float32 tensor first (a single number becomes a one-value tensor).\nEvery input is clamped and sent - this is the only inlet that makes the\nnode send. An empty tensor sends nothing.\n\nmin / max (drag floats, also inlets):\nThe lower and upper limits, applied to every element. Because they are\ninlets they can be driven from the patch. Changing one does NOT send by\nitself - the next tensor uses it. In the demo make_sine re-sends the wave\nten times a second, so the plot follows your drags. If min is above max,\nevery value comes out as max.\n\nOUTPUTS:\n\noutput:\nThe clamped tensor, the same shape as the input. An integer tensor comes\nout as float, because the limits are floats.\n\nREADING THE DEMO:\nThe plot draws the wave and the clamped copy over each other. Inside the\nlimits the two lines are one; past them the wave carries on to 1 or -1\nwhile the copy runs flat along the limit - the top cut at 0.7, the bottom\nat -0.5. Drag max down towards min and the wave is squeezed into a band.\n\nA NOTE ON GRADIENTS:\nWhere a value is held at a limit the gradient through it is zero - the\noutput stops responding to the input. If something you are training has\nstopped learning, a saturated clamp is worth checking for.\n\nRELATED:\nt.maximum and t.minimum limit one side only, and against another tensor,\nso the limit can differ at every position. np.clip is the NumPy version;\nclamp does the same for single numbers and lists."
+                    "text": "Holds every value of a tensor inside two limits: anything below min comes out as min, anything above max comes out as max, and everything in between passes untouched.\n\nUse it to keep values in range before they drive something that would misbehave outside it - colours inside 0 to 1, a gain that must never go negative, a denominator kept away from zero. It works on every element separately, so the output has the same shape as the input.\n\nSYNTAX:\nt.clamp <min: float> <max: float>\nDefaults: min 0.0, max 1.0. Give BOTH numbers: with only one argument,\nboth limits keep their defaults.\n\nEXAMPLE:\nt.clamp -0.5 0.7\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to limit. A list, a NumPy array or a single number is turned into a float32 tensor first (a single number becomes a one-value tensor). Every input is clamped and sent - this is the only inlet that makes the node send. An empty tensor sends nothing.\n\nmin / max (drag floats, also inlets):\nThe lower and upper limits, applied to every element. Because they are inlets they can be driven from the patch. Changing one does NOT send by itself - the next tensor uses it. In the demo make_sine re-sends the wave ten times a second, so the plot follows your drags. If min is above max, every value comes out as max.\n\nOUTPUTS:\n\noutput:\nThe clamped tensor, the same shape as the input. An integer tensor comes out as float, because the limits are floats.\n\nREADING THE DEMO:\nThe plot draws the wave and the clamped copy over each other. Inside the limits the two lines are one; past them the wave carries on to 1 or -1 while the copy runs flat along the limit - the top cut at 0.7, the bottom at -0.5. Drag max down towards min and the wave is squeezed into a band.\n\nA NOTE ON GRADIENTS:\nWhere a value is held at a limit the gradient through it is zero - the output stops responding to the input. If something you are training has stopped learning, a saturated clamp is worth checking for.\n\nRELATED:\nt.maximum and t.minimum limit one side only, and against another tensor, so the limit can differ at every position. np.clip is the NumPy version;\nclamp does the same for single numbers and lists."
                 },
                 "3": {
                     "name": "p",
@@ -543,8 +543,8 @@
                     "name": "help_link",
                     "id": 644,
                     "position_x": 30,
-                    "position_y": 740,
-                    "width": 72,
+                    "position_y": 774,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -555,9 +555,9 @@
                 "12": {
                     "name": "help_link",
                     "id": 681,
-                    "position_x": 143,
-                    "position_y": 740,
-                    "width": 72,
+                    "position_x": 119,
+                    "position_y": 774,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -568,8 +568,8 @@
                 "13": {
                     "name": "help_link",
                     "id": 718,
-                    "position_x": 256,
-                    "position_y": 740,
+                    "position_x": 208,
+                    "position_y": 774,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -581,9 +581,9 @@
                 "14": {
                     "name": "help_link",
                     "id": 755,
-                    "position_x": 353,
-                    "position_y": 740,
-                    "width": 47,
+                    "position_x": 284,
+                    "position_y": 774,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -594,8 +594,8 @@
                 "15": {
                     "name": "help_link",
                     "id": 792,
-                    "position_x": 435,
-                    "position_y": 740,
+                    "position_x": 348,
+                    "position_y": 774,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -608,8 +608,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 829,
-                    "position_x": 521,
-                    "position_y": 784,
+                    "position_x": 30,
+                    "position_y": 740,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -633,7 +633,7 @@
                     "name": "close",
                     "id": 866,
                     "position_x": 24,
-                    "position_y": 814,
+                    "position_y": 848,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

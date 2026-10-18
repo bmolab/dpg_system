@@ -1,5 +1,5 @@
 {
-    "height": 1348,
+    "height": 1382,
     "width": 1949,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Counts the values in a tensor that are not zero - in the whole\ntensor, or in each row or each column.\n\nOn a mask from a comparison it counts how many cells passed the test:\nhow many joints are over a speed limit, how many frames a joint spent\nabove a threshold, how many pixels are lit. For a frames by joints\nmask, counting along dim 0 gives each joint's time over the threshold;\nalong dim 1, how many joints were over it at each frame - two quite\ndifferent summaries of the same mask.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number\ntyped after the name (t.count_nonzero 0) chooses a dim to reduce along and adds a\ndim inlet to the node - it is the argument that creates them,\nso a node made without one cannot be given a dim later (retype it).\nFor a table of rows and columns, dim 0 reduces DOWN each column (one\nanswer per column) and dim 1 ALONG each row (one answer per row). The\ndim named is the one that disappears: a 6 by 8 tensor gives 8 answers\non dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is\nthe last dim.\n\nSYNTAX:\nt.count_nonzero <dim: int>\nDefault: no dim - one count for the whole tensor.\n\nEXAMPLE:\nt.count_nonzero 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is counted and the answer sent - this\nis the only inlet that makes the node send. A list or a NumPy array is\nfirst turned into a float32 tensor on the cpu; a tensor is used as it\nis, on its own device, and the answer stays there. An empty tensor is\nignored: nothing is sent.\nAny dtype. A value counts when it is not exactly zero - NaN counts.\nA tensor of measurements passed straight in reports nearly everything,\nsince almost nothing is exactly zero: compare first, then count.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor\nuses it. A dim the tensor does not have (2 or more for a table, or 1\nfor a 1-D tensor) is an error: the console prints \"Dimension out of\nrange\" and nothing is sent.\nThere is no keep_dims option on this node.\n\nOUTPUTS:\n\ntensor out:\nWhole numbers (int64). With no dim, one count (a 0-dimensional\ntensor); with a dim, one count per column (dim 0) or row (dim 1).\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1; t.gt marks\nthose above the threshold slider (starting at 0.5), drawn as a mask,\nwhite for true. The plain t.count_nonzero counts the white cells of\nthe whole mask. The dim slider sets the dim of the second node through\n't bang int' (number first, then a bang that re-sends the held\ntensor): at dim 0 the strip counts the white cells in each column (0\nto 6), at dim 1 in each row (0 to 8). Drag the threshold and every\ncount follows.\n\nRELATED:\nt.sum of a mask gives the same count (True adds as 1). t.any and t.all\nask whether the count is above 0 or equal to everything. t.argwhere\nlists WHICH cells are non-zero. t.bincount counts how often each whole\nnumber occurs.",
+                    "value": "Counts the values in a tensor that are not zero - in the whole tensor, or in each row or each column.\n\nOn a mask from a comparison it counts how many cells passed the test:\nhow many joints are over a speed limit, how many frames a joint spent above a threshold, how many pixels are lit. For a frames by joints mask, counting along dim 0 gives each joint's time over the threshold;\nalong dim 1, how many joints were over it at each frame - two quite different summaries of the same mask.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number typed after the name (t.count_nonzero 0) chooses a dim to reduce along and adds a dim inlet to the node - it is the argument that creates them, so a node made without one cannot be given a dim later (retype it). For a table of rows and columns, dim 0 reduces DOWN each column (one answer per column) and dim 1 ALONG each row (one answer per row). The dim named is the one that disappears: a 6 by 8 tensor gives 8 answers on dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is the last dim.\n\nSYNTAX:\nt.count_nonzero <dim: int>\nDefault: no dim - one count for the whole tensor.\n\nEXAMPLE:\nt.count_nonzero 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is counted and the answer sent - this is the only inlet that makes the node send. A list or a NumPy array is first turned into a float32 tensor on the cpu; a tensor is used as it is, on its own device, and the answer stays there. An empty tensor is ignored: nothing is sent.\nAny dtype. A value counts when it is not exactly zero - NaN counts. A tensor of measurements passed straight in reports nearly everything, since almost nothing is exactly zero: compare first, then count.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor uses it. A dim the tensor does not have (2 or more for a table, or 1 for a 1-D tensor) is an error: the console prints \"Dimension out of range\" and nothing is sent.\nThere is no keep_dims option on this node.\n\nOUTPUTS:\n\ntensor out:\nWhole numbers (int64). With no dim, one count (a 0-dimensional tensor); with a dim, one count per column (dim 0) or row (dim 1).\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1; t.gt marks those above the threshold slider (starting at 0.5), drawn as a mask, white for true. The plain t.count_nonzero counts the white cells of the whole mask. The dim slider sets the dim of the second node through 't bang int' (number first, then a bang that re-sends the held tensor): at dim 0 the strip counts the white cells in each column (0 to 6), at dim 1 in each row (0 to 8). Drag the threshold and every count follows.\n\nRELATED:\nt.sum of a mask gives the same count (True adds as 1). t.any and t.all ask whether the count is above 0 or equal to everything. t.argwhere lists WHICH cells are non-zero. t.bincount counts how often each whole number occurs.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Counts the values in a tensor that are not zero - in the whole\ntensor, or in each row or each column.\n\nOn a mask from a comparison it counts how many cells passed the test:\nhow many joints are over a speed limit, how many frames a joint spent\nabove a threshold, how many pixels are lit. For a frames by joints\nmask, counting along dim 0 gives each joint's time over the threshold;\nalong dim 1, how many joints were over it at each frame - two quite\ndifferent summaries of the same mask.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number\ntyped after the name (t.count_nonzero 0) chooses a dim to reduce along and adds a\ndim inlet to the node - it is the argument that creates them,\nso a node made without one cannot be given a dim later (retype it).\nFor a table of rows and columns, dim 0 reduces DOWN each column (one\nanswer per column) and dim 1 ALONG each row (one answer per row). The\ndim named is the one that disappears: a 6 by 8 tensor gives 8 answers\non dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is\nthe last dim.\n\nSYNTAX:\nt.count_nonzero <dim: int>\nDefault: no dim - one count for the whole tensor.\n\nEXAMPLE:\nt.count_nonzero 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is counted and the answer sent - this\nis the only inlet that makes the node send. A list or a NumPy array is\nfirst turned into a float32 tensor on the cpu; a tensor is used as it\nis, on its own device, and the answer stays there. An empty tensor is\nignored: nothing is sent.\nAny dtype. A value counts when it is not exactly zero - NaN counts.\nA tensor of measurements passed straight in reports nearly everything,\nsince almost nothing is exactly zero: compare first, then count.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor\nuses it. A dim the tensor does not have (2 or more for a table, or 1\nfor a 1-D tensor) is an error: the console prints \"Dimension out of\nrange\" and nothing is sent.\nThere is no keep_dims option on this node.\n\nOUTPUTS:\n\ntensor out:\nWhole numbers (int64). With no dim, one count (a 0-dimensional\ntensor); with a dim, one count per column (dim 0) or row (dim 1).\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1; t.gt marks\nthose above the threshold slider (starting at 0.5), drawn as a mask,\nwhite for true. The plain t.count_nonzero counts the white cells of\nthe whole mask. The dim slider sets the dim of the second node through\n't bang int' (number first, then a bang that re-sends the held\ntensor): at dim 0 the strip counts the white cells in each column (0\nto 6), at dim 1 in each row (0 to 8). Drag the threshold and every\ncount follows.\n\nRELATED:\nt.sum of a mask gives the same count (True adds as 1). t.any and t.all\nask whether the count is above 0 or equal to everything. t.argwhere\nlists WHICH cells are non-zero. t.bincount counts how often each whole\nnumber occurs."
+            "text": "Counts the values in a tensor that are not zero - in the whole tensor, or in each row or each column.\n\nOn a mask from a comparison it counts how many cells passed the test:\nhow many joints are over a speed limit, how many frames a joint spent above a threshold, how many pixels are lit. For a frames by joints mask, counting along dim 0 gives each joint's time over the threshold;\nalong dim 1, how many joints were over it at each frame - two quite different summaries of the same mask.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number typed after the name (t.count_nonzero 0) chooses a dim to reduce along and adds a dim inlet to the node - it is the argument that creates them, so a node made without one cannot be given a dim later (retype it). For a table of rows and columns, dim 0 reduces DOWN each column (one answer per column) and dim 1 ALONG each row (one answer per row). The dim named is the one that disappears: a 6 by 8 tensor gives 8 answers on dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is the last dim.\n\nSYNTAX:\nt.count_nonzero <dim: int>\nDefault: no dim - one count for the whole tensor.\n\nEXAMPLE:\nt.count_nonzero 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is counted and the answer sent - this is the only inlet that makes the node send. A list or a NumPy array is first turned into a float32 tensor on the cpu; a tensor is used as it is, on its own device, and the answer stays there. An empty tensor is ignored: nothing is sent.\nAny dtype. A value counts when it is not exactly zero - NaN counts. A tensor of measurements passed straight in reports nearly everything, since almost nothing is exactly zero: compare first, then count.\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor uses it. A dim the tensor does not have (2 or more for a table, or 1 for a 1-D tensor) is an error: the console prints \"Dimension out of range\" and nothing is sent.\nThere is no keep_dims option on this node.\n\nOUTPUTS:\n\ntensor out:\nWhole numbers (int64). With no dim, one count (a 0-dimensional tensor); with a dim, one count per column (dim 0) or row (dim 1).\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1; t.gt marks those above the threshold slider (starting at 0.5), drawn as a mask, white for true. The plain t.count_nonzero counts the white cells of the whole mask. The dim slider sets the dim of the second node through 't bang int' (number first, then a bang that re-sends the held tensor): at dim 0 the strip counts the white cells in each column (0 to 6), at dim 1 in each row (0 to 8). Drag the threshold and every count follows.\n\nRELATED:\nt.sum of a mask gives the same count (True adds as 1). t.any and t.all ask whether the count is above 0 or equal to everything. t.argwhere lists WHICH cells are non-zero. t.bincount counts how often each whole number occurs."
         },
         "3": {
             "name": "load_bang",
@@ -767,8 +767,8 @@
             "name": "help_link",
             "id": 1310,
             "position_x": 30,
-            "position_y": 1170,
-            "width": 47,
+            "position_y": 1204,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -779,9 +779,9 @@
         "30": {
             "name": "help_link",
             "id": 1347,
-            "position_x": 112,
-            "position_y": 1170,
-            "width": 47,
+            "position_x": 94,
+            "position_y": 1204,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -792,9 +792,9 @@
         "31": {
             "name": "help_link",
             "id": 1384,
-            "position_x": 194,
-            "position_y": 1170,
-            "width": 47,
+            "position_x": 158,
+            "position_y": 1204,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -805,9 +805,9 @@
         "32": {
             "name": "help_link",
             "id": 1421,
-            "position_x": 276,
-            "position_y": 1170,
-            "width": 78,
+            "position_x": 222,
+            "position_y": 1204,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -818,9 +818,9 @@
         "33": {
             "name": "help_link",
             "id": 1458,
-            "position_x": 397,
-            "position_y": 1170,
-            "width": 53,
+            "position_x": 317,
+            "position_y": 1204,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -832,7 +832,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1495,
-            "position_x": 826,
+            "position_x": 30,
             "position_y": 1170,
             "width": 156,
             "height": 30,
@@ -857,7 +857,7 @@
             "name": "close",
             "id": 1532,
             "position_x": 24,
-            "position_y": 1244,
+            "position_y": 1278,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -181,7 +181,7 @@
             }
         },
         "1": {
-            "height": 1068,
+            "height": 1102,
             "width": 1729,
             "position": [
                 100,
@@ -248,7 +248,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Compares two tensors element by element and keeps the SMALLER value\nat every position.\n\nWhere t.clamp has one ceiling for the whole tensor, t.minimum's ceiling\nis another tensor, so it can be different at every position: a\nper-element upper limit, a cap that varies across a picture, or simply\nthe lower envelope of two signals. With a single number in tensor b it\nis a plain ceiling, the same everywhere.\n\nTHE NAME AND WHAT IT DOES:\nt.minimum does not find the smallest value in a tensor - that is t.min,\nthe reduction. It takes the smaller of two values, one pair at a time,\nwhich keeps the result at or BELOW tensor b: a ceiling.\n\nSYNTAX:\nt.minimum\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor (a list or number is turned into a float32 tensor).\nReceiving it makes the node compare and send.\n\ntensor b in:\nThe second tensor, or a single number used everywhere. It is only stored\nwhen it arrives, so send it FIRST; until it has received something the\nnode sends nothing. It is converted to tensor a's type and device, so\nagainst an integer tensor a b of 0.5 becomes 0.\n\nThe two shapes must broadcast: the same shape, a single number, or shapes\nthat differ only where one of them has length 1. Shapes that cannot be\nmatched raise an error and send nothing.\n\nOUTPUTS:\n\nminimum tensor:\nThe smaller of a and b at every position, in the broadcast shape.\n\nREADING THE DEMO:\nThe plot draws the result over the two inputs: the sine (a) and a ramp\nfrom -1 to 1 (b). Wherever the sine is below the ramp the result follows\nthe sine; wherever it rises above, the result is held down along the\nramp. So on the left, where the ramp is low, only the troughs that dip\nbeneath it are left, and on the right almost all of the wave survives.\nDrag the ramp's start and stop (try both 0: a flat ceiling at 0 that cuts\noff every peak).\n\nRELATED:\nt.maximum keeps the larger value instead. t.clamp limits both sides with\nsingle numbers. t.min finds the smallest value in one tensor. np.min and\nmin do the same ceiling for NumPy arrays and numbers.",
+                            "value": "Compares two tensors element by element and keeps the SMALLER value at every position.\n\nWhere t.clamp has one ceiling for the whole tensor, t.minimum's ceiling is another tensor, so it can be different at every position: a per-element upper limit, a cap that varies across a picture, or simply the lower envelope of two signals. With a single number in tensor b it is a plain ceiling, the same everywhere.\n\nTHE NAME AND WHAT IT DOES:\nt.minimum does not find the smallest value in a tensor - that is t.min, the reduction. It takes the smaller of two values, one pair at a time, which keeps the result at or BELOW tensor b: a ceiling.\n\nSYNTAX:\nt.minimum\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor (a list or number is turned into a float32 tensor). Receiving it makes the node compare and send.\n\ntensor b in:\nThe second tensor, or a single number used everywhere. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing. It is converted to tensor a's type and device, so against an integer tensor a b of 0.5 becomes 0.\n\nThe two shapes must broadcast: the same shape, a single number, or shapes that differ only where one of them has length 1. Shapes that cannot be matched raise an error and send nothing.\n\nOUTPUTS:\n\nminimum tensor:\nThe smaller of a and b at every position, in the broadcast shape.\n\nREADING THE DEMO:\nThe plot draws the result over the two inputs: the sine (a) and a ramp from -1 to 1 (b). Wherever the sine is below the ramp the result follows the sine; wherever it rises above, the result is held down along the ramp. So on the left, where the ramp is low, only the troughs that dip beneath it are left, and on the right almost all of the wave survives. Drag the ramp's start and stop (try both 0: a flat ceiling at 0 that cuts off every peak).\n\nRELATED:\nt.maximum keeps the larger value instead. t.clamp limits both sides with single numbers. t.min finds the smallest value in one tensor. np.min and min do the same ceiling for NumPy arrays and numbers.",
                             "value_type": "str"
                         },
                         "1": {
@@ -272,7 +272,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Compares two tensors element by element and keeps the SMALLER value\nat every position.\n\nWhere t.clamp has one ceiling for the whole tensor, t.minimum's ceiling\nis another tensor, so it can be different at every position: a\nper-element upper limit, a cap that varies across a picture, or simply\nthe lower envelope of two signals. With a single number in tensor b it\nis a plain ceiling, the same everywhere.\n\nTHE NAME AND WHAT IT DOES:\nt.minimum does not find the smallest value in a tensor - that is t.min,\nthe reduction. It takes the smaller of two values, one pair at a time,\nwhich keeps the result at or BELOW tensor b: a ceiling.\n\nSYNTAX:\nt.minimum\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor (a list or number is turned into a float32 tensor).\nReceiving it makes the node compare and send.\n\ntensor b in:\nThe second tensor, or a single number used everywhere. It is only stored\nwhen it arrives, so send it FIRST; until it has received something the\nnode sends nothing. It is converted to tensor a's type and device, so\nagainst an integer tensor a b of 0.5 becomes 0.\n\nThe two shapes must broadcast: the same shape, a single number, or shapes\nthat differ only where one of them has length 1. Shapes that cannot be\nmatched raise an error and send nothing.\n\nOUTPUTS:\n\nminimum tensor:\nThe smaller of a and b at every position, in the broadcast shape.\n\nREADING THE DEMO:\nThe plot draws the result over the two inputs: the sine (a) and a ramp\nfrom -1 to 1 (b). Wherever the sine is below the ramp the result follows\nthe sine; wherever it rises above, the result is held down along the\nramp. So on the left, where the ramp is low, only the troughs that dip\nbeneath it are left, and on the right almost all of the wave survives.\nDrag the ramp's start and stop (try both 0: a flat ceiling at 0 that cuts\noff every peak).\n\nRELATED:\nt.maximum keeps the larger value instead. t.clamp limits both sides with\nsingle numbers. t.min finds the smallest value in one tensor. np.min and\nmin do the same ceiling for NumPy arrays and numbers."
+                    "text": "Compares two tensors element by element and keeps the SMALLER value at every position.\n\nWhere t.clamp has one ceiling for the whole tensor, t.minimum's ceiling is another tensor, so it can be different at every position: a per-element upper limit, a cap that varies across a picture, or simply the lower envelope of two signals. With a single number in tensor b it is a plain ceiling, the same everywhere.\n\nTHE NAME AND WHAT IT DOES:\nt.minimum does not find the smallest value in a tensor - that is t.min, the reduction. It takes the smaller of two values, one pair at a time, which keeps the result at or BELOW tensor b: a ceiling.\n\nSYNTAX:\nt.minimum\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor (a list or number is turned into a float32 tensor). Receiving it makes the node compare and send.\n\ntensor b in:\nThe second tensor, or a single number used everywhere. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing. It is converted to tensor a's type and device, so against an integer tensor a b of 0.5 becomes 0.\n\nThe two shapes must broadcast: the same shape, a single number, or shapes that differ only where one of them has length 1. Shapes that cannot be matched raise an error and send nothing.\n\nOUTPUTS:\n\nminimum tensor:\nThe smaller of a and b at every position, in the broadcast shape.\n\nREADING THE DEMO:\nThe plot draws the result over the two inputs: the sine (a) and a ramp from -1 to 1 (b). Wherever the sine is below the ramp the result follows the sine; wherever it rises above, the result is held down along the ramp. So on the left, where the ramp is low, only the troughs that dip beneath it are left, and on the right almost all of the wave survives. Drag the ramp's start and stop (try both 0: a flat ceiling at 0 that cuts off every peak).\n\nRELATED:\nt.maximum keeps the larger value instead. t.clamp limits both sides with single numbers. t.min finds the smallest value in one tensor. np.min and min do the same ceiling for NumPy arrays and numbers."
                 },
                 "3": {
                     "name": "metro",
@@ -578,8 +578,8 @@
                     "name": "help_link",
                     "id": 755,
                     "position_x": 30,
-                    "position_y": 890,
-                    "width": 72,
+                    "position_y": 924,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -590,8 +590,8 @@
                 "15": {
                     "name": "help_link",
                     "id": 792,
-                    "position_x": 143,
-                    "position_y": 890,
+                    "position_x": 119,
+                    "position_y": 924,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -603,9 +603,9 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 240,
-                    "position_y": 890,
-                    "width": 47,
+                    "position_x": 195,
+                    "position_y": 924,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -616,9 +616,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 322,
-                    "position_y": 890,
-                    "width": 53,
+                    "position_x": 259,
+                    "position_y": 924,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -629,8 +629,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 412,
-                    "position_y": 890,
+                    "position_x": 329,
+                    "position_y": 924,
                     "width": 35,
                     "height": 44,
                     "visibility": "show_all",
@@ -643,8 +643,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 940,
-                    "position_x": 519,
-                    "position_y": 934,
+                    "position_x": 30,
+                    "position_y": 890,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -668,7 +668,7 @@
                     "name": "close",
                     "id": 977,
                     "position_x": 24,
-                    "position_y": 964,
+                    "position_y": 998,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

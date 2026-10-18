@@ -523,7 +523,7 @@
             }
         },
         "1": {
-            "height": 1225,
+            "height": 1259,
             "width": 1964,
             "position": [
                 100,
@@ -590,7 +590,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Finds the largest value in an array - in the whole array, or in each\nrow or each column.\n\nUse it for the peak of a signal, the loudest band of a spectrum, the\nhighest reading among a set of sensors, or the brightest pixel of an\nimage. To know WHERE the largest value is rather than what it is, use\nnp.argmax.\n\nNOT THE SAME AS np.max:\nnp.amax REDUCES - an array goes in and one value (or one per row or\ncolumn) comes out. np.max, a different node, works element by element:\nit compares every value with a fixed number and keeps the larger, so\nan array goes in and an array of the same shape comes out (a floor).\nnp.max is the clamp; np.amax is the question \"what is the largest?\".\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.amax <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.amax 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is reduced and the answer sent;\nthis is the only inlet that makes the node send.\nA list is turned into an array. A single number is sent back as\nitself while axis is None (with an axis set, it sends nothing). An\nempty array is an error and nothing is sent.\nIf the array holds a NaN (not-a-number) the answer is NaN - there is\nno nan-skipping version of this node.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.amax 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\namax:\nWith axis None, one number (the largest value). With an axis, an array\nholding the largest value of each row or column, as described above.\nIt has the type of the input (float32 in, float32 out).\n\nREADING THE DEMO:\nmake_spot draws 8 by 10 of dim noise (0 to 0.6) with one bright cell,\nexactly 1.0, where the two sliders put it. np.amax with axis None\nalways answers 1.0: the spot is the largest value wherever it is.\nnp.amax 1 asks each ROW: its 8 answers stand beside the picture (the\nexpand_dims node only turns the flat row of 8 into a column so each\nanswer sits next to its row). The spot's row reads 1.0, the others\ntheir own brightest noise. np.amax 0 asks each COLUMN: the strip under\nthe picture has 10 answers, one under each column, and the spot's\ncolumn reads 1.0. Move a slider and the 1.0 moves with the spot.\n\nRELATED:\nnp.amin finds the smallest. np.argmax gives the position of the\nlargest. np.max is the element-wise floor described above, not a\nreduction. np.mean, np.median and np.sum are the other common\nreductions. t.max is the PyTorch version.",
+                            "value": "Finds the largest value in an array - in the whole array, or in each row or each column.\n\nUse it for the peak of a signal, the loudest band of a spectrum, the highest reading among a set of sensors, or the brightest pixel of an image. To know WHERE the largest value is rather than what it is, use np.argmax.\n\nNOT THE SAME AS np.max:\nnp.amax REDUCES - an array goes in and one value (or one per row or column) comes out. np.max, a different node, works element by element: it compares every value with a fixed number and keeps the larger, so an array goes in and an array of the same shape comes out (a floor). np.max is the clamp; np.amax is the question \"what is the largest?\".\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.amax <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.amax 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is reduced and the answer sent;\nthis is the only inlet that makes the node send.\nA list is turned into an array. A single number is sent back as itself while axis is None (with an axis set, it sends nothing). An empty array is an error and nothing is sent.\nIf the array holds a NaN (not-a-number) the answer is NaN - there is no nan-skipping version of this node.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.amax 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\namax:\nWith axis None, one number (the largest value). With an axis, an array holding the largest value of each row or column, as described above. It has the type of the input (float32 in, float32 out).\n\nREADING THE DEMO:\nmake_spot draws 8 by 10 of dim noise (0 to 0.6) with one bright cell, exactly 1.0, where the two sliders put it. np.amax with axis None always answers 1.0: the spot is the largest value wherever it is. np.amax 1 asks each ROW: its 8 answers stand beside the picture (the expand_dims node only turns the flat row of 8 into a column so each answer sits next to its row). The spot's row reads 1.0, the others their own brightest noise. np.amax 0 asks each COLUMN: the strip under the picture has 10 answers, one under each column, and the spot's column reads 1.0. Move a slider and the 1.0 moves with the spot.\n\nRELATED:\nnp.amin finds the smallest. np.argmax gives the position of the largest. np.max is the element-wise floor described above, not a reduction. np.mean, np.median and np.sum are the other common reductions. t.max is the PyTorch version.",
                             "value_type": "str"
                         },
                         "1": {
@@ -614,7 +614,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Finds the largest value in an array - in the whole array, or in each\nrow or each column.\n\nUse it for the peak of a signal, the loudest band of a spectrum, the\nhighest reading among a set of sensors, or the brightest pixel of an\nimage. To know WHERE the largest value is rather than what it is, use\nnp.argmax.\n\nNOT THE SAME AS np.max:\nnp.amax REDUCES - an array goes in and one value (or one per row or\ncolumn) comes out. np.max, a different node, works element by element:\nit compares every value with a fixed number and keeps the larger, so\nan array goes in and an array of the same shape comes out (a floor).\nnp.max is the clamp; np.amax is the question \"what is the largest?\".\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.amax <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.amax 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is reduced and the answer sent;\nthis is the only inlet that makes the node send.\nA list is turned into an array. A single number is sent back as\nitself while axis is None (with an axis set, it sends nothing). An\nempty array is an error and nothing is sent.\nIf the array holds a NaN (not-a-number) the answer is NaN - there is\nno nan-skipping version of this node.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.amax 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\namax:\nWith axis None, one number (the largest value). With an axis, an array\nholding the largest value of each row or column, as described above.\nIt has the type of the input (float32 in, float32 out).\n\nREADING THE DEMO:\nmake_spot draws 8 by 10 of dim noise (0 to 0.6) with one bright cell,\nexactly 1.0, where the two sliders put it. np.amax with axis None\nalways answers 1.0: the spot is the largest value wherever it is.\nnp.amax 1 asks each ROW: its 8 answers stand beside the picture (the\nexpand_dims node only turns the flat row of 8 into a column so each\nanswer sits next to its row). The spot's row reads 1.0, the others\ntheir own brightest noise. np.amax 0 asks each COLUMN: the strip under\nthe picture has 10 answers, one under each column, and the spot's\ncolumn reads 1.0. Move a slider and the 1.0 moves with the spot.\n\nRELATED:\nnp.amin finds the smallest. np.argmax gives the position of the\nlargest. np.max is the element-wise floor described above, not a\nreduction. np.mean, np.median and np.sum are the other common\nreductions. t.max is the PyTorch version."
+                    "text": "Finds the largest value in an array - in the whole array, or in each row or each column.\n\nUse it for the peak of a signal, the loudest band of a spectrum, the highest reading among a set of sensors, or the brightest pixel of an image. To know WHERE the largest value is rather than what it is, use np.argmax.\n\nNOT THE SAME AS np.max:\nnp.amax REDUCES - an array goes in and one value (or one per row or column) comes out. np.max, a different node, works element by element: it compares every value with a fixed number and keeps the larger, so an array goes in and an array of the same shape comes out (a floor). np.max is the clamp; np.amax is the question \"what is the largest?\".\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.amax <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.amax 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is reduced and the answer sent;\nthis is the only inlet that makes the node send.\nA list is turned into an array. A single number is sent back as itself while axis is None (with an axis set, it sends nothing). An empty array is an error and nothing is sent.\nIf the array holds a NaN (not-a-number) the answer is NaN - there is no nan-skipping version of this node.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.amax 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\namax:\nWith axis None, one number (the largest value). With an axis, an array holding the largest value of each row or column, as described above. It has the type of the input (float32 in, float32 out).\n\nREADING THE DEMO:\nmake_spot draws 8 by 10 of dim noise (0 to 0.6) with one bright cell, exactly 1.0, where the two sliders put it. np.amax with axis None always answers 1.0: the spot is the largest value wherever it is. np.amax 1 asks each ROW: its 8 answers stand beside the picture (the expand_dims node only turns the flat row of 8 into a column so each answer sits next to its row). The spot's row reads 1.0, the others their own brightest noise. np.amax 0 asks each COLUMN: the strip under the picture has 10 answers, one under each column, and the spot's column reads 1.0. Move a slider and the 1.0 moves with the spot.\n\nRELATED:\nnp.amin finds the smallest. np.argmax gives the position of the largest. np.max is the element-wise floor described above, not a reduction. np.mean, np.median and np.sum are the other common reductions. t.max is the PyTorch version."
                 },
                 "3": {
                     "name": "load_bang",
@@ -1164,7 +1164,7 @@
                     "name": "help_link",
                     "id": 1088,
                     "position_x": 30,
-                    "position_y": 890,
+                    "position_y": 924,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -1176,9 +1176,9 @@
                 "24": {
                     "name": "help_link",
                     "id": 1125,
-                    "position_x": 127,
-                    "position_y": 890,
-                    "width": 72,
+                    "position_x": 106,
+                    "position_y": 924,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1189,9 +1189,9 @@
                 "25": {
                     "name": "help_link",
                     "id": 1162,
-                    "position_x": 240,
-                    "position_y": 890,
-                    "width": 53,
+                    "position_x": 195,
+                    "position_y": 924,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1202,8 +1202,8 @@
                 "26": {
                     "name": "help_link",
                     "id": 1199,
-                    "position_x": 330,
-                    "position_y": 890,
+                    "position_x": 265,
+                    "position_y": 924,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -1215,9 +1215,9 @@
                 "27": {
                     "name": "help_link",
                     "id": 1236,
-                    "position_x": 427,
-                    "position_y": 890,
-                    "width": 47,
+                    "position_x": 341,
+                    "position_y": 924,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1229,7 +1229,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1273,
-                    "position_x": 816,
+                    "position_x": 30,
                     "position_y": 890,
                     "width": 156,
                     "height": 30,
@@ -1254,7 +1254,7 @@
                     "name": "close",
                     "id": 1310,
                     "position_x": 24,
-                    "position_y": 964,
+                    "position_y": 998,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 1062,
+    "height": 1096,
     "width": 1709,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Applies the normalised sinc function, sin(pi x) / (pi x), to every\nelement of a tensor.\n\nIt is the impulse response of an ideal low-pass filter, which makes it\nthe kernel for resampling and band-limited interpolation (usually with a\nwindow over it).\n\nTHE CURVE:\n1 at x = 0, symmetric, with ripples that shrink like 1/x on either side.\nIt crosses zero at every nonzero whole number - 1, 2, 3 and -1, -2, -3 -\nbecause this is the NORMALISED sinc, with pi inside.\n\nSYNTAX:\nt.special.sinc\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number; at exactly 0 it gives 1, not the 0/0 a\nhand-written version would.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-8 to 8 here), and the\nupper plot draws them: a straight ramp. The lower plot is sinc of each\nof those 200 values, so it is the graph of the function from -8 to 8,\ndrawn from -0.3 (bottom) to 1.05 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.special.spherical_bessel_j0 is the UNnormalised sinc, sin(x) / x:\nthe same curve stretched by pi. A window such as t.window.kaiser or\nt.window.hann is what tames sinc's long ripples in practice.",
+                    "value": "Applies the normalised sinc function, sin(pi x) / (pi x), to every element of a tensor.\n\nIt is the impulse response of an ideal low-pass filter, which makes it the kernel for resampling and band-limited interpolation (usually with a window over it).\n\nTHE CURVE:\n1 at x = 0, symmetric, with ripples that shrink like 1/x on either side. It crosses zero at every nonzero whole number - 1, 2, 3 and -1, -2, -3 - because this is the NORMALISED sinc, with pi inside.\n\nSYNTAX:\nt.special.sinc\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number; at exactly 0 it gives 1, not the 0/0 a hand-written version would.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-8 to 8 here), and the upper plot draws them: a straight ramp. The lower plot is sinc of each of those 200 values, so it is the graph of the function from -8 to 8, drawn from -0.3 (bottom) to 1.05 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.special.spherical_bessel_j0 is the UNnormalised sinc, sin(x) / x:\nthe same curve stretched by pi. A window such as t.window.kaiser or t.window.hann is what tames sinc's long ripples in practice.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Applies the normalised sinc function, sin(pi x) / (pi x), to every\nelement of a tensor.\n\nIt is the impulse response of an ideal low-pass filter, which makes it\nthe kernel for resampling and band-limited interpolation (usually with a\nwindow over it).\n\nTHE CURVE:\n1 at x = 0, symmetric, with ripples that shrink like 1/x on either side.\nIt crosses zero at every nonzero whole number - 1, 2, 3 and -1, -2, -3 -\nbecause this is the NORMALISED sinc, with pi inside.\n\nSYNTAX:\nt.special.sinc\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number; at exactly 0 it gives 1, not the 0/0 a\nhand-written version would.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-8 to 8 here), and the\nupper plot draws them: a straight ramp. The lower plot is sinc of each\nof those 200 values, so it is the graph of the function from -8 to 8,\ndrawn from -0.3 (bottom) to 1.05 (top). Drag start and stop on t.linspace\nto look at another stretch.\n\nRELATED:\nt.special.spherical_bessel_j0 is the UNnormalised sinc, sin(x) / x:\nthe same curve stretched by pi. A window such as t.window.kaiser or\nt.window.hann is what tames sinc's long ripples in practice."
+            "text": "Applies the normalised sinc function, sin(pi x) / (pi x), to every element of a tensor.\n\nIt is the impulse response of an ideal low-pass filter, which makes it the kernel for resampling and band-limited interpolation (usually with a window over it).\n\nTHE CURVE:\n1 at x = 0, symmetric, with ripples that shrink like 1/x on either side. It crosses zero at every nonzero whole number - 1, 2, 3 and -1, -2, -3 - because this is the NORMALISED sinc, with pi inside.\n\nSYNTAX:\nt.special.sinc\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number; at exactly 0 it gives 1, not the 0/0 a hand-written version would.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-8 to 8 here), and the upper plot draws them: a straight ramp. The lower plot is sinc of each of those 200 values, so it is the graph of the function from -8 to 8, drawn from -0.3 (bottom) to 1.05 (top). Drag start and stop on t.linspace to look at another stretch.\n\nRELATED:\nt.special.spherical_bessel_j0 is the UNnormalised sinc, sin(x) / x:\nthe same curve stretched by pi. A window such as t.window.kaiser or t.window.hann is what tames sinc's long ripples in practice."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 195,
+            "position_y": 874,
+            "width": 199,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 297,
-            "position_y": 840,
-            "width": 133,
+            "position_x": 245,
+            "position_y": 874,
+            "width": 136,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -458,7 +458,7 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 884,
+            "position_y": 918,
             "width": 109,
             "height": 44,
             "visibility": "show_all",
@@ -471,7 +471,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 189,
-            "position_y": 884,
+            "position_y": 918,
             "width": 96,
             "height": 44,
             "visibility": "show_all",
@@ -484,8 +484,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 456,
-            "position_y": 884,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -509,7 +509,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 958,
+            "position_y": 992,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

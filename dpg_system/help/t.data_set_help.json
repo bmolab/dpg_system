@@ -1,5 +1,5 @@
 {
-    "height": 637,
+    "height": 671,
     "width": 1670,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Loads every .pt file in a folder into a torch Dataset, for training\ncode - it has no inlets and no outlets.\n\nGive it a folder as its argument. Each .pt file there (a tensor saved\nwith torch.save) is loaded and kept under its file name, and the node\nholds the result as a torch Dataset: item i is a dictionary of the i-th\nrow of every file, and the length is the shortest file's length.\n\nNOTHING IN A PATCH CAN READ IT:\nThe node exposes no inlets and no outlets, so a patch cannot ask it for\nanything. It is groundwork for training code that reaches the node from\nPython, not a way to bring data into a patch. To get recorded data into\na patch use np.load (a NumPy file) or np.sequence (a recording); to make\ntest tensors, t.rand or t.linspace.\n\nSYNTAX:\nt.data_set <folder>\nWith no folder, nothing is loaded.\n\nEXAMPLE:\nt.data_set /Users/me/datasets/poses\n\nINPUTS and PARAMETERS:\nThe folder, as the argument. It is read once, when the node is made.\nA folder that does not exist prints a message in the console and leaves\nthe dataset empty; a .pt file that cannot be read is skipped with a\nmessage and the rest are kept.\n\nOUTPUTS:\nNone.\n\nRELATED:\nnp.load reads a saved NumPy array into a patch. t.buffer and\nt.rolling_buffer collect data as it arrives.",
+                    "value": "Loads every .pt file in a folder into a torch Dataset, for training code - it has no inlets and no outlets.\n\nGive it a folder as its argument. Each .pt file there (a tensor saved with torch.save) is loaded and kept under its file name, and the node holds the result as a torch Dataset: item i is a dictionary of the i-th row of every file, and the length is the shortest file's length.\n\nNOTHING IN A PATCH CAN READ IT:\nThe node exposes no inlets and no outlets, so a patch cannot ask it for anything. It is groundwork for training code that reaches the node from Python, not a way to bring data into a patch. To get recorded data into a patch use np.load (a NumPy file) or np.sequence (a recording); to make test tensors, t.rand or t.linspace.\n\nSYNTAX:\nt.data_set <folder>\nWith no folder, nothing is loaded.\n\nEXAMPLE:\nt.data_set /Users/me/datasets/poses\n\nINPUTS and PARAMETERS:\nThe folder, as the argument. It is read once, when the node is made. A folder that does not exist prints a message in the console and leaves the dataset empty; a .pt file that cannot be read is skipped with a message and the rest are kept.\n\nOUTPUTS:\nNone.\n\nRELATED:\nnp.load reads a saved NumPy array into a patch. t.buffer and t.rolling_buffer collect data as it arrives.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Loads every .pt file in a folder into a torch Dataset, for training\ncode - it has no inlets and no outlets.\n\nGive it a folder as its argument. Each .pt file there (a tensor saved\nwith torch.save) is loaded and kept under its file name, and the node\nholds the result as a torch Dataset: item i is a dictionary of the i-th\nrow of every file, and the length is the shortest file's length.\n\nNOTHING IN A PATCH CAN READ IT:\nThe node exposes no inlets and no outlets, so a patch cannot ask it for\nanything. It is groundwork for training code that reaches the node from\nPython, not a way to bring data into a patch. To get recorded data into\na patch use np.load (a NumPy file) or np.sequence (a recording); to make\ntest tensors, t.rand or t.linspace.\n\nSYNTAX:\nt.data_set <folder>\nWith no folder, nothing is loaded.\n\nEXAMPLE:\nt.data_set /Users/me/datasets/poses\n\nINPUTS and PARAMETERS:\nThe folder, as the argument. It is read once, when the node is made.\nA folder that does not exist prints a message in the console and leaves\nthe dataset empty; a .pt file that cannot be read is skipped with a\nmessage and the rest are kept.\n\nOUTPUTS:\nNone.\n\nRELATED:\nnp.load reads a saved NumPy array into a patch. t.buffer and\nt.rolling_buffer collect data as it arrives."
+            "text": "Loads every .pt file in a folder into a torch Dataset, for training code - it has no inlets and no outlets.\n\nGive it a folder as its argument. Each .pt file there (a tensor saved with torch.save) is loaded and kept under its file name, and the node holds the result as a torch Dataset: item i is a dictionary of the i-th row of every file, and the length is the shortest file's length.\n\nNOTHING IN A PATCH CAN READ IT:\nThe node exposes no inlets and no outlets, so a patch cannot ask it for anything. It is groundwork for training code that reaches the node from Python, not a way to bring data into a patch. To get recorded data into a patch use np.load (a NumPy file) or np.sequence (a recording); to make test tensors, t.rand or t.linspace.\n\nSYNTAX:\nt.data_set <folder>\nWith no folder, nothing is loaded.\n\nEXAMPLE:\nt.data_set /Users/me/datasets/poses\n\nINPUTS and PARAMETERS:\nThe folder, as the argument. It is read once, when the node is made. A folder that does not exist prints a message in the console and leaves the dataset empty; a .pt file that cannot be read is skipped with a message and the rest are kept.\n\nOUTPUTS:\nNone.\n\nRELATED:\nnp.load reads a saved NumPy array into a patch. t.buffer and t.rolling_buffer collect data as it arrives."
         },
         "3": {
             "name": "t.data_set",
@@ -148,7 +148,7 @@
             "name": "help_link",
             "id": 422,
             "position_x": 30,
-            "position_y": 200,
+            "position_y": 234,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -160,8 +160,8 @@
         "6": {
             "name": "help_link",
             "id": 459,
-            "position_x": 127,
-            "position_y": 200,
+            "position_x": 106,
+            "position_y": 234,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -173,9 +173,9 @@
         "7": {
             "name": "help_link",
             "id": 496,
-            "position_x": 232,
-            "position_y": 200,
-            "width": 115,
+            "position_x": 188,
+            "position_y": 234,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -186,9 +186,9 @@
         "8": {
             "name": "help_link",
             "id": 533,
-            "position_x": 399,
-            "position_y": 200,
-            "width": 53,
+            "position_x": 321,
+            "position_y": 234,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -200,7 +200,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 570,
-            "position_x": 478,
+            "position_x": 30,
             "position_y": 200,
             "width": 156,
             "height": 30,
@@ -225,7 +225,7 @@
             "name": "close",
             "id": 607,
             "position_x": 24,
-            "position_y": 274,
+            "position_y": 308,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

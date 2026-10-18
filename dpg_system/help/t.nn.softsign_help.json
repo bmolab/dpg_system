@@ -1,5 +1,5 @@
 {
-    "height": 1108,
+    "height": 1142,
     "width": 1762,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Squeezes every value into -1 to 1 by dividing it by (1 plus its own\nsize): x divided by (1 plus the absolute value of x).\n\nIt is a soft limiter like tanh, but it approaches its limits much more\nslowly, so large values keep more of their differences. Where tanh makes\n3 and 6 almost the same (0.995 and 0.99999), softsign keeps them apart\n(0.75 and 0.86). It is also cheap: no exponential.\n\nTHE CURVE:\n0 gives 0, 1 gives 0.5, 3 gives 0.75, 9 gives 0.9 - the output reaches a\nfraction n/(n+1) of the way to 1 when the input is n. Symmetric about 0.\nNear zero its slope is 1, so small values pass almost unchanged, as with\ntanh. The demo's ramp runs from -6 to 6 so you can see how far from 1 it\nstill is at the edges.\n\nSYNTAX:\nt.nn.softsign\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -6 (left edge of the\nplot) to 6 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -2 to 2; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.tanh is the usual soft limiter, reaching its limits much sooner.\nt.nn.sigmoid is an S from 0 to 1. t.nn.hardtanh is the straight-line\nversion with corners.",
+                    "value": "Squeezes every value into -1 to 1 by dividing it by (1 plus its own size): x divided by (1 plus the absolute value of x).\n\nIt is a soft limiter like tanh, but it approaches its limits much more slowly, so large values keep more of their differences. Where tanh makes 3 and 6 almost the same (0.995 and 0.99999), softsign keeps them apart (0.75 and 0.86). It is also cheap: no exponential.\n\nTHE CURVE:\n0 gives 0, 1 gives 0.5, 3 gives 0.75, 9 gives 0.9 - the output reaches a fraction n/(n+1) of the way to 1 when the input is n. Symmetric about 0. Near zero its slope is 1, so small values pass almost unchanged, as with tanh. The demo's ramp runs from -6 to 6 so you can see how far from 1 it still is at the edges.\n\nSYNTAX:\nt.nn.softsign\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -6 (left edge of the plot) to 6 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -2 to 2; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.tanh is the usual soft limiter, reaching its limits much sooner. t.nn.sigmoid is an S from 0 to 1. t.nn.hardtanh is the straight-line version with corners.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Squeezes every value into -1 to 1 by dividing it by (1 plus its own\nsize): x divided by (1 plus the absolute value of x).\n\nIt is a soft limiter like tanh, but it approaches its limits much more\nslowly, so large values keep more of their differences. Where tanh makes\n3 and 6 almost the same (0.995 and 0.99999), softsign keeps them apart\n(0.75 and 0.86). It is also cheap: no exponential.\n\nTHE CURVE:\n0 gives 0, 1 gives 0.5, 3 gives 0.75, 9 gives 0.9 - the output reaches a\nfraction n/(n+1) of the way to 1 when the input is n. Symmetric about 0.\nNear zero its slope is 1, so small values pass almost unchanged, as with\ntanh. The demo's ramp runs from -6 to 6 so you can see how far from 1 it\nstill is at the edges.\n\nSYNTAX:\nt.nn.softsign\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -6 (left edge of the\nplot) to 6 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -2 to 2; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.tanh is the usual soft limiter, reaching its limits much sooner.\nt.nn.sigmoid is an S from 0 to 1. t.nn.hardtanh is the straight-line\nversion with corners."
+            "text": "Squeezes every value into -1 to 1 by dividing it by (1 plus its own size): x divided by (1 plus the absolute value of x).\n\nIt is a soft limiter like tanh, but it approaches its limits much more slowly, so large values keep more of their differences. Where tanh makes 3 and 6 almost the same (0.995 and 0.99999), softsign keeps them apart (0.75 and 0.86). It is also cheap: no exponential.\n\nTHE CURVE:\n0 gives 0, 1 gives 0.5, 3 gives 0.75, 9 gives 0.9 - the output reaches a fraction n/(n+1) of the way to 1 when the input is n. Symmetric about 0. Near zero its slope is 1, so small values pass almost unchanged, as with tanh. The demo's ramp runs from -6 to 6 so you can see how far from 1 it still is at the edges.\n\nSYNTAX:\nt.nn.softsign\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -6 (left edge of the plot) to 6 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -2 to 2; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.tanh is the usual soft limiter, reaching its limits much sooner. t.nn.sigmoid is an S from 0 to 1. t.nn.hardtanh is the straight-line version with corners."
         },
         "3": {
             "name": "metro",
@@ -379,8 +379,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 930,
-            "width": 72,
+            "position_y": 964,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -391,9 +391,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 143,
-            "position_y": 930,
-            "width": 90,
+            "position_x": 119,
+            "position_y": 964,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -404,9 +404,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 279,
-            "position_y": 930,
-            "width": 96,
+            "position_x": 227,
+            "position_y": 964,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -417,9 +417,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 423,
-            "position_y": 930,
-            "width": 109,
+            "position_x": 341,
+            "position_y": 964,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -431,8 +431,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 558,
-            "position_y": 974,
+            "position_x": 30,
+            "position_y": 930,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -456,7 +456,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 1004,
+            "position_y": 1038,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

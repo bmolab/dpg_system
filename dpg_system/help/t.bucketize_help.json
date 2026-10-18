@@ -1,5 +1,5 @@
 {
-    "height": 1328,
+    "height": 1362,
     "width": 1676,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Says which band each value falls in, given the boundaries between the\nbands: 0 for below the first boundary, 1 for between the first and the\nsecond, and so on up to the number of boundaries.\n\nIt is quantising with boundaries you choose. Use it when the bands mean\nsomething - 'still', 'moving', 'fast' at speeds that matter - rather than\nbeing equal slices of a range. Its output can go on into t.bincount to\ncount how much time was spent in each band: a histogram of unequal,\nmeaningful bins.\n\nSYNTAX:\nt.bucketize\nNo arguments.\n\nEXAMPLE:\nt.bucketize\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values, any shape. A single number works too. Every input is\nassigned and sent - the only inlet that makes the node send - but only\nonce boundaries have arrived; until then nothing is sent.\n\nboundaries tensor in:\nThe boundaries, a 1-D list in INCREASING order (out of order gives\nwrong answers, with no error). They are kept until replaced, and\nconverted to the type of the input - so with an integer input, boundaries\nlike 2.5 are cut to 2.\n\nright (checkbox):\nWhich band a value exactly ON a boundary goes in. Off (the default): the\nband below - band i holds values above boundary i-1 up to and including\nboundary i. On: the band above.\n\nint32 indices (checkbox):\nSend the band numbers as int32 instead of int64.\n\nChanging either checkbox does not send by itself; the next input uses\nit. The metro in the demo re-sends, so the effect shows at once.\n\nOUTPUTS:\n\nbin count tensor out:\nThe band number of each value, whole numbers from 0 to the number of\nboundaries, the same shape as the input. (Despite the name, it is not a\ncount.)\n\nREADING THE DEMO:\nThe boundaries are 2 3 8, which make four bands: up to 2, above 2 up to\n3, above 3 up to 8, above 8. The top strip is 0 to 10; the strip under\nit is each value's band. 0 1 2 are band 0, 3 is band 1, 4 to 8 band 2, 9\nand 10 band 3 - the values sitting exactly on 2, 3 and 8 go to the band\nbelow. Tick right and they move up: 2 joins band 1, 3 and 8 band 2 and 3.\nEdit the boundaries message (they must increase) and click it.\n\nBelow, the slider sends single values from 0 to 10 into a second\nt.bucketize with the same boundaries, and the number shows the band it\nis in - the everyday use: which state is this reading in now?\n\nRELATED:\nt.bincount counts the band numbers. t.histc counts values in equal bins.\nt.round and t.clamp are simpler ways to quantise or limit values.",
+                    "value": "Says which band each value falls in, given the boundaries between the bands: 0 for below the first boundary, 1 for between the first and the second, and so on up to the number of boundaries.\n\nIt is quantising with boundaries you choose. Use it when the bands mean something - 'still', 'moving', 'fast' at speeds that matter - rather than being equal slices of a range. Its output can go on into t.bincount to count how much time was spent in each band: a histogram of unequal, meaningful bins.\n\nSYNTAX:\nt.bucketize\nNo arguments.\n\nEXAMPLE:\nt.bucketize\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values, any shape. A single number works too. Every input is assigned and sent - the only inlet that makes the node send - but only once boundaries have arrived; until then nothing is sent.\n\nboundaries tensor in:\nThe boundaries, a 1-D list in INCREASING order (out of order gives wrong answers, with no error). They are kept until replaced, and converted to the type of the input - so with an integer input, boundaries like 2.5 are cut to 2.\n\nright (checkbox):\nWhich band a value exactly ON a boundary goes in. Off (the default): the band below - band i holds values above boundary i-1 up to and including boundary i. On: the band above.\n\nint32 indices (checkbox):\nSend the band numbers as int32 instead of int64.\n\nChanging either checkbox does not send by itself; the next input uses it. The metro in the demo re-sends, so the effect shows at once.\n\nOUTPUTS:\n\nbin count tensor out:\nThe band number of each value, whole numbers from 0 to the number of boundaries, the same shape as the input. (Despite the name, it is not a count.)\n\nREADING THE DEMO:\nThe boundaries are 2 3 8, which make four bands: up to 2, above 2 up to 3, above 3 up to 8, above 8. The top strip is 0 to 10; the strip under it is each value's band. 0 1 2 are band 0, 3 is band 1, 4 to 8 band 2, 9 and 10 band 3 - the values sitting exactly on 2, 3 and 8 go to the band below. Tick right and they move up: 2 joins band 1, 3 and 8 band 2 and 3. Edit the boundaries message (they must increase) and click it.\n\nBelow, the slider sends single values from 0 to 10 into a second t.bucketize with the same boundaries, and the number shows the band it is in - the everyday use: which state is this reading in now?\n\nRELATED:\nt.bincount counts the band numbers. t.histc counts values in equal bins. t.round and t.clamp are simpler ways to quantise or limit values.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Says which band each value falls in, given the boundaries between the\nbands: 0 for below the first boundary, 1 for between the first and the\nsecond, and so on up to the number of boundaries.\n\nIt is quantising with boundaries you choose. Use it when the bands mean\nsomething - 'still', 'moving', 'fast' at speeds that matter - rather than\nbeing equal slices of a range. Its output can go on into t.bincount to\ncount how much time was spent in each band: a histogram of unequal,\nmeaningful bins.\n\nSYNTAX:\nt.bucketize\nNo arguments.\n\nEXAMPLE:\nt.bucketize\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values, any shape. A single number works too. Every input is\nassigned and sent - the only inlet that makes the node send - but only\nonce boundaries have arrived; until then nothing is sent.\n\nboundaries tensor in:\nThe boundaries, a 1-D list in INCREASING order (out of order gives\nwrong answers, with no error). They are kept until replaced, and\nconverted to the type of the input - so with an integer input, boundaries\nlike 2.5 are cut to 2.\n\nright (checkbox):\nWhich band a value exactly ON a boundary goes in. Off (the default): the\nband below - band i holds values above boundary i-1 up to and including\nboundary i. On: the band above.\n\nint32 indices (checkbox):\nSend the band numbers as int32 instead of int64.\n\nChanging either checkbox does not send by itself; the next input uses\nit. The metro in the demo re-sends, so the effect shows at once.\n\nOUTPUTS:\n\nbin count tensor out:\nThe band number of each value, whole numbers from 0 to the number of\nboundaries, the same shape as the input. (Despite the name, it is not a\ncount.)\n\nREADING THE DEMO:\nThe boundaries are 2 3 8, which make four bands: up to 2, above 2 up to\n3, above 3 up to 8, above 8. The top strip is 0 to 10; the strip under\nit is each value's band. 0 1 2 are band 0, 3 is band 1, 4 to 8 band 2, 9\nand 10 band 3 - the values sitting exactly on 2, 3 and 8 go to the band\nbelow. Tick right and they move up: 2 joins band 1, 3 and 8 band 2 and 3.\nEdit the boundaries message (they must increase) and click it.\n\nBelow, the slider sends single values from 0 to 10 into a second\nt.bucketize with the same boundaries, and the number shows the band it\nis in - the everyday use: which state is this reading in now?\n\nRELATED:\nt.bincount counts the band numbers. t.histc counts values in equal bins.\nt.round and t.clamp are simpler ways to quantise or limit values."
+            "text": "Says which band each value falls in, given the boundaries between the bands: 0 for below the first boundary, 1 for between the first and the second, and so on up to the number of boundaries.\n\nIt is quantising with boundaries you choose. Use it when the bands mean something - 'still', 'moving', 'fast' at speeds that matter - rather than being equal slices of a range. Its output can go on into t.bincount to count how much time was spent in each band: a histogram of unequal, meaningful bins.\n\nSYNTAX:\nt.bucketize\nNo arguments.\n\nEXAMPLE:\nt.bucketize\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values, any shape. A single number works too. Every input is assigned and sent - the only inlet that makes the node send - but only once boundaries have arrived; until then nothing is sent.\n\nboundaries tensor in:\nThe boundaries, a 1-D list in INCREASING order (out of order gives wrong answers, with no error). They are kept until replaced, and converted to the type of the input - so with an integer input, boundaries like 2.5 are cut to 2.\n\nright (checkbox):\nWhich band a value exactly ON a boundary goes in. Off (the default): the band below - band i holds values above boundary i-1 up to and including boundary i. On: the band above.\n\nint32 indices (checkbox):\nSend the band numbers as int32 instead of int64.\n\nChanging either checkbox does not send by itself; the next input uses it. The metro in the demo re-sends, so the effect shows at once.\n\nOUTPUTS:\n\nbin count tensor out:\nThe band number of each value, whole numbers from 0 to the number of boundaries, the same shape as the input. (Despite the name, it is not a count.)\n\nREADING THE DEMO:\nThe boundaries are 2 3 8, which make four bands: up to 2, above 2 up to 3, above 3 up to 8, above 8. The top strip is 0 to 10; the strip under it is each value's band. 0 1 2 are band 0, 3 is band 1, 4 to 8 band 2, 9 and 10 band 3 - the values sitting exactly on 2, 3 and 8 go to the band below. Tick right and they move up: 2 joins band 1, 3 and 8 band 2 and 3. Edit the boundaries message (they must increase) and click it.\n\nBelow, the slider sends single values from 0 to 10 into a second t.bucketize with the same boundaries, and the number shows the band it is in - the everyday use: which state is this reading in now?\n\nRELATED:\nt.bincount counts the band numbers. t.histc counts values in equal bins. t.round and t.clamp are simpler ways to quantise or limit values."
         },
         "3": {
             "name": "load_bang",
@@ -582,8 +582,8 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1150,
-            "width": 78,
+            "position_y": 1184,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -594,8 +594,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 151,
-            "position_y": 1150,
+            "position_x": 125,
+            "position_y": 1184,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -607,8 +607,8 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 248,
-            "position_y": 1150,
+            "position_x": 201,
+            "position_y": 1184,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -620,8 +620,8 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 345,
-            "position_y": 1150,
+            "position_x": 277,
+            "position_y": 1184,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -634,8 +634,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 584,
-            "position_y": 1194,
+            "position_x": 30,
+            "position_y": 1150,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -659,7 +659,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 1224,
+            "position_y": 1258,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

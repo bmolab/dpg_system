@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1301,
+            "height": 1335,
             "width": 1679,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Finds the principal components of a set of points: the directions along\nwhich they spread out most, and how much they spread along each.\n\nGive it N points (one per row, any number of columns) and it answers\n\"along which few directions does this data really vary?\". For 16 points\nlying roughly along a line, the first direction is the line and the\nsecond carries almost nothing. For poses or joint angles, a handful of\ndirections usually carries most of the movement - those directions are\nthe coordinated patterns, and the rest is noise. It finds only the\nleading few, quickly and approximately, which matters on big data.\n\nCENTRE FIRST - THE 'center' CHECKBOX:\nPrincipal components describe spread AROUND THE MIDDLE of the points,\nso the mean is taken off first: 'center' is on by default. Turn it off\nonly for data that is already centred - otherwise the first direction\npoints from zero towards where the cloud sits, not along the way it\nspreads.\n\nSYNTAX:\nt.linalg.pca_low_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe points, one per row (a list of lists or a NumPy array is turned\ninto a float32 tensor). Receiving it calculates and sends. It keeps up\nto 6 components, or fewer if there are fewer rows or columns.\n\ncenter (checkbox):\nTake off the mean of each column first. Default on.\n\niterations (number box):\nThe number of refinement passes of the approximate method, default 2,\n0 or more. More passes, more accurate on big data; small data like the\ndemo's is exact anyway.\n\nChanging either does not send by itself; the next points use it (here\nthey are re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nU tensor out:\nFor each point, where it lies along each direction (divided by the\nspread). One row per point. Sent last.\n\nS tensor out:\nHow much the points spread along each direction, largest first.\n\nV tensor out:\nThe directions, one per COLUMN, each of length 1. Sent first.\nA direction and its opposite are the same axis, so signs may come out\neither way.\n\nREADING THE DEMO:\nmake_points sends 16 points in 2-D, lying along a line at 20 degrees\nwhose middle sits at [0 3]. The top picture shows them as two rows\n(x on top, y below) for the 16 points. With center ON the first column\nof V is about [-0.94 -0.34] - the 20 degree line (sign flipped) - and S\nreads about 4.9 and 0.7: nearly all the spread is along the line. The\nbottom picture is U x S, each point's position along the two\ndirections: the first row sweeps across, the second barely moves.\nTurn center OFF and the first direction swings round to about\n[-0.06 -1], pointing at the middle of the cloud, and S jumps to 12.2 -\nit is measuring distance from zero, not spread.\n\nRELATED:\nt.linalg.svd is the full decomposition this approximates (pca with\ncenter on is the svd of the centred points). t.linalg.eig of the\npoints' covariance gives the same directions. np.mean takes the mean\noff by hand.",
+                            "value": "Finds the principal components of a set of points: the directions along which they spread out most, and how much they spread along each.\n\nGive it N points (one per row, any number of columns) and it answers \"along which few directions does this data really vary?\". For 16 points lying roughly along a line, the first direction is the line and the second carries almost nothing. For poses or joint angles, a handful of directions usually carries most of the movement - those directions are the coordinated patterns, and the rest is noise. It finds only the leading few, quickly and approximately, which matters on big data.\n\nCENTRE FIRST - THE 'center' CHECKBOX:\nPrincipal components describe spread AROUND THE MIDDLE of the points, so the mean is taken off first: 'center' is on by default. Turn it off only for data that is already centred - otherwise the first direction points from zero towards where the cloud sits, not along the way it spreads.\n\nSYNTAX:\nt.linalg.pca_low_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe points, one per row (a list of lists or a NumPy array is turned into a float32 tensor). Receiving it calculates and sends. It keeps up to 6 components, or fewer if there are fewer rows or columns.\n\ncenter (checkbox):\nTake off the mean of each column first. Default on.\n\niterations (number box):\nThe number of refinement passes of the approximate method, default 2, 0 or more. More passes, more accurate on big data; small data like the demo's is exact anyway.\n\nChanging either does not send by itself; the next points use it (here they are re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nU tensor out:\nFor each point, where it lies along each direction (divided by the spread). One row per point. Sent last.\n\nS tensor out:\nHow much the points spread along each direction, largest first.\n\nV tensor out:\nThe directions, one per COLUMN, each of length 1. Sent first. A direction and its opposite are the same axis, so signs may come out either way.\n\nREADING THE DEMO:\nmake_points sends 16 points in 2-D, lying along a line at 20 degrees whose middle sits at [0 3]. The top picture shows them as two rows (x on top, y below) for the 16 points. With center ON the first column of V is about [-0.94 -0.34] - the 20 degree line (sign flipped) - and S reads about 4.9 and 0.7: nearly all the spread is along the line. The bottom picture is U x S, each point's position along the two directions: the first row sweeps across, the second barely moves. Turn center OFF and the first direction swings round to about [-0.06 -1], pointing at the middle of the cloud, and S jumps to 12.2 - it is measuring distance from zero, not spread.\n\nRELATED:\nt.linalg.svd is the full decomposition this approximates (pca with center on is the svd of the centred points). t.linalg.eig of the points' covariance gives the same directions. np.mean takes the mean off by hand.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Finds the principal components of a set of points: the directions along\nwhich they spread out most, and how much they spread along each.\n\nGive it N points (one per row, any number of columns) and it answers\n\"along which few directions does this data really vary?\". For 16 points\nlying roughly along a line, the first direction is the line and the\nsecond carries almost nothing. For poses or joint angles, a handful of\ndirections usually carries most of the movement - those directions are\nthe coordinated patterns, and the rest is noise. It finds only the\nleading few, quickly and approximately, which matters on big data.\n\nCENTRE FIRST - THE 'center' CHECKBOX:\nPrincipal components describe spread AROUND THE MIDDLE of the points,\nso the mean is taken off first: 'center' is on by default. Turn it off\nonly for data that is already centred - otherwise the first direction\npoints from zero towards where the cloud sits, not along the way it\nspreads.\n\nSYNTAX:\nt.linalg.pca_low_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe points, one per row (a list of lists or a NumPy array is turned\ninto a float32 tensor). Receiving it calculates and sends. It keeps up\nto 6 components, or fewer if there are fewer rows or columns.\n\ncenter (checkbox):\nTake off the mean of each column first. Default on.\n\niterations (number box):\nThe number of refinement passes of the approximate method, default 2,\n0 or more. More passes, more accurate on big data; small data like the\ndemo's is exact anyway.\n\nChanging either does not send by itself; the next points use it (here\nthey are re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nU tensor out:\nFor each point, where it lies along each direction (divided by the\nspread). One row per point. Sent last.\n\nS tensor out:\nHow much the points spread along each direction, largest first.\n\nV tensor out:\nThe directions, one per COLUMN, each of length 1. Sent first.\nA direction and its opposite are the same axis, so signs may come out\neither way.\n\nREADING THE DEMO:\nmake_points sends 16 points in 2-D, lying along a line at 20 degrees\nwhose middle sits at [0 3]. The top picture shows them as two rows\n(x on top, y below) for the 16 points. With center ON the first column\nof V is about [-0.94 -0.34] - the 20 degree line (sign flipped) - and S\nreads about 4.9 and 0.7: nearly all the spread is along the line. The\nbottom picture is U x S, each point's position along the two\ndirections: the first row sweeps across, the second barely moves.\nTurn center OFF and the first direction swings round to about\n[-0.06 -1], pointing at the middle of the cloud, and S jumps to 12.2 -\nit is measuring distance from zero, not spread.\n\nRELATED:\nt.linalg.svd is the full decomposition this approximates (pca with\ncenter on is the svd of the centred points). t.linalg.eig of the\npoints' covariance gives the same directions. np.mean takes the mean\noff by hand."
+                    "text": "Finds the principal components of a set of points: the directions along which they spread out most, and how much they spread along each.\n\nGive it N points (one per row, any number of columns) and it answers \"along which few directions does this data really vary?\". For 16 points lying roughly along a line, the first direction is the line and the second carries almost nothing. For poses or joint angles, a handful of directions usually carries most of the movement - those directions are the coordinated patterns, and the rest is noise. It finds only the leading few, quickly and approximately, which matters on big data.\n\nCENTRE FIRST - THE 'center' CHECKBOX:\nPrincipal components describe spread AROUND THE MIDDLE of the points, so the mean is taken off first: 'center' is on by default. Turn it off only for data that is already centred - otherwise the first direction points from zero towards where the cloud sits, not along the way it spreads.\n\nSYNTAX:\nt.linalg.pca_low_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe points, one per row (a list of lists or a NumPy array is turned into a float32 tensor). Receiving it calculates and sends. It keeps up to 6 components, or fewer if there are fewer rows or columns.\n\ncenter (checkbox):\nTake off the mean of each column first. Default on.\n\niterations (number box):\nThe number of refinement passes of the approximate method, default 2, 0 or more. More passes, more accurate on big data; small data like the demo's is exact anyway.\n\nChanging either does not send by itself; the next points use it (here they are re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nU tensor out:\nFor each point, where it lies along each direction (divided by the spread). One row per point. Sent last.\n\nS tensor out:\nHow much the points spread along each direction, largest first.\n\nV tensor out:\nThe directions, one per COLUMN, each of length 1. Sent first. A direction and its opposite are the same axis, so signs may come out either way.\n\nREADING THE DEMO:\nmake_points sends 16 points in 2-D, lying along a line at 20 degrees whose middle sits at [0 3]. The top picture shows them as two rows (x on top, y below) for the 16 points. With center ON the first column of V is about [-0.94 -0.34] - the 20 degree line (sign flipped) - and S reads about 4.9 and 0.7: nearly all the spread is along the line. The bottom picture is U x S, each point's position along the two directions: the first row sweeps across, the second barely moves. Turn center OFF and the first direction swings round to about [-0.06 -1], pointing at the middle of the cloud, and S jumps to 12.2 - it is measuring distance from zero, not spread.\n\nRELATED:\nt.linalg.svd is the full decomposition this approximates (pca with center on is the svd of the centred points). t.linalg.eig of the points' covariance gives the same directions. np.mean takes the mean off by hand."
                 },
                 "3": {
                     "name": "p",
@@ -713,8 +713,8 @@
                     "name": "help_link",
                     "id": 903,
                     "position_x": 30,
-                    "position_y": 1030,
-                    "width": 90,
+                    "position_y": 1064,
+                    "width": 92,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -725,9 +725,9 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 166,
-                    "position_y": 1030,
-                    "width": 90,
+                    "position_x": 138,
+                    "position_y": 1064,
+                    "width": 92,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -738,8 +738,8 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 302,
-                    "position_y": 1030,
+                    "position_x": 246,
+                    "position_y": 1064,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -751,9 +751,9 @@
                 "21": {
                     "name": "help_link",
                     "id": 1014,
-                    "position_x": 399,
-                    "position_y": 1030,
-                    "width": 84,
+                    "position_x": 322,
+                    "position_y": 1064,
+                    "width": 85,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -765,8 +765,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1051,
-                    "position_x": 544,
-                    "position_y": 1074,
+                    "position_x": 30,
+                    "position_y": 1030,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -790,7 +790,7 @@
                     "name": "close",
                     "id": 1088,
                     "position_x": 24,
-                    "position_y": 1104,
+                    "position_y": 1138,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

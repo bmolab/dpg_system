@@ -1,5 +1,5 @@
 {
-    "height": 1268,
+    "height": 1302,
     "width": 1676,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Piles two arrays of the same shape on top of each other, along a NEW\naxis.\n\nThe result has one more dimension than the inputs, and the two arrays\nstay separate inside it: stacking two rows of 8 gives a 2 by 8 array -\nrow 0 is the first array, row 1 the second. Use it to turn two signals\ninto one two-row array, to pair up x and y lists, or to build a batch out\nof single frames.\n\nSTACK OR CONCATENATE?\nJoining two rows of 8 with np.concatenate gives ONE row of 16 - the\nsecond carries straight on from the first. With np.stack it gives 2 rows\nof 8, the originals kept side by side. Concatenate extends; stack layers.\nThe demo does both to the same two rows.\n\nSYNTAX:\nnp.stack <axis: int>\nDefault axis 0.\n\nEXAMPLE:\nnp.stack\n\nINPUTS and PARAMETERS:\n\nin:\nThe first array - row 0 of the result. Receiving it makes the node\nstack and send.\n\nin 2:\nThe second array. It is only stored, so it must arrive BEFORE in. It\nmust have exactly the same shape as the first; if it does not, a\nmessage naming both shapes is printed and nothing is sent.\n\naxis (menu, also an inlet):\nWhere the new axis goes. 0 (the default) puts it first: the arrays become\nthe rows (for 1-D inputs) or the layers (for 2-D inputs). The menu\nlists the inputs' axes plus one more, so the new axis can also go last:\nfor two rows of 8, axis 1 gives 8 rows of 2 - the two arrays become the\ncolumns. There is no None: np.stack has no flattened form.\n\nOUTPUTS:\n\nstack:\nThe stacked array, with one more dimension than the inputs.\n\nREADING THE DEMO:\nin is a ramp rising across 8 cells (drag stop on its np.linspace); in 2\nis the same ramp falling, made once when the patch opens. np.stack gives\na 2 by 8 picture - rising on top, falling below. np.concatenate of the\nsame two gives a single strip of 16. Keep steps at 8: the two must have\nthe same shape.\n\nRELATED:\nnp.concatenate joins along an existing axis. np.split cuts an array\napart. np.reshape can add an axis of length 1 to a single array. t.stack,\non the t.cat page, is the PyTorch version.",
+                    "value": "Piles two arrays of the same shape on top of each other, along a NEW axis.\n\nThe result has one more dimension than the inputs, and the two arrays stay separate inside it: stacking two rows of 8 gives a 2 by 8 array - row 0 is the first array, row 1 the second. Use it to turn two signals into one two-row array, to pair up x and y lists, or to build a batch out of single frames.\n\nSTACK OR CONCATENATE?\nJoining two rows of 8 with np.concatenate gives ONE row of 16 - the second carries straight on from the first. With np.stack it gives 2 rows of 8, the originals kept side by side. Concatenate extends; stack layers. The demo does both to the same two rows.\n\nSYNTAX:\nnp.stack <axis: int>\nDefault axis 0.\n\nEXAMPLE:\nnp.stack\n\nINPUTS and PARAMETERS:\n\nin:\nThe first array - row 0 of the result. Receiving it makes the node stack and send.\n\nin 2:\nThe second array. It is only stored, so it must arrive BEFORE in. It must have exactly the same shape as the first; if it does not, a message naming both shapes is printed and nothing is sent.\n\naxis (menu, also an inlet):\nWhere the new axis goes. 0 (the default) puts it first: the arrays become the rows (for 1-D inputs) or the layers (for 2-D inputs). The menu lists the inputs' axes plus one more, so the new axis can also go last: for two rows of 8, axis 1 gives 8 rows of 2 - the two arrays become the columns. There is no None: np.stack has no flattened form.\n\nOUTPUTS:\n\nstack:\nThe stacked array, with one more dimension than the inputs.\n\nREADING THE DEMO:\nin is a ramp rising across 8 cells (drag stop on its np.linspace); in 2 is the same ramp falling, made once when the patch opens. np.stack gives a 2 by 8 picture - rising on top, falling below. np.concatenate of the same two gives a single strip of 16. Keep steps at 8: the two must have the same shape.\n\nRELATED:\nnp.concatenate joins along an existing axis. np.split cuts an array apart. np.reshape can add an axis of length 1 to a single array. t.stack, on the t.cat page, is the PyTorch version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Piles two arrays of the same shape on top of each other, along a NEW\naxis.\n\nThe result has one more dimension than the inputs, and the two arrays\nstay separate inside it: stacking two rows of 8 gives a 2 by 8 array -\nrow 0 is the first array, row 1 the second. Use it to turn two signals\ninto one two-row array, to pair up x and y lists, or to build a batch out\nof single frames.\n\nSTACK OR CONCATENATE?\nJoining two rows of 8 with np.concatenate gives ONE row of 16 - the\nsecond carries straight on from the first. With np.stack it gives 2 rows\nof 8, the originals kept side by side. Concatenate extends; stack layers.\nThe demo does both to the same two rows.\n\nSYNTAX:\nnp.stack <axis: int>\nDefault axis 0.\n\nEXAMPLE:\nnp.stack\n\nINPUTS and PARAMETERS:\n\nin:\nThe first array - row 0 of the result. Receiving it makes the node\nstack and send.\n\nin 2:\nThe second array. It is only stored, so it must arrive BEFORE in. It\nmust have exactly the same shape as the first; if it does not, a\nmessage naming both shapes is printed and nothing is sent.\n\naxis (menu, also an inlet):\nWhere the new axis goes. 0 (the default) puts it first: the arrays become\nthe rows (for 1-D inputs) or the layers (for 2-D inputs). The menu\nlists the inputs' axes plus one more, so the new axis can also go last:\nfor two rows of 8, axis 1 gives 8 rows of 2 - the two arrays become the\ncolumns. There is no None: np.stack has no flattened form.\n\nOUTPUTS:\n\nstack:\nThe stacked array, with one more dimension than the inputs.\n\nREADING THE DEMO:\nin is a ramp rising across 8 cells (drag stop on its np.linspace); in 2\nis the same ramp falling, made once when the patch opens. np.stack gives\na 2 by 8 picture - rising on top, falling below. np.concatenate of the\nsame two gives a single strip of 16. Keep steps at 8: the two must have\nthe same shape.\n\nRELATED:\nnp.concatenate joins along an existing axis. np.split cuts an array\napart. np.reshape can add an axis of length 1 to a single array. t.stack,\non the t.cat page, is the PyTorch version."
+            "text": "Piles two arrays of the same shape on top of each other, along a NEW axis.\n\nThe result has one more dimension than the inputs, and the two arrays stay separate inside it: stacking two rows of 8 gives a 2 by 8 array - row 0 is the first array, row 1 the second. Use it to turn two signals into one two-row array, to pair up x and y lists, or to build a batch out of single frames.\n\nSTACK OR CONCATENATE?\nJoining two rows of 8 with np.concatenate gives ONE row of 16 - the second carries straight on from the first. With np.stack it gives 2 rows of 8, the originals kept side by side. Concatenate extends; stack layers. The demo does both to the same two rows.\n\nSYNTAX:\nnp.stack <axis: int>\nDefault axis 0.\n\nEXAMPLE:\nnp.stack\n\nINPUTS and PARAMETERS:\n\nin:\nThe first array - row 0 of the result. Receiving it makes the node stack and send.\n\nin 2:\nThe second array. It is only stored, so it must arrive BEFORE in. It must have exactly the same shape as the first; if it does not, a message naming both shapes is printed and nothing is sent.\n\naxis (menu, also an inlet):\nWhere the new axis goes. 0 (the default) puts it first: the arrays become the rows (for 1-D inputs) or the layers (for 2-D inputs). The menu lists the inputs' axes plus one more, so the new axis can also go last: for two rows of 8, axis 1 gives 8 rows of 2 - the two arrays become the columns. There is no None: np.stack has no flattened form.\n\nOUTPUTS:\n\nstack:\nThe stacked array, with one more dimension than the inputs.\n\nREADING THE DEMO:\nin is a ramp rising across 8 cells (drag stop on its np.linspace); in 2 is the same ramp falling, made once when the patch opens. np.stack gives a 2 by 8 picture - rising on top, falling below. np.concatenate of the same two gives a single strip of 16. Keep steps at 8: the two must have the same shape.\n\nRELATED:\nnp.concatenate joins along an existing axis. np.split cuts an array apart. np.reshape can add an axis of length 1 to a single array. t.stack, on the t.cat page, is the PyTorch version."
         },
         "3": {
             "name": "metro",
@@ -542,8 +542,8 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1090,
-            "width": 103,
+            "position_y": 1124,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -554,8 +554,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 181,
-            "position_y": 1090,
+            "position_x": 150,
+            "position_y": 1124,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -567,9 +567,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 286,
-            "position_y": 1090,
-            "width": 78,
+            "position_x": 232,
+            "position_y": 1124,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -580,9 +580,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 407,
-            "position_y": 1090,
-            "width": 47,
+            "position_x": 327,
+            "position_y": 1124,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -594,7 +594,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 584,
+            "position_x": 30,
             "position_y": 1090,
             "width": 156,
             "height": 30,
@@ -619,7 +619,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 1164,
+            "position_y": 1198,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 1092,
+    "height": 1126,
     "width": 1613,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Computes the n-th derivative of the digamma function for every element\nof a tensor.\n\nIt is used when fitting gamma, beta and Dirichlet distributions (n = 1, the\ntrigamma function, gives how certain such a fit is) and for sums of 1/(x + k)\nto a power, since polygamma(n, x) is a Hurwitz zeta value in disguise.\n\nTHE CURVE:\nn = 0 is digamma itself: a log-like rise, -0.577 at 1. n = 1 (trigamma) is\npositive and falling, pi squared over 6 (1.645) at 1. n = 2 is negative and\nrising towards 0 from -2.40. Each further n alternates in sign and grows\nroughly like n factorial near x = 1 (n = 3 gives 6.49, n = 4 gives -24.9),\nso for n of 3 or more the curve leaves the demo's plot range near the left.\n\nSYNTAX:\nt.special.polygamma\n\nThere is no argument: n starts at 0 and is set on the node.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately.\n\nn (int, also an inlet):\nWhich derivative of digamma: 0 is digamma, 1 trigamma, 2 tetragamma ...\nDefault 0, minimum 0. Changing it does not send by itself; the next tensor\nuses it.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape as the input.\n\nWHERE IT IS DEFINED:\nPositive x is the useful range. At 0 and the negative whole numbers every\norder is infinite (n = 0 gives minus infinity; higher n plus or minus).\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values from\n1 to 6, drawn in the upper plot. The lower plot is polygamma of order n of\neach, from -3 (bottom) to 3 (top). Drag n on the node to step through the\nderivatives; drag start and stop on t.linspace to look elsewhere (keep\nstart above 0).\n\nRELATED:\nt.special.digamma is order 0 on its own. t.special.gammaln is what digamma\nis the derivative of. t.special.zeta is the Hurwitz zeta function that the\nhigher orders are built from.",
+                    "value": "Computes the n-th derivative of the digamma function for every element of a tensor.\n\nIt is used when fitting gamma, beta and Dirichlet distributions (n = 1, the trigamma function, gives how certain such a fit is) and for sums of 1/(x + k) to a power, since polygamma(n, x) is a Hurwitz zeta value in disguise.\n\nTHE CURVE:\nn = 0 is digamma itself: a log-like rise, -0.577 at 1. n = 1 (trigamma) is positive and falling, pi squared over 6 (1.645) at 1. n = 2 is negative and rising towards 0 from -2.40. Each further n alternates in sign and grows roughly like n factorial near x = 1 (n = 3 gives 6.49, n = 4 gives -24.9), so for n of 3 or more the curve leaves the demo's plot range near the left.\n\nSYNTAX:\nt.special.polygamma\n\nThere is no argument: n starts at 0 and is set on the node.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately.\n\nn (int, also an inlet):\nWhich derivative of digamma: 0 is digamma, 1 trigamma, 2 tetragamma ... Default 0, minimum 0. Changing it does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape as the input.\n\nWHERE IT IS DEFINED:\nPositive x is the useful range. At 0 and the negative whole numbers every order is infinite (n = 0 gives minus infinity; higher n plus or minus).\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values from 1 to 6, drawn in the upper plot. The lower plot is polygamma of order n of each, from -3 (bottom) to 3 (top). Drag n on the node to step through the derivatives; drag start and stop on t.linspace to look elsewhere (keep start above 0).\n\nRELATED:\nt.special.digamma is order 0 on its own. t.special.gammaln is what digamma is the derivative of. t.special.zeta is the Hurwitz zeta function that the higher orders are built from.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Computes the n-th derivative of the digamma function for every element\nof a tensor.\n\nIt is used when fitting gamma, beta and Dirichlet distributions (n = 1, the\ntrigamma function, gives how certain such a fit is) and for sums of 1/(x + k)\nto a power, since polygamma(n, x) is a Hurwitz zeta value in disguise.\n\nTHE CURVE:\nn = 0 is digamma itself: a log-like rise, -0.577 at 1. n = 1 (trigamma) is\npositive and falling, pi squared over 6 (1.645) at 1. n = 2 is negative and\nrising towards 0 from -2.40. Each further n alternates in sign and grows\nroughly like n factorial near x = 1 (n = 3 gives 6.49, n = 4 gives -24.9),\nso for n of 3 or more the curve leaves the demo's plot range near the left.\n\nSYNTAX:\nt.special.polygamma\n\nThere is no argument: n starts at 0 and is set on the node.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately.\n\nn (int, also an inlet):\nWhich derivative of digamma: 0 is digamma, 1 trigamma, 2 tetragamma ...\nDefault 0, minimum 0. Changing it does not send by itself; the next tensor\nuses it.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape as the input.\n\nWHERE IT IS DEFINED:\nPositive x is the useful range. At 0 and the negative whole numbers every\norder is infinite (n = 0 gives minus infinity; higher n plus or minus).\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values from\n1 to 6, drawn in the upper plot. The lower plot is polygamma of order n of\neach, from -3 (bottom) to 3 (top). Drag n on the node to step through the\nderivatives; drag start and stop on t.linspace to look elsewhere (keep\nstart above 0).\n\nRELATED:\nt.special.digamma is order 0 on its own. t.special.gammaln is what digamma\nis the derivative of. t.special.zeta is the Hurwitz zeta function that the\nhigher orders are built from."
+            "text": "Computes the n-th derivative of the digamma function for every element of a tensor.\n\nIt is used when fitting gamma, beta and Dirichlet distributions (n = 1, the trigamma function, gives how certain such a fit is) and for sums of 1/(x + k) to a power, since polygamma(n, x) is a Hurwitz zeta value in disguise.\n\nTHE CURVE:\nn = 0 is digamma itself: a log-like rise, -0.577 at 1. n = 1 (trigamma) is positive and falling, pi squared over 6 (1.645) at 1. n = 2 is negative and rising towards 0 from -2.40. Each further n alternates in sign and grows roughly like n factorial near x = 1 (n = 3 gives 6.49, n = 4 gives -24.9), so for n of 3 or more the curve leaves the demo's plot range near the left.\n\nSYNTAX:\nt.special.polygamma\n\nThere is no argument: n starts at 0 and is set on the node.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately.\n\nn (int, also an inlet):\nWhich derivative of digamma: 0 is digamma, 1 trigamma, 2 tetragamma ... Default 0, minimum 0. Changing it does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape as the input.\n\nWHERE IT IS DEFINED:\nPositive x is the useful range. At 0 and the negative whole numbers every order is infinite (n = 0 gives minus infinity; higher n plus or minus).\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values from 1 to 6, drawn in the upper plot. The lower plot is polygamma of order n of each, from -3 (bottom) to 3 (top). Drag n on the node to step through the derivatives; drag start and stop on t.linspace to look elsewhere (keep start above 0).\n\nRELATED:\nt.special.digamma is order 0 on its own. t.special.gammaln is what digamma is the derivative of. t.special.zeta is the Hurwitz zeta function that the higher orders are built from."
         },
         "3": {
             "name": "metro",
@@ -438,8 +438,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 870,
-            "width": 121,
+            "position_y": 904,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -450,9 +450,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 204,
-            "position_y": 870,
-            "width": 121,
+            "position_x": 169,
+            "position_y": 904,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -463,9 +463,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 378,
-            "position_y": 870,
-            "width": 103,
+            "position_x": 308,
+            "position_y": 904,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -477,7 +477,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 914,
+            "position_y": 948,
             "width": 152,
             "height": 44,
             "visibility": "show_all",
@@ -490,8 +490,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 507,
-            "position_y": 914,
+            "position_x": 30,
+            "position_y": 870,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -515,7 +515,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 988,
+            "position_y": 1022,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

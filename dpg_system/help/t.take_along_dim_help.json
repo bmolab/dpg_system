@@ -1,5 +1,5 @@
 {
-    "height": 1398,
+    "height": 1432,
     "width": 1975,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Takes a DIFFERENT position from each row (or column), using a tensor of positions shaped like the input.\n\nThe other selectors take the same positions from every row. This one\nreads its indices row by row: row 0 of the result is taken from row 0 of\nthe input at the positions in row 0 of the indices, and so on. It is the\npartner of the nodes that MAKE such positions - t.argsort, t.argmax:\n\n  t.argsort 1, then t.take_along_dim 1 with the same tensor, sorts each\n  row (that is the demo).\n  Feed the indices from one tensor and the values from ANOTHER, and you\n  reorder the second by the first - \"sort the angles by the speeds\", or\n  \"the angle of each joint at the moment it was fastest\".\n\nSYNTAX:\nt.take_along_dim <dim: int>\nDefault dim 0. The dim box is always shown.\n\nEXAMPLE:\nt.take_along_dim 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values (a list or numpy array is converted to a float32 tensor).\nSends on arrival. This is the only inlet that sends.\n\nindices in:\nThe positions, as whole numbers, with the SAME NUMBER OF DIMENSIONS as\nthe input. Along dim they may be any length (that is how many values\neach row gives); along every other dimension they must match the input\nor be 1 (a single row of indices then applies to every row). t.argmax 1\nremoves the dimension it worked along - put it back with t.unsqueeze 1\nbefore using it here. Wrong shapes print an error in the console and\nnothing is sent. This inlet is cold: send the indices FIRST. Nothing is\nsent until indices have arrived.\n\ndim (int box, also an inlet):\nWhich dimension the positions run along: 1 positions within each row, 0\npositions within each column. Negative counts from the end (-1 is the\nlast dimension, so on a matrix -1 is 1 and -2 is 0). A dimension the\ntensor does not have sends nothing.\n\nOUTPUTS:\n\noutput:\nThe values taken, shaped like the indices.\n\nREADING THE DEMO:\nClick t.rand for a fresh 6 x 8 tensor; var holds it and the metro\nre-sends it ten times a second. t.argsort 1 gives, for each row, the\ncolumn of its smallest value, then the next smallest, and so on - the\nmiddle heat_map, numbered 0 to 7, different in every row. t.take_along_dim\n1 reads each row at its own positions, so every row of the result runs\ndark to bright. Tick descending on t.argsort and the rows run bright to\ndark instead.\n\nRELATED:\nt.take uses flat positions. t.index_select takes the same positions from\nevery row. t.argsort and t.argmax make the positions. np.argsort is the\nnumpy argsort; numpy's np.[] cannot take a different position per row.",
+                    "value": "Takes a DIFFERENT position from each row (or column), using a tensor of positions shaped like the input.\n\nThe other selectors take the same positions from every row. This one reads its indices row by row: row 0 of the result is taken from row 0 of the input at the positions in row 0 of the indices, and so on. It is the partner of the nodes that MAKE such positions - t.argsort, t.argmax:\n\n  t.argsort 1, then t.take_along_dim 1 with the same tensor, sorts each\n  row (that is the demo).\n  Feed the indices from one tensor and the values from ANOTHER, and you\n  reorder the second by the first - \"sort the angles by the speeds\", or\n  \"the angle of each joint at the moment it was fastest\".\n\nSYNTAX:\nt.take_along_dim <dim: int>\nDefault dim 0. The dim box is always shown.\n\nEXAMPLE:\nt.take_along_dim 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values (a list or numpy array is converted to a float32 tensor). Sends on arrival. This is the only inlet that sends.\n\nindices in:\nThe positions, as whole numbers, with the SAME NUMBER OF DIMENSIONS as the input. Along dim they may be any length (that is how many values each row gives); along every other dimension they must match the input or be 1 (a single row of indices then applies to every row). t.argmax 1 removes the dimension it worked along - put it back with t.unsqueeze 1 before using it here. Wrong shapes print an error in the console and nothing is sent. This inlet is cold: send the indices FIRST. Nothing is sent until indices have arrived.\n\ndim (int box, also an inlet):\nWhich dimension the positions run along: 1 positions within each row, 0 positions within each column. Negative counts from the end (-1 is the last dimension, so on a matrix -1 is 1 and -2 is 0). A dimension the tensor does not have sends nothing.\n\nOUTPUTS:\n\noutput:\nThe values taken, shaped like the indices.\n\nREADING THE DEMO:\nClick t.rand for a fresh 6 x 8 tensor; var holds it and the metro re-sends it ten times a second. t.argsort 1 gives, for each row, the column of its smallest value, then the next smallest, and so on - the middle heat_map, numbered 0 to 7, different in every row. t.take_along_dim 1 reads each row at its own positions, so every row of the result runs dark to bright. Tick descending on t.argsort and the rows run bright to dark instead.\n\nRELATED:\nt.take uses flat positions. t.index_select takes the same positions from every row. t.argsort and t.argmax make the positions. np.argsort is the numpy argsort; numpy's np.[] cannot take a different position per row.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Takes a DIFFERENT position from each row (or column), using a tensor of positions shaped like the input.\n\nThe other selectors take the same positions from every row. This one\nreads its indices row by row: row 0 of the result is taken from row 0 of\nthe input at the positions in row 0 of the indices, and so on. It is the\npartner of the nodes that MAKE such positions - t.argsort, t.argmax:\n\n  t.argsort 1, then t.take_along_dim 1 with the same tensor, sorts each\n  row (that is the demo).\n  Feed the indices from one tensor and the values from ANOTHER, and you\n  reorder the second by the first - \"sort the angles by the speeds\", or\n  \"the angle of each joint at the moment it was fastest\".\n\nSYNTAX:\nt.take_along_dim <dim: int>\nDefault dim 0. The dim box is always shown.\n\nEXAMPLE:\nt.take_along_dim 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values (a list or numpy array is converted to a float32 tensor).\nSends on arrival. This is the only inlet that sends.\n\nindices in:\nThe positions, as whole numbers, with the SAME NUMBER OF DIMENSIONS as\nthe input. Along dim they may be any length (that is how many values\neach row gives); along every other dimension they must match the input\nor be 1 (a single row of indices then applies to every row). t.argmax 1\nremoves the dimension it worked along - put it back with t.unsqueeze 1\nbefore using it here. Wrong shapes print an error in the console and\nnothing is sent. This inlet is cold: send the indices FIRST. Nothing is\nsent until indices have arrived.\n\ndim (int box, also an inlet):\nWhich dimension the positions run along: 1 positions within each row, 0\npositions within each column. Negative counts from the end (-1 is the\nlast dimension, so on a matrix -1 is 1 and -2 is 0). A dimension the\ntensor does not have sends nothing.\n\nOUTPUTS:\n\noutput:\nThe values taken, shaped like the indices.\n\nREADING THE DEMO:\nClick t.rand for a fresh 6 x 8 tensor; var holds it and the metro\nre-sends it ten times a second. t.argsort 1 gives, for each row, the\ncolumn of its smallest value, then the next smallest, and so on - the\nmiddle heat_map, numbered 0 to 7, different in every row. t.take_along_dim\n1 reads each row at its own positions, so every row of the result runs\ndark to bright. Tick descending on t.argsort and the rows run bright to\ndark instead.\n\nRELATED:\nt.take uses flat positions. t.index_select takes the same positions from\nevery row. t.argsort and t.argmax make the positions. np.argsort is the\nnumpy argsort; numpy's np.[] cannot take a different position per row."
+            "text": "Takes a DIFFERENT position from each row (or column), using a tensor of positions shaped like the input.\n\nThe other selectors take the same positions from every row. This one reads its indices row by row: row 0 of the result is taken from row 0 of the input at the positions in row 0 of the indices, and so on. It is the partner of the nodes that MAKE such positions - t.argsort, t.argmax:\n\n  t.argsort 1, then t.take_along_dim 1 with the same tensor, sorts each\n  row (that is the demo).\n  Feed the indices from one tensor and the values from ANOTHER, and you\n  reorder the second by the first - \"sort the angles by the speeds\", or\n  \"the angle of each joint at the moment it was fastest\".\n\nSYNTAX:\nt.take_along_dim <dim: int>\nDefault dim 0. The dim box is always shown.\n\nEXAMPLE:\nt.take_along_dim 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe values (a list or numpy array is converted to a float32 tensor). Sends on arrival. This is the only inlet that sends.\n\nindices in:\nThe positions, as whole numbers, with the SAME NUMBER OF DIMENSIONS as the input. Along dim they may be any length (that is how many values each row gives); along every other dimension they must match the input or be 1 (a single row of indices then applies to every row). t.argmax 1 removes the dimension it worked along - put it back with t.unsqueeze 1 before using it here. Wrong shapes print an error in the console and nothing is sent. This inlet is cold: send the indices FIRST. Nothing is sent until indices have arrived.\n\ndim (int box, also an inlet):\nWhich dimension the positions run along: 1 positions within each row, 0 positions within each column. Negative counts from the end (-1 is the last dimension, so on a matrix -1 is 1 and -2 is 0). A dimension the tensor does not have sends nothing.\n\nOUTPUTS:\n\noutput:\nThe values taken, shaped like the indices.\n\nREADING THE DEMO:\nClick t.rand for a fresh 6 x 8 tensor; var holds it and the metro re-sends it ten times a second. t.argsort 1 gives, for each row, the column of its smallest value, then the next smallest, and so on - the middle heat_map, numbered 0 to 7, different in every row. t.take_along_dim 1 reads each row at its own positions, so every row of the result runs dark to bright. Tick descending on t.argsort and the rows run bright to dark instead.\n\nRELATED:\nt.take uses flat positions. t.index_select takes the same positions from every row. t.argsort and t.argmax make the positions. np.argsort is the numpy argsort; numpy's np.[] cannot take a different position per row."
         },
         "3": {
             "name": "load_bang",
@@ -530,8 +530,8 @@
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 1220,
-            "width": 53,
+            "position_y": 1254,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -542,9 +542,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 120,
-            "position_y": 1220,
-            "width": 103,
+            "position_x": 100,
+            "position_y": 1254,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -555,9 +555,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 271,
-            "position_y": 1220,
-            "width": 72,
+            "position_x": 220,
+            "position_y": 1254,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -568,8 +568,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 384,
-            "position_y": 1220,
+            "position_x": 309,
+            "position_y": 1254,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -581,9 +581,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 489,
-            "position_y": 1220,
-            "width": 78,
+            "position_x": 391,
+            "position_y": 1254,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -595,7 +595,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1088,
-            "position_x": 754,
+            "position_x": 30,
             "position_y": 1220,
             "width": 156,
             "height": 30,
@@ -620,7 +620,7 @@
             "name": "close",
             "id": 1125,
             "position_x": 24,
-            "position_y": 1294,
+            "position_y": 1328,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

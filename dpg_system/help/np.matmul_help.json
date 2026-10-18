@@ -419,7 +419,7 @@
             }
         },
         "2": {
-            "height": 1188,
+            "height": 1222,
             "width": 1769,
             "position": [
                 100,
@@ -486,7 +486,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Multiplies two matrices: each value of the result is a row of in 1\ndotted with a column of in 2.\n\nThis is how a matrix is APPLIED. A matrix times a set of points moves\nthe points (turns, stretches, shears them); two transformation matrices\nmultiplied together make one matrix that does both. In the result, row\ni column j is row i of in 1 times column j of in 2, added up - so each\ncolumn of the result is a MIX of in 1's columns, in the proportions\ngiven by that column of in 2.\n\nTHE SHAPES MUST FIT:\n(rows x n) times (n x columns) gives (rows x columns): the columns of in\n1 must equal the rows of in 2, or an error is printed and nothing is\nsent. Order matters - in 1 x in 2 is generally not in 2 x in 1, and may\nnot even fit. A 1-D list is treated as a single vector: on the left it\nis a row, on the right a column, and that dimension is dropped from the\nresult. Stacks of matrices (3-D arrays) are multiplied pair by pair.\nPlain numbers are refused - use * to scale.\n\nSYNTAX:\nnp.matmul\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe left matrix (a list of lists is turned into an array). Receiving it\ncalculates and sends.\n\nin 2:\nThe right matrix. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has.\n\nOUTPUTS:\n\nmat mul result:\nThe product.\n\nREADING THE DEMO:\nin 1 is the F, 7 by 6 (made in make_F). in 2 is a 6 x 6 matrix with a\nsingle 1 in each column: the identity matrix (from make_identity),\nrolled sideways by np.roll. Column j of the result takes the column of\nthe F that column j of the matrix has its 1 in. At shifts 0 the matrix\nis the identity and the F comes out unchanged; step shifts and the\ndiagonal of 1s slides over, and the F slides with it, wrapping round.\nThe (7 x 6) times (6 x 6) gives 7 x 6 again. Any 6 x 6 matrix would do:\na column holding 0.5 and 0.5 would blend two columns of the F.\n\nRELATED:\nnp.dot does the same for 2-D arrays. np.linalg.inv gives the matrix that\nundoes another (their product is the identity). np.transpose swaps rows\nand columns, often needed to make shapes fit. np.outer is the product of\na column and a row. np.roll, used here to build the matrix, does the\nsame shift directly.",
+                            "value": "Multiplies two matrices: each value of the result is a row of in 1 dotted with a column of in 2.\n\nThis is how a matrix is APPLIED. A matrix times a set of points moves the points (turns, stretches, shears them); two transformation matrices multiplied together make one matrix that does both. In the result, row i column j is row i of in 1 times column j of in 2, added up - so each column of the result is a MIX of in 1's columns, in the proportions given by that column of in 2.\n\nTHE SHAPES MUST FIT:\n(rows x n) times (n x columns) gives (rows x columns): the columns of in 1 must equal the rows of in 2, or an error is printed and nothing is sent. Order matters - in 1 x in 2 is generally not in 2 x in 1, and may not even fit. A 1-D list is treated as a single vector: on the left it is a row, on the right a column, and that dimension is dropped from the result. Stacks of matrices (3-D arrays) are multiplied pair by pair. Plain numbers are refused - use * to scale.\n\nSYNTAX:\nnp.matmul\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe left matrix (a list of lists is turned into an array). Receiving it calculates and sends.\n\nin 2:\nThe right matrix. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has.\n\nOUTPUTS:\n\nmat mul result:\nThe product.\n\nREADING THE DEMO:\nin 1 is the F, 7 by 6 (made in make_F). in 2 is a 6 x 6 matrix with a single 1 in each column: the identity matrix (from make_identity), rolled sideways by np.roll. Column j of the result takes the column of the F that column j of the matrix has its 1 in. At shifts 0 the matrix is the identity and the F comes out unchanged; step shifts and the diagonal of 1s slides over, and the F slides with it, wrapping round. The (7 x 6) times (6 x 6) gives 7 x 6 again. Any 6 x 6 matrix would do: a column holding 0.5 and 0.5 would blend two columns of the F.\n\nRELATED:\nnp.dot does the same for 2-D arrays. np.linalg.inv gives the matrix that undoes another (their product is the identity). np.transpose swaps rows and columns, often needed to make shapes fit. np.outer is the product of a column and a row. np.roll, used here to build the matrix, does the same shift directly.",
                             "value_type": "str"
                         },
                         "1": {
@@ -510,7 +510,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Multiplies two matrices: each value of the result is a row of in 1\ndotted with a column of in 2.\n\nThis is how a matrix is APPLIED. A matrix times a set of points moves\nthe points (turns, stretches, shears them); two transformation matrices\nmultiplied together make one matrix that does both. In the result, row\ni column j is row i of in 1 times column j of in 2, added up - so each\ncolumn of the result is a MIX of in 1's columns, in the proportions\ngiven by that column of in 2.\n\nTHE SHAPES MUST FIT:\n(rows x n) times (n x columns) gives (rows x columns): the columns of in\n1 must equal the rows of in 2, or an error is printed and nothing is\nsent. Order matters - in 1 x in 2 is generally not in 2 x in 1, and may\nnot even fit. A 1-D list is treated as a single vector: on the left it\nis a row, on the right a column, and that dimension is dropped from the\nresult. Stacks of matrices (3-D arrays) are multiplied pair by pair.\nPlain numbers are refused - use * to scale.\n\nSYNTAX:\nnp.matmul\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe left matrix (a list of lists is turned into an array). Receiving it\ncalculates and sends.\n\nin 2:\nThe right matrix. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has.\n\nOUTPUTS:\n\nmat mul result:\nThe product.\n\nREADING THE DEMO:\nin 1 is the F, 7 by 6 (made in make_F). in 2 is a 6 x 6 matrix with a\nsingle 1 in each column: the identity matrix (from make_identity),\nrolled sideways by np.roll. Column j of the result takes the column of\nthe F that column j of the matrix has its 1 in. At shifts 0 the matrix\nis the identity and the F comes out unchanged; step shifts and the\ndiagonal of 1s slides over, and the F slides with it, wrapping round.\nThe (7 x 6) times (6 x 6) gives 7 x 6 again. Any 6 x 6 matrix would do:\na column holding 0.5 and 0.5 would blend two columns of the F.\n\nRELATED:\nnp.dot does the same for 2-D arrays. np.linalg.inv gives the matrix that\nundoes another (their product is the identity). np.transpose swaps rows\nand columns, often needed to make shapes fit. np.outer is the product of\na column and a row. np.roll, used here to build the matrix, does the\nsame shift directly."
+                    "text": "Multiplies two matrices: each value of the result is a row of in 1 dotted with a column of in 2.\n\nThis is how a matrix is APPLIED. A matrix times a set of points moves the points (turns, stretches, shears them); two transformation matrices multiplied together make one matrix that does both. In the result, row i column j is row i of in 1 times column j of in 2, added up - so each column of the result is a MIX of in 1's columns, in the proportions given by that column of in 2.\n\nTHE SHAPES MUST FIT:\n(rows x n) times (n x columns) gives (rows x columns): the columns of in 1 must equal the rows of in 2, or an error is printed and nothing is sent. Order matters - in 1 x in 2 is generally not in 2 x in 1, and may not even fit. A 1-D list is treated as a single vector: on the left it is a row, on the right a column, and that dimension is dropped from the result. Stacks of matrices (3-D arrays) are multiplied pair by pair. Plain numbers are refused - use * to scale.\n\nSYNTAX:\nnp.matmul\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe left matrix (a list of lists is turned into an array). Receiving it calculates and sends.\n\nin 2:\nThe right matrix. It is only stored, so it must arrive BEFORE in 1;\nnothing is sent until it has.\n\nOUTPUTS:\n\nmat mul result:\nThe product.\n\nREADING THE DEMO:\nin 1 is the F, 7 by 6 (made in make_F). in 2 is a 6 x 6 matrix with a single 1 in each column: the identity matrix (from make_identity), rolled sideways by np.roll. Column j of the result takes the column of the F that column j of the matrix has its 1 in. At shifts 0 the matrix is the identity and the F comes out unchanged; step shifts and the diagonal of 1s slides over, and the F slides with it, wrapping round. The (7 x 6) times (6 x 6) gives 7 x 6 again. Any 6 x 6 matrix would do: a column holding 0.5 and 0.5 would blend two columns of the F.\n\nRELATED:\nnp.dot does the same for 2-D arrays. np.linalg.inv gives the matrix that undoes another (their product is the identity). np.transpose swaps rows and columns, often needed to make shapes fit. np.outer is the product of a column and a row. np.roll, used here to build the matrix, does the same shift directly."
                 },
                 "3": {
                     "name": "p",
@@ -849,8 +849,8 @@
                     "name": "help_link",
                     "id": 792,
                     "position_x": 30,
-                    "position_y": 1010,
-                    "width": 53,
+                    "position_y": 1044,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -861,9 +861,9 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 120,
-                    "position_y": 1010,
-                    "width": 96,
+                    "position_x": 100,
+                    "position_y": 1044,
+                    "width": 98,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -874,9 +874,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 264,
-                    "position_y": 1010,
-                    "width": 90,
+                    "position_x": 214,
+                    "position_y": 1044,
+                    "width": 92,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -887,8 +887,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 400,
-                    "position_y": 1010,
+                    "position_x": 322,
+                    "position_y": 1044,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -900,8 +900,8 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 505,
-                    "position_y": 1010,
+                    "position_x": 404,
+                    "position_y": 1044,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -914,7 +914,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 977,
-                    "position_x": 591,
+                    "position_x": 30,
                     "position_y": 1010,
                     "width": 156,
                     "height": 30,
@@ -939,7 +939,7 @@
                     "name": "close",
                     "id": 1014,
                     "position_x": 24,
-                    "position_y": 1084,
+                    "position_y": 1118,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

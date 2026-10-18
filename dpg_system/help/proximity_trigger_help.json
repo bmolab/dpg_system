@@ -221,7 +221,7 @@
             }
         },
         "1": {
-            "height": 1366,
+            "height": 1400,
             "width": 1661,
             "position": [
                 100,
@@ -288,7 +288,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Fires an event when its input arrives near a stored target, and\ncounts the arrivals.\n\nIt turns \"how far is it\" into \"it got there\": when the distance from the\ninput to the target drops below threshold, state sends true and count\ngoes up by one. It cannot fire again until the input has gone further\naway than release_threshold, when state sends false. Use it to trigger a\ncue when a dancer's hand reaches a spot, or to count how often a tracked\npoint visits a place.\n\nTWO THRESHOLDS:\nThe gap between threshold and release_threshold is hysteresis, the same\nidea as the hysteresis node: without it, a hand hovering at the boundary\nwould fire over and over as tracking noise carries it back and forth.\nKeep release_threshold larger than threshold; if it is smaller, the\ntrigger releases on the very next input and re-fires while you stay\nnear.\n\nSYNTAX:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as a list or array of any length. Every input is\nmeasured against the target. The node does nothing at all until a\ntarget is set and arm is ticked. An input whose shape does not fit the\ntarget sends nothing.\n\narm (checkbox):\nSwitches the trigger on. It starts OFF, and while it is off nothing is\nmeasured or sent. Ticking or unticking it also sets the count back to\n0 and sends that 0 from count.\n\nreset_count (button):\nSets the count back to 0 and sends the 0 from count at once.\n\nset target (button):\nCaptures whatever was last received at input as the target. The target\nis saved with the patch - this page opens with 0.5 0.7.\n\nthreshold (drag float, default 0.3):\nHow close counts as arrived. Strictly closer than this fires.\n\nrelease_threshold (drag float, default 0.5):\nHow far it must go (this far or further) before it can fire again.\n\naxis (menu, also an inlet):\nOnly matters when the input holds several positions, one per row. With\nNone (the default) the whole difference is one distance. With 1 each row\nhas its own distance, and the NEAREST decides: any row inside threshold\nfires, and it releases only when every row is past release_threshold.\n\nOUTPUTS:\n\nstate:\ntrue on arrival, false on release - sent only when it changes.\n\ncount:\nHow many arrivals since the count was last reset, sent on each arrival\nand on each reset.\n\nproximity:\nDespite its name, the DISTANCE to the target, sent on every input while\narmed (one per row with axis 1). It gets smaller as you approach, and is\n0 at the target.\n\nREADING THE DEMO:\nmake_point moves an x y point around the square from -1 to 1. The plot\nshows its distance from the target 0.5 0.7, with two flat lines at 0.3\nand 0.5 - the thresholds as saved. Each time the curve dips below the\nlower line the toggle turns on and the count goes up; the toggle turns\noff only when the curve climbs back past the upper line. The point\narrives about every three seconds. Drag the thresholds on the node (the\nlines stay at the saved values), or click set target to move the target.\n\nRELATED:\nnp.distance_from_target sends the same distance without the event.\nnp.proximity_to_target grades closeness to several targets from 0 to 1.\ntrigger and hysteresis do the same two-threshold firing on a single\nnumber.",
+                            "value": "Fires an event when its input arrives near a stored target, and counts the arrivals.\n\nIt turns \"how far is it\" into \"it got there\": when the distance from the input to the target drops below threshold, state sends true and count goes up by one. It cannot fire again until the input has gone further away than release_threshold, when state sends false. Use it to trigger a cue when a dancer's hand reaches a spot, or to count how often a tracked point visits a place.\n\nTWO THRESHOLDS:\nThe gap between threshold and release_threshold is hysteresis, the same idea as the hysteresis node: without it, a hand hovering at the boundary would fire over and over as tracking noise carries it back and forth. Keep release_threshold larger than threshold; if it is smaller, the trigger releases on the very next input and re-fires while you stay near.\n\nSYNTAX:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as a list or array of any length. Every input is measured against the target. The node does nothing at all until a target is set and arm is ticked. An input whose shape does not fit the target sends nothing.\n\narm (checkbox):\nSwitches the trigger on. It starts OFF, and while it is off nothing is measured or sent. Ticking or unticking it also sets the count back to 0 and sends that 0 from count.\n\nreset_count (button):\nSets the count back to 0 and sends the 0 from count at once.\n\nset target (button):\nCaptures whatever was last received at input as the target. The target is saved with the patch - this page opens with 0.5 0.7.\n\nthreshold (drag float, default 0.3):\nHow close counts as arrived. Strictly closer than this fires.\n\nrelease_threshold (drag float, default 0.5):\nHow far it must go (this far or further) before it can fire again.\n\naxis (menu, also an inlet):\nOnly matters when the input holds several positions, one per row. With None (the default) the whole difference is one distance. With 1 each row has its own distance, and the NEAREST decides: any row inside threshold fires, and it releases only when every row is past release_threshold.\n\nOUTPUTS:\n\nstate:\ntrue on arrival, false on release - sent only when it changes.\n\ncount:\nHow many arrivals since the count was last reset, sent on each arrival and on each reset.\n\nproximity:\nDespite its name, the DISTANCE to the target, sent on every input while armed (one per row with axis 1). It gets smaller as you approach, and is 0 at the target.\n\nREADING THE DEMO:\nmake_point moves an x y point around the square from -1 to 1. The plot shows its distance from the target 0.5 0.7, with two flat lines at 0.3 and 0.5 - the thresholds as saved. Each time the curve dips below the lower line the toggle turns on and the count goes up; the toggle turns off only when the curve climbs back past the upper line. The point arrives about every three seconds. Drag the thresholds on the node (the lines stay at the saved values), or click set target to move the target.\n\nRELATED:\nnp.distance_from_target sends the same distance without the event. np.proximity_to_target grades closeness to several targets from 0 to 1. trigger and hysteresis do the same two-threshold firing on a single number.",
                             "value_type": "str"
                         },
                         "1": {
@@ -312,7 +312,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Fires an event when its input arrives near a stored target, and\ncounts the arrivals.\n\nIt turns \"how far is it\" into \"it got there\": when the distance from the\ninput to the target drops below threshold, state sends true and count\ngoes up by one. It cannot fire again until the input has gone further\naway than release_threshold, when state sends false. Use it to trigger a\ncue when a dancer's hand reaches a spot, or to count how often a tracked\npoint visits a place.\n\nTWO THRESHOLDS:\nThe gap between threshold and release_threshold is hysteresis, the same\nidea as the hysteresis node: without it, a hand hovering at the boundary\nwould fire over and over as tracking noise carries it back and forth.\nKeep release_threshold larger than threshold; if it is smaller, the\ntrigger releases on the very next input and re-fires while you stay\nnear.\n\nSYNTAX:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as a list or array of any length. Every input is\nmeasured against the target. The node does nothing at all until a\ntarget is set and arm is ticked. An input whose shape does not fit the\ntarget sends nothing.\n\narm (checkbox):\nSwitches the trigger on. It starts OFF, and while it is off nothing is\nmeasured or sent. Ticking or unticking it also sets the count back to\n0 and sends that 0 from count.\n\nreset_count (button):\nSets the count back to 0 and sends the 0 from count at once.\n\nset target (button):\nCaptures whatever was last received at input as the target. The target\nis saved with the patch - this page opens with 0.5 0.7.\n\nthreshold (drag float, default 0.3):\nHow close counts as arrived. Strictly closer than this fires.\n\nrelease_threshold (drag float, default 0.5):\nHow far it must go (this far or further) before it can fire again.\n\naxis (menu, also an inlet):\nOnly matters when the input holds several positions, one per row. With\nNone (the default) the whole difference is one distance. With 1 each row\nhas its own distance, and the NEAREST decides: any row inside threshold\nfires, and it releases only when every row is past release_threshold.\n\nOUTPUTS:\n\nstate:\ntrue on arrival, false on release - sent only when it changes.\n\ncount:\nHow many arrivals since the count was last reset, sent on each arrival\nand on each reset.\n\nproximity:\nDespite its name, the DISTANCE to the target, sent on every input while\narmed (one per row with axis 1). It gets smaller as you approach, and is\n0 at the target.\n\nREADING THE DEMO:\nmake_point moves an x y point around the square from -1 to 1. The plot\nshows its distance from the target 0.5 0.7, with two flat lines at 0.3\nand 0.5 - the thresholds as saved. Each time the curve dips below the\nlower line the toggle turns on and the count goes up; the toggle turns\noff only when the curve climbs back past the upper line. The point\narrives about every three seconds. Drag the thresholds on the node (the\nlines stay at the saved values), or click set target to move the target.\n\nRELATED:\nnp.distance_from_target sends the same distance without the event.\nnp.proximity_to_target grades closeness to several targets from 0 to 1.\ntrigger and hysteresis do the same two-threshold firing on a single\nnumber."
+                    "text": "Fires an event when its input arrives near a stored target, and counts the arrivals.\n\nIt turns \"how far is it\" into \"it got there\": when the distance from the input to the target drops below threshold, state sends true and count goes up by one. It cannot fire again until the input has gone further away than release_threshold, when state sends false. Use it to trigger a cue when a dancer's hand reaches a spot, or to count how often a tracked point visits a place.\n\nTWO THRESHOLDS:\nThe gap between threshold and release_threshold is hysteresis, the same idea as the hysteresis node: without it, a hand hovering at the boundary would fire over and over as tracking noise carries it back and forth. Keep release_threshold larger than threshold; if it is smaller, the trigger releases on the very next input and re-fires while you stay near.\n\nSYNTAX:\nproximity_trigger\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as a list or array of any length. Every input is measured against the target. The node does nothing at all until a target is set and arm is ticked. An input whose shape does not fit the target sends nothing.\n\narm (checkbox):\nSwitches the trigger on. It starts OFF, and while it is off nothing is measured or sent. Ticking or unticking it also sets the count back to 0 and sends that 0 from count.\n\nreset_count (button):\nSets the count back to 0 and sends the 0 from count at once.\n\nset target (button):\nCaptures whatever was last received at input as the target. The target is saved with the patch - this page opens with 0.5 0.7.\n\nthreshold (drag float, default 0.3):\nHow close counts as arrived. Strictly closer than this fires.\n\nrelease_threshold (drag float, default 0.5):\nHow far it must go (this far or further) before it can fire again.\n\naxis (menu, also an inlet):\nOnly matters when the input holds several positions, one per row. With None (the default) the whole difference is one distance. With 1 each row has its own distance, and the NEAREST decides: any row inside threshold fires, and it releases only when every row is past release_threshold.\n\nOUTPUTS:\n\nstate:\ntrue on arrival, false on release - sent only when it changes.\n\ncount:\nHow many arrivals since the count was last reset, sent on each arrival and on each reset.\n\nproximity:\nDespite its name, the DISTANCE to the target, sent on every input while armed (one per row with axis 1). It gets smaller as you approach, and is 0 at the target.\n\nREADING THE DEMO:\nmake_point moves an x y point around the square from -1 to 1. The plot shows its distance from the target 0.5 0.7, with two flat lines at 0.3 and 0.5 - the thresholds as saved. Each time the curve dips below the lower line the toggle turns on and the count goes up; the toggle turns off only when the curve climbs back past the upper line. The point arrives about every three seconds. Drag the thresholds on the node (the lines stay at the saved values), or click set target to move the target.\n\nRELATED:\nnp.distance_from_target sends the same distance without the event. np.proximity_to_target grades closeness to several targets from 0 to 1. trigger and hysteresis do the same two-threshold firing on a single number."
                 },
                 "3": {
                     "name": "p",
@@ -625,8 +625,8 @@
                     "name": "help_link",
                     "id": 755,
                     "position_x": 30,
-                    "position_y": 890,
-                    "width": 158,
+                    "position_y": 924,
+                    "width": 161,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -637,9 +637,9 @@
                 "15": {
                     "name": "help_link",
                     "id": 792,
-                    "position_x": 251,
-                    "position_y": 890,
-                    "width": 152,
+                    "position_x": 207,
+                    "position_y": 924,
+                    "width": 155,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -650,8 +650,8 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 464,
-                    "position_y": 890,
+                    "position_x": 378,
+                    "position_y": 924,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -664,7 +664,7 @@
                     "name": "help_link",
                     "id": 866,
                     "position_x": 30,
-                    "position_y": 934,
+                    "position_y": 968,
                     "width": 78,
                     "height": 44,
                     "visibility": "show_all",
@@ -677,8 +677,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 903,
-                    "position_x": 550,
-                    "position_y": 934,
+                    "position_x": 30,
+                    "position_y": 890,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -702,7 +702,7 @@
                     "name": "close",
                     "id": 940,
                     "position_x": 24,
-                    "position_y": 1008,
+                    "position_y": 1042,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 1221,
+    "height": 1255,
     "width": 2036,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Takes part of an array by position, written the way you would slice it in Python.\n\nUse it whenever you want a row, a column, a block, every other element, or\na few chosen entries - one joint out of a list of joints, the x column out\nof a list of points, the middle of a frame, the last value of a buffer.\n\nTHE INDEX STRING:\nThe Indices field holds the part to take, one entry per dimension,\nseparated by commas. The first entry picks rows, the second columns, and\nso on. Each entry is one of:\n\n  3        one position. Counting starts at 0; -1 is the last. That\n           dimension is REMOVED - 3 on a 10 x 10 array gives a 1-D row of\n           10, and 3,7 gives a single number.\n  2:5      positions 2, 3 and 4 - the stop is NOT included. Leave out the\n           start or the stop to run from the beginning or to the end;\n           : alone is the whole dimension. The dimension is kept.\n  ::2      a step: every second position. 1::2 the odd ones, ::-1 the\n           whole dimension reversed.\n  [0 3 7]  a list of positions, taken in the order given. Inside a\n           longer string any separator works (:,[0,3,7] is columns 0, 3\n           and 7). On its own, use spaces or semicolons - [0 3 7] or\n           [0;3;7] - because [0,3,7] with commas reads as brackets around\n           three single positions (0,3,7), which a 2-D array cannot take.\n  ...      every remaining dimension: ...,0 takes the first entry of the\n           LAST dimension, whatever the array's shape.\n\nFewer entries than dimensions leave the rest whole, so 2 on a 10 x 10\narray is the same as 2,:. Square brackets around the whole string are\noptional: [2:5, 4:8] and 2:5, 4:8 mean the same.\n\nSYNTAX:\nnp.[] <index string>\nDefault ':', the whole array. The arguments are joined back together\nwith spaces, so np.[] 2:5, 4:8 and np.[] [0 3 7] both work as typed.\n\nEXAMPLE:\nnp.[] 2:5,4:8\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe array (a list is converted). Sends the selection on arrival.\n\nIndices (text field, also an inlet):\nThe index string. Changing it - typing, or a string or radio choice\narriving at the inlet - re-slices the LAST array received and sends at\nonce, so the demo needs no metro. An array of whole numbers sent here\n(np.argsort's indices, say) picks those positions along the first axis,\nin that order - see the np.argsort page, which sorts with it.\n\nindices field width (option):\nThe field resizes to fit what you type; this records the width.\n\nOUTPUTS:\n\noutput:\nThe selected part. Its number of dimensions follows the rules above:\neach single-number entry removes one. Selecting every dimension with a\nsingle number gives a plain number rather than an array.\n\nWhen the string asks for more dimensions than the array has, nothing is\nsent and nothing is said. A position past the end (12 on a 10-row array)\nprints an error in the console and sends nothing. A RANGE past the end is\nnot an error: 8:20 gives rows 8 and 9.\n\nREADING THE DEMO:\nThe left heat_map is the source, every cell printing its own number - the\ntens digit is the row, the units digit the column. Pick an index in the\nradio and the right heat_map shows exactly the cells taken, still\nnumbered; np.shape gives the shape of the result. Or type your own into\nthe field on np.[].\n\nWatch :,3 against :,3:4. Both take column 3, but :,3 removes the column\ndimension, leaving a 1-D array of 10 - which a heat_map draws lying down,\nas one row. :,3:4 keeps it as 10 rows of 1, standing up.\n\nRELATED:\nnp.crop cuts a rectangle out by its edges, which is easier to drive from\nsliders. np.where and np.argwhere select by a condition rather than by\nposition. np.edit WRITES into a part of an array named the same way. t[]\nis the PyTorch version (on the t.index_select page).",
+                    "value": "Takes part of an array by position, written the way you would slice it in Python.\n\nUse it whenever you want a row, a column, a block, every other element, or a few chosen entries - one joint out of a list of joints, the x column out of a list of points, the middle of a frame, the last value of a buffer.\n\nTHE INDEX STRING:\nThe Indices field holds the part to take, one entry per dimension, separated by commas. The first entry picks rows, the second columns, and so on. Each entry is one of:\n\n  3        one position. Counting starts at 0; -1 is the last. That\n           dimension is REMOVED - 3 on a 10 x 10 array gives a 1-D row of\n           10, and 3,7 gives a single number.\n  2:5      positions 2, 3 and 4 - the stop is NOT included. Leave out the\n           start or the stop to run from the beginning or to the end;\n           : alone is the whole dimension. The dimension is kept.\n  ::2      a step: every second position. 1::2 the odd ones, ::-1 the\n           whole dimension reversed.\n  [0 3 7]  a list of positions, taken in the order given. Inside a\n           longer string any separator works (:,[0,3,7] is columns 0, 3\n           and 7). On its own, use spaces or semicolons - [0 3 7] or\n           [0;3;7] - because [0,3,7] with commas reads as brackets around\n           three single positions (0,3,7), which a 2-D array cannot take.\n  ...      every remaining dimension: ...,0 takes the first entry of the\n           LAST dimension, whatever the array's shape.\n\nFewer entries than dimensions leave the rest whole, so 2 on a 10 x 10 array is the same as 2,:. Square brackets around the whole string are optional: [2:5, 4:8] and 2:5, 4:8 mean the same.\n\nSYNTAX:\nnp.[] <index string>\nDefault ':', the whole array. The arguments are joined back together\nwith spaces, so np.[] 2:5, 4:8 and np.[] [0 3 7] both work as typed.\n\nEXAMPLE:\nnp.[] 2:5,4:8\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe array (a list is converted). Sends the selection on arrival.\n\nIndices (text field, also an inlet):\nThe index string. Changing it - typing, or a string or radio choice arriving at the inlet - re-slices the LAST array received and sends at once, so the demo needs no metro. An array of whole numbers sent here (np.argsort's indices, say) picks those positions along the first axis, in that order - see the np.argsort page, which sorts with it.\n\nindices field width (option):\nThe field resizes to fit what you type; this records the width.\n\nOUTPUTS:\n\noutput:\nThe selected part. Its number of dimensions follows the rules above:\neach single-number entry removes one. Selecting every dimension with a single number gives a plain number rather than an array.\n\nWhen the string asks for more dimensions than the array has, nothing is sent and nothing is said. A position past the end (12 on a 10-row array) prints an error in the console and sends nothing. A RANGE past the end is not an error: 8:20 gives rows 8 and 9.\n\nREADING THE DEMO:\nThe left heat_map is the source, every cell printing its own number - the tens digit is the row, the units digit the column. Pick an index in the radio and the right heat_map shows exactly the cells taken, still numbered; np.shape gives the shape of the result. Or type your own into the field on np.[].\n\nWatch :,3 against :,3:4. Both take column 3, but :,3 removes the column dimension, leaving a 1-D array of 10 - which a heat_map draws lying down, as one row. :,3:4 keeps it as 10 rows of 1, standing up.\n\nRELATED:\nnp.crop cuts a rectangle out by its edges, which is easier to drive from sliders. np.where and np.argwhere select by a condition rather than by position. np.edit WRITES into a part of an array named the same way. t[] is the PyTorch version (on the t.index_select page).",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Takes part of an array by position, written the way you would slice it in Python.\n\nUse it whenever you want a row, a column, a block, every other element, or\na few chosen entries - one joint out of a list of joints, the x column out\nof a list of points, the middle of a frame, the last value of a buffer.\n\nTHE INDEX STRING:\nThe Indices field holds the part to take, one entry per dimension,\nseparated by commas. The first entry picks rows, the second columns, and\nso on. Each entry is one of:\n\n  3        one position. Counting starts at 0; -1 is the last. That\n           dimension is REMOVED - 3 on a 10 x 10 array gives a 1-D row of\n           10, and 3,7 gives a single number.\n  2:5      positions 2, 3 and 4 - the stop is NOT included. Leave out the\n           start or the stop to run from the beginning or to the end;\n           : alone is the whole dimension. The dimension is kept.\n  ::2      a step: every second position. 1::2 the odd ones, ::-1 the\n           whole dimension reversed.\n  [0 3 7]  a list of positions, taken in the order given. Inside a\n           longer string any separator works (:,[0,3,7] is columns 0, 3\n           and 7). On its own, use spaces or semicolons - [0 3 7] or\n           [0;3;7] - because [0,3,7] with commas reads as brackets around\n           three single positions (0,3,7), which a 2-D array cannot take.\n  ...      every remaining dimension: ...,0 takes the first entry of the\n           LAST dimension, whatever the array's shape.\n\nFewer entries than dimensions leave the rest whole, so 2 on a 10 x 10\narray is the same as 2,:. Square brackets around the whole string are\noptional: [2:5, 4:8] and 2:5, 4:8 mean the same.\n\nSYNTAX:\nnp.[] <index string>\nDefault ':', the whole array. The arguments are joined back together\nwith spaces, so np.[] 2:5, 4:8 and np.[] [0 3 7] both work as typed.\n\nEXAMPLE:\nnp.[] 2:5,4:8\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe array (a list is converted). Sends the selection on arrival.\n\nIndices (text field, also an inlet):\nThe index string. Changing it - typing, or a string or radio choice\narriving at the inlet - re-slices the LAST array received and sends at\nonce, so the demo needs no metro. An array of whole numbers sent here\n(np.argsort's indices, say) picks those positions along the first axis,\nin that order - see the np.argsort page, which sorts with it.\n\nindices field width (option):\nThe field resizes to fit what you type; this records the width.\n\nOUTPUTS:\n\noutput:\nThe selected part. Its number of dimensions follows the rules above:\neach single-number entry removes one. Selecting every dimension with a\nsingle number gives a plain number rather than an array.\n\nWhen the string asks for more dimensions than the array has, nothing is\nsent and nothing is said. A position past the end (12 on a 10-row array)\nprints an error in the console and sends nothing. A RANGE past the end is\nnot an error: 8:20 gives rows 8 and 9.\n\nREADING THE DEMO:\nThe left heat_map is the source, every cell printing its own number - the\ntens digit is the row, the units digit the column. Pick an index in the\nradio and the right heat_map shows exactly the cells taken, still\nnumbered; np.shape gives the shape of the result. Or type your own into\nthe field on np.[].\n\nWatch :,3 against :,3:4. Both take column 3, but :,3 removes the column\ndimension, leaving a 1-D array of 10 - which a heat_map draws lying down,\nas one row. :,3:4 keeps it as 10 rows of 1, standing up.\n\nRELATED:\nnp.crop cuts a rectangle out by its edges, which is easier to drive from\nsliders. np.where and np.argwhere select by a condition rather than by\nposition. np.edit WRITES into a part of an array named the same way. t[]\nis the PyTorch version (on the t.index_select page)."
+            "text": "Takes part of an array by position, written the way you would slice it in Python.\n\nUse it whenever you want a row, a column, a block, every other element, or a few chosen entries - one joint out of a list of joints, the x column out of a list of points, the middle of a frame, the last value of a buffer.\n\nTHE INDEX STRING:\nThe Indices field holds the part to take, one entry per dimension, separated by commas. The first entry picks rows, the second columns, and so on. Each entry is one of:\n\n  3        one position. Counting starts at 0; -1 is the last. That\n           dimension is REMOVED - 3 on a 10 x 10 array gives a 1-D row of\n           10, and 3,7 gives a single number.\n  2:5      positions 2, 3 and 4 - the stop is NOT included. Leave out the\n           start or the stop to run from the beginning or to the end;\n           : alone is the whole dimension. The dimension is kept.\n  ::2      a step: every second position. 1::2 the odd ones, ::-1 the\n           whole dimension reversed.\n  [0 3 7]  a list of positions, taken in the order given. Inside a\n           longer string any separator works (:,[0,3,7] is columns 0, 3\n           and 7). On its own, use spaces or semicolons - [0 3 7] or\n           [0;3;7] - because [0,3,7] with commas reads as brackets around\n           three single positions (0,3,7), which a 2-D array cannot take.\n  ...      every remaining dimension: ...,0 takes the first entry of the\n           LAST dimension, whatever the array's shape.\n\nFewer entries than dimensions leave the rest whole, so 2 on a 10 x 10 array is the same as 2,:. Square brackets around the whole string are optional: [2:5, 4:8] and 2:5, 4:8 mean the same.\n\nSYNTAX:\nnp.[] <index string>\nDefault ':', the whole array. The arguments are joined back together\nwith spaces, so np.[] 2:5, 4:8 and np.[] [0 3 7] both work as typed.\n\nEXAMPLE:\nnp.[] 2:5,4:8\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe array (a list is converted). Sends the selection on arrival.\n\nIndices (text field, also an inlet):\nThe index string. Changing it - typing, or a string or radio choice arriving at the inlet - re-slices the LAST array received and sends at once, so the demo needs no metro. An array of whole numbers sent here (np.argsort's indices, say) picks those positions along the first axis, in that order - see the np.argsort page, which sorts with it.\n\nindices field width (option):\nThe field resizes to fit what you type; this records the width.\n\nOUTPUTS:\n\noutput:\nThe selected part. Its number of dimensions follows the rules above:\neach single-number entry removes one. Selecting every dimension with a single number gives a plain number rather than an array.\n\nWhen the string asks for more dimensions than the array has, nothing is sent and nothing is said. A position past the end (12 on a 10-row array) prints an error in the console and sends nothing. A RANGE past the end is not an error: 8:20 gives rows 8 and 9.\n\nREADING THE DEMO:\nThe left heat_map is the source, every cell printing its own number - the tens digit is the row, the units digit the column. Pick an index in the radio and the right heat_map shows exactly the cells taken, still numbered; np.shape gives the shape of the result. Or type your own into the field on np.[].\n\nWatch :,3 against :,3:4. Both take column 3, but :,3 removes the column dimension, leaving a 1-D array of 10 - which a heat_map draws lying down, as one row. :,3:4 keeps it as 10 rows of 1, standing up.\n\nRELATED:\nnp.crop cuts a rectangle out by its edges, which is easier to drive from sliders. np.where and np.argwhere select by a condition rather than by position. np.edit WRITES into a part of an array named the same way. t[] is the PyTorch version (on the t.index_select page)."
         },
         "3": {
             "name": "load_bang",
@@ -487,7 +487,7 @@
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 920,
+            "position_y": 954,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -499,8 +499,8 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 127,
-            "position_y": 920,
+            "position_x": 106,
+            "position_y": 954,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -512,8 +512,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 232,
-            "position_y": 920,
+            "position_x": 188,
+            "position_y": 954,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -525,9 +525,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 329,
-            "position_y": 920,
-            "width": 78,
+            "position_x": 264,
+            "position_y": 954,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -538,9 +538,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 450,
-            "position_y": 920,
-            "width": 103,
+            "position_x": 359,
+            "position_y": 954,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -552,7 +552,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1088,
-            "position_x": 924,
+            "position_x": 30,
             "position_y": 920,
             "width": 156,
             "height": 30,
@@ -577,7 +577,7 @@
             "name": "close",
             "id": 1125,
             "position_x": 24,
-            "position_y": 994,
+            "position_y": 1028,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

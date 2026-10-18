@@ -1,5 +1,5 @@
 {
-    "height": 1121,
+    "height": 1155,
     "width": 1862,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Overwrites chosen positions in an array with a value you type.\n\nName the positions in \"indices\", put the new value in \"values\", and every\narray that passes through comes out with those positions replaced. It is for\npatching a few numbers by hand: zeroing a channel you do not trust, pinning a\ncalibration value, forcing one element of a weight vector while you tune.\n\nIT DOES NOT DISPLAY THE ARRAY:\nnp.edit shows only the two fields. Put a display after it - a heat_map, as\nhere, for a grid - to see the result.\n\nWRITING INDICES:\nThe same slice notation as numpy, one entry per dimension, separated by\ncommas:\n\n  2        just position 2\n  1:3      positions 1 and 2 (the end is not included)\n  3:       from position 3 to the end\n  :        everything\n  0, 1:3   in row 0, columns 1 and 2\n\nDimensions you leave out are taken whole, so on a grid \"2\" means all of row 2.\n-1 means the last position.\n\nNOTHING HAPPENS UNTIL YOU TYPE A VALUE:\nA fresh np.edit has indices \":\" and an empty \"values\" field, and passes arrays\nthrough unchanged until you put something in \"values\". Clearing the field\nagain turns the edit off.\n\nWHAT THE VALUE CAN BE:\nA single number fills every chosen position. A list of numbers fills them in\norder: \"1 2\" into \"3:5\" puts 1 at position 3 and 2 at position 4. A list longer\nthan the selection is cut short. For a grid, a list as long as a row is\ncopied into every chosen row; a list of any other length is ignored on a\ngrid (nothing changes, without a message).\n\nThe value takes the array's own type, so 2.7 written into an integer array\nbecomes 2.\n\nEDITS WITHOUT A NEW ARRAY:\nChanging either field re-sends straight away, applied to a fresh copy of the\nlast array that arrived - so only the current edit shows (set 1:3 to 9, then\nchange indices to 4, and only position 4 is 9).\n\nSYNTAX:\nnp.edit <indices>\n\nEXAMPLE:\nnp.edit 1:3, 2:6\n\nINPUTS and PARAMETERS:\n\narray in:\nThe array. Receiving it triggers the node.\n\nindices:\nWhich positions to replace.\n\nvalues:\nWhat to put there.\n\nwidget width (option):\nHow wide to draw the two fields. They can also be dragged wider.\n\nOUTPUTS:\n\noutput:\nA copy of the array with the edit applied. The incoming array itself is not\nchanged.\n\nREADING THE DEMO:\nnp.rand makes a 5 x 8 grid of numbers between 0 and 0.5 - all dark - and\nthe left heat_map shows it. np.edit writes 1 into rows 1 and 2, columns 2\nto 5, and the right heat_map shows the result: the same grid with a bright\nblock in it. Every other cell is untouched.\n\nType into the fields and the right picture changes at once: indices \"0\" for\nall of row 0, \":, 7\" for the last column, \"4, 0\" for one cell; values\n\"0.25\" for a middle shade, or a whole row of eight such as\n\"0 1 0 1 0 1 0 1\" to stripe the chosen rows. Click np.rand for a fresh\ngrid - the same edit is applied to it.\n\nRELATED:\nnp.[] reads positions out instead of writing them. np.where replaces values\nby a condition rather than by position. np.clip limits values; np.zeros and\nnp.ones make an array to edit into.",
+                    "value": "Overwrites chosen positions in an array with a value you type.\n\nName the positions in \"indices\", put the new value in \"values\", and every array that passes through comes out with those positions replaced. It is for patching a few numbers by hand: zeroing a channel you do not trust, pinning a calibration value, forcing one element of a weight vector while you tune.\n\nIT DOES NOT DISPLAY THE ARRAY:\nnp.edit shows only the two fields. Put a display after it - a heat_map, as here, for a grid - to see the result.\n\nWRITING INDICES:\nThe same slice notation as numpy, one entry per dimension, separated by commas:\n\n  2        just position 2\n  1:3      positions 1 and 2 (the end is not included)\n  3:       from position 3 to the end\n  :        everything\n  0, 1:3   in row 0, columns 1 and 2\n\nDimensions you leave out are taken whole, so on a grid \"2\" means all of row 2. -1 means the last position.\n\nNOTHING HAPPENS UNTIL YOU TYPE A VALUE:\nA fresh np.edit has indices \":\" and an empty \"values\" field, and passes arrays through unchanged until you put something in \"values\". Clearing the field again turns the edit off.\n\nWHAT THE VALUE CAN BE:\nA single number fills every chosen position. A list of numbers fills them in order: \"1 2\" into \"3:5\" puts 1 at position 3 and 2 at position 4. A list longer than the selection is cut short. For a grid, a list as long as a row is copied into every chosen row; a list of any other length is ignored on a grid (nothing changes, without a message).\n\nThe value takes the array's own type, so 2.7 written into an integer array becomes 2.\n\nEDITS WITHOUT A NEW ARRAY:\nChanging either field re-sends straight away, applied to a fresh copy of the last array that arrived - so only the current edit shows (set 1:3 to 9, then change indices to 4, and only position 4 is 9).\n\nSYNTAX:\nnp.edit <indices>\n\nEXAMPLE:\nnp.edit 1:3, 2:6\n\nINPUTS and PARAMETERS:\n\narray in:\nThe array. Receiving it triggers the node.\n\nindices:\nWhich positions to replace.\n\nvalues:\nWhat to put there.\n\nwidget width (option):\nHow wide to draw the two fields. They can also be dragged wider.\n\nOUTPUTS:\n\noutput:\nA copy of the array with the edit applied. The incoming array itself is not changed.\n\nREADING THE DEMO:\nnp.rand makes a 5 x 8 grid of numbers between 0 and 0.5 - all dark - and the left heat_map shows it. np.edit writes 1 into rows 1 and 2, columns 2 to 5, and the right heat_map shows the result: the same grid with a bright block in it. Every other cell is untouched.\n\nType into the fields and the right picture changes at once: indices \"0\" for all of row 0, \":, 7\" for the last column, \"4, 0\" for one cell; values \"0.25\" for a middle shade, or a whole row of eight such as \"0 1 0 1 0 1 0 1\" to stripe the chosen rows. Click np.rand for a fresh grid - the same edit is applied to it.\n\nRELATED:\nnp.[] reads positions out instead of writing them. np.where replaces values by a condition rather than by position. np.clip limits values; np.zeros and np.ones make an array to edit into.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Overwrites chosen positions in an array with a value you type.\n\nName the positions in \"indices\", put the new value in \"values\", and every\narray that passes through comes out with those positions replaced. It is for\npatching a few numbers by hand: zeroing a channel you do not trust, pinning a\ncalibration value, forcing one element of a weight vector while you tune.\n\nIT DOES NOT DISPLAY THE ARRAY:\nnp.edit shows only the two fields. Put a display after it - a heat_map, as\nhere, for a grid - to see the result.\n\nWRITING INDICES:\nThe same slice notation as numpy, one entry per dimension, separated by\ncommas:\n\n  2        just position 2\n  1:3      positions 1 and 2 (the end is not included)\n  3:       from position 3 to the end\n  :        everything\n  0, 1:3   in row 0, columns 1 and 2\n\nDimensions you leave out are taken whole, so on a grid \"2\" means all of row 2.\n-1 means the last position.\n\nNOTHING HAPPENS UNTIL YOU TYPE A VALUE:\nA fresh np.edit has indices \":\" and an empty \"values\" field, and passes arrays\nthrough unchanged until you put something in \"values\". Clearing the field\nagain turns the edit off.\n\nWHAT THE VALUE CAN BE:\nA single number fills every chosen position. A list of numbers fills them in\norder: \"1 2\" into \"3:5\" puts 1 at position 3 and 2 at position 4. A list longer\nthan the selection is cut short. For a grid, a list as long as a row is\ncopied into every chosen row; a list of any other length is ignored on a\ngrid (nothing changes, without a message).\n\nThe value takes the array's own type, so 2.7 written into an integer array\nbecomes 2.\n\nEDITS WITHOUT A NEW ARRAY:\nChanging either field re-sends straight away, applied to a fresh copy of the\nlast array that arrived - so only the current edit shows (set 1:3 to 9, then\nchange indices to 4, and only position 4 is 9).\n\nSYNTAX:\nnp.edit <indices>\n\nEXAMPLE:\nnp.edit 1:3, 2:6\n\nINPUTS and PARAMETERS:\n\narray in:\nThe array. Receiving it triggers the node.\n\nindices:\nWhich positions to replace.\n\nvalues:\nWhat to put there.\n\nwidget width (option):\nHow wide to draw the two fields. They can also be dragged wider.\n\nOUTPUTS:\n\noutput:\nA copy of the array with the edit applied. The incoming array itself is not\nchanged.\n\nREADING THE DEMO:\nnp.rand makes a 5 x 8 grid of numbers between 0 and 0.5 - all dark - and\nthe left heat_map shows it. np.edit writes 1 into rows 1 and 2, columns 2\nto 5, and the right heat_map shows the result: the same grid with a bright\nblock in it. Every other cell is untouched.\n\nType into the fields and the right picture changes at once: indices \"0\" for\nall of row 0, \":, 7\" for the last column, \"4, 0\" for one cell; values\n\"0.25\" for a middle shade, or a whole row of eight such as\n\"0 1 0 1 0 1 0 1\" to stripe the chosen rows. Click np.rand for a fresh\ngrid - the same edit is applied to it.\n\nRELATED:\nnp.[] reads positions out instead of writing them. np.where replaces values\nby a condition rather than by position. np.clip limits values; np.zeros and\nnp.ones make an array to edit into."
+            "text": "Overwrites chosen positions in an array with a value you type.\n\nName the positions in \"indices\", put the new value in \"values\", and every array that passes through comes out with those positions replaced. It is for patching a few numbers by hand: zeroing a channel you do not trust, pinning a calibration value, forcing one element of a weight vector while you tune.\n\nIT DOES NOT DISPLAY THE ARRAY:\nnp.edit shows only the two fields. Put a display after it - a heat_map, as here, for a grid - to see the result.\n\nWRITING INDICES:\nThe same slice notation as numpy, one entry per dimension, separated by commas:\n\n  2        just position 2\n  1:3      positions 1 and 2 (the end is not included)\n  3:       from position 3 to the end\n  :        everything\n  0, 1:3   in row 0, columns 1 and 2\n\nDimensions you leave out are taken whole, so on a grid \"2\" means all of row 2. -1 means the last position.\n\nNOTHING HAPPENS UNTIL YOU TYPE A VALUE:\nA fresh np.edit has indices \":\" and an empty \"values\" field, and passes arrays through unchanged until you put something in \"values\". Clearing the field again turns the edit off.\n\nWHAT THE VALUE CAN BE:\nA single number fills every chosen position. A list of numbers fills them in order: \"1 2\" into \"3:5\" puts 1 at position 3 and 2 at position 4. A list longer than the selection is cut short. For a grid, a list as long as a row is copied into every chosen row; a list of any other length is ignored on a grid (nothing changes, without a message).\n\nThe value takes the array's own type, so 2.7 written into an integer array becomes 2.\n\nEDITS WITHOUT A NEW ARRAY:\nChanging either field re-sends straight away, applied to a fresh copy of the last array that arrived - so only the current edit shows (set 1:3 to 9, then change indices to 4, and only position 4 is 9).\n\nSYNTAX:\nnp.edit <indices>\n\nEXAMPLE:\nnp.edit 1:3, 2:6\n\nINPUTS and PARAMETERS:\n\narray in:\nThe array. Receiving it triggers the node.\n\nindices:\nWhich positions to replace.\n\nvalues:\nWhat to put there.\n\nwidget width (option):\nHow wide to draw the two fields. They can also be dragged wider.\n\nOUTPUTS:\n\noutput:\nA copy of the array with the edit applied. The incoming array itself is not changed.\n\nREADING THE DEMO:\nnp.rand makes a 5 x 8 grid of numbers between 0 and 0.5 - all dark - and the left heat_map shows it. np.edit writes 1 into rows 1 and 2, columns 2 to 5, and the right heat_map shows the result: the same grid with a bright block in it. Every other cell is untouched.\n\nType into the fields and the right picture changes at once: indices \"0\" for all of row 0, \":, 7\" for the last column, \"4, 0\" for one cell; values \"0.25\" for a middle shade, or a whole row of eight such as \"0 1 0 1 0 1 0 1\" to stripe the chosen rows. Click np.rand for a fresh grid - the same edit is applied to it.\n\nRELATED:\nnp.[] reads positions out instead of writing them. np.where replaces values by a condition rather than by position. np.clip limits values; np.zeros and np.ones make an array to edit into."
         },
         "3": {
             "name": "load_bang",
@@ -372,8 +372,8 @@
             "name": "help_link",
             "id": 644,
             "position_x": 30,
-            "position_y": 590,
-            "width": 47,
+            "position_y": 624,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -384,8 +384,8 @@
         "12": {
             "name": "help_link",
             "id": 681,
-            "position_x": 112,
-            "position_y": 590,
+            "position_x": 94,
+            "position_y": 624,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -397,8 +397,8 @@
         "13": {
             "name": "help_link",
             "id": 718,
-            "position_x": 217,
-            "position_y": 590,
+            "position_x": 176,
+            "position_y": 624,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -410,8 +410,8 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 314,
-            "position_y": 590,
+            "position_x": 252,
+            "position_y": 624,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -424,7 +424,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 792,
-            "position_x": 734,
+            "position_x": 30,
             "position_y": 590,
             "width": 156,
             "height": 30,
@@ -449,7 +449,7 @@
             "name": "close",
             "id": 829,
             "position_x": 24,
-            "position_y": 664,
+            "position_y": 698,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

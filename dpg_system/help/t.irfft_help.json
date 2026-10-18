@@ -479,7 +479,7 @@
             }
         },
         "1": {
-            "height": 1008,
+            "height": 1042,
             "width": 1713,
             "position": [
                 100,
@@ -546,7 +546,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Takes the inverse of t.rfft: turns a half spectrum back into real samples.\n\nt.rfft keeps only the non-negative frequencies of a real signal; t.irfft\nrebuilds the samples from them, filling in the mirror half itself, so the\nresult is REAL - no t.real needed. Go there and back to work on a signal\nin frequency terms: zero the bins above a cut-off for a brick-wall low\npass, scale bins to reshape the tone, or multiply spectra to convolve.\n\nLENGTH:\nm frequency values come back as 2 x (m - 1) samples. 129 values (from 256\nsamples) give 256 again. An ODD number of samples does not survive the\ntrip: 255 samples make 128 values, which come back as 254. Keep frame\nlengths even.\n\nSYNTAX:\nt.irfft <dim: int>\nWith no argument it transforms along the last dimension.\n\nEXAMPLE:\nt.irfft\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA half spectrum, as t.rfft makes it: complex, n/2 + 1 values. Each tensor\nthat arrives is transformed and sent at once. The imaginary parts of the\nfirst value (and, for an even length, the last) cannot be represented in\na real signal and are ignored.\n\ndim (an int box, only when you give an argument):\nt.irfft 0 transforms along dimension 0 instead of the last one. With no\nargument the node has no dim box and always uses the last dimension, which\nis what you want for one signal, or for a stack of signals one per row.\n\nnorm (menu):\nWhere the 1/n scaling goes. 'backward' (the default) leaves the forward\ntransform unscaled and divides on the way back, so a sine of size 1 over\n256 samples makes a peak of 128. 'forward' divides on the way forward\n(that peak becomes 0.5 - half the sine's size, the other half sits in the\nmirror bin). 'ortho' divides both ways by the square root of n. A forward\nand an inverse node must use the same setting or the round trip comes back\nthe wrong size.\n\nOUTPUTS:\n\nfft tensor out:\nA REAL tensor of 2 x (m - 1) samples along the transformed dimension.\n\nREADING THE DEMO:\nThe top plot is the signal going in; the bottom one is what comes back\nafter t.rfft and t.irfft - the same 256 samples. Drag the slider and the\ntwo stay identical.\n\nRELATED:\nt.rfft is the forward transform. t.ifft is the inverse for the full\nspectrum t.fft makes, and returns complex samples.",
+                            "value": "Takes the inverse of t.rfft: turns a half spectrum back into real samples.\n\nt.rfft keeps only the non-negative frequencies of a real signal; t.irfft rebuilds the samples from them, filling in the mirror half itself, so the result is REAL - no t.real needed. Go there and back to work on a signal in frequency terms: zero the bins above a cut-off for a brick-wall low pass, scale bins to reshape the tone, or multiply spectra to convolve.\n\nLENGTH:\nm frequency values come back as 2 x (m - 1) samples. 129 values (from 256 samples) give 256 again. An ODD number of samples does not survive the trip: 255 samples make 128 values, which come back as 254. Keep frame lengths even.\n\nSYNTAX:\nt.irfft <dim: int>\nWith no argument it transforms along the last dimension.\n\nEXAMPLE:\nt.irfft\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA half spectrum, as t.rfft makes it: complex, n/2 + 1 values. Each tensor that arrives is transformed and sent at once. The imaginary parts of the first value (and, for an even length, the last) cannot be represented in a real signal and are ignored.\n\ndim (an int box, only when you give an argument):\nt.irfft 0 transforms along dimension 0 instead of the last one. With no argument the node has no dim box and always uses the last dimension, which is what you want for one signal, or for a stack of signals one per row.\n\nnorm (menu):\nWhere the 1/n scaling goes. 'backward' (the default) leaves the forward transform unscaled and divides on the way back, so a sine of size 1 over 256 samples makes a peak of 128. 'forward' divides on the way forward (that peak becomes 0.5 - half the sine's size, the other half sits in the mirror bin). 'ortho' divides both ways by the square root of n. A forward and an inverse node must use the same setting or the round trip comes back the wrong size.\n\nOUTPUTS:\n\nfft tensor out:\nA REAL tensor of 2 x (m - 1) samples along the transformed dimension.\n\nREADING THE DEMO:\nThe top plot is the signal going in; the bottom one is what comes back after t.rfft and t.irfft - the same 256 samples. Drag the slider and the two stay identical.\n\nRELATED:\nt.rfft is the forward transform. t.ifft is the inverse for the full spectrum t.fft makes, and returns complex samples.",
                             "value_type": "str"
                         },
                         "1": {
@@ -570,7 +570,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Takes the inverse of t.rfft: turns a half spectrum back into real samples.\n\nt.rfft keeps only the non-negative frequencies of a real signal; t.irfft\nrebuilds the samples from them, filling in the mirror half itself, so the\nresult is REAL - no t.real needed. Go there and back to work on a signal\nin frequency terms: zero the bins above a cut-off for a brick-wall low\npass, scale bins to reshape the tone, or multiply spectra to convolve.\n\nLENGTH:\nm frequency values come back as 2 x (m - 1) samples. 129 values (from 256\nsamples) give 256 again. An ODD number of samples does not survive the\ntrip: 255 samples make 128 values, which come back as 254. Keep frame\nlengths even.\n\nSYNTAX:\nt.irfft <dim: int>\nWith no argument it transforms along the last dimension.\n\nEXAMPLE:\nt.irfft\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA half spectrum, as t.rfft makes it: complex, n/2 + 1 values. Each tensor\nthat arrives is transformed and sent at once. The imaginary parts of the\nfirst value (and, for an even length, the last) cannot be represented in\na real signal and are ignored.\n\ndim (an int box, only when you give an argument):\nt.irfft 0 transforms along dimension 0 instead of the last one. With no\nargument the node has no dim box and always uses the last dimension, which\nis what you want for one signal, or for a stack of signals one per row.\n\nnorm (menu):\nWhere the 1/n scaling goes. 'backward' (the default) leaves the forward\ntransform unscaled and divides on the way back, so a sine of size 1 over\n256 samples makes a peak of 128. 'forward' divides on the way forward\n(that peak becomes 0.5 - half the sine's size, the other half sits in the\nmirror bin). 'ortho' divides both ways by the square root of n. A forward\nand an inverse node must use the same setting or the round trip comes back\nthe wrong size.\n\nOUTPUTS:\n\nfft tensor out:\nA REAL tensor of 2 x (m - 1) samples along the transformed dimension.\n\nREADING THE DEMO:\nThe top plot is the signal going in; the bottom one is what comes back\nafter t.rfft and t.irfft - the same 256 samples. Drag the slider and the\ntwo stay identical.\n\nRELATED:\nt.rfft is the forward transform. t.ifft is the inverse for the full\nspectrum t.fft makes, and returns complex samples."
+                    "text": "Takes the inverse of t.rfft: turns a half spectrum back into real samples.\n\nt.rfft keeps only the non-negative frequencies of a real signal; t.irfft rebuilds the samples from them, filling in the mirror half itself, so the result is REAL - no t.real needed. Go there and back to work on a signal in frequency terms: zero the bins above a cut-off for a brick-wall low pass, scale bins to reshape the tone, or multiply spectra to convolve.\n\nLENGTH:\nm frequency values come back as 2 x (m - 1) samples. 129 values (from 256 samples) give 256 again. An ODD number of samples does not survive the trip: 255 samples make 128 values, which come back as 254. Keep frame lengths even.\n\nSYNTAX:\nt.irfft <dim: int>\nWith no argument it transforms along the last dimension.\n\nEXAMPLE:\nt.irfft\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA half spectrum, as t.rfft makes it: complex, n/2 + 1 values. Each tensor that arrives is transformed and sent at once. The imaginary parts of the first value (and, for an even length, the last) cannot be represented in a real signal and are ignored.\n\ndim (an int box, only when you give an argument):\nt.irfft 0 transforms along dimension 0 instead of the last one. With no argument the node has no dim box and always uses the last dimension, which is what you want for one signal, or for a stack of signals one per row.\n\nnorm (menu):\nWhere the 1/n scaling goes. 'backward' (the default) leaves the forward transform unscaled and divides on the way back, so a sine of size 1 over 256 samples makes a peak of 128. 'forward' divides on the way forward (that peak becomes 0.5 - half the sine's size, the other half sits in the mirror bin). 'ortho' divides both ways by the square root of n. A forward and an inverse node must use the same setting or the round trip comes back the wrong size.\n\nOUTPUTS:\n\nfft tensor out:\nA REAL tensor of 2 x (m - 1) samples along the transformed dimension.\n\nREADING THE DEMO:\nThe top plot is the signal going in; the bottom one is what comes back after t.rfft and t.irfft - the same 256 samples. Drag the slider and the two stay identical.\n\nRELATED:\nt.rfft is the forward transform. t.ifft is the inverse for the full spectrum t.fft makes, and returns complex samples."
                 },
                 "3": {
                     "name": "slider",
@@ -955,8 +955,8 @@
                     "name": "help_link",
                     "id": 792,
                     "position_x": 30,
-                    "position_y": 830,
-                    "width": 53,
+                    "position_y": 864,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -967,9 +967,9 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 120,
-                    "position_y": 830,
-                    "width": 53,
+                    "position_x": 100,
+                    "position_y": 864,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -980,9 +980,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 210,
-                    "position_y": 830,
-                    "width": 47,
+                    "position_x": 170,
+                    "position_y": 864,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -993,9 +993,9 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 292,
-                    "position_y": 830,
-                    "width": 96,
+                    "position_x": 234,
+                    "position_y": 864,
+                    "width": 98,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1007,8 +1007,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 940,
-                    "position_x": 564,
-                    "position_y": 874,
+                    "position_x": 30,
+                    "position_y": 830,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -1032,7 +1032,7 @@
                     "name": "close",
                     "id": 977,
                     "position_x": 24,
-                    "position_y": 904,
+                    "position_y": 938,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

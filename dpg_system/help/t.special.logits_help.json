@@ -1,5 +1,5 @@
 {
-    "height": 1092,
+    "height": 1126,
     "width": 1633,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The inverse of the sigmoid: turns probabilities between 0 and 1 back into\nunbounded scores, the log of p / (1 - p), for every element of a tensor.\n\nUse it whenever you want to add, average or smooth probabilities: do it on\nthe logits, where 0.99 and 0.999 are properly far apart, then turn the result\nback with t.special.expit.\n\nTHE CURVE:\n0.5 becomes 0, values above 0.5 become positive and values below negative.\nThe middle is nearly straight (0.25 gives -1.10, 0.75 gives 1.10) and the\nends shoot off towards plus and minus infinity - held back by eps.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1 - a tensor, or a number or list, which is turned\ninto one. Receiving it triggers the node. Values outside 0..1 are clamped\nby eps too, so they come out at the ends rather than as errors.\n\neps (float, also an inlet):\nThe input is clamped to between eps and 1 - eps before the log is taken,\nso 0 and 1 give large finite numbers instead of infinities. Default\n0.000001, which holds the ends at -13.8 and 13.8; 0.001 gives -6.9 and 6.9.\nAt 0 there is no protection and 0 and 1 give minus and plus infinity.\nDo not set it below about 0.0000001: in 32-bit floats 1 minus anything\nsmaller rounds back to exactly 1, so the top end is unprotected again (1\ngives infinity) while the bottom end still looks fine. Changing eps does\nnot send by itself; the next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element, in the same shape as the input.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200\nprobabilities from 0 to 1, drawn in the upper plot. The lower plot is the\nlogit of each, from -15 (bottom) to 15 (top): a slow climb through 0 in the\nmiddle and the two ends flicking out to the eps limit. Drag eps on the node\nto move those limits.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability.\nt.special.ndtri is the same idea for the normal distribution's S curve.",
+                    "value": "The inverse of the sigmoid: turns probabilities between 0 and 1 back into unbounded scores, the log of p / (1 - p), for every element of a tensor.\n\nUse it whenever you want to add, average or smooth probabilities: do it on the logits, where 0.99 and 0.999 are properly far apart, then turn the result back with t.special.expit.\n\nTHE CURVE:\n0.5 becomes 0, values above 0.5 become positive and values below negative. The middle is nearly straight (0.25 gives -1.10, 0.75 gives 1.10) and the ends shoot off towards plus and minus infinity - held back by eps.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1 - a tensor, or a number or list, which is turned into one. Receiving it triggers the node. Values outside 0..1 are clamped by eps too, so they come out at the ends rather than as errors.\n\neps (float, also an inlet):\nThe input is clamped to between eps and 1 - eps before the log is taken, so 0 and 1 give large finite numbers instead of infinities. Default 0.000001, which holds the ends at -13.8 and 13.8; 0.001 gives -6.9 and 6.9. At 0 there is no protection and 0 and 1 give minus and plus infinity. Do not set it below about 0.0000001: in 32-bit floats 1 minus anything smaller rounds back to exactly 1, so the top end is unprotected again (1 gives infinity) while the bottom end still looks fine. Changing eps does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element, in the same shape as the input.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 probabilities from 0 to 1, drawn in the upper plot. The lower plot is the logit of each, from -15 (bottom) to 15 (top): a slow climb through 0 in the middle and the two ends flicking out to the eps limit. Drag eps on the node to move those limits.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability. t.special.ndtri is the same idea for the normal distribution's S curve.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "The inverse of the sigmoid: turns probabilities between 0 and 1 back into\nunbounded scores, the log of p / (1 - p), for every element of a tensor.\n\nUse it whenever you want to add, average or smooth probabilities: do it on\nthe logits, where 0.99 and 0.999 are properly far apart, then turn the result\nback with t.special.expit.\n\nTHE CURVE:\n0.5 becomes 0, values above 0.5 become positive and values below negative.\nThe middle is nearly straight (0.25 gives -1.10, 0.75 gives 1.10) and the\nends shoot off towards plus and minus infinity - held back by eps.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1 - a tensor, or a number or list, which is turned\ninto one. Receiving it triggers the node. Values outside 0..1 are clamped\nby eps too, so they come out at the ends rather than as errors.\n\neps (float, also an inlet):\nThe input is clamped to between eps and 1 - eps before the log is taken,\nso 0 and 1 give large finite numbers instead of infinities. Default\n0.000001, which holds the ends at -13.8 and 13.8; 0.001 gives -6.9 and 6.9.\nAt 0 there is no protection and 0 and 1 give minus and plus infinity.\nDo not set it below about 0.0000001: in 32-bit floats 1 minus anything\nsmaller rounds back to exactly 1, so the top end is unprotected again (1\ngives infinity) while the bottom end still looks fine. Changing eps does\nnot send by itself; the next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element, in the same shape as the input.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200\nprobabilities from 0 to 1, drawn in the upper plot. The lower plot is the\nlogit of each, from -15 (bottom) to 15 (top): a slow climb through 0 in the\nmiddle and the two ends flicking out to the eps limit. Drag eps on the node\nto move those limits.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability.\nt.special.ndtri is the same idea for the normal distribution's S curve."
+            "text": "The inverse of the sigmoid: turns probabilities between 0 and 1 back into unbounded scores, the log of p / (1 - p), for every element of a tensor.\n\nUse it whenever you want to add, average or smooth probabilities: do it on the logits, where 0.99 and 0.999 are properly far apart, then turn the result back with t.special.expit.\n\nTHE CURVE:\n0.5 becomes 0, values above 0.5 become positive and values below negative. The middle is nearly straight (0.25 gives -1.10, 0.75 gives 1.10) and the ends shoot off towards plus and minus infinity - held back by eps.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1 - a tensor, or a number or list, which is turned into one. Receiving it triggers the node. Values outside 0..1 are clamped by eps too, so they come out at the ends rather than as errors.\n\neps (float, also an inlet):\nThe input is clamped to between eps and 1 - eps before the log is taken, so 0 and 1 give large finite numbers instead of infinities. Default 0.000001, which holds the ends at -13.8 and 13.8; 0.001 gives -6.9 and 6.9. At 0 there is no protection and 0 and 1 give minus and plus infinity. Do not set it below about 0.0000001: in 32-bit floats 1 minus anything smaller rounds back to exactly 1, so the top end is unprotected again (1 gives infinity) while the bottom end still looks fine. Changing eps does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element, in the same shape as the input.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 probabilities from 0 to 1, drawn in the upper plot. The lower plot is the logit of each, from -15 (bottom) to 15 (top): a slow climb through 0 in the middle and the two ends flicking out to the eps limit. Drag eps on the node to move those limits.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability. t.special.ndtri is the same idea for the normal distribution's S curve."
         },
         "3": {
             "name": "metro",
@@ -438,8 +438,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 870,
-            "width": 109,
+            "position_y": 904,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -450,9 +450,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 189,
-            "position_y": 870,
-            "width": 90,
+            "position_x": 156,
+            "position_y": 904,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -463,9 +463,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 325,
-            "position_y": 870,
-            "width": 109,
+            "position_x": 264,
+            "position_y": 904,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -477,7 +477,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 914,
+            "position_y": 948,
             "width": 103,
             "height": 44,
             "visibility": "show_all",
@@ -490,7 +490,7 @@
             "name": "help_link",
             "id": 866,
             "position_x": 181,
-            "position_y": 914,
+            "position_y": 948,
             "width": 109,
             "height": 44,
             "visibility": "show_all",
@@ -503,8 +503,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 460,
-            "position_y": 914,
+            "position_x": 30,
+            "position_y": 870,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -528,7 +528,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 988,
+            "position_y": 1022,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

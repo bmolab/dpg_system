@@ -580,7 +580,7 @@
             }
         },
         "2": {
-            "height": 1438,
+            "height": 1472,
             "width": 1768,
             "position": [
                 100,
@@ -647,7 +647,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Gives the inner product: for two vectors, the dot product; for two sets\nof vectors, every vector of the first dotted with every vector of the\nsecond.\n\nFor plain vectors np.inner and np.dot give the same number - multiply\nelement by element and add up. They differ for 2-D arrays. np.inner\ntreats each ROW as a vector and pairs rows with rows: a set of 12\ndirections (12 rows of 2) against one direction gives 12 numbers; a set\nagainst itself gives a 12 x 12 table of how alike every pair is. np.dot\nof two 2-D arrays is matrix multiplication instead (rows with columns).\n\nReach for it to score many vectors against one at once - which of these\nposes is closest to this one, which sensor points most nearly up - or\nto build a similarity table of a set of vectors.\n\nSYNTAX:\nnp.inner\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector or set of vectors (a list is turned into an array).\nReceiving it calculates and sends.\n\nin 2:\nThe second. It is only stored, so it must arrive BEFORE in 1; nothing is\nsent until it has. Both must have the same LAST dimension (the vector\nlength), or an error is printed and nothing is sent.\n\nOUTPUTS:\n\ninner_product:\nA float for two vectors. Otherwise the shape is in 1's leading shape\nfollowed by in 2's: (12, 2) with (2,) gives 12 values; (12, 2) with\n(12, 2) gives 12 x 12.\n\nREADING THE DEMO:\nmake_directions sends 12 directions of length 1, 30 degrees apart (the\npicture top left: each row is cos and sin of one angle). The slider\nsets one more direction. Middle: np.inner of the 12 with that one - a\nstrip of 12 cosines, blue where a direction agrees with the slider, red\nwhere it points away. Turn the slider and the blue band moves round.\nBottom: np.inner of the 12 with themselves - every pair compared. The\ndiagonal is 1 (each agrees with itself), and the stripes show that\ndirections 6 apart (180 degrees) are opposite.\n\nRELATED:\nnp.dot is the same for vectors and is matrix multiplication for 2-D.\nnp.outer multiplies every element by every element, without adding up.\nnp.matmul is the matrix product. t.cosine_similarity compares\ndirections whatever their lengths.",
+                            "value": "Gives the inner product: for two vectors, the dot product; for two sets of vectors, every vector of the first dotted with every vector of the second.\n\nFor plain vectors np.inner and np.dot give the same number - multiply element by element and add up. They differ for 2-D arrays. np.inner treats each ROW as a vector and pairs rows with rows: a set of 12 directions (12 rows of 2) against one direction gives 12 numbers; a set against itself gives a 12 x 12 table of how alike every pair is. np.dot of two 2-D arrays is matrix multiplication instead (rows with columns).\n\nReach for it to score many vectors against one at once - which of these poses is closest to this one, which sensor points most nearly up - or to build a similarity table of a set of vectors.\n\nSYNTAX:\nnp.inner\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector or set of vectors (a list is turned into an array). Receiving it calculates and sends.\n\nin 2:\nThe second. It is only stored, so it must arrive BEFORE in 1; nothing is sent until it has. Both must have the same LAST dimension (the vector length), or an error is printed and nothing is sent.\n\nOUTPUTS:\n\ninner_product:\nA float for two vectors. Otherwise the shape is in 1's leading shape followed by in 2's: (12, 2) with (2,) gives 12 values; (12, 2) with (12, 2) gives 12 x 12.\n\nREADING THE DEMO:\nmake_directions sends 12 directions of length 1, 30 degrees apart (the picture top left: each row is cos and sin of one angle). The slider sets one more direction. Middle: np.inner of the 12 with that one - a strip of 12 cosines, blue where a direction agrees with the slider, red where it points away. Turn the slider and the blue band moves round.\nBottom: np.inner of the 12 with themselves - every pair compared. The diagonal is 1 (each agrees with itself), and the stripes show that directions 6 apart (180 degrees) are opposite.\n\nRELATED:\nnp.dot is the same for vectors and is matrix multiplication for 2-D. np.outer multiplies every element by every element, without adding up. np.matmul is the matrix product. t.cosine_similarity compares directions whatever their lengths.",
                             "value_type": "str"
                         },
                         "1": {
@@ -671,7 +671,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Gives the inner product: for two vectors, the dot product; for two sets\nof vectors, every vector of the first dotted with every vector of the\nsecond.\n\nFor plain vectors np.inner and np.dot give the same number - multiply\nelement by element and add up. They differ for 2-D arrays. np.inner\ntreats each ROW as a vector and pairs rows with rows: a set of 12\ndirections (12 rows of 2) against one direction gives 12 numbers; a set\nagainst itself gives a 12 x 12 table of how alike every pair is. np.dot\nof two 2-D arrays is matrix multiplication instead (rows with columns).\n\nReach for it to score many vectors against one at once - which of these\nposes is closest to this one, which sensor points most nearly up - or\nto build a similarity table of a set of vectors.\n\nSYNTAX:\nnp.inner\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector or set of vectors (a list is turned into an array).\nReceiving it calculates and sends.\n\nin 2:\nThe second. It is only stored, so it must arrive BEFORE in 1; nothing is\nsent until it has. Both must have the same LAST dimension (the vector\nlength), or an error is printed and nothing is sent.\n\nOUTPUTS:\n\ninner_product:\nA float for two vectors. Otherwise the shape is in 1's leading shape\nfollowed by in 2's: (12, 2) with (2,) gives 12 values; (12, 2) with\n(12, 2) gives 12 x 12.\n\nREADING THE DEMO:\nmake_directions sends 12 directions of length 1, 30 degrees apart (the\npicture top left: each row is cos and sin of one angle). The slider\nsets one more direction. Middle: np.inner of the 12 with that one - a\nstrip of 12 cosines, blue where a direction agrees with the slider, red\nwhere it points away. Turn the slider and the blue band moves round.\nBottom: np.inner of the 12 with themselves - every pair compared. The\ndiagonal is 1 (each agrees with itself), and the stripes show that\ndirections 6 apart (180 degrees) are opposite.\n\nRELATED:\nnp.dot is the same for vectors and is matrix multiplication for 2-D.\nnp.outer multiplies every element by every element, without adding up.\nnp.matmul is the matrix product. t.cosine_similarity compares\ndirections whatever their lengths."
+                    "text": "Gives the inner product: for two vectors, the dot product; for two sets of vectors, every vector of the first dotted with every vector of the second.\n\nFor plain vectors np.inner and np.dot give the same number - multiply element by element and add up. They differ for 2-D arrays. np.inner treats each ROW as a vector and pairs rows with rows: a set of 12 directions (12 rows of 2) against one direction gives 12 numbers; a set against itself gives a 12 x 12 table of how alike every pair is. np.dot of two 2-D arrays is matrix multiplication instead (rows with columns).\n\nReach for it to score many vectors against one at once - which of these poses is closest to this one, which sensor points most nearly up - or to build a similarity table of a set of vectors.\n\nSYNTAX:\nnp.inner\n(no arguments)\n\nINPUTS and PARAMETERS:\n\nin 1:\nThe first vector or set of vectors (a list is turned into an array). Receiving it calculates and sends.\n\nin 2:\nThe second. It is only stored, so it must arrive BEFORE in 1; nothing is sent until it has. Both must have the same LAST dimension (the vector length), or an error is printed and nothing is sent.\n\nOUTPUTS:\n\ninner_product:\nA float for two vectors. Otherwise the shape is in 1's leading shape followed by in 2's: (12, 2) with (2,) gives 12 values; (12, 2) with (12, 2) gives 12 x 12.\n\nREADING THE DEMO:\nmake_directions sends 12 directions of length 1, 30 degrees apart (the picture top left: each row is cos and sin of one angle). The slider sets one more direction. Middle: np.inner of the 12 with that one - a strip of 12 cosines, blue where a direction agrees with the slider, red where it points away. Turn the slider and the blue band moves round.\nBottom: np.inner of the 12 with themselves - every pair compared. The diagonal is 1 (each agrees with itself), and the stripes show that directions 6 apart (180 degrees) are opposite.\n\nRELATED:\nnp.dot is the same for vectors and is matrix multiplication for 2-D. np.outer multiplies every element by every element, without adding up. np.matmul is the matrix product. t.cosine_similarity compares directions whatever their lengths."
                 },
                 "3": {
                     "name": "load_bang",
@@ -1052,8 +1052,8 @@
                     "name": "help_link",
                     "id": 866,
                     "position_x": 30,
-                    "position_y": 1260,
-                    "width": 53,
+                    "position_y": 1294,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1064,8 +1064,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 120,
-                    "position_y": 1260,
+                    "position_x": 100,
+                    "position_y": 1294,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -1077,9 +1077,9 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 225,
-                    "position_y": 1260,
-                    "width": 72,
+                    "position_x": 182,
+                    "position_y": 1294,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1090,9 +1090,9 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 338,
-                    "position_y": 1260,
-                    "width": 133,
+                    "position_x": 271,
+                    "position_y": 1294,
+                    "width": 136,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1104,7 +1104,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1014,
-                    "position_x": 694,
+                    "position_x": 30,
                     "position_y": 1260,
                     "width": 156,
                     "height": 30,
@@ -1129,7 +1129,7 @@
                     "name": "close",
                     "id": 1051,
                     "position_x": 24,
-                    "position_y": 1334,
+                    "position_y": 1368,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

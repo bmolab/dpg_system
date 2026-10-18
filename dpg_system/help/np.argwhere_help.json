@@ -1,5 +1,5 @@
 {
-    "height": 981,
+    "height": 1015,
     "width": 1541,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Lists the positions of every true (non-zero) cell in an array.\n\nWhere np.where uses a mask to build a new array, np.argwhere tells you\nWHERE the mask is set: which joints are over the speed limit, which\nframes are glitched, which pixels are above threshold. Each found cell\ncomes out as its coordinates.\n\nSYNTAX:\nnp.argwhere\nIt takes no arguments.\n\nINPUTS:\n\ncondition:\nAny array. A cell counts as found when it is true, or non-zero for\nnumbers - so a comparison's result is the usual input, but a plain\nnumeric array works too. Sends on arrival.\n\n(np.argwhere is built by the same code as np.where but has only this one\ninlet: it does not take 'if true' or 'if false'.)\n\nOUTPUTS:\n\nindices:\nAn integer array with one ROW per found cell and one column per dimension\nof the input: for a 2-D mask each row is (row, column). The rows come in\nreading order - along the first row, then the next. Its shape is (number\nfound, number of dimensions); when nothing is found it is empty, shape\n(0, 2) for a 2-D mask.\n\nFeed one of those rows to np.[] (or split the columns with np.[] :,0 and\n:,1) to go from where to what.\n\nREADING THE DEMO:\nnp.rand makes an 8 x 8 array of noise; > 0.85 keeps roughly one cell in\nseven. The heat_map shows the mask in two tones - white for found, black\nfor not. np.argwhere lists the found cells as [row, column] pairs, and\nnp.shape counts them. Click np.rand for a fresh scatter, and check a pair\nagainst the picture: row 0 is the top, column 0 the left. Drag 0.85 on\nthe > node to change how many are found; it applies from the next click.\n\nRELATED:\nnp.where uses the same mask to choose values. The comparison nodes (>,\n<, ...) make the mask. t.argwhere is the PyTorch version (on the t.any\npage). np.[] takes values out once you know where they are.",
+                    "value": "Lists the positions of every true (non-zero) cell in an array.\n\nWhere np.where uses a mask to build a new array, np.argwhere tells you WHERE the mask is set: which joints are over the speed limit, which frames are glitched, which pixels are above threshold. Each found cell comes out as its coordinates.\n\nSYNTAX:\nnp.argwhere\nIt takes no arguments.\n\nINPUTS:\n\ncondition:\nAny array. A cell counts as found when it is true, or non-zero for numbers - so a comparison's result is the usual input, but a plain numeric array works too. Sends on arrival.\n\n(np.argwhere is built by the same code as np.where but has only this one inlet: it does not take 'if true' or 'if false'.)\n\nOUTPUTS:\n\nindices:\nAn integer array with one ROW per found cell and one column per dimension of the input: for a 2-D mask each row is (row, column). The rows come in reading order - along the first row, then the next. Its shape is (number found, number of dimensions); when nothing is found it is empty, shape (0, 2) for a 2-D mask.\n\nFeed one of those rows to np.[] (or split the columns with np.[] :,0 and :,1) to go from where to what.\n\nREADING THE DEMO:\nnp.rand makes an 8 x 8 array of noise; > 0.85 keeps roughly one cell in seven. The heat_map shows the mask in two tones - white for found, black for not. np.argwhere lists the found cells as [row, column] pairs, and np.shape counts them. Click np.rand for a fresh scatter, and check a pair against the picture: row 0 is the top, column 0 the left. Drag 0.85 on the > node to change how many are found; it applies from the next click.\n\nRELATED:\nnp.where uses the same mask to choose values. The comparison nodes (>, <, ...) make the mask. t.argwhere is the PyTorch version (on the t.any page). np.[] takes values out once you know where they are.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Lists the positions of every true (non-zero) cell in an array.\n\nWhere np.where uses a mask to build a new array, np.argwhere tells you\nWHERE the mask is set: which joints are over the speed limit, which\nframes are glitched, which pixels are above threshold. Each found cell\ncomes out as its coordinates.\n\nSYNTAX:\nnp.argwhere\nIt takes no arguments.\n\nINPUTS:\n\ncondition:\nAny array. A cell counts as found when it is true, or non-zero for\nnumbers - so a comparison's result is the usual input, but a plain\nnumeric array works too. Sends on arrival.\n\n(np.argwhere is built by the same code as np.where but has only this one\ninlet: it does not take 'if true' or 'if false'.)\n\nOUTPUTS:\n\nindices:\nAn integer array with one ROW per found cell and one column per dimension\nof the input: for a 2-D mask each row is (row, column). The rows come in\nreading order - along the first row, then the next. Its shape is (number\nfound, number of dimensions); when nothing is found it is empty, shape\n(0, 2) for a 2-D mask.\n\nFeed one of those rows to np.[] (or split the columns with np.[] :,0 and\n:,1) to go from where to what.\n\nREADING THE DEMO:\nnp.rand makes an 8 x 8 array of noise; > 0.85 keeps roughly one cell in\nseven. The heat_map shows the mask in two tones - white for found, black\nfor not. np.argwhere lists the found cells as [row, column] pairs, and\nnp.shape counts them. Click np.rand for a fresh scatter, and check a pair\nagainst the picture: row 0 is the top, column 0 the left. Drag 0.85 on\nthe > node to change how many are found; it applies from the next click.\n\nRELATED:\nnp.where uses the same mask to choose values. The comparison nodes (>,\n<, ...) make the mask. t.argwhere is the PyTorch version (on the t.any\npage). np.[] takes values out once you know where they are."
+            "text": "Lists the positions of every true (non-zero) cell in an array.\n\nWhere np.where uses a mask to build a new array, np.argwhere tells you WHERE the mask is set: which joints are over the speed limit, which frames are glitched, which pixels are above threshold. Each found cell comes out as its coordinates.\n\nSYNTAX:\nnp.argwhere\nIt takes no arguments.\n\nINPUTS:\n\ncondition:\nAny array. A cell counts as found when it is true, or non-zero for numbers - so a comparison's result is the usual input, but a plain numeric array works too. Sends on arrival.\n\n(np.argwhere is built by the same code as np.where but has only this one inlet: it does not take 'if true' or 'if false'.)\n\nOUTPUTS:\n\nindices:\nAn integer array with one ROW per found cell and one column per dimension of the input: for a 2-D mask each row is (row, column). The rows come in reading order - along the first row, then the next. Its shape is (number found, number of dimensions); when nothing is found it is empty, shape (0, 2) for a 2-D mask.\n\nFeed one of those rows to np.[] (or split the columns with np.[] :,0 and :,1) to go from where to what.\n\nREADING THE DEMO:\nnp.rand makes an 8 x 8 array of noise; > 0.85 keeps roughly one cell in seven. The heat_map shows the mask in two tones - white for found, black for not. np.argwhere lists the found cells as [row, column] pairs, and np.shape counts them. Click np.rand for a fresh scatter, and check a pair against the picture: row 0 is the top, column 0 the left. Drag 0.85 on the > node to change how many are found; it applies from the next click.\n\nRELATED:\nnp.where uses the same mask to choose values. The comparison nodes (>, <, ...) make the mask. t.argwhere is the PyTorch version (on the t.any page). np.[] takes values out once you know where they are."
         },
         "3": {
             "name": "load_bang",
@@ -419,7 +419,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 740,
+            "position_y": 774,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -431,8 +431,8 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 135,
-            "position_y": 740,
+            "position_x": 112,
+            "position_y": 774,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -444,9 +444,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 232,
-            "position_y": 740,
-            "width": 47,
+            "position_x": 188,
+            "position_y": 774,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -457,9 +457,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 314,
-            "position_y": 740,
-            "width": 47,
+            "position_x": 252,
+            "position_y": 774,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -471,7 +471,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 977,
-            "position_x": 486,
+            "position_x": 30,
             "position_y": 740,
             "width": 156,
             "height": 30,
@@ -496,7 +496,7 @@
             "name": "close",
             "id": 1014,
             "position_x": 24,
-            "position_y": 814,
+            "position_y": 848,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

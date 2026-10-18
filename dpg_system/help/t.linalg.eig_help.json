@@ -1,5 +1,5 @@
 {
-    "height": 1222,
+    "height": 1256,
     "width": 1748,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Finds the eigenvectors of a square matrix - the directions it only\nstretches, without turning - and the eigenvalues, how much it stretches\neach one.\n\nApply the matrix to one of its eigenvectors and you get the same vector\nback, scaled by its eigenvalue. For a covariance matrix those directions\nare the axes along which a set of points varies, and the eigenvalues\nare how much it varies along each. For a transformation they say what\nit does at heart: stretches along these axes by these amounts.\n\nTHE ANSWERS ARE COMPLEX NUMBERS:\nA matrix that turns things (a rotation) has no direction it leaves\nunturned, and its eigenvalues are complex. So the node ALWAYS sends\ncomplex tensors, even when every answer is real. Pass them through\nt.real (and t.imag) before plotting or doing arithmetic - the demo\ndoes. A symmetric matrix (the same across its diagonal, like a\ncovariance matrix) always has real eigenvalues.\n\nSYNTAX:\nt.linalg.eig\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA square matrix (a list of lists or a NumPy array is turned into a\nfloat32 tensor). A matrix that is not square, or a 1-D list, sends\nnothing (the reason is printed only when the app is in verbose mode).\nReceiving it decomposes and sends.\n\nOUTPUTS:\n\nL tensor out:\nThe eigenvalues, a 1-D complex tensor, one per row. Not sorted. Sent\nsecond.\n\nV tensor out:\nThe eigenvectors as COLUMNS of a complex matrix: column i goes with\neigenvalue i, and has length 1. Sent first.\n\nREADING THE DEMO:\nThe vector node is the matrix: drag any of its four numbers. It starts\nat rows [2 1] and [1 2]: the eigenvalues read 3 and 1 (in the order\nthe solver finds them, not sorted). The first eigenvector column,\n[0.71 0.71], goes with 3: the matrix stretches the diagonal [1 1] by 3.\nThe second, [-0.71 0.71], goes with 1: that direction is left alone. Make it [0 -1] and [1 0] - a quarter turn - and the real parts\nread 0 while the imaginary parts read 1 and -1: no direction survives a\nturn.\n\nRELATED:\nt.linalg.svd works for any shape and always gives real answers.\nt.linalg.pca_low_rank gives the axes of variation of a set of points\ndirectly. t.real and t.imag split the complex results. np.linalg.det\nis the product of the eigenvalues.",
+                    "value": "Finds the eigenvectors of a square matrix - the directions it only stretches, without turning - and the eigenvalues, how much it stretches each one.\n\nApply the matrix to one of its eigenvectors and you get the same vector back, scaled by its eigenvalue. For a covariance matrix those directions are the axes along which a set of points varies, and the eigenvalues are how much it varies along each. For a transformation they say what it does at heart: stretches along these axes by these amounts.\n\nTHE ANSWERS ARE COMPLEX NUMBERS:\nA matrix that turns things (a rotation) has no direction it leaves unturned, and its eigenvalues are complex. So the node ALWAYS sends complex tensors, even when every answer is real. Pass them through t.real (and t.imag) before plotting or doing arithmetic - the demo does. A symmetric matrix (the same across its diagonal, like a covariance matrix) always has real eigenvalues.\n\nSYNTAX:\nt.linalg.eig\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA square matrix (a list of lists or a NumPy array is turned into a float32 tensor). A matrix that is not square, or a 1-D list, sends nothing (the reason is printed only when the app is in verbose mode). Receiving it decomposes and sends.\n\nOUTPUTS:\n\nL tensor out:\nThe eigenvalues, a 1-D complex tensor, one per row. Not sorted. Sent second.\n\nV tensor out:\nThe eigenvectors as COLUMNS of a complex matrix: column i goes with eigenvalue i, and has length 1. Sent first.\n\nREADING THE DEMO:\nThe vector node is the matrix: drag any of its four numbers. It starts at rows [2 1] and [1 2]: the eigenvalues read 3 and 1 (in the order the solver finds them, not sorted). The first eigenvector column, [0.71 0.71], goes with 3: the matrix stretches the diagonal [1 1] by 3. The second, [-0.71 0.71], goes with 1: that direction is left alone. Make it [0 -1] and [1 0] - a quarter turn - and the real parts read 0 while the imaginary parts read 1 and -1: no direction survives a turn.\n\nRELATED:\nt.linalg.svd works for any shape and always gives real answers. t.linalg.pca_low_rank gives the axes of variation of a set of points directly. t.real and t.imag split the complex results. np.linalg.det is the product of the eigenvalues.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Finds the eigenvectors of a square matrix - the directions it only\nstretches, without turning - and the eigenvalues, how much it stretches\neach one.\n\nApply the matrix to one of its eigenvectors and you get the same vector\nback, scaled by its eigenvalue. For a covariance matrix those directions\nare the axes along which a set of points varies, and the eigenvalues\nare how much it varies along each. For a transformation they say what\nit does at heart: stretches along these axes by these amounts.\n\nTHE ANSWERS ARE COMPLEX NUMBERS:\nA matrix that turns things (a rotation) has no direction it leaves\nunturned, and its eigenvalues are complex. So the node ALWAYS sends\ncomplex tensors, even when every answer is real. Pass them through\nt.real (and t.imag) before plotting or doing arithmetic - the demo\ndoes. A symmetric matrix (the same across its diagonal, like a\ncovariance matrix) always has real eigenvalues.\n\nSYNTAX:\nt.linalg.eig\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA square matrix (a list of lists or a NumPy array is turned into a\nfloat32 tensor). A matrix that is not square, or a 1-D list, sends\nnothing (the reason is printed only when the app is in verbose mode).\nReceiving it decomposes and sends.\n\nOUTPUTS:\n\nL tensor out:\nThe eigenvalues, a 1-D complex tensor, one per row. Not sorted. Sent\nsecond.\n\nV tensor out:\nThe eigenvectors as COLUMNS of a complex matrix: column i goes with\neigenvalue i, and has length 1. Sent first.\n\nREADING THE DEMO:\nThe vector node is the matrix: drag any of its four numbers. It starts\nat rows [2 1] and [1 2]: the eigenvalues read 3 and 1 (in the order\nthe solver finds them, not sorted). The first eigenvector column,\n[0.71 0.71], goes with 3: the matrix stretches the diagonal [1 1] by 3.\nThe second, [-0.71 0.71], goes with 1: that direction is left alone. Make it [0 -1] and [1 0] - a quarter turn - and the real parts\nread 0 while the imaginary parts read 1 and -1: no direction survives a\nturn.\n\nRELATED:\nt.linalg.svd works for any shape and always gives real answers.\nt.linalg.pca_low_rank gives the axes of variation of a set of points\ndirectly. t.real and t.imag split the complex results. np.linalg.det\nis the product of the eigenvalues."
+            "text": "Finds the eigenvectors of a square matrix - the directions it only stretches, without turning - and the eigenvalues, how much it stretches each one.\n\nApply the matrix to one of its eigenvectors and you get the same vector back, scaled by its eigenvalue. For a covariance matrix those directions are the axes along which a set of points varies, and the eigenvalues are how much it varies along each. For a transformation they say what it does at heart: stretches along these axes by these amounts.\n\nTHE ANSWERS ARE COMPLEX NUMBERS:\nA matrix that turns things (a rotation) has no direction it leaves unturned, and its eigenvalues are complex. So the node ALWAYS sends complex tensors, even when every answer is real. Pass them through t.real (and t.imag) before plotting or doing arithmetic - the demo does. A symmetric matrix (the same across its diagonal, like a covariance matrix) always has real eigenvalues.\n\nSYNTAX:\nt.linalg.eig\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA square matrix (a list of lists or a NumPy array is turned into a float32 tensor). A matrix that is not square, or a 1-D list, sends nothing (the reason is printed only when the app is in verbose mode). Receiving it decomposes and sends.\n\nOUTPUTS:\n\nL tensor out:\nThe eigenvalues, a 1-D complex tensor, one per row. Not sorted. Sent second.\n\nV tensor out:\nThe eigenvectors as COLUMNS of a complex matrix: column i goes with eigenvalue i, and has length 1. Sent first.\n\nREADING THE DEMO:\nThe vector node is the matrix: drag any of its four numbers. It starts at rows [2 1] and [1 2]: the eigenvalues read 3 and 1 (in the order the solver finds them, not sorted). The first eigenvector column, [0.71 0.71], goes with 3: the matrix stretches the diagonal [1 1] by 3. The second, [-0.71 0.71], goes with 1: that direction is left alone. Make it [0 -1] and [1 0] - a quarter turn - and the real parts read 0 while the imaginary parts read 1 and -1: no direction survives a turn.\n\nRELATED:\nt.linalg.svd works for any shape and always gives real answers. t.linalg.pca_low_rank gives the axes of variation of a set of points directly. t.real and t.imag split the complex results. np.linalg.det is the product of the eigenvalues."
         },
         "3": {
             "name": "load_bang",
@@ -433,8 +433,8 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 1000,
-            "width": 90,
+            "position_y": 1034,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -445,9 +445,9 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 166,
-            "position_y": 1000,
-            "width": 146,
+            "position_x": 138,
+            "position_y": 1034,
+            "width": 148,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -458,9 +458,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 371,
-            "position_y": 1000,
-            "width": 53,
+            "position_x": 302,
+            "position_y": 1034,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -471,9 +471,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 461,
-            "position_y": 1000,
-            "width": 53,
+            "position_x": 372,
+            "position_y": 1034,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -485,7 +485,7 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1044,
+            "position_y": 1078,
             "width": 96,
             "height": 44,
             "visibility": "show_all",
@@ -498,8 +498,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 656,
-            "position_y": 1044,
+            "position_x": 30,
+            "position_y": 1000,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -523,7 +523,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 1118,
+            "position_y": 1152,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

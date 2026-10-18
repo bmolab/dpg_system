@@ -199,6 +199,28 @@ generate -> relayout -> validate -> coverage. Order matters: the generators
 write provisional positions, so relayout has to run after them. Use this rather
 than running the generators by hand.
 
+### reflow_prose.py and compact_see_also.py
+Two passes over saved pages, both also run inside build() so regenerated
+pages come out the same:
+
+    python3 dpg_system/help/tools/reflow_prose.py dpg_system/help/*_help.json
+    python3 dpg_system/help/tools/compact_see_also.py dpg_system/help/*_help.json
+
+`reflow_prose.py` stores the main prose block one line per paragraph. The
+generators hard-wrap at about 72 columns, and a text_block wraps its text to
+its own width, so a narrower box or a bigger font broke every line twice.
+It keeps headings, SYNTAX/EXAMPLE lines, lists, aligned tables and any line
+under 50 characters (a line its author ended on purpose).
+
+`compact_see_also.py` restyles the SEE ALSO row: the label on its own line,
+the help_link buttons 16 px apart under it, everything below moved down one
+line. A row already laid out that way (by hand) is left alone.
+
+The text_block itself (TextEditor in node.py) re-wraps when its width
+changes, and keeps the breaks it inserts for display out of the text when
+it is edited. Help pages save it locked (read-only); untick 'lock' in its
+options to edit it.
+
 ### build_help.py
 Builds a help patch from a compact spec — title, prose, a list of demo nodes with
 positions and properties, and a list of links given by port NAME rather than
@@ -276,7 +298,10 @@ each image shows the transparency), and `make_numpy_c_help.py` no longer
 builds it. `np.sum_help.json` was redesigned by hand (2026-10-18), and
 `np.nansum_help.json` was rebuilt after it (the array's heat_map with the row
 totals in a column beside it and the column totals in a strip under it);
-`make_numpy_reduce_help.py` builds neither now. Use `relayout.py --minimal`
+`make_numpy_reduce_help.py` builds neither now. `np.mean_help.json` follows
+the same layout (a toggled glitch of 30 shows the mean jump and the median
+hold); `np.median_help.json` and `np.nanmean_help.json` are David's own
+reworks. `make_numpy_average_help.py` builds none of the three. Use `relayout.py --minimal`
 on these, never plain relayout.
 
 To hand-edit any generated page: open it, rework it, save over the same file

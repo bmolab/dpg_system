@@ -1,8 +1,9 @@
 """np averages and spread: one page per node.
 
-np.mean, np.median, np.nanmean, np.nanmedian, np.std, np.var and
-np.robust_mean. These were part of the np_stats family page; each now has its
-own page whose demo shows how its statistic DIFFERS from its neighbours - an
+np.nanmedian, np.std, np.var and np.robust_mean (the np.mean, np.median and
+np.nanmean pages are hand-made). These were part of the np_stats family page;
+each now has its own page whose demo shows how its statistic DIFFERS from its
+neighbours - an
 outlier that drags the mean but not the median, a spread that std follows
 and var follows squared, a missing reading that turns mean into nan - with a
 SEE ALSO row under it.
@@ -175,217 +176,9 @@ array does not have is treated as its last axis for that array only:
 the choice is kept, so one 1-D array through np.mean 1 does not stop
 the 2-D arrays that follow from being averaged along axis 1."""
 
-# ======================================================================== np.mean
-body = """Averages the values of an array: adds them up and divides by how many
-there are.
+# np.mean: its page is hand-made now (see tools/README.md).
 
-The mean is the everyday "typical value", the balance point of the data.
-Reach for it to smooth a set of readings into one number, to find the
-centre of a cloud of points, or to average each sensor over a window of
-frames. It uses every value equally - which is its strength, and its
-weakness: one wild value pulls it a long way (see THE OUTLIER below).
-
-""" + AXIS_TEXT + """
-
-SYNTAX:
-np.mean <axis: int>
-With no argument there is no axis: the whole array becomes one number.
-
-EXAMPLE:
-np.mean 0
-
-INPUTS and PARAMETERS:
-
-in:
-The array (a list or a single number is turned into one). Every array
-that arrives is averaged and the result sent - this is the only inlet
-that makes the node send.
-
-""" + AXIS_INLET + """
-
-OUTPUTS:
-
-mean:
-With no axis, one number. With an axis, an array one dimension smaller:
-a 4 by 6 array gives 6 means on axis 0, 4 on axis 1. A list or array of
-whole numbers still gives a fractional mean.
-
-THE OUTLIER (top demo):
-Nine readings, eight of them close to 5 and one glitch of 20. Their mean
-is 6.68 - higher than eight of the nine readings, so not "typical" of
-anything. The median (the middle value once sorted) is 5.1 and barely
-notices the glitch. Drag the 20 down to 5 and the two agree; drag it to
-100 and the mean follows it while the median does not move. Drag any
-other value a little and both shift a little.
-
-ALONG AN AXIS (lower demo):
-np.rand makes a 4 by 6 table of random values from 0 to 1; click its
-button (top left of the node) for a new one. np.mean with no axis gives
-one number for the whole table. np.mean 0 averages each column: its
-strip of 6 sits under the table, one cell under each column. np.mean 1
-averages each row: np.expand_dims stands its 4 values up as a column so
-each sits beside its own row. All three use the same colours as the
-table, 0 dark purple to 1 yellow.
-
-RELATED:
-np.median is the outlier-proof middle value. np.robust_mean averages
-only the values near the median. np.nanmean skips missing (nan) values,
-which make np.mean give nan. np.sum is the total before dividing.
-np.std measures how far values sit from the mean. t.mean is the PyTorch
-version."""
-
-demo = [
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 62), 'w': 88, 'h': 46},
-    readings_vector(),
-    {'key': 'cv', 'comment': True,
-     'text': 'nine readings - drag any of them\nthe last one, 20, is a glitch',
-     'pos': (30, 440)},
-    {'key': 'mn', 'init': 'np.mean', 'pos': (240, 130), 'w': 130, 'h': 70},
-    {'key': 'fmn', 'init': 'float', 'pos': (240, 210), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'cmn', 'comment': True, 'text': 'mean: pulled up by the glitch',
-     'pos': (390, 215)},
-    {'key': 'md', 'init': 'np.median', 'pos': (240, 290), 'w': 130, 'h': 70},
-    {'key': 'fmd', 'init': 'float', 'pos': (240, 370), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'cmd', 'comment': True, 'text': 'median: stays with the eight',
-     'pos': (390, 375)},
-
-    {'key': 'rnd', 'init': 'np.rand 4 6', 'pos': (30, 530), 'w': 160, 'h': 160,
-     'props': {'min': 0.0, 'max': 1.0, 'dim 0': 4, 'dim 1': 6, 'dtype': 'float32'}},
-    {'key': 'crn', 'comment': True, 'text': 'click for a new 4 x 6 table',
-     'pos': (30, 700)},
-    {'key': 'hin', 'init': 'heat_map', 'pos': (230, 530), 'w': 280, 'h': 210,
-     'props': HM(260, 160, 4)},
-    {'key': 'm1', 'init': 'np.mean 1', 'pos': (540, 445), 'w': 130, 'h': 70,
-     'props': {'axis': '1'}},
-    {'key': 'ex', 'init': 'np.expand_dims 1', 'pos': (690, 445), 'w': 170, 'h': 70,
-     'props': {'axis': 1}},
-    {'key': 'hrow', 'init': 'heat_map', 'pos': (540, 530), 'w': 80, 'h': 210,
-     'props': HM(56, 160, 4)},
-    {'key': 'crow', 'comment': True, 'text': 'axis 1: one mean per row',
-     'pos': (640, 600)},
-    {'key': 'm0', 'init': 'np.mean 0', 'pos': (30, 760), 'w': 130, 'h': 70,
-     'props': {'axis': '0'}},
-    {'key': 'hcol', 'init': 'heat_map', 'pos': (230, 770), 'w': 280, 'h': 90,
-     'props': HM(260, 40, 1)},
-    {'key': 'ccol', 'comment': True, 'text': 'axis 0: one mean per column',
-     'pos': (230, 870)},
-    {'key': 'mall', 'init': 'np.mean', 'pos': (30, 900), 'w': 130, 'h': 70},
-    {'key': 'fall', 'init': 'float', 'pos': (30, 980), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'call', 'comment': True, 'text': 'no axis: one number for the whole table',
-     'pos': (180, 985)},
-] + see_also(1060, ['np.median', 'np.robust_mean', 'np.nanmean', 'np.sum', 'np.std', 't.mean'])
-links = [('lb', 'out', 'vec', 'in'), ('lb', 'out', 'rnd', ''),
-         ('vec', 'out', 'mn', 'in'), ('vec', 'out', 'md', 'in'),
-         ('mn', 'mean', 'fmn', ''), ('md', 'median', 'fmd', ''),
-         ('rnd', 'random array', 'hin', 'y'), ('rnd', 'random array', 'm0', 'in'),
-         ('rnd', 'random array', 'm1', 'in'), ('rnd', 'random array', 'mall', 'in'),
-         ('m0', 'mean', 'hcol', 'y'), ('m1', 'mean', 'ex', 'input'),
-         ('ex', 'array out', 'hrow', 'y'), ('mall', 'mean', 'fall', '')]
-print(build('np.mean', 'np.mean - the average', body, demo, links,
-            demo_width=880, text_width=760, text_height=1160))
-
-# ====================================================================== np.median
-body = """Gives the middle value of an array: sort the values and take the one in
-the middle.
-
-Half the values are below the median and half above. Unlike the mean it
-does not care how FAR the extreme values are, only which side of the
-middle they fall - so one glitch, a dropped frame read as 0 or a spike of
-1000, hardly moves it. Reach for it when the data has occasional bad
-values and you want the typical one: a sensor that sometimes jumps, a
-tracker that sometimes loses lock.
-
-ODD AND EVEN COUNTS:
-With an odd number of values the median is the middle one: 1 2 3 4 100
-gives 3. With an even number there are two middle values and the median
-is halfway between them: 1 2 3 100 gives 2.5. So the median is not always
-one of the values.
-
-""" + AXIS_TEXT + """
-
-SYNTAX:
-np.median <axis: int>
-With no argument there is no axis: the median of the whole array.
-
-EXAMPLE:
-np.median
-
-INPUTS and PARAMETERS:
-
-in:
-The array (a list or a single number is turned into one). Every array
-that arrives is sorted (a copy - the input is untouched), its middle
-taken and sent. Only this inlet makes the node send.
-
-""" + AXIS_INLET.replace('np.mean 1', 'np.median 1') + """
-
-OUTPUTS:
-
-median:
-With no axis, one number. With an axis, an array one dimension smaller,
-one median per column (axis 0) or per row (axis 1) - see the axis demo
-on the np.mean page, which works the same way.
-
-THE OUTLIER (top demo):
-The same nine readings as on the np.mean page: eight close to 5, one
-glitch of 20. The median is 5.1; the mean is 6.68. Drag the 20 up to
-1000 - the median does not move at all, because the glitch is still just
-"the one at the top". Drag it below 5 and the median moves only a step,
-to the next value in line. Drag two or three values far away and the
-median finally shifts: it resists outliers only while they are fewer
-than half.
-
-ODD AND EVEN (lower demo):
-Click the two messages. Five values give the middle one, 3; four give
-the average of the two in the middle, 2.5. In both, the 100 makes no
-difference to the median - the mean (shown beside it) is dragged up to
-22 or 26.5.
-
-RELATED:
-np.mean is the average, pulled about by outliers. np.robust_mean averages
-the values near the median - smoother than the median, nearly as hard to
-fool. np.nanmedian skips missing (nan) values. np.sort shows the order
-the median is read from. t.median is the PyTorch version."""
-
-demo = [
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 62), 'w': 88, 'h': 46},
-    readings_vector(),
-    {'key': 'cv', 'comment': True,
-     'text': 'nine readings - drag any of them\ntry the last one, 20, up to 1000',
-     'pos': (30, 440)},
-    {'key': 'md', 'init': 'np.median', 'pos': (240, 130), 'w': 130, 'h': 70},
-    {'key': 'fmd', 'init': 'float', 'pos': (240, 210), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'cmd', 'comment': True, 'text': 'median: the middle of the nine',
-     'pos': (390, 215)},
-    {'key': 'mn', 'init': 'np.mean', 'pos': (240, 290), 'w': 130, 'h': 70},
-    {'key': 'fmn', 'init': 'float', 'pos': (240, 370), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'cmn', 'comment': True, 'text': 'mean, for comparison',
-     'pos': (390, 375)},
-
-    {'key': 'mo', 'init': 'message', 'pos': (30, 520), 'w': 170, 'h': 42,
-     'props': {'text in': '1 2 3 4 100', 'font size': '24', 'width': 150}},
-    {'key': 'me', 'init': 'message', 'pos': (230, 520), 'w': 150, 'h': 42,
-     'props': {'text in': '1 2 3 100', 'font size': '24', 'width': 130}},
-    {'key': 'cm', 'comment': True, 'text': 'click: five values, then four',
-     'pos': (400, 525)},
-    {'key': 'ld', 'init': 'list', 'pos': (30, 590), 'w': 220, 'h': 42, 'props': LIST},
-    {'key': 'md2', 'init': 'np.median', 'pos': (30, 660), 'w': 130, 'h': 70},
-    {'key': 'mn2', 'init': 'np.mean', 'pos': (230, 660), 'w': 130, 'h': 70},
-    {'key': 'fmd2', 'init': 'float', 'pos': (30, 750), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'fmn2', 'init': 'float', 'pos': (230, 750), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'cm2', 'comment': True, 'text': 'left: median. right: mean',
-     'pos': (380, 755)},
-] + see_also(830, ['np.mean', 'np.robust_mean', 'np.nanmedian', 'np.sort', 't.median'])
-links = [('lb', 'out', 'vec', 'in'), ('lb', 'out', 'mo', ''),
-         ('vec', 'out', 'mn', 'in'), ('vec', 'out', 'md', 'in'),
-         ('mn', 'mean', 'fmn', ''), ('md', 'median', 'fmd', ''),
-         ('mo', 'message out', 'ld', ''), ('me', 'message out', 'ld', ''),
-         ('mo', 'message out', 'md2', 'in'), ('me', 'message out', 'md2', 'in'),
-         ('mo', 'message out', 'mn2', 'in'), ('me', 'message out', 'mn2', 'in'),
-         ('md2', 'median', 'fmd2', ''), ('mn2', 'mean', 'fmn2', '')]
-print(build('np.median', 'np.median - the middle value', body, demo, links,
-            demo_width=640, text_width=760, text_height=1180))
-
+# np.median: its page is hand-made now (see tools/README.md).
 
 # ================================================================== nan pages
 def nan_page(stem, plain, title, first, why, related, see):
@@ -499,17 +292,7 @@ RELATED:
                 text_height=1240, subpatch=GAP_SUB))
 
 
-nan_page('np.nanmean', 'np.mean', 'np.nanmean - the average, skipping missing values',
-         """Averages the values of an array that are actually there, skipping any
-that are nan (missing).""",
-         """The average is then the sum of the values present divided by how MANY
-are present - not by the length of the array. Six readings with a
-seventh missing give the average of six.""",
-         """np.mean is the same without the skipping. np.nanmedian is the
-middle value, skipping missing ones; np.nansum adds up what is there.
-np.robust_mean rejects values that are present but wrong, which nanmean
-does not. t.nanmean is the PyTorch version.""",
-         ['np.mean', 'np.nanmedian', 'np.nansum', 'np.robust_mean', 't.nanmean'])
+# np.nanmean: its page is hand-made now (see tools/README.md).
 
 nan_page('np.nanmedian', 'np.median', 'np.nanmedian - the middle value, skipping missing values',
          """Gives the middle value of an array's values that are actually there,

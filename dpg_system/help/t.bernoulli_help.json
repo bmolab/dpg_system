@@ -297,7 +297,7 @@
             }
         },
         "1": {
-            "height": 1078,
+            "height": 1112,
             "width": 1804,
             "position": [
                 100,
@@ -364,7 +364,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Turns a tensor of PROBABILITIES into a tensor of random 0s and 1s: each\nelement comes out 1 with the probability it holds, otherwise 0.\n\nUnlike t.dist.bernoulli, which flips every coin with the same odds,\nthis node gives each element its own odds - the input IS the parameter.\nFeed it a soft mask or a picture and you get random dots whose density\nfollows it: dithering, a fading-in pattern of sparks, dropout with a\ndifferent rate per cell, a random decision per joint weighted by how\nfast it moves.\n\nSYNTAX:\nt.bernoulli\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, one per element, each from 0 (never 1) to 1 (always\n1). Every tensor that arrives is sampled and sent; this is the only\ninlet. A list or number is turned into a tensor first. If any value is\nbelow 0 or above 1 the node sends NOTHING (and says why only with the\napp's verbose setting on), so clip a signal into 0..1 first (t.clamp).\nThe tensor must be floating-point; an integer one gives an error in\nthe console.\n\nOUTPUTS:\n\ntensor out:\n0s and 1s, the same shape, dtype and device as the input - a float\ntensor of 0.0 and 1.0, not booleans. A new random draw every time a\ntensor arrives.\n\nREADING THE DEMO:\nmake_ramp sends a 64 x 64 ramp of probabilities: 0 at the left edge,\nrising evenly to top at the right (left heat_map, black 0 to white 1).\nt.bernoulli turns it into the right heat_map: no dots at all on the\nleft, sparse dots in the middle, solid at the right if top is 1. Drag\ntop and the whole ramp, and the dot density with it, scales down.\nClick 'again' for a fresh draw from the same ramp. The two floats are\nthe mean of the probabilities and the fraction of 1s that came out -\nalways very close.\n\nRELATED:\nt.dist.bernoulli flips coins with one shared probability, from a typed\nshape. t.poisson does the same per-element trick for counts. t.rand\nwith a > comparison does this by hand.",
+                            "value": "Turns a tensor of PROBABILITIES into a tensor of random 0s and 1s: each element comes out 1 with the probability it holds, otherwise 0.\n\nUnlike t.dist.bernoulli, which flips every coin with the same odds, this node gives each element its own odds - the input IS the parameter. Feed it a soft mask or a picture and you get random dots whose density follows it: dithering, a fading-in pattern of sparks, dropout with a different rate per cell, a random decision per joint weighted by how fast it moves.\n\nSYNTAX:\nt.bernoulli\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, one per element, each from 0 (never 1) to 1 (always 1). Every tensor that arrives is sampled and sent; this is the only inlet. A list or number is turned into a tensor first. If any value is below 0 or above 1 the node sends NOTHING (and says why only with the app's verbose setting on), so clip a signal into 0..1 first (t.clamp). The tensor must be floating-point; an integer one gives an error in the console.\n\nOUTPUTS:\n\ntensor out:\n0s and 1s, the same shape, dtype and device as the input - a float tensor of 0.0 and 1.0, not booleans. A new random draw every time a tensor arrives.\n\nREADING THE DEMO:\nmake_ramp sends a 64 x 64 ramp of probabilities: 0 at the left edge, rising evenly to top at the right (left heat_map, black 0 to white 1). t.bernoulli turns it into the right heat_map: no dots at all on the left, sparse dots in the middle, solid at the right if top is 1. Drag top and the whole ramp, and the dot density with it, scales down. Click 'again' for a fresh draw from the same ramp. The two floats are the mean of the probabilities and the fraction of 1s that came out - always very close.\n\nRELATED:\nt.dist.bernoulli flips coins with one shared probability, from a typed shape. t.poisson does the same per-element trick for counts. t.rand with a > comparison does this by hand.",
                             "value_type": "str"
                         },
                         "1": {
@@ -388,7 +388,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Turns a tensor of PROBABILITIES into a tensor of random 0s and 1s: each\nelement comes out 1 with the probability it holds, otherwise 0.\n\nUnlike t.dist.bernoulli, which flips every coin with the same odds,\nthis node gives each element its own odds - the input IS the parameter.\nFeed it a soft mask or a picture and you get random dots whose density\nfollows it: dithering, a fading-in pattern of sparks, dropout with a\ndifferent rate per cell, a random decision per joint weighted by how\nfast it moves.\n\nSYNTAX:\nt.bernoulli\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, one per element, each from 0 (never 1) to 1 (always\n1). Every tensor that arrives is sampled and sent; this is the only\ninlet. A list or number is turned into a tensor first. If any value is\nbelow 0 or above 1 the node sends NOTHING (and says why only with the\napp's verbose setting on), so clip a signal into 0..1 first (t.clamp).\nThe tensor must be floating-point; an integer one gives an error in\nthe console.\n\nOUTPUTS:\n\ntensor out:\n0s and 1s, the same shape, dtype and device as the input - a float\ntensor of 0.0 and 1.0, not booleans. A new random draw every time a\ntensor arrives.\n\nREADING THE DEMO:\nmake_ramp sends a 64 x 64 ramp of probabilities: 0 at the left edge,\nrising evenly to top at the right (left heat_map, black 0 to white 1).\nt.bernoulli turns it into the right heat_map: no dots at all on the\nleft, sparse dots in the middle, solid at the right if top is 1. Drag\ntop and the whole ramp, and the dot density with it, scales down.\nClick 'again' for a fresh draw from the same ramp. The two floats are\nthe mean of the probabilities and the fraction of 1s that came out -\nalways very close.\n\nRELATED:\nt.dist.bernoulli flips coins with one shared probability, from a typed\nshape. t.poisson does the same per-element trick for counts. t.rand\nwith a > comparison does this by hand."
+                    "text": "Turns a tensor of PROBABILITIES into a tensor of random 0s and 1s: each element comes out 1 with the probability it holds, otherwise 0.\n\nUnlike t.dist.bernoulli, which flips every coin with the same odds, this node gives each element its own odds - the input IS the parameter. Feed it a soft mask or a picture and you get random dots whose density follows it: dithering, a fading-in pattern of sparks, dropout with a different rate per cell, a random decision per joint weighted by how fast it moves.\n\nSYNTAX:\nt.bernoulli\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, one per element, each from 0 (never 1) to 1 (always 1). Every tensor that arrives is sampled and sent; this is the only inlet. A list or number is turned into a tensor first. If any value is below 0 or above 1 the node sends NOTHING (and says why only with the app's verbose setting on), so clip a signal into 0..1 first (t.clamp). The tensor must be floating-point; an integer one gives an error in the console.\n\nOUTPUTS:\n\ntensor out:\n0s and 1s, the same shape, dtype and device as the input - a float tensor of 0.0 and 1.0, not booleans. A new random draw every time a tensor arrives.\n\nREADING THE DEMO:\nmake_ramp sends a 64 x 64 ramp of probabilities: 0 at the left edge, rising evenly to top at the right (left heat_map, black 0 to white 1). t.bernoulli turns it into the right heat_map: no dots at all on the left, sparse dots in the middle, solid at the right if top is 1. Drag top and the whole ramp, and the dot density with it, scales down. Click 'again' for a fresh draw from the same ramp. The two floats are the mean of the probabilities and the fraction of 1s that came out - always very close.\n\nRELATED:\nt.dist.bernoulli flips coins with one shared probability, from a typed shape. t.poisson does the same per-element trick for counts. t.rand with a > comparison does this by hand."
                 },
                 "3": {
                     "name": "slider",
@@ -781,8 +781,8 @@
                     "name": "help_link",
                     "id": 903,
                     "position_x": 30,
-                    "position_y": 900,
-                    "width": 115,
+                    "position_y": 934,
+                    "width": 117,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -793,9 +793,9 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 197,
-                    "position_y": 900,
-                    "width": 72,
+                    "position_x": 163,
+                    "position_y": 934,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -806,9 +806,9 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 310,
-                    "position_y": 900,
-                    "width": 53,
+                    "position_x": 252,
+                    "position_y": 934,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -819,8 +819,8 @@
                 "21": {
                     "name": "help_link",
                     "id": 1014,
-                    "position_x": 400,
-                    "position_y": 900,
+                    "position_x": 322,
+                    "position_y": 934,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -832,8 +832,8 @@
                 "22": {
                     "name": "help_link",
                     "id": 1051,
-                    "position_x": 497,
-                    "position_y": 900,
+                    "position_x": 398,
+                    "position_y": 934,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -846,7 +846,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1088,
-                    "position_x": 583,
+                    "position_x": 30,
                     "position_y": 900,
                     "width": 156,
                     "height": 30,
@@ -871,7 +871,7 @@
                     "name": "close",
                     "id": 1125,
                     "position_x": 24,
-                    "position_y": 974,
+                    "position_y": 1008,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

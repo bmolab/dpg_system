@@ -204,7 +204,7 @@
             }
         },
         "1": {
-            "height": 1228,
+            "height": 1262,
             "width": 1845,
             "position": [
                 100,
@@ -271,7 +271,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Finds, element by element, the least common multiple of two tensors\nof whole numbers: the smallest number both divide into exactly.\n\nThe lcm of 4 and 6 is 12. In a patch it answers \"when do these line up\nagain?\": two loops of 4 and 6 beats coincide every 12 beats, so the lcm\nof two cycle lengths is the length of the combined pattern before it\nrepeats.\n\nSYNTAX:\nt.lcm\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, list or a single number used for every element. It is\nonly stored when it arrives, so send it FIRST; until it has received\nsomething the node sends nothing.\n\nThe shapes must broadcast: the same shape, a single number, or shapes\nthat differ only where one has length 1. The demo's table is exactly\nthat - a column of 12 against a row of 12 gives all 144 pairs.\n\nWHOLE NUMBERS ONLY:\nThis is number theory, not arithmetic. Both inputs are turned into whole\nnumbers (64-bit integers) before the work is done, so lists and float\ntensors can go straight in. A value with a fraction is rounded to the\nNEAREST whole number first: 2.6 counts as 3 and 9.4 as 9, so a value\nlike 11.9999 that should have been 12 does not quietly become 11. For a\ndifferent rule put t.floor or t.ceil in front.\n\nZERO:\nThe lcm of anything with 0 is 0 (0 is the only multiple of 0).\n\nOUTPUTS:\n\nlcm tensor out:\nThe least common multiples, as 64-bit integers, in the broadcast shape.\nThey grow quickly - the lcm of 11 and 12 is already 132.\n\nREADING THE DEMO:\nTop: four pairs at once. 12 and 8 give 24, 18 and 12 give 36, 7 and 21\ngive 21, 9 and 0 give 0.\n\nBottom: every pair from 1 to 12. Row r, column c holds the lcm of r+1\nand c+1 (the top-left cell is 1 and 1). Pairs with nothing in common\nmultiply out in full and glow brightest towards the bottom right (11 and\n12 give 132); pairs that share factors stay dark, and the diagonal - a\nnumber with itself - is only the number.\n\nRELATED:\nt.gcd is the other half: the largest number dividing both. For any pair,\ngcd times lcm is the pair multiplied together. t.round and t.floor make\nwhole numbers from fractions.",
+                            "value": "Finds, element by element, the least common multiple of two tensors of whole numbers: the smallest number both divide into exactly.\n\nThe lcm of 4 and 6 is 12. In a patch it answers \"when do these line up again?\": two loops of 4 and 6 beats coincide every 12 beats, so the lcm of two cycle lengths is the length of the combined pattern before it repeats.\n\nSYNTAX:\nt.lcm\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, list or a single number used for every element. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing.\n\nThe shapes must broadcast: the same shape, a single number, or shapes that differ only where one has length 1. The demo's table is exactly that - a column of 12 against a row of 12 gives all 144 pairs.\n\nWHOLE NUMBERS ONLY:\nThis is number theory, not arithmetic. Both inputs are turned into whole numbers (64-bit integers) before the work is done, so lists and float tensors can go straight in. A value with a fraction is rounded to the NEAREST whole number first: 2.6 counts as 3 and 9.4 as 9, so a value like 11.9999 that should have been 12 does not quietly become 11. For a different rule put t.floor or t.ceil in front.\n\nZERO:\nThe lcm of anything with 0 is 0 (0 is the only multiple of 0).\n\nOUTPUTS:\n\nlcm tensor out:\nThe least common multiples, as 64-bit integers, in the broadcast shape. They grow quickly - the lcm of 11 and 12 is already 132.\n\nREADING THE DEMO:\nTop: four pairs at once. 12 and 8 give 24, 18 and 12 give 36, 7 and 21 give 21, 9 and 0 give 0.\n\nBottom: every pair from 1 to 12. Row r, column c holds the lcm of r+1 and c+1 (the top-left cell is 1 and 1). Pairs with nothing in common multiply out in full and glow brightest towards the bottom right (11 and 12 give 132); pairs that share factors stay dark, and the diagonal - a number with itself - is only the number.\n\nRELATED:\nt.gcd is the other half: the largest number dividing both. For any pair, gcd times lcm is the pair multiplied together. t.round and t.floor make whole numbers from fractions.",
                             "value_type": "str"
                         },
                         "1": {
@@ -295,7 +295,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Finds, element by element, the least common multiple of two tensors\nof whole numbers: the smallest number both divide into exactly.\n\nThe lcm of 4 and 6 is 12. In a patch it answers \"when do these line up\nagain?\": two loops of 4 and 6 beats coincide every 12 beats, so the lcm\nof two cycle lengths is the length of the combined pattern before it\nrepeats.\n\nSYNTAX:\nt.lcm\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, list or a single number used for every element. It is\nonly stored when it arrives, so send it FIRST; until it has received\nsomething the node sends nothing.\n\nThe shapes must broadcast: the same shape, a single number, or shapes\nthat differ only where one has length 1. The demo's table is exactly\nthat - a column of 12 against a row of 12 gives all 144 pairs.\n\nWHOLE NUMBERS ONLY:\nThis is number theory, not arithmetic. Both inputs are turned into whole\nnumbers (64-bit integers) before the work is done, so lists and float\ntensors can go straight in. A value with a fraction is rounded to the\nNEAREST whole number first: 2.6 counts as 3 and 9.4 as 9, so a value\nlike 11.9999 that should have been 12 does not quietly become 11. For a\ndifferent rule put t.floor or t.ceil in front.\n\nZERO:\nThe lcm of anything with 0 is 0 (0 is the only multiple of 0).\n\nOUTPUTS:\n\nlcm tensor out:\nThe least common multiples, as 64-bit integers, in the broadcast shape.\nThey grow quickly - the lcm of 11 and 12 is already 132.\n\nREADING THE DEMO:\nTop: four pairs at once. 12 and 8 give 24, 18 and 12 give 36, 7 and 21\ngive 21, 9 and 0 give 0.\n\nBottom: every pair from 1 to 12. Row r, column c holds the lcm of r+1\nand c+1 (the top-left cell is 1 and 1). Pairs with nothing in common\nmultiply out in full and glow brightest towards the bottom right (11 and\n12 give 132); pairs that share factors stay dark, and the diagonal - a\nnumber with itself - is only the number.\n\nRELATED:\nt.gcd is the other half: the largest number dividing both. For any pair,\ngcd times lcm is the pair multiplied together. t.round and t.floor make\nwhole numbers from fractions."
+                    "text": "Finds, element by element, the least common multiple of two tensors of whole numbers: the smallest number both divide into exactly.\n\nThe lcm of 4 and 6 is 12. In a patch it answers \"when do these line up again?\": two loops of 4 and 6 beats coincide every 12 beats, so the lcm of two cycle lengths is the length of the combined pattern before it repeats.\n\nSYNTAX:\nt.lcm\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe first tensor, list or number. Receiving it does the work.\n\ntensor b in:\nThe second tensor, list or a single number used for every element. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing.\n\nThe shapes must broadcast: the same shape, a single number, or shapes that differ only where one has length 1. The demo's table is exactly that - a column of 12 against a row of 12 gives all 144 pairs.\n\nWHOLE NUMBERS ONLY:\nThis is number theory, not arithmetic. Both inputs are turned into whole numbers (64-bit integers) before the work is done, so lists and float tensors can go straight in. A value with a fraction is rounded to the NEAREST whole number first: 2.6 counts as 3 and 9.4 as 9, so a value like 11.9999 that should have been 12 does not quietly become 11. For a different rule put t.floor or t.ceil in front.\n\nZERO:\nThe lcm of anything with 0 is 0 (0 is the only multiple of 0).\n\nOUTPUTS:\n\nlcm tensor out:\nThe least common multiples, as 64-bit integers, in the broadcast shape. They grow quickly - the lcm of 11 and 12 is already 132.\n\nREADING THE DEMO:\nTop: four pairs at once. 12 and 8 give 24, 18 and 12 give 36, 7 and 21 give 21, 9 and 0 give 0.\n\nBottom: every pair from 1 to 12. Row r, column c holds the lcm of r+1 and c+1 (the top-left cell is 1 and 1). Pairs with nothing in common multiply out in full and glow brightest towards the bottom right (11 and 12 give 132); pairs that share factors stay dark, and the diagonal - a number with itself - is only the number.\n\nRELATED:\nt.gcd is the other half: the largest number dividing both. For any pair, gcd times lcm is the pair multiplied together. t.round and t.floor make whole numbers from fractions."
                 },
                 "3": {
                     "name": "button",
@@ -610,8 +610,8 @@
                     "name": "help_link",
                     "id": 866,
                     "position_x": 30,
-                    "position_y": 1050,
-                    "width": 47,
+                    "position_y": 1084,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -622,8 +622,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 112,
-                    "position_y": 1050,
+                    "position_x": 94,
+                    "position_y": 1084,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -635,8 +635,8 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 209,
-                    "position_y": 1050,
+                    "position_x": 170,
+                    "position_y": 1084,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -648,9 +648,9 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 306,
-                    "position_y": 1050,
-                    "width": 53,
+                    "position_x": 246,
+                    "position_y": 1084,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -662,8 +662,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1014,
-                    "position_x": 568,
-                    "position_y": 1094,
+                    "position_x": 30,
+                    "position_y": 1050,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -687,7 +687,7 @@
                     "name": "close",
                     "id": 1051,
                     "position_x": 24,
-                    "position_y": 1124,
+                    "position_y": 1158,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

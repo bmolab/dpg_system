@@ -1,5 +1,5 @@
 {
-    "height": 1106,
+    "height": 1140,
     "width": 1589,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Applies the Airy function Ai to every element of a tensor.\n\nIt is used for the light near a caustic - the bright edge of a rainbow,\nthe bright curve in a coffee cup - and for a quantum particle in a uniform\nfield: it is the shape a wave takes where it turns back.\n\nTHE CURVE:\nAi is the solution of y'' = x y that dies away for positive x. To the\nright of zero it falls smoothly towards 0, faster than any exponential. To\nthe left it oscillates, and the further left you go the faster it wiggles\nand the smaller the swings get. Ai(0) is about 0.355; its first zero is at\nabout -2.338.\n\nSYNTAX:\nt.special.airy_ai\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number. Very large positive inputs give 0; very\nlarge negative ones oscillate too fast to be useful in 32-bit floats.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-10 to 4 here), and the\nupper plot draws them: a straight ramp. The lower plot is Ai(x) of each\nof those 200 values, so it is the graph of the function from -10 to 4,\ndrawn from -0.5 (bottom) to 0.6 (top). Drag start and stop on t.linspace\nto look at another stretch (start -20 shows the wiggles getting faster).\n\nRELATED:\nt.special.bessel_j0 and t.special.bessel_j1 are the other wave\nshapes in this set; Ai is the one for a wave meeting a turning point,\nBessel functions are the ones for circular or cylindrical waves.",
+                    "value": "Applies the Airy function Ai to every element of a tensor.\n\nIt is used for the light near a caustic - the bright edge of a rainbow, the bright curve in a coffee cup - and for a quantum particle in a uniform field: it is the shape a wave takes where it turns back.\n\nTHE CURVE:\nAi is the solution of y'' = x y that dies away for positive x. To the right of zero it falls smoothly towards 0, faster than any exponential. To the left it oscillates, and the further left you go the faster it wiggles and the smaller the swings get. Ai(0) is about 0.355; its first zero is at about -2.338.\n\nSYNTAX:\nt.special.airy_ai\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number. Very large positive inputs give 0; very large negative ones oscillate too fast to be useful in 32-bit floats.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-10 to 4 here), and the upper plot draws them: a straight ramp. The lower plot is Ai(x) of each of those 200 values, so it is the graph of the function from -10 to 4, drawn from -0.5 (bottom) to 0.6 (top). Drag start and stop on t.linspace to look at another stretch (start -20 shows the wiggles getting faster).\n\nRELATED:\nt.special.bessel_j0 and t.special.bessel_j1 are the other wave shapes in this set; Ai is the one for a wave meeting a turning point, Bessel functions are the ones for circular or cylindrical waves.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Applies the Airy function Ai to every element of a tensor.\n\nIt is used for the light near a caustic - the bright edge of a rainbow,\nthe bright curve in a coffee cup - and for a quantum particle in a uniform\nfield: it is the shape a wave takes where it turns back.\n\nTHE CURVE:\nAi is the solution of y'' = x y that dies away for positive x. To the\nright of zero it falls smoothly towards 0, faster than any exponential. To\nthe left it oscillates, and the further left you go the faster it wiggles\nand the smaller the swings get. Ai(0) is about 0.355; its first zero is at\nabout -2.338.\n\nSYNTAX:\nt.special.airy_ai\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number. Very large positive inputs give 0; very\nlarge negative ones oscillate too fast to be useful in 32-bit floats.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (-10 to 4 here), and the\nupper plot draws them: a straight ramp. The lower plot is Ai(x) of each\nof those 200 values, so it is the graph of the function from -10 to 4,\ndrawn from -0.5 (bottom) to 0.6 (top). Drag start and stop on t.linspace\nto look at another stretch (start -20 shows the wiggles getting faster).\n\nRELATED:\nt.special.bessel_j0 and t.special.bessel_j1 are the other wave\nshapes in this set; Ai is the one for a wave meeting a turning point,\nBessel functions are the ones for circular or cylindrical waves."
+            "text": "Applies the Airy function Ai to every element of a tensor.\n\nIt is used for the light near a caustic - the bright edge of a rainbow, the bright curve in a coffee cup - and for a quantum particle in a uniform field: it is the shape a wave takes where it turns back.\n\nTHE CURVE:\nAi is the solution of y'' = x y that dies away for positive x. To the right of zero it falls smoothly towards 0, faster than any exponential. To the left it oscillates, and the further left you go the faster it wiggles and the smaller the swings get. Ai(0) is about 0.355; its first zero is at about -2.338.\n\nSYNTAX:\nt.special.airy_ai\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\nDefined for every real number. Very large positive inputs give 0; very large negative ones oscillate too fast to be useful in 32-bit floats.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (-10 to 4 here), and the upper plot draws them: a straight ramp. The lower plot is Ai(x) of each of those 200 values, so it is the graph of the function from -10 to 4, drawn from -0.5 (bottom) to 0.6 (top). Drag start and stop on t.linspace to look at another stretch (start -20 shows the wiggles getting faster).\n\nRELATED:\nt.special.bessel_j0 and t.special.bessel_j1 are the other wave shapes in this set; Ai is the one for a wave meeting a turning point, Bessel functions are the ones for circular or cylindrical waves."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 133,
+            "position_y": 874,
+            "width": 136,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 220,
-            "position_y": 840,
-            "width": 133,
+            "position_x": 182,
+            "position_y": 874,
+            "width": 136,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -458,7 +458,7 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 884,
+            "position_y": 918,
             "width": 195,
             "height": 44,
             "visibility": "show_all",
@@ -471,7 +471,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 928,
+            "position_y": 962,
             "width": 232,
             "height": 44,
             "visibility": "show_all",
@@ -484,8 +484,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 866,
-            "position_x": 379,
-            "position_y": 928,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -509,7 +509,7 @@
             "name": "close",
             "id": 903,
             "position_x": 24,
-            "position_y": 1002,
+            "position_y": 1036,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 903,
+    "height": 937,
     "width": 1818,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Reports what a tensor is: its shape, its dtype, the device it lives\non, and whether it is tracking gradients - each on its own outlet.\n\nIt is the first thing to patch in when a torch node refuses a tensor or\ngives a surprising result. The cause is nearly always one of these four:\nthe shape is not what you thought, the type is wrong (integers where\nfloats were expected), it is on a different device from the tensor it\nmeets, or it is carrying gradient history. The outlet labels change to\nshow the values, so the node itself is a display.\n\nSYNTAX:\nt.info\n\nEXAMPLE:\nt.info\n\nINPUTS and PARAMETERS:\n\nin:\nThe tensor. Every tensor that arrives is reported. A list or NumPy array\nis turned into a float32 cpu tensor first and that is what is reported -\nso t.info on a NumPy array always says float32, whatever the array's own\ntype. An empty tensor is reported like any other: its shape has a 0 in\nit ([0] for an empty 1-D tensor). An empty list is reported the same\nway, as [0].\n\nOUTPUTS (sent right to left - grad first, shape last):\n\nshape:\nThe size of each dimension, as a list: [3, 4] is 3 rows of 4.\n\ndtype:\nThe type, as text: torch.float32, torch.int64 ...\n\ndevice:\nWhere it lives, as text: cpu, or mps:0, cuda:0 for a GPU.\n\ngrad:\nTrue if the tensor tracks gradients, False if not. The outlet's label\nreads \"grad\" or \"inference\" to match.\n\nREADING THE DEMO:\nA metro makes a fresh t.rand tensor three times a second; pick a shape\nfrom the menu to change it (2x3x4 has three dimensions). The tensor then\npasses through t.to, whose dtype and device menus you can change, and\nwhose requires_grad box you can tick. Each change appears in the four\ndisplays and in the outlet labels.\n\nRELATED:\nt.numel gives the total number of values. t.is_contiguous tells you how\nthe values are laid out in memory. tensor (t.to) changes the dtype,\ndevice and requires_grad that this reports. np.shape is the NumPy\nversion of the shape outlet.",
+                    "value": "Reports what a tensor is: its shape, its dtype, the device it lives on, and whether it is tracking gradients - each on its own outlet.\n\nIt is the first thing to patch in when a torch node refuses a tensor or gives a surprising result. The cause is nearly always one of these four: the shape is not what you thought, the type is wrong (integers where floats were expected), it is on a different device from the tensor it meets, or it is carrying gradient history. The outlet labels change to show the values, so the node itself is a display.\n\nSYNTAX:\nt.info\n\nEXAMPLE:\nt.info\n\nINPUTS and PARAMETERS:\n\nin:\nThe tensor. Every tensor that arrives is reported. A list or NumPy array is turned into a float32 cpu tensor first and that is what is reported - so t.info on a NumPy array always says float32, whatever the array's own type. An empty tensor is reported like any other: its shape has a 0 in it ([0] for an empty 1-D tensor). An empty list is reported the same way, as [0].\n\nOUTPUTS (sent right to left - grad first, shape last):\n\nshape:\nThe size of each dimension, as a list: [3, 4] is 3 rows of 4.\n\ndtype:\nThe type, as text: torch.float32, torch.int64 ...\n\ndevice:\nWhere it lives, as text: cpu, or mps:0, cuda:0 for a GPU.\n\ngrad:\nTrue if the tensor tracks gradients, False if not. The outlet's label reads \"grad\" or \"inference\" to match.\n\nREADING THE DEMO:\nA metro makes a fresh t.rand tensor three times a second; pick a shape from the menu to change it (2x3x4 has three dimensions). The tensor then passes through t.to, whose dtype and device menus you can change, and whose requires_grad box you can tick. Each change appears in the four displays and in the outlet labels.\n\nRELATED:\nt.numel gives the total number of values. t.is_contiguous tells you how the values are laid out in memory. tensor (t.to) changes the dtype, device and requires_grad that this reports. np.shape is the NumPy version of the shape outlet.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Reports what a tensor is: its shape, its dtype, the device it lives\non, and whether it is tracking gradients - each on its own outlet.\n\nIt is the first thing to patch in when a torch node refuses a tensor or\ngives a surprising result. The cause is nearly always one of these four:\nthe shape is not what you thought, the type is wrong (integers where\nfloats were expected), it is on a different device from the tensor it\nmeets, or it is carrying gradient history. The outlet labels change to\nshow the values, so the node itself is a display.\n\nSYNTAX:\nt.info\n\nEXAMPLE:\nt.info\n\nINPUTS and PARAMETERS:\n\nin:\nThe tensor. Every tensor that arrives is reported. A list or NumPy array\nis turned into a float32 cpu tensor first and that is what is reported -\nso t.info on a NumPy array always says float32, whatever the array's own\ntype. An empty tensor is reported like any other: its shape has a 0 in\nit ([0] for an empty 1-D tensor). An empty list is reported the same\nway, as [0].\n\nOUTPUTS (sent right to left - grad first, shape last):\n\nshape:\nThe size of each dimension, as a list: [3, 4] is 3 rows of 4.\n\ndtype:\nThe type, as text: torch.float32, torch.int64 ...\n\ndevice:\nWhere it lives, as text: cpu, or mps:0, cuda:0 for a GPU.\n\ngrad:\nTrue if the tensor tracks gradients, False if not. The outlet's label\nreads \"grad\" or \"inference\" to match.\n\nREADING THE DEMO:\nA metro makes a fresh t.rand tensor three times a second; pick a shape\nfrom the menu to change it (2x3x4 has three dimensions). The tensor then\npasses through t.to, whose dtype and device menus you can change, and\nwhose requires_grad box you can tick. Each change appears in the four\ndisplays and in the outlet labels.\n\nRELATED:\nt.numel gives the total number of values. t.is_contiguous tells you how\nthe values are laid out in memory. tensor (t.to) changes the dtype,\ndevice and requires_grad that this reports. np.shape is the NumPy\nversion of the shape outlet."
+            "text": "Reports what a tensor is: its shape, its dtype, the device it lives on, and whether it is tracking gradients - each on its own outlet.\n\nIt is the first thing to patch in when a torch node refuses a tensor or gives a surprising result. The cause is nearly always one of these four: the shape is not what you thought, the type is wrong (integers where floats were expected), it is on a different device from the tensor it meets, or it is carrying gradient history. The outlet labels change to show the values, so the node itself is a display.\n\nSYNTAX:\nt.info\n\nEXAMPLE:\nt.info\n\nINPUTS and PARAMETERS:\n\nin:\nThe tensor. Every tensor that arrives is reported. A list or NumPy array is turned into a float32 cpu tensor first and that is what is reported - so t.info on a NumPy array always says float32, whatever the array's own type. An empty tensor is reported like any other: its shape has a 0 in it ([0] for an empty 1-D tensor). An empty list is reported the same way, as [0].\n\nOUTPUTS (sent right to left - grad first, shape last):\n\nshape:\nThe size of each dimension, as a list: [3, 4] is 3 rows of 4.\n\ndtype:\nThe type, as text: torch.float32, torch.int64 ...\n\ndevice:\nWhere it lives, as text: cpu, or mps:0, cuda:0 for a GPU.\n\ngrad:\nTrue if the tensor tracks gradients, False if not. The outlet's label reads \"grad\" or \"inference\" to match.\n\nREADING THE DEMO:\nA metro makes a fresh t.rand tensor three times a second; pick a shape from the menu to change it (2x3x4 has three dimensions). The tensor then passes through t.to, whose dtype and device menus you can change, and whose requires_grad box you can tick. Each change appears in the four displays and in the outlet labels.\n\nRELATED:\nt.numel gives the total number of values. t.is_contiguous tells you how the values are laid out in memory. tensor (t.to) changes the dtype, device and requires_grad that this reports. np.shape is the NumPy version of the shape outlet."
         },
         "3": {
             "name": "menu",
@@ -361,7 +361,7 @@
             "name": "comment",
             "id": 792,
             "position_x": 726,
-            "position_y": 700,
+            "position_y": 734,
             "width": 45,
             "height": 30,
             "visibility": "show_all",
@@ -409,7 +409,7 @@
             "name": "comment",
             "id": 866,
             "position_x": 726,
-            "position_y": 740,
+            "position_y": 774,
             "width": 33,
             "height": 30,
             "visibility": "show_all",
@@ -433,7 +433,7 @@
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 670,
+            "position_y": 704,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -445,9 +445,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 127,
-            "position_y": 670,
-            "width": 53,
+            "position_x": 106,
+            "position_y": 704,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -458,9 +458,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 217,
-            "position_y": 670,
-            "width": 109,
+            "position_x": 176,
+            "position_y": 704,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -471,8 +471,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 376,
-            "position_y": 670,
+            "position_x": 302,
+            "position_y": 704,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -485,8 +485,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1051,
-            "position_x": 726,
-            "position_y": 780,
+            "position_x": 30,
+            "position_y": 670,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -510,7 +510,7 @@
             "name": "close",
             "id": 1088,
             "position_x": 24,
-            "position_y": 744,
+            "position_y": 778,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

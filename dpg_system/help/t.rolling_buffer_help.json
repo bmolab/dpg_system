@@ -309,7 +309,7 @@
             }
         },
         "1": {
-            "height": 1568,
+            "height": 1602,
             "width": 1979,
             "position": [
                 100,
@@ -376,7 +376,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Keeps the last N samples that arrived and sends them all, oldest\nfirst, every time a new one comes in.\n\nThis turns a stream - one value, or one set of values, per frame - into\na tensor of the recent past that other nodes can work on: average it,\ntake its spectrum, find its peak, draw it. Almost any question about\n\"the last second\" starts here.\n\nTHE OUTPUT IS ALWAYS FULL LENGTH:\nFrom the very first sample the output has N rows. Rows that have not\nbeen filled yet are zeros, at the oldest (top) end, and they scroll out\nas real samples arrive. reset sets every row back to zero.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 samples a second, 60 is one second of history and 600 is ten.\nLonger windows give steadier statistics that react more slowly.\n\nSYNTAX:\nt.rolling_buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.rolling_buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nThe sample. Every arrival is stored and the whole buffer sent. A single\nnumber is one sample.\n\nreset (button, also an inlet):\nSets every stored value to zero, keeping the shape, and sends the\ncleared buffer straight away.\n\nsample count (option):\nN, the number of samples kept. A change takes effect at the next\ninput: the buffer starts again, empty, at the new length.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number is one sample;\na list of several numbers is several samples, written in order (a list\nlonger than N leaves just its last N). The output is N rows by 1 column.\n\"input is multi-channel sample\" - each arrival (a list or 1-D tensor of\nC values) is ONE sample of C channels; the output is N rows by C\ncolumns. A sample with a different C starts a new, empty buffer.\n\"buffer holds one sample of input\" - each arrival replaces the whole\nbuffer, which then has the arrival's length.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it.\nfloat32 (the default), float16, int64, uint8, bool, complex64 and\ncomplex128. The menu also lists the same types under their torch names\n(torch.float32, float, torch.float ...). There is no float64 here: a\nfloat64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nA copy of the buffer: N rows, oldest first, newest in the last row.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along\nevery 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last\n32: one heat_map row per sample, oldest at the top and newest at the\nbottom, so the moving bump draws a diagonal stripe that scrolls upward.\nClick reset on the node and the picture empties, then refills from the\nbottom. Change sample count in the node's options (16, or 64) and the\nwindow starts again at that length; the heat_map follows.\nBottom: single random numbers (the default stream mode) gathered into\nthe last 64 (64 rows of 1 column), drawn as a curve with the newest at\nthe right (t.flatten makes the column one row for plot), and averaged\nby t.mean - a stream turned into something that can be measured.\n\nRELATED:\nt.buffer can also hand back one stored value by position. np.rolling_buffer\nis the NumPy version; np.sequence records and plays back. capture~ records\nthe audio graph. t.mean and t.rfft are typical next steps.",
+                            "value": "Keeps the last N samples that arrived and sends them all, oldest first, every time a new one comes in.\n\nThis turns a stream - one value, or one set of values, per frame - into a tensor of the recent past that other nodes can work on: average it, take its spectrum, find its peak, draw it. Almost any question about \"the last second\" starts here.\n\nTHE OUTPUT IS ALWAYS FULL LENGTH:\nFrom the very first sample the output has N rows. Rows that have not been filled yet are zeros, at the oldest (top) end, and they scroll out as real samples arrive. reset sets every row back to zero.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 samples a second, 60 is one second of history and 600 is ten. Longer windows give steadier statistics that react more slowly.\n\nSYNTAX:\nt.rolling_buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.rolling_buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nThe sample. Every arrival is stored and the whole buffer sent. A single number is one sample.\n\nreset (button, also an inlet):\nSets every stored value to zero, keeping the shape, and sends the cleared buffer straight away.\n\nsample count (option):\nN, the number of samples kept. A change takes effect at the next input: the buffer starts again, empty, at the new length.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number is one sample;\na list of several numbers is several samples, written in order (a list longer than N leaves just its last N). The output is N rows by 1 column. \"input is multi-channel sample\" - each arrival (a list or 1-D tensor of C values) is ONE sample of C channels; the output is N rows by C columns. A sample with a different C starts a new, empty buffer. \"buffer holds one sample of input\" - each arrival replaces the whole buffer, which then has the arrival's length.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it. float32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nA copy of the buffer: N rows, oldest first, newest in the last row.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along every 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last 32: one heat_map row per sample, oldest at the top and newest at the bottom, so the moving bump draws a diagonal stripe that scrolls upward. Click reset on the node and the picture empties, then refills from the bottom. Change sample count in the node's options (16, or 64) and the window starts again at that length; the heat_map follows.\nBottom: single random numbers (the default stream mode) gathered into the last 64 (64 rows of 1 column), drawn as a curve with the newest at the right (t.flatten makes the column one row for plot), and averaged by t.mean - a stream turned into something that can be measured.\n\nRELATED:\nt.buffer can also hand back one stored value by position. np.rolling_buffer is the NumPy version; np.sequence records and plays back. capture~ records the audio graph. t.mean and t.rfft are typical next steps.",
                             "value_type": "str"
                         },
                         "1": {
@@ -400,7 +400,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Keeps the last N samples that arrived and sends them all, oldest\nfirst, every time a new one comes in.\n\nThis turns a stream - one value, or one set of values, per frame - into\na tensor of the recent past that other nodes can work on: average it,\ntake its spectrum, find its peak, draw it. Almost any question about\n\"the last second\" starts here.\n\nTHE OUTPUT IS ALWAYS FULL LENGTH:\nFrom the very first sample the output has N rows. Rows that have not\nbeen filled yet are zeros, at the oldest (top) end, and they scroll out\nas real samples arrive. reset sets every row back to zero.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 samples a second, 60 is one second of history and 600 is ten.\nLonger windows give steadier statistics that react more slowly.\n\nSYNTAX:\nt.rolling_buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.rolling_buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nThe sample. Every arrival is stored and the whole buffer sent. A single\nnumber is one sample.\n\nreset (button, also an inlet):\nSets every stored value to zero, keeping the shape, and sends the\ncleared buffer straight away.\n\nsample count (option):\nN, the number of samples kept. A change takes effect at the next\ninput: the buffer starts again, empty, at the new length.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number is one sample;\na list of several numbers is several samples, written in order (a list\nlonger than N leaves just its last N). The output is N rows by 1 column.\n\"input is multi-channel sample\" - each arrival (a list or 1-D tensor of\nC values) is ONE sample of C channels; the output is N rows by C\ncolumns. A sample with a different C starts a new, empty buffer.\n\"buffer holds one sample of input\" - each arrival replaces the whole\nbuffer, which then has the arrival's length.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it.\nfloat32 (the default), float16, int64, uint8, bool, complex64 and\ncomplex128. The menu also lists the same types under their torch names\n(torch.float32, float, torch.float ...). There is no float64 here: a\nfloat64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nA copy of the buffer: N rows, oldest first, newest in the last row.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along\nevery 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last\n32: one heat_map row per sample, oldest at the top and newest at the\nbottom, so the moving bump draws a diagonal stripe that scrolls upward.\nClick reset on the node and the picture empties, then refills from the\nbottom. Change sample count in the node's options (16, or 64) and the\nwindow starts again at that length; the heat_map follows.\nBottom: single random numbers (the default stream mode) gathered into\nthe last 64 (64 rows of 1 column), drawn as a curve with the newest at\nthe right (t.flatten makes the column one row for plot), and averaged\nby t.mean - a stream turned into something that can be measured.\n\nRELATED:\nt.buffer can also hand back one stored value by position. np.rolling_buffer\nis the NumPy version; np.sequence records and plays back. capture~ records\nthe audio graph. t.mean and t.rfft are typical next steps."
+                    "text": "Keeps the last N samples that arrived and sends them all, oldest first, every time a new one comes in.\n\nThis turns a stream - one value, or one set of values, per frame - into a tensor of the recent past that other nodes can work on: average it, take its spectrum, find its peak, draw it. Almost any question about \"the last second\" starts here.\n\nTHE OUTPUT IS ALWAYS FULL LENGTH:\nFrom the very first sample the output has N rows. Rows that have not been filled yet are zeros, at the oldest (top) end, and they scroll out as real samples arrive. reset sets every row back to zero.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 samples a second, 60 is one second of history and 600 is ten. Longer windows give steadier statistics that react more slowly.\n\nSYNTAX:\nt.rolling_buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.rolling_buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nThe sample. Every arrival is stored and the whole buffer sent. A single number is one sample.\n\nreset (button, also an inlet):\nSets every stored value to zero, keeping the shape, and sends the cleared buffer straight away.\n\nsample count (option):\nN, the number of samples kept. A change takes effect at the next input: the buffer starts again, empty, at the new length.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number is one sample;\na list of several numbers is several samples, written in order (a list longer than N leaves just its last N). The output is N rows by 1 column. \"input is multi-channel sample\" - each arrival (a list or 1-D tensor of C values) is ONE sample of C channels; the output is N rows by C columns. A sample with a different C starts a new, empty buffer. \"buffer holds one sample of input\" - each arrival replaces the whole buffer, which then has the arrival's length.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it. float32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nA copy of the buffer: N rows, oldest first, newest in the last row.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along every 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last 32: one heat_map row per sample, oldest at the top and newest at the bottom, so the moving bump draws a diagonal stripe that scrolls upward. Click reset on the node and the picture empties, then refills from the bottom. Change sample count in the node's options (16, or 64) and the window starts again at that length; the heat_map follows.\nBottom: single random numbers (the default stream mode) gathered into the last 64 (64 rows of 1 column), drawn as a curve with the newest at the right (t.flatten makes the column one row for plot), and averaged by t.mean - a stream turned into something that can be measured.\n\nRELATED:\nt.buffer can also hand back one stored value by position. np.rolling_buffer is the NumPy version; np.sequence records and plays back. capture~ records the audio graph. t.mean and t.rfft are typical next steps."
                 },
                 "3": {
                     "name": "p",
@@ -931,7 +931,7 @@
                     "name": "help_link",
                     "id": 1051,
                     "position_x": 30,
-                    "position_y": 1390,
+                    "position_y": 1424,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -943,9 +943,9 @@
                 "23": {
                     "name": "help_link",
                     "id": 1088,
-                    "position_x": 135,
-                    "position_y": 1390,
-                    "width": 121,
+                    "position_x": 112,
+                    "position_y": 1424,
+                    "width": 123,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -956,9 +956,9 @@
                 "24": {
                     "name": "help_link",
                     "id": 1125,
-                    "position_x": 309,
-                    "position_y": 1390,
-                    "width": 84,
+                    "position_x": 251,
+                    "position_y": 1424,
+                    "width": 85,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -969,9 +969,9 @@
                 "25": {
                     "name": "help_link",
                     "id": 1162,
-                    "position_x": 437,
-                    "position_y": 1390,
-                    "width": 53,
+                    "position_x": 352,
+                    "position_y": 1424,
+                    "width": 54,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -982,8 +982,8 @@
                 "26": {
                     "name": "help_link",
                     "id": 1199,
-                    "position_x": 527,
-                    "position_y": 1390,
+                    "position_x": 422,
+                    "position_y": 1424,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -996,8 +996,8 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1236,
-                    "position_x": 744,
-                    "position_y": 1420,
+                    "position_x": 30,
+                    "position_y": 1390,
                     "width": 156,
                     "height": 30,
                     "visibility": "show_all",
@@ -1021,7 +1021,7 @@
                     "name": "close",
                     "id": 1273,
                     "position_x": 24,
-                    "position_y": 1464,
+                    "position_y": 1498,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

@@ -1,5 +1,5 @@
 {
-    "height": 1318,
+    "height": 1352,
     "width": 1664,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Splits a tensor in half along its last axis and multiplies the first half\nby the sigmoid of the second: the gated linear unit.\n\nThe second half acts as a set of gates, one per element of the first half:\nwhere a gate value is large and positive the matching value passes almost\nwhole, where it is large and negative the value is shut off, and at 0 it\npasses at half strength. Because half the tensor is used up as gates, the\noutput is HALF THE SIZE of the input along that axis - 128 values in, 64\nout.\n\nUse it when one set of numbers should control how much of another set\ngets through - a bank of values and a bank of soft switches carried in\none tensor.\n\nTHE OPERATION:\nFor an input of 2n values, a = the first n, b = the last n, and output =\na times sigmoid(b), element by element. The split is always on the LAST\naxis (this node has no dim setting), and that axis must have an even\nlength: an odd length makes the console report \"Halving dimension must be\neven\" and nothing is sent.\n\nSYNTAX:\nt.nn.glu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor, values first and gates second along its last axis. Receiving\nit triggers the node. A list, number or numpy array is turned into a\nfloat32 tensor first. An integer tensor is refused (the sigmoid needs\nfractions): put a t.to float32 in front of it.\n\nOUTPUTS:\n\noutput:\nThe gated values, half the length of the input along the last axis.\n\nREADING THE DEMO:\nThe input is built from two pieces joined by t.cat: a ramp of 64 values\nfrom -4 to 4 (the values) followed by 64 copies of one gate value (from\nt.full - drag 'value' on that node). The top plot shows all 128: the ramp\non the left, the flat gate level on the right. The bottom plot shows the\n64 outputs: the ramp scaled by sigmoid(gate). The page opens at gate 1,\nwhere the ramp comes through at 73% (-2.9 to 2.9). At gate 0 it comes\nthrough at half height (-2 to 2); at 4 almost whole (98%); at -4 almost\nflat (2%).\n\nRELATED:\nt.nn.sigmoid is the gate curve. t.chunk splits a tensor in two the way\nglu does, if you want to gate by hand. t.nn.silu is the case where each\nvalue gates itself.",
+                    "value": "Splits a tensor in half along its last axis and multiplies the first half by the sigmoid of the second: the gated linear unit.\n\nThe second half acts as a set of gates, one per element of the first half:\nwhere a gate value is large and positive the matching value passes almost whole, where it is large and negative the value is shut off, and at 0 it passes at half strength. Because half the tensor is used up as gates, the output is HALF THE SIZE of the input along that axis - 128 values in, 64 out.\n\nUse it when one set of numbers should control how much of another set gets through - a bank of values and a bank of soft switches carried in one tensor.\n\nTHE OPERATION:\nFor an input of 2n values, a = the first n, b = the last n, and output = a times sigmoid(b), element by element. The split is always on the LAST axis (this node has no dim setting), and that axis must have an even length: an odd length makes the console report \"Halving dimension must be even\" and nothing is sent.\n\nSYNTAX:\nt.nn.glu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor, values first and gates second along its last axis. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor first. An integer tensor is refused (the sigmoid needs fractions): put a t.to float32 in front of it.\n\nOUTPUTS:\n\noutput:\nThe gated values, half the length of the input along the last axis.\n\nREADING THE DEMO:\nThe input is built from two pieces joined by t.cat: a ramp of 64 values from -4 to 4 (the values) followed by 64 copies of one gate value (from t.full - drag 'value' on that node). The top plot shows all 128: the ramp on the left, the flat gate level on the right. The bottom plot shows the 64 outputs: the ramp scaled by sigmoid(gate). The page opens at gate 1, where the ramp comes through at 73% (-2.9 to 2.9). At gate 0 it comes through at half height (-2 to 2); at 4 almost whole (98%); at -4 almost flat (2%).\n\nRELATED:\nt.nn.sigmoid is the gate curve. t.chunk splits a tensor in two the way glu does, if you want to gate by hand. t.nn.silu is the case where each value gates itself.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Splits a tensor in half along its last axis and multiplies the first half\nby the sigmoid of the second: the gated linear unit.\n\nThe second half acts as a set of gates, one per element of the first half:\nwhere a gate value is large and positive the matching value passes almost\nwhole, where it is large and negative the value is shut off, and at 0 it\npasses at half strength. Because half the tensor is used up as gates, the\noutput is HALF THE SIZE of the input along that axis - 128 values in, 64\nout.\n\nUse it when one set of numbers should control how much of another set\ngets through - a bank of values and a bank of soft switches carried in\none tensor.\n\nTHE OPERATION:\nFor an input of 2n values, a = the first n, b = the last n, and output =\na times sigmoid(b), element by element. The split is always on the LAST\naxis (this node has no dim setting), and that axis must have an even\nlength: an odd length makes the console report \"Halving dimension must be\neven\" and nothing is sent.\n\nSYNTAX:\nt.nn.glu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor, values first and gates second along its last axis. Receiving\nit triggers the node. A list, number or numpy array is turned into a\nfloat32 tensor first. An integer tensor is refused (the sigmoid needs\nfractions): put a t.to float32 in front of it.\n\nOUTPUTS:\n\noutput:\nThe gated values, half the length of the input along the last axis.\n\nREADING THE DEMO:\nThe input is built from two pieces joined by t.cat: a ramp of 64 values\nfrom -4 to 4 (the values) followed by 64 copies of one gate value (from\nt.full - drag 'value' on that node). The top plot shows all 128: the ramp\non the left, the flat gate level on the right. The bottom plot shows the\n64 outputs: the ramp scaled by sigmoid(gate). The page opens at gate 1,\nwhere the ramp comes through at 73% (-2.9 to 2.9). At gate 0 it comes\nthrough at half height (-2 to 2); at 4 almost whole (98%); at -4 almost\nflat (2%).\n\nRELATED:\nt.nn.sigmoid is the gate curve. t.chunk splits a tensor in two the way\nglu does, if you want to gate by hand. t.nn.silu is the case where each\nvalue gates itself."
+            "text": "Splits a tensor in half along its last axis and multiplies the first half by the sigmoid of the second: the gated linear unit.\n\nThe second half acts as a set of gates, one per element of the first half:\nwhere a gate value is large and positive the matching value passes almost whole, where it is large and negative the value is shut off, and at 0 it passes at half strength. Because half the tensor is used up as gates, the output is HALF THE SIZE of the input along that axis - 128 values in, 64 out.\n\nUse it when one set of numbers should control how much of another set gets through - a bank of values and a bank of soft switches carried in one tensor.\n\nTHE OPERATION:\nFor an input of 2n values, a = the first n, b = the last n, and output = a times sigmoid(b), element by element. The split is always on the LAST axis (this node has no dim setting), and that axis must have an even length: an odd length makes the console report \"Halving dimension must be even\" and nothing is sent.\n\nSYNTAX:\nt.nn.glu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor, values first and gates second along its last axis. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor first. An integer tensor is refused (the sigmoid needs fractions): put a t.to float32 in front of it.\n\nOUTPUTS:\n\noutput:\nThe gated values, half the length of the input along the last axis.\n\nREADING THE DEMO:\nThe input is built from two pieces joined by t.cat: a ramp of 64 values from -4 to 4 (the values) followed by 64 copies of one gate value (from t.full - drag 'value' on that node). The top plot shows all 128: the ramp on the left, the flat gate level on the right. The bottom plot shows the 64 outputs: the ramp scaled by sigmoid(gate). The page opens at gate 1, where the ramp comes through at 73% (-2.9 to 2.9). At gate 0 it comes through at half height (-2 to 2); at 4 almost whole (98%); at -4 almost flat (2%).\n\nRELATED:\nt.nn.sigmoid is the gate curve. t.chunk splits a tensor in two the way glu does, if you want to gate by hand. t.nn.silu is the case where each value gates itself."
         },
         "3": {
             "name": "metro",
@@ -531,8 +531,8 @@
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 1140,
-            "width": 90,
+            "position_y": 1174,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -543,9 +543,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 166,
-            "position_y": 1140,
-            "width": 72,
+            "position_x": 138,
+            "position_y": 1174,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -556,8 +556,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 279,
-            "position_y": 1140,
+            "position_x": 227,
+            "position_y": 1174,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -569,9 +569,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 376,
-            "position_y": 1140,
-            "width": 47,
+            "position_x": 303,
+            "position_y": 1174,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -583,8 +583,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1051,
-            "position_x": 484,
-            "position_y": 1184,
+            "position_x": 30,
+            "position_y": 1140,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -608,7 +608,7 @@
             "name": "close",
             "id": 1088,
             "position_x": 24,
-            "position_y": 1214,
+            "position_y": 1248,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

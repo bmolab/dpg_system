@@ -1,5 +1,5 @@
 {
-    "height": 1478,
+    "height": 1512,
     "width": 1680,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Replaces each value of an array with the running total up to and\nincluding it: the first value, then the first two added, then the first\nthree, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at\nevery point. Use it to turn steps into a path (movements into positions,\nspeeds into distance travelled), to turn a histogram into a cumulative\ndistribution, or to turn a list of durations into start times.\n\nSYNTAX:\nnp.cumsum <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumsum\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is summed and sent -\nthe only inlet that makes the node send. A single number has no axis to\nrun along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its\nown, 0 or -2 runs down each column. Negative counts from the end. An axis\nthe array does not have sends nothing. Changing it does not send by\nitself; the next array uses it.\n\nOUTPUTS:\n\ncumsum:\nThe running totals, the same shape as the input. The last value is the\nsum of the whole row (what np.sum would give).\n\nREADING THE DEMO:\nTop: np.rand makes 200 random steps between -1 and 1, a new set every\nhalf second. The upper plot shows them - noise, with no shape. The lower plot\nis their cumsum: a random walk, the path you get by taking those steps\none after another. Drag np.rand's max up to 1.2 (or min down) and the\nsteps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a\nconstant is a straight line whose slope is the constant. Edit the\nmessage (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.diff is the reverse: it turns a path back into its steps. np.cumprod\nmultiplies instead of adding. accumulate keeps a running total of a\nSTREAM, one number at a time. np.sum gives only the final total.\nt.cumsum is the PyTorch version.",
+                    "value": "Replaces each value of an array with the running total up to and including it: the first value, then the first two added, then the first three, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at every point. Use it to turn steps into a path (movements into positions, speeds into distance travelled), to turn a histogram into a cumulative distribution, or to turn a list of durations into start times.\n\nSYNTAX:\nnp.cumsum <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumsum\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is summed and sent - the only inlet that makes the node send. A single number has no axis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its own, 0 or -2 runs down each column. Negative counts from the end. An axis the array does not have sends nothing. Changing it does not send by itself; the next array uses it.\n\nOUTPUTS:\n\ncumsum:\nThe running totals, the same shape as the input. The last value is the sum of the whole row (what np.sum would give).\n\nREADING THE DEMO:\nTop: np.rand makes 200 random steps between -1 and 1, a new set every half second. The upper plot shows them - noise, with no shape. The lower plot is their cumsum: a random walk, the path you get by taking those steps one after another. Drag np.rand's max up to 1.2 (or min down) and the steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a constant is a straight line whose slope is the constant. Edit the message (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.diff is the reverse: it turns a path back into its steps. np.cumprod multiplies instead of adding. accumulate keeps a running total of a STREAM, one number at a time. np.sum gives only the final total. t.cumsum is the PyTorch version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Replaces each value of an array with the running total up to and\nincluding it: the first value, then the first two added, then the first\nthree, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at\nevery point. Use it to turn steps into a path (movements into positions,\nspeeds into distance travelled), to turn a histogram into a cumulative\ndistribution, or to turn a list of durations into start times.\n\nSYNTAX:\nnp.cumsum <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumsum\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is summed and sent -\nthe only inlet that makes the node send. A single number has no axis to\nrun along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its\nown, 0 or -2 runs down each column. Negative counts from the end. An axis\nthe array does not have sends nothing. Changing it does not send by\nitself; the next array uses it.\n\nOUTPUTS:\n\ncumsum:\nThe running totals, the same shape as the input. The last value is the\nsum of the whole row (what np.sum would give).\n\nREADING THE DEMO:\nTop: np.rand makes 200 random steps between -1 and 1, a new set every\nhalf second. The upper plot shows them - noise, with no shape. The lower plot\nis their cumsum: a random walk, the path you get by taking those steps\none after another. Drag np.rand's max up to 1.2 (or min down) and the\nsteps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a\nconstant is a straight line whose slope is the constant. Edit the\nmessage (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.diff is the reverse: it turns a path back into its steps. np.cumprod\nmultiplies instead of adding. accumulate keeps a running total of a\nSTREAM, one number at a time. np.sum gives only the final total.\nt.cumsum is the PyTorch version."
+            "text": "Replaces each value of an array with the running total up to and including it: the first value, then the first two added, then the first three, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at every point. Use it to turn steps into a path (movements into positions, speeds into distance travelled), to turn a histogram into a cumulative distribution, or to turn a list of durations into start times.\n\nSYNTAX:\nnp.cumsum <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumsum\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is summed and sent - the only inlet that makes the node send. A single number has no axis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its own, 0 or -2 runs down each column. Negative counts from the end. An axis the array does not have sends nothing. Changing it does not send by itself; the next array uses it.\n\nOUTPUTS:\n\ncumsum:\nThe running totals, the same shape as the input. The last value is the sum of the whole row (what np.sum would give).\n\nREADING THE DEMO:\nTop: np.rand makes 200 random steps between -1 and 1, a new set every half second. The upper plot shows them - noise, with no shape. The lower plot is their cumsum: a random walk, the path you get by taking those steps one after another. Drag np.rand's max up to 1.2 (or min down) and the steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a constant is a straight line whose slope is the constant. Edit the message (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.diff is the reverse: it turns a path back into its steps. np.cumprod multiplies instead of adding. accumulate keeps a running total of a STREAM, one number at a time. np.sum gives only the final total. t.cumsum is the PyTorch version."
         },
         "3": {
             "name": "metro",
@@ -637,7 +637,7 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1300,
+            "position_y": 1334,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -649,9 +649,9 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 127,
-            "position_y": 1300,
-            "width": 78,
+            "position_x": 106,
+            "position_y": 1334,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -662,9 +662,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 248,
-            "position_y": 1300,
-            "width": 78,
+            "position_x": 201,
+            "position_y": 1334,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -675,9 +675,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 369,
-            "position_y": 1300,
-            "width": 53,
+            "position_x": 296,
+            "position_y": 1334,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -688,8 +688,8 @@
         "24": {
             "name": "help_link",
             "id": 1125,
-            "position_x": 459,
-            "position_y": 1300,
+            "position_x": 366,
+            "position_y": 1334,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -702,8 +702,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1162,
-            "position_x": 551,
-            "position_y": 1344,
+            "position_x": 30,
+            "position_y": 1300,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -727,7 +727,7 @@
             "name": "close",
             "id": 1199,
             "position_x": 24,
-            "position_y": 1374,
+            "position_y": 1408,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

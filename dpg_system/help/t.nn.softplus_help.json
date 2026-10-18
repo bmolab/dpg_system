@@ -1,5 +1,5 @@
 {
-    "height": 1282,
+    "height": 1316,
     "width": 1715,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "A smooth version of relu: the logarithm of (1 plus e to the x), with beta\ncontrolling how sharp the bend is.\n\nIt is never negative and never has a corner: nearly 0 for negative\ninputs, nearly the input for positive ones, and a smooth curve between.\nUse it where a value must stay positive but a hard cut at zero would put\na kink in the response - a positive-only rate, a width, a variance.\n\nTHE CURVE:\nWith beta 1: 0 gives 0.69 (log 2), -4 gives 0.018, 4 gives 4.018. The\ncurve lies a little ABOVE relu everywhere and approaches it on both sides.\nBeta sharpens it: the formula becomes log(1 plus e to the (beta times x))\ndivided by beta, so a large beta hugs relu closely (0 gives 0.69 divided\nby beta) and a small beta makes a wide, lazy bend.\n\nSYNTAX:\nt.nn.softplus\nNo arguments; defaults beta 1.0, threshold 20.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn INTEGER tensor (t.arange with whole numbers makes one) is refused: the\nconsole reports \"not implemented for 'Long'\" and nothing is sent. Put a\nt.to float32 in front of it.\n\nbeta (drag float on the node, and an inlet):\nHow sharp the bend is. Default 1.0. Larger is closer to relu.\n\nthreshold (drag float on the node, and an inlet):\nWhere the node stops computing the logarithm and passes the input\nstraight through: wherever beta times x is above threshold. Default 20,\nwhere the difference is far too small to see. It is a shortcut against\noverflow, not a shape control - set it low (say 1) and the curve gets a\nvisible step where the shortcut begins.\n\nNeither triggers the node: the next tensor uses them. In the demo the\nmetro re-sends the ramp ten times a second, so the curve follows the\nslider.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -1 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu is the sharp-cornered limit of large beta. t.nn.logsigmoid is\nsoftplus turned upside down and back to front. t.nn.sigmoid is its slope.\nt.nn.elu and t.nn.mish are other smooth relus, both dipping below 0.",
+                    "value": "A smooth version of relu: the logarithm of (1 plus e to the x), with beta controlling how sharp the bend is.\n\nIt is never negative and never has a corner: nearly 0 for negative inputs, nearly the input for positive ones, and a smooth curve between. Use it where a value must stay positive but a hard cut at zero would put a kink in the response - a positive-only rate, a width, a variance.\n\nTHE CURVE:\nWith beta 1: 0 gives 0.69 (log 2), -4 gives 0.018, 4 gives 4.018. The curve lies a little ABOVE relu everywhere and approaches it on both sides.\nBeta sharpens it: the formula becomes log(1 plus e to the (beta times x)) divided by beta, so a large beta hugs relu closely (0 gives 0.69 divided by beta) and a small beta makes a wide, lazy bend.\n\nSYNTAX:\nt.nn.softplus\nNo arguments; defaults beta 1.0, threshold 20.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An INTEGER tensor (t.arange with whole numbers makes one) is refused: the console reports \"not implemented for 'Long'\" and nothing is sent. Put a t.to float32 in front of it.\n\nbeta (drag float on the node, and an inlet):\nHow sharp the bend is. Default 1.0. Larger is closer to relu.\n\nthreshold (drag float on the node, and an inlet):\nWhere the node stops computing the logarithm and passes the input straight through: wherever beta times x is above threshold. Default 20, where the difference is far too small to see. It is a shortcut against overflow, not a shape control - set it low (say 1) and the curve gets a visible step where the shortcut begins.\n\nNeither triggers the node: the next tensor uses them. In the demo the metro re-sends the ramp ten times a second, so the curve follows the slider.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -1 to 4; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu is the sharp-cornered limit of large beta. t.nn.logsigmoid is softplus turned upside down and back to front. t.nn.sigmoid is its slope. t.nn.elu and t.nn.mish are other smooth relus, both dipping below 0.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "A smooth version of relu: the logarithm of (1 plus e to the x), with beta\ncontrolling how sharp the bend is.\n\nIt is never negative and never has a corner: nearly 0 for negative\ninputs, nearly the input for positive ones, and a smooth curve between.\nUse it where a value must stay positive but a hard cut at zero would put\na kink in the response - a positive-only rate, a width, a variance.\n\nTHE CURVE:\nWith beta 1: 0 gives 0.69 (log 2), -4 gives 0.018, 4 gives 4.018. The\ncurve lies a little ABOVE relu everywhere and approaches it on both sides.\nBeta sharpens it: the formula becomes log(1 plus e to the (beta times x))\ndivided by beta, so a large beta hugs relu closely (0 gives 0.69 divided\nby beta) and a small beta makes a wide, lazy bend.\n\nSYNTAX:\nt.nn.softplus\nNo arguments; defaults beta 1.0, threshold 20.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn INTEGER tensor (t.arange with whole numbers makes one) is refused: the\nconsole reports \"not implemented for 'Long'\" and nothing is sent. Put a\nt.to float32 in front of it.\n\nbeta (drag float on the node, and an inlet):\nHow sharp the bend is. Default 1.0. Larger is closer to relu.\n\nthreshold (drag float on the node, and an inlet):\nWhere the node stops computing the logarithm and passes the input\nstraight through: wherever beta times x is above threshold. Default 20,\nwhere the difference is far too small to see. It is a shortcut against\noverflow, not a shape control - set it low (say 1) and the curve gets a\nvisible step where the shortcut begins.\n\nNeither triggers the node: the next tensor uses them. In the demo the\nmetro re-sends the ramp ten times a second, so the curve follows the\nslider.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -1 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu is the sharp-cornered limit of large beta. t.nn.logsigmoid is\nsoftplus turned upside down and back to front. t.nn.sigmoid is its slope.\nt.nn.elu and t.nn.mish are other smooth relus, both dipping below 0."
+            "text": "A smooth version of relu: the logarithm of (1 plus e to the x), with beta controlling how sharp the bend is.\n\nIt is never negative and never has a corner: nearly 0 for negative inputs, nearly the input for positive ones, and a smooth curve between. Use it where a value must stay positive but a hard cut at zero would put a kink in the response - a positive-only rate, a width, a variance.\n\nTHE CURVE:\nWith beta 1: 0 gives 0.69 (log 2), -4 gives 0.018, 4 gives 4.018. The curve lies a little ABOVE relu everywhere and approaches it on both sides.\nBeta sharpens it: the formula becomes log(1 plus e to the (beta times x)) divided by beta, so a large beta hugs relu closely (0 gives 0.69 divided by beta) and a small beta makes a wide, lazy bend.\n\nSYNTAX:\nt.nn.softplus\nNo arguments; defaults beta 1.0, threshold 20.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An INTEGER tensor (t.arange with whole numbers makes one) is refused: the console reports \"not implemented for 'Long'\" and nothing is sent. Put a t.to float32 in front of it.\n\nbeta (drag float on the node, and an inlet):\nHow sharp the bend is. Default 1.0. Larger is closer to relu.\n\nthreshold (drag float on the node, and an inlet):\nWhere the node stops computing the logarithm and passes the input straight through: wherever beta times x is above threshold. Default 20, where the difference is far too small to see. It is a shortcut against overflow, not a shape control - set it low (say 1) and the curve gets a visible step where the shortcut begins.\n\nNeither triggers the node: the next tensor uses them. In the demo the metro re-sends the ramp ten times a second, so the curve follows the slider.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the plot) to 4 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -1 to 4; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu is the sharp-cornered limit of large beta. t.nn.logsigmoid is softplus turned upside down and back to front. t.nn.sigmoid is its slope. t.nn.elu and t.nn.mish are other smooth relus, both dipping below 0."
         },
         "3": {
             "name": "metro",
@@ -442,8 +442,8 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 1060,
-            "width": 72,
+            "position_y": 1094,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -454,8 +454,8 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 143,
-            "position_y": 1060,
+            "position_x": 119,
+            "position_y": 1094,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -467,9 +467,9 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 248,
-            "position_y": 1060,
-            "width": 109,
+            "position_x": 201,
+            "position_y": 1094,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -480,9 +480,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 407,
-            "position_y": 1060,
-            "width": 90,
+            "position_x": 327,
+            "position_y": 1094,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -494,7 +494,7 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1104,
+            "position_y": 1138,
             "width": 72,
             "height": 44,
             "visibility": "show_all",
@@ -507,8 +507,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 523,
-            "position_y": 1104,
+            "position_x": 30,
+            "position_y": 1060,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -532,7 +532,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 1178,
+            "position_y": 1212,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

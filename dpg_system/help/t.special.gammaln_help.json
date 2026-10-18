@@ -1,5 +1,5 @@
 {
-    "height": 1062,
+    "height": 1096,
     "width": 1753,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Computes the natural log of the absolute value of the gamma function for\nevery element of a tensor.\n\nIt gives logs of factorials - gammaln(n + 1) is log(n!) - so it is how\nyou compute counts of combinations and probabilities that involve huge\nfactorials without overflowing.\n\nTHE CURVE:\nFor positive x: high near 0, falling to 0 at x = 1, a shallow dip to\n-0.121 at 1.46, back to 0 at x = 2, then rising steadily and a little\nfaster than a straight line. gammaln(11) = 15.104 = log(10!). The gamma\nfunction itself would overflow past x = 35; its log is still a modest\nnumber there.\n\nSYNTAX:\nt.special.gammaln\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 and negative whole numbers give infinity. Between the negative whole\nnumbers it gives the log of the absolute value, so the sign of gamma is\nlost there.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (0.1 to 10 here), and the\nupper plot draws them: a straight ramp. The lower plot is log gamma of each\nof those 200 values, so it is the graph of the function from 0.1 to 10,\ndrawn from -1 (bottom) to 13 (top). Drag start and stop on t.linspace\nto look at another stretch (keep start above 0).\n\nRELATED:\nt.special.digamma is its slope. t.special.multigammaln is the\nversion for several dimensions (with p = 1 it equals this).",
+                    "value": "Computes the natural log of the absolute value of the gamma function for every element of a tensor.\n\nIt gives logs of factorials - gammaln(n + 1) is log(n!) - so it is how you compute counts of combinations and probabilities that involve huge factorials without overflowing.\n\nTHE CURVE:\nFor positive x: high near 0, falling to 0 at x = 1, a shallow dip to -0.121 at 1.46, back to 0 at x = 2, then rising steadily and a little faster than a straight line. gammaln(11) = 15.104 = log(10!). The gamma function itself would overflow past x = 35; its log is still a modest number there.\n\nSYNTAX:\nt.special.gammaln\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 and negative whole numbers give infinity. Between the negative whole numbers it gives the log of the absolute value, so the sign of gamma is lost there.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (0.1 to 10 here), and the upper plot draws them: a straight ramp. The lower plot is log gamma of each of those 200 values, so it is the graph of the function from 0.1 to 10, drawn from -1 (bottom) to 13 (top). Drag start and stop on t.linspace to look at another stretch (keep start above 0).\n\nRELATED:\nt.special.digamma is its slope. t.special.multigammaln is the version for several dimensions (with p = 1 it equals this).",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Computes the natural log of the absolute value of the gamma function for\nevery element of a tensor.\n\nIt gives logs of factorials - gammaln(n + 1) is log(n!) - so it is how\nyou compute counts of combinations and probabilities that involve huge\nfactorials without overflowing.\n\nTHE CURVE:\nFor positive x: high near 0, falling to 0 at x = 1, a shallow dip to\n-0.121 at 1.46, back to 0 at x = 2, then rising steadily and a little\nfaster than a straight line. gammaln(11) = 15.104 = log(10!). The gamma\nfunction itself would overflow past x = 35; its log is still a modest\nnumber there.\n\nSYNTAX:\nt.special.gammaln\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 and negative whole numbers give infinity. Between the negative whole\nnumbers it gives the log of the absolute value, so the sign of gamma is\nlost there.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (0.1 to 10 here), and the\nupper plot draws them: a straight ramp. The lower plot is log gamma of each\nof those 200 values, so it is the graph of the function from 0.1 to 10,\ndrawn from -1 (bottom) to 13 (top). Drag start and stop on t.linspace\nto look at another stretch (keep start above 0).\n\nRELATED:\nt.special.digamma is its slope. t.special.multigammaln is the\nversion for several dimensions (with p = 1 it equals this)."
+            "text": "Computes the natural log of the absolute value of the gamma function for every element of a tensor.\n\nIt gives logs of factorials - gammaln(n + 1) is log(n!) - so it is how you compute counts of combinations and probabilities that involve huge factorials without overflowing.\n\nTHE CURVE:\nFor positive x: high near 0, falling to 0 at x = 1, a shallow dip to -0.121 at 1.46, back to 0 at x = 2, then rising steadily and a little faster than a straight line. gammaln(11) = 15.104 = log(10!). The gamma function itself would overflow past x = 35; its log is still a modest number there.\n\nSYNTAX:\nt.special.gammaln\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 and negative whole numbers give infinity. Between the negative whole numbers it gives the log of the absolute value, so the sign of gamma is lost there.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (0.1 to 10 here), and the upper plot draws them: a straight ramp. The lower plot is log gamma of each of those 200 values, so it is the graph of the function from 0.1 to 10, drawn from -1 (bottom) to 13 (top). Drag start and stop on t.linspace to look at another stretch (keep start above 0).\n\nRELATED:\nt.special.digamma is its slope. t.special.multigammaln is the version for several dimensions (with p = 1 it equals this)."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 121,
+            "position_y": 874,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 204,
-            "position_y": 840,
-            "width": 152,
+            "position_x": 169,
+            "position_y": 874,
+            "width": 155,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -458,7 +458,7 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 884,
+            "position_y": 918,
             "width": 133,
             "height": 44,
             "visibility": "show_all",
@@ -471,7 +471,7 @@
             "name": "help_link",
             "id": 829,
             "position_x": 220,
-            "position_y": 884,
+            "position_y": 918,
             "width": 127,
             "height": 44,
             "visibility": "show_all",
@@ -484,7 +484,7 @@
             "name": "help_link",
             "id": 866,
             "position_x": 402,
-            "position_y": 884,
+            "position_y": 918,
             "width": 90,
             "height": 44,
             "visibility": "show_all",
@@ -497,8 +497,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 518,
-            "position_y": 928,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -522,7 +522,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 958,
+            "position_y": 992,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

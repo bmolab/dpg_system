@@ -1,5 +1,5 @@
 {
-    "height": 1248,
+    "height": 1282,
     "width": 1653,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Turns an array's rows into columns: the value at row r, column c moves to row c, column r.\n\nA 3 by 4 array becomes 4 by 3, flipped across its top-left to\nbottom-right diagonal. Use it when data arrives the wrong way round -\njoints as columns when a node wants them as rows, a matrix that needs its\ntranspose for a calculation, an image whose x and y are swapped.\n\nTRANSPOSE IS NOT RESHAPE:\nnp.reshape 4 3 and np.transpose both turn [3, 4] into [4, 3], but they\nput the numbers in different places. reshape keeps the reading order and\nrefolds; transpose keeps each number's row and column and swaps them. In\nthe demo a ramp that reads ACROSS each row comes out reading DOWN each\ncolumn.\n\nSYNTAX:\nnp.transpose <axis order: ints>\nWith no arguments the order of ALL the axes is reversed.\n\nEXAMPLE:\nnp.transpose 1 0 2\n\nINPUTS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it\nis what makes the node send.\n\naxes (text box, also an inlet):\nThe new order of the axes, one number per axis: the axis named first\nbecomes axis 0 of the result, and so on. 1 0 2 swaps the first two axes\nof a 3-D array and leaves the last alone; [a, b, c] becomes [b, a, c].\nEmpty (the default) reverses them all: a 2-D array swaps rows and\ncolumns, a 1-D row is returned unchanged, and [a, b, c] becomes\n[c, b, a]. The order must name every axis of the array exactly once\n(negative numbers count from the end); if it does not, a message is\nprinted and nothing is sent. Changing it does not send by itself.\n\nOUTPUTS:\n\ntransposed array:\nThe transposed array.\n\nREADING THE DEMO:\nThe upper heat_map is the ramp folded into 3 rows of 4, rising across\neach row. The lower one is its transpose: 4 rows of 3, rising down each\ncolumn - the first row of the input is now the first column. Click 2 6 or\n1 12 to transpose other shapes; 1 12 becomes a column of twelve.\n\nRELATED:\nnp.reshape changes the shape without moving any number out of reading\norder. flatten reads an array out into one row, by rows (C) or columns\n(F). np.shape shows the shapes. t.reshape covers the PyTorch versions,\nt.transpose and t.permute (the axes order here does what t.permute\ndoes).",
+                    "value": "Turns an array's rows into columns: the value at row r, column c moves to row c, column r.\n\nA 3 by 4 array becomes 4 by 3, flipped across its top-left to bottom-right diagonal. Use it when data arrives the wrong way round - joints as columns when a node wants them as rows, a matrix that needs its transpose for a calculation, an image whose x and y are swapped.\n\nTRANSPOSE IS NOT RESHAPE:\nnp.reshape 4 3 and np.transpose both turn [3, 4] into [4, 3], but they put the numbers in different places. reshape keeps the reading order and refolds; transpose keeps each number's row and column and swaps them. In the demo a ramp that reads ACROSS each row comes out reading DOWN each column.\n\nSYNTAX:\nnp.transpose <axis order: ints>\nWith no arguments the order of ALL the axes is reversed.\n\nEXAMPLE:\nnp.transpose 1 0 2\n\nINPUTS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it is what makes the node send.\n\naxes (text box, also an inlet):\nThe new order of the axes, one number per axis: the axis named first becomes axis 0 of the result, and so on. 1 0 2 swaps the first two axes of a 3-D array and leaves the last alone; [a, b, c] becomes [b, a, c]. Empty (the default) reverses them all: a 2-D array swaps rows and columns, a 1-D row is returned unchanged, and [a, b, c] becomes [c, b, a]. The order must name every axis of the array exactly once (negative numbers count from the end); if it does not, a message is printed and nothing is sent. Changing it does not send by itself.\n\nOUTPUTS:\n\ntransposed array:\nThe transposed array.\n\nREADING THE DEMO:\nThe upper heat_map is the ramp folded into 3 rows of 4, rising across each row. The lower one is its transpose: 4 rows of 3, rising down each column - the first row of the input is now the first column. Click 2 6 or 1 12 to transpose other shapes; 1 12 becomes a column of twelve.\n\nRELATED:\nnp.reshape changes the shape without moving any number out of reading order. flatten reads an array out into one row, by rows (C) or columns (F). np.shape shows the shapes. t.reshape covers the PyTorch versions, t.transpose and t.permute (the axes order here does what t.permute does).",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Turns an array's rows into columns: the value at row r, column c moves to row c, column r.\n\nA 3 by 4 array becomes 4 by 3, flipped across its top-left to\nbottom-right diagonal. Use it when data arrives the wrong way round -\njoints as columns when a node wants them as rows, a matrix that needs its\ntranspose for a calculation, an image whose x and y are swapped.\n\nTRANSPOSE IS NOT RESHAPE:\nnp.reshape 4 3 and np.transpose both turn [3, 4] into [4, 3], but they\nput the numbers in different places. reshape keeps the reading order and\nrefolds; transpose keeps each number's row and column and swaps them. In\nthe demo a ramp that reads ACROSS each row comes out reading DOWN each\ncolumn.\n\nSYNTAX:\nnp.transpose <axis order: ints>\nWith no arguments the order of ALL the axes is reversed.\n\nEXAMPLE:\nnp.transpose 1 0 2\n\nINPUTS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it\nis what makes the node send.\n\naxes (text box, also an inlet):\nThe new order of the axes, one number per axis: the axis named first\nbecomes axis 0 of the result, and so on. 1 0 2 swaps the first two axes\nof a 3-D array and leaves the last alone; [a, b, c] becomes [b, a, c].\nEmpty (the default) reverses them all: a 2-D array swaps rows and\ncolumns, a 1-D row is returned unchanged, and [a, b, c] becomes\n[c, b, a]. The order must name every axis of the array exactly once\n(negative numbers count from the end); if it does not, a message is\nprinted and nothing is sent. Changing it does not send by itself.\n\nOUTPUTS:\n\ntransposed array:\nThe transposed array.\n\nREADING THE DEMO:\nThe upper heat_map is the ramp folded into 3 rows of 4, rising across\neach row. The lower one is its transpose: 4 rows of 3, rising down each\ncolumn - the first row of the input is now the first column. Click 2 6 or\n1 12 to transpose other shapes; 1 12 becomes a column of twelve.\n\nRELATED:\nnp.reshape changes the shape without moving any number out of reading\norder. flatten reads an array out into one row, by rows (C) or columns\n(F). np.shape shows the shapes. t.reshape covers the PyTorch versions,\nt.transpose and t.permute (the axes order here does what t.permute\ndoes)."
+            "text": "Turns an array's rows into columns: the value at row r, column c moves to row c, column r.\n\nA 3 by 4 array becomes 4 by 3, flipped across its top-left to bottom-right diagonal. Use it when data arrives the wrong way round - joints as columns when a node wants them as rows, a matrix that needs its transpose for a calculation, an image whose x and y are swapped.\n\nTRANSPOSE IS NOT RESHAPE:\nnp.reshape 4 3 and np.transpose both turn [3, 4] into [4, 3], but they put the numbers in different places. reshape keeps the reading order and refolds; transpose keeps each number's row and column and swaps them. In the demo a ramp that reads ACROSS each row comes out reading DOWN each column.\n\nSYNTAX:\nnp.transpose <axis order: ints>\nWith no arguments the order of ALL the axes is reversed.\n\nEXAMPLE:\nnp.transpose 1 0 2\n\nINPUTS:\n\ninput:\nThe array (a list or number is turned into an array first). Receiving it is what makes the node send.\n\naxes (text box, also an inlet):\nThe new order of the axes, one number per axis: the axis named first becomes axis 0 of the result, and so on. 1 0 2 swaps the first two axes of a 3-D array and leaves the last alone; [a, b, c] becomes [b, a, c]. Empty (the default) reverses them all: a 2-D array swaps rows and columns, a 1-D row is returned unchanged, and [a, b, c] becomes [c, b, a]. The order must name every axis of the array exactly once (negative numbers count from the end); if it does not, a message is printed and nothing is sent. Changing it does not send by itself.\n\nOUTPUTS:\n\ntransposed array:\nThe transposed array.\n\nREADING THE DEMO:\nThe upper heat_map is the ramp folded into 3 rows of 4, rising across each row. The lower one is its transpose: 4 rows of 3, rising down each column - the first row of the input is now the first column. Click 2 6 or 1 12 to transpose other shapes; 1 12 becomes a column of twelve.\n\nRELATED:\nnp.reshape changes the shape without moving any number out of reading order. flatten reads an array out into one row, by rows (C) or columns (F). np.shape shows the shapes. t.reshape covers the PyTorch versions, t.transpose and t.permute (the axes order here does what t.permute does)."
         },
         "3": {
             "name": "metro",
@@ -529,8 +529,8 @@
             "name": "help_link",
             "id": 977,
             "position_x": 30,
-            "position_y": 1070,
-            "width": 78,
+            "position_y": 1104,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -541,8 +541,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 151,
-            "position_y": 1070,
+            "position_x": 125,
+            "position_y": 1104,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -554,8 +554,8 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 248,
-            "position_y": 1070,
+            "position_x": 201,
+            "position_y": 1104,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -567,9 +567,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 353,
-            "position_y": 1070,
-            "width": 72,
+            "position_x": 283,
+            "position_y": 1104,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -581,7 +581,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 536,
+            "position_x": 30,
             "position_y": 1070,
             "width": 156,
             "height": 30,
@@ -606,7 +606,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 1144,
+            "position_y": 1178,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

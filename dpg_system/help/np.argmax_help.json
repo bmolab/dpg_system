@@ -523,7 +523,7 @@
             }
         },
         "1": {
-            "height": 1253,
+            "height": 1287,
             "width": 1984,
             "position": [
                 100,
@@ -590,7 +590,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Gives the POSITION of the largest value in an array - its index, not\nthe value itself.\n\nUse it to pick a winner: which sensor reads highest, which frequency\nband is loudest, which class a set of scores votes for, where the\nbrightest pixel is. To get the value itself, use np.amax. If several\ncells share the largest value, the first one (in reading order, or the\nlowest along the axis) is the one given.\n\nTHE INDEX WITH NO AXIS:\nWith axis None the answer is ONE whole number counting the cells of the\nwhole array in reading order - along row 0, then row 1, and so on - not\na row and a column. In an array 10 columns wide, index 56 is row 5,\ncolumn 6: the row is the index divided by the width (whole-number\ndivision, // 10) and the column is the remainder (% 10).\nWith an axis, each answer is a position along THAT axis: axis 0 gives,\nfor each column, the row it was found in; axis 1 gives, for each row,\nthe column.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.argmax <axis: int>\nDefault: no axis - one index into the whole array.\n\nEXAMPLE:\nnp.argmax 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is searched and the answer sent;\nthis is the only inlet that makes the node send.\nA list is turned into an array. A single number is sent back as\nitself while axis is None (with an axis set, it sends nothing). An\nempty array is an error and nothing is sent.\nA NaN counts as larger than everything: the index of the first NaN is\ngiven.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.argmax 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\nargmax:\nWhole numbers (int64). With axis None, one index; with an axis, an\narray of indices, one per row or column.\n\nREADING THE DEMO:\nmake_spot draws 8 by 10 of dim noise with one bright cell (exactly 1.0)\nwhere the sliders put it - it starts at row 5, column 6. np.argmax with\naxis None answers 56; the two int boxes under it split that into row\n5 and column 6. Move the sliders and the index follows the spot.\nnp.argmax 1 asks each ROW where its largest value is: 8 column numbers,\nand the spot's row (the sixth entry) says 6. The others point at the\nbrightest noise in their row. np.argmax 0 asks each COLUMN: 10 row\nnumbers, and the spot's column (the seventh entry) says 5.\n\nRELATED:\nnp.amax gives the largest value itself. np.argmin finds the smallest.\nnp.argsort ranks every value, not just the top one. np.argwhere lists\nevery position where a condition holds. t.argmax is the PyTorch\nversion.",
+                            "value": "Gives the POSITION of the largest value in an array - its index, not the value itself.\n\nUse it to pick a winner: which sensor reads highest, which frequency band is loudest, which class a set of scores votes for, where the brightest pixel is. To get the value itself, use np.amax. If several cells share the largest value, the first one (in reading order, or the lowest along the axis) is the one given.\n\nTHE INDEX WITH NO AXIS:\nWith axis None the answer is ONE whole number counting the cells of the whole array in reading order - along row 0, then row 1, and so on - not a row and a column. In an array 10 columns wide, index 56 is row 5, column 6: the row is the index divided by the width (whole-number division, // 10) and the column is the remainder (% 10). With an axis, each answer is a position along THAT axis: axis 0 gives, for each column, the row it was found in; axis 1 gives, for each row, the column.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.argmax <axis: int>\nDefault: no axis - one index into the whole array.\n\nEXAMPLE:\nnp.argmax 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is searched and the answer sent;\nthis is the only inlet that makes the node send.\nA list is turned into an array. A single number is sent back as itself while axis is None (with an axis set, it sends nothing). An empty array is an error and nothing is sent.\nA NaN counts as larger than everything: the index of the first NaN is given.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.argmax 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\nargmax:\nWhole numbers (int64). With axis None, one index; with an axis, an array of indices, one per row or column.\n\nREADING THE DEMO:\nmake_spot draws 8 by 10 of dim noise with one bright cell (exactly 1.0) where the sliders put it - it starts at row 5, column 6. np.argmax with axis None answers 56; the two int boxes under it split that into row 5 and column 6. Move the sliders and the index follows the spot. np.argmax 1 asks each ROW where its largest value is: 8 column numbers, and the spot's row (the sixth entry) says 6. The others point at the brightest noise in their row. np.argmax 0 asks each COLUMN: 10 row numbers, and the spot's column (the seventh entry) says 5.\n\nRELATED:\nnp.amax gives the largest value itself. np.argmin finds the smallest. np.argsort ranks every value, not just the top one. np.argwhere lists every position where a condition holds. t.argmax is the PyTorch version.",
                             "value_type": "str"
                         },
                         "1": {
@@ -614,7 +614,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Gives the POSITION of the largest value in an array - its index, not\nthe value itself.\n\nUse it to pick a winner: which sensor reads highest, which frequency\nband is loudest, which class a set of scores votes for, where the\nbrightest pixel is. To get the value itself, use np.amax. If several\ncells share the largest value, the first one (in reading order, or the\nlowest along the axis) is the one given.\n\nTHE INDEX WITH NO AXIS:\nWith axis None the answer is ONE whole number counting the cells of the\nwhole array in reading order - along row 0, then row 1, and so on - not\na row and a column. In an array 10 columns wide, index 56 is row 5,\ncolumn 6: the row is the index divided by the width (whole-number\ndivision, // 10) and the column is the remainder (% 10).\nWith an axis, each answer is a position along THAT axis: axis 0 gives,\nfor each column, the row it was found in; axis 1 gives, for each row,\nthe column.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.argmax <axis: int>\nDefault: no axis - one index into the whole array.\n\nEXAMPLE:\nnp.argmax 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is searched and the answer sent;\nthis is the only inlet that makes the node send.\nA list is turned into an array. A single number is sent back as\nitself while axis is None (with an axis set, it sends nothing). An\nempty array is an error and nothing is sent.\nA NaN counts as larger than everything: the index of the first NaN is\ngiven.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.argmax 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\nargmax:\nWhole numbers (int64). With axis None, one index; with an axis, an\narray of indices, one per row or column.\n\nREADING THE DEMO:\nmake_spot draws 8 by 10 of dim noise with one bright cell (exactly 1.0)\nwhere the sliders put it - it starts at row 5, column 6. np.argmax with\naxis None answers 56; the two int boxes under it split that into row\n5 and column 6. Move the sliders and the index follows the spot.\nnp.argmax 1 asks each ROW where its largest value is: 8 column numbers,\nand the spot's row (the sixth entry) says 6. The others point at the\nbrightest noise in their row. np.argmax 0 asks each COLUMN: 10 row\nnumbers, and the spot's column (the seventh entry) says 5.\n\nRELATED:\nnp.amax gives the largest value itself. np.argmin finds the smallest.\nnp.argsort ranks every value, not just the top one. np.argwhere lists\nevery position where a condition holds. t.argmax is the PyTorch\nversion."
+                    "text": "Gives the POSITION of the largest value in an array - its index, not the value itself.\n\nUse it to pick a winner: which sensor reads highest, which frequency band is loudest, which class a set of scores votes for, where the brightest pixel is. To get the value itself, use np.amax. If several cells share the largest value, the first one (in reading order, or the lowest along the axis) is the one given.\n\nTHE INDEX WITH NO AXIS:\nWith axis None the answer is ONE whole number counting the cells of the whole array in reading order - along row 0, then row 1, and so on - not a row and a column. In an array 10 columns wide, index 56 is row 5, column 6: the row is the index divided by the width (whole-number division, // 10) and the column is the remainder (% 10). With an axis, each answer is a position along THAT axis: axis 0 gives, for each column, the row it was found in; axis 1 gives, for each row, the column.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.argmax <axis: int>\nDefault: no axis - one index into the whole array.\n\nEXAMPLE:\nnp.argmax 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is searched and the answer sent;\nthis is the only inlet that makes the node send.\nA list is turned into an array. A single number is sent back as itself while axis is None (with an axis set, it sends nothing). An empty array is an error and nothing is sent.\nA NaN counts as larger than everything: the index of the first NaN is given.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.argmax 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\nargmax:\nWhole numbers (int64). With axis None, one index; with an axis, an array of indices, one per row or column.\n\nREADING THE DEMO:\nmake_spot draws 8 by 10 of dim noise with one bright cell (exactly 1.0) where the sliders put it - it starts at row 5, column 6. np.argmax with axis None answers 56; the two int boxes under it split that into row 5 and column 6. Move the sliders and the index follows the spot. np.argmax 1 asks each ROW where its largest value is: 8 column numbers, and the spot's row (the sixth entry) says 6. The others point at the brightest noise in their row. np.argmax 0 asks each COLUMN: 10 row numbers, and the spot's column (the seventh entry) says 5.\n\nRELATED:\nnp.amax gives the largest value itself. np.argmin finds the smallest. np.argsort ranks every value, not just the top one. np.argwhere lists every position where a condition holds. t.argmax is the PyTorch version."
                 },
                 "3": {
                     "name": "load_bang",
@@ -1192,7 +1192,7 @@
                     "name": "help_link",
                     "id": 1236,
                     "position_x": 30,
-                    "position_y": 820,
+                    "position_y": 854,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -1204,9 +1204,9 @@
                 "28": {
                     "name": "help_link",
                     "id": 1273,
-                    "position_x": 127,
-                    "position_y": 820,
-                    "width": 72,
+                    "position_x": 106,
+                    "position_y": 854,
+                    "width": 73,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1217,9 +1217,9 @@
                 "29": {
                     "name": "help_link",
                     "id": 1310,
-                    "position_x": 240,
-                    "position_y": 820,
-                    "width": 78,
+                    "position_x": 195,
+                    "position_y": 854,
+                    "width": 79,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1230,9 +1230,9 @@
                 "30": {
                     "name": "help_link",
                     "id": 1347,
-                    "position_x": 361,
-                    "position_y": 820,
-                    "width": 84,
+                    "position_x": 290,
+                    "position_y": 854,
+                    "width": 85,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1243,8 +1243,8 @@
                 "31": {
                     "name": "help_link",
                     "id": 1384,
-                    "position_x": 489,
-                    "position_y": 820,
+                    "position_x": 391,
+                    "position_y": 854,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -1257,7 +1257,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1421,
-                    "position_x": 836,
+                    "position_x": 30,
                     "position_y": 820,
                     "width": 156,
                     "height": 30,
@@ -1282,7 +1282,7 @@
                     "name": "close",
                     "id": 1458,
                     "position_x": 24,
-                    "position_y": 894,
+                    "position_y": 928,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

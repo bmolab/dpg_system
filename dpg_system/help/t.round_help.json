@@ -1,5 +1,5 @@
 {
-    "height": 1278,
+    "height": 1312,
     "width": 1630,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Rounds every value of a tensor to the nearest whole number - or,\nwith decimals, to the nearest tenth, hundredth, ten or hundred.\n\nUse it to snap continuous values onto a grid: a fader position onto\nwhole steps, a pitch onto semitones, a coordinate onto a cell. Each\nelement is rounded on its own, so the output has the shape of the input.\n\nHALVES GO TO THE EVEN NEIGHBOUR:\nA value exactly half-way, like 0.5 or 2.5, goes to whichever neighbour is\nEVEN: 0.5 becomes 0, 1.5 becomes 2, 2.5 becomes 2, -0.5 becomes -0. This\nis deliberate and standard (always rounding halves up adds a small bias\nthat builds up over many values), but it surprises people who expect 0.5\nto become 1. If you want halves always up, add 0.5 and use t.floor.\n\nSYNTAX:\nt.round\nIt takes no arguments.\n\nEXAMPLE:\nt.round\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a\nfloat32 tensor first. Every input is processed and sent - this is the\nonly inlet that makes the node send. An empty tensor sends nothing.\n\ndecimals (int box, also an inlet):\nHow many decimal places to keep. Default 0, whole numbers. 1 rounds to\ntenths, 2 to hundredths. Negative values round to the left of the point:\n-1 to tens, -2 to hundreds (halves still go even: 15 and 25 both become\n20). Changing it does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe rounded tensor, the same shape and type as the input - still floats,\njust with whole-number values.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.round turns it into a\nstaircase of flat steps at -2, -1, 0, 1, 2, each step centred on its\nwhole number and rising half-way between. Set decimals to 1 and the\nsteps become ten times finer, almost hugging the ramp. The message\nbelow (sent when the page opens, and again when clicked) shows the\nhalf-way values going to even numbers.\n\nRELATED:\nt.floor, t.ceil and t.trunc turn fractions into whole numbers in the\nother three ways - they differ in which way they go. t.frac keeps the\npart t.trunc throws away. round does the same for numbers and NumPy\narrays (np.round shares its page).",
+                    "value": "Rounds every value of a tensor to the nearest whole number - or, with decimals, to the nearest tenth, hundredth, ten or hundred.\n\nUse it to snap continuous values onto a grid: a fader position onto whole steps, a pitch onto semitones, a coordinate onto a cell. Each element is rounded on its own, so the output has the shape of the input.\n\nHALVES GO TO THE EVEN NEIGHBOUR:\nA value exactly half-way, like 0.5 or 2.5, goes to whichever neighbour is EVEN: 0.5 becomes 0, 1.5 becomes 2, 2.5 becomes 2, -0.5 becomes -0. This is deliberate and standard (always rounding halves up adds a small bias that builds up over many values), but it surprises people who expect 0.5 to become 1. If you want halves always up, add 0.5 and use t.floor.\n\nSYNTAX:\nt.round\nIt takes no arguments.\n\nEXAMPLE:\nt.round\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a float32 tensor first. Every input is processed and sent - this is the only inlet that makes the node send. An empty tensor sends nothing.\n\ndecimals (int box, also an inlet):\nHow many decimal places to keep. Default 0, whole numbers. 1 rounds to tenths, 2 to hundredths. Negative values round to the left of the point: -1 to tens, -2 to hundreds (halves still go even: 15 and 25 both become 20). Changing it does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe rounded tensor, the same shape and type as the input - still floats, just with whole-number values.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.round turns it into a staircase of flat steps at -2, -1, 0, 1, 2, each step centred on its whole number and rising half-way between. Set decimals to 1 and the steps become ten times finer, almost hugging the ramp. The message below (sent when the page opens, and again when clicked) shows the half-way values going to even numbers.\n\nRELATED:\nt.floor, t.ceil and t.trunc turn fractions into whole numbers in the other three ways - they differ in which way they go. t.frac keeps the part t.trunc throws away. round does the same for numbers and NumPy arrays (np.round shares its page).",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Rounds every value of a tensor to the nearest whole number - or,\nwith decimals, to the nearest tenth, hundredth, ten or hundred.\n\nUse it to snap continuous values onto a grid: a fader position onto\nwhole steps, a pitch onto semitones, a coordinate onto a cell. Each\nelement is rounded on its own, so the output has the shape of the input.\n\nHALVES GO TO THE EVEN NEIGHBOUR:\nA value exactly half-way, like 0.5 or 2.5, goes to whichever neighbour is\nEVEN: 0.5 becomes 0, 1.5 becomes 2, 2.5 becomes 2, -0.5 becomes -0. This\nis deliberate and standard (always rounding halves up adds a small bias\nthat builds up over many values), but it surprises people who expect 0.5\nto become 1. If you want halves always up, add 0.5 and use t.floor.\n\nSYNTAX:\nt.round\nIt takes no arguments.\n\nEXAMPLE:\nt.round\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a\nfloat32 tensor first. Every input is processed and sent - this is the\nonly inlet that makes the node send. An empty tensor sends nothing.\n\ndecimals (int box, also an inlet):\nHow many decimal places to keep. Default 0, whole numbers. 1 rounds to\ntenths, 2 to hundredths. Negative values round to the left of the point:\n-1 to tens, -2 to hundreds (halves still go even: 15 and 25 both become\n20). Changing it does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe rounded tensor, the same shape and type as the input - still floats,\njust with whole-number values.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.round turns it into a\nstaircase of flat steps at -2, -1, 0, 1, 2, each step centred on its\nwhole number and rising half-way between. Set decimals to 1 and the\nsteps become ten times finer, almost hugging the ramp. The message\nbelow (sent when the page opens, and again when clicked) shows the\nhalf-way values going to even numbers.\n\nRELATED:\nt.floor, t.ceil and t.trunc turn fractions into whole numbers in the\nother three ways - they differ in which way they go. t.frac keeps the\npart t.trunc throws away. round does the same for numbers and NumPy\narrays (np.round shares its page)."
+            "text": "Rounds every value of a tensor to the nearest whole number - or, with decimals, to the nearest tenth, hundredth, ten or hundred.\n\nUse it to snap continuous values onto a grid: a fader position onto whole steps, a pitch onto semitones, a coordinate onto a cell. Each element is rounded on its own, so the output has the shape of the input.\n\nHALVES GO TO THE EVEN NEIGHBOUR:\nA value exactly half-way, like 0.5 or 2.5, goes to whichever neighbour is EVEN: 0.5 becomes 0, 1.5 becomes 2, 2.5 becomes 2, -0.5 becomes -0. This is deliberate and standard (always rounding halves up adds a small bias that builds up over many values), but it surprises people who expect 0.5 to become 1. If you want halves always up, add 0.5 and use t.floor.\n\nSYNTAX:\nt.round\nIt takes no arguments.\n\nEXAMPLE:\nt.round\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a float32 tensor first. Every input is processed and sent - this is the only inlet that makes the node send. An empty tensor sends nothing.\n\ndecimals (int box, also an inlet):\nHow many decimal places to keep. Default 0, whole numbers. 1 rounds to tenths, 2 to hundredths. Negative values round to the left of the point: -1 to tens, -2 to hundreds (halves still go even: 15 and 25 both become 20). Changing it does not send by itself; the next tensor uses it.\n\nOUTPUTS:\n\noutput:\nThe rounded tensor, the same shape and type as the input - still floats, just with whole-number values.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.round turns it into a staircase of flat steps at -2, -1, 0, 1, 2, each step centred on its whole number and rising half-way between. Set decimals to 1 and the steps become ten times finer, almost hugging the ramp. The message below (sent when the page opens, and again when clicked) shows the half-way values going to even numbers.\n\nRELATED:\nt.floor, t.ceil and t.trunc turn fractions into whole numbers in the other three ways - they differ in which way they go. t.frac keeps the part t.trunc throws away. round does the same for numbers and NumPy arrays (np.round shares its page)."
         },
         "3": {
             "name": "metro",
@@ -519,7 +519,7 @@
             "name": "help_link",
             "id": 940,
             "position_x": 30,
-            "position_y": 1100,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -531,9 +531,9 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 127,
-            "position_y": 1100,
-            "width": 53,
+            "position_x": 106,
+            "position_y": 1134,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -544,8 +544,8 @@
         "21": {
             "name": "help_link",
             "id": 1014,
-            "position_x": 217,
-            "position_y": 1100,
+            "position_x": 176,
+            "position_y": 1134,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -557,9 +557,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 314,
-            "position_y": 1100,
-            "width": 53,
+            "position_x": 252,
+            "position_y": 1134,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -570,9 +570,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 404,
-            "position_y": 1100,
-            "width": 47,
+            "position_x": 322,
+            "position_y": 1134,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -584,8 +584,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1125,
-            "position_x": 494,
-            "position_y": 1144,
+            "position_x": 30,
+            "position_y": 1100,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -609,7 +609,7 @@
             "name": "close",
             "id": 1162,
             "position_x": 24,
-            "position_y": 1174,
+            "position_y": 1208,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

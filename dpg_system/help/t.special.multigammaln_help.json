@@ -1,5 +1,5 @@
 {
-    "height": 1048,
+    "height": 1082,
     "width": 1673,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Computes the log of the multivariate gamma function of dimension p for\nevery element of a tensor.\n\nIt is the normalising constant of the Wishart distribution - the\ndistribution of random covariance matrices - so it appears when you work\nwith uncertainty about a whole matrix rather than a single number.\n\nTHE CURVE:\nIt is a sum of p ordinary log gammas, at x, x - 0.5, x - 1 and so on down\nto x - (p - 1)/2, plus a constant p(p - 1)/4 times log pi. So p = 1 is\nexactly t.special.gammaln, and each increase in p adds another rising log\ngamma curve: at x = 10 it is 12.8 for p = 1, 25.1 for p = 2, 36.8 for\np = 3, 58.9 for p = 5.\n\nSYNTAX:\nt.special.multigammaln\n\nThere is no argument: p starts at 1 and is set on the node.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately.\n\np (int, also an inlet):\nThe dimension. Default 1, minimum 1. Changing it does not send by itself;\nthe next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape as the input.\n\nWHERE IT IS DEFINED:\nEvery element must be greater than (p - 1) / 2. Values at or below that\ncome out as infinity. The demo starts at 2.6 so that p up to 5 is safe.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values from\n2.6 to 10, drawn in the upper plot. The lower plot is multigammaln of each\nfor dimension p, from 0 (bottom) to 60 (top). Drag p on the node and the\ncurve climbs.\n\nRELATED:\nt.special.gammaln is the one-dimensional case. t.special.digamma and\nt.special.polygamma are its derivatives.",
+                    "value": "Computes the log of the multivariate gamma function of dimension p for every element of a tensor.\n\nIt is the normalising constant of the Wishart distribution - the distribution of random covariance matrices - so it appears when you work with uncertainty about a whole matrix rather than a single number.\n\nTHE CURVE:\nIt is a sum of p ordinary log gammas, at x, x - 0.5, x - 1 and so on down to x - (p - 1)/2, plus a constant p(p - 1)/4 times log pi. So p = 1 is exactly t.special.gammaln, and each increase in p adds another rising log gamma curve: at x = 10 it is 12.8 for p = 1, 25.1 for p = 2, 36.8 for p = 3, 58.9 for p = 5.\n\nSYNTAX:\nt.special.multigammaln\n\nThere is no argument: p starts at 1 and is set on the node.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately.\n\np (int, also an inlet):\nThe dimension. Default 1, minimum 1. Changing it does not send by itself;\nthe next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape as the input.\n\nWHERE IT IS DEFINED:\nEvery element must be greater than (p - 1) / 2. Values at or below that come out as infinity. The demo starts at 2.6 so that p up to 5 is safe.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values from 2.6 to 10, drawn in the upper plot. The lower plot is multigammaln of each for dimension p, from 0 (bottom) to 60 (top). Drag p on the node and the curve climbs.\n\nRELATED:\nt.special.gammaln is the one-dimensional case. t.special.digamma and t.special.polygamma are its derivatives.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Computes the log of the multivariate gamma function of dimension p for\nevery element of a tensor.\n\nIt is the normalising constant of the Wishart distribution - the\ndistribution of random covariance matrices - so it appears when you work\nwith uncertainty about a whole matrix rather than a single number.\n\nTHE CURVE:\nIt is a sum of p ordinary log gammas, at x, x - 0.5, x - 1 and so on down\nto x - (p - 1)/2, plus a constant p(p - 1)/4 times log pi. So p = 1 is\nexactly t.special.gammaln, and each increase in p adds another rising log\ngamma curve: at x = 10 it is 12.8 for p = 1, 25.1 for p = 2, 36.8 for\np = 3, 58.9 for p = 5.\n\nSYNTAX:\nt.special.multigammaln\n\nThere is no argument: p starts at 1 and is set on the node.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately.\n\np (int, also an inlet):\nThe dimension. Default 1, minimum 1. Changing it does not send by itself;\nthe next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape as the input.\n\nWHERE IT IS DEFINED:\nEvery element must be greater than (p - 1) / 2. Values at or below that\ncome out as infinity. The demo starts at 2.6 so that p up to 5 is safe.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values from\n2.6 to 10, drawn in the upper plot. The lower plot is multigammaln of each\nfor dimension p, from 0 (bottom) to 60 (top). Drag p on the node and the\ncurve climbs.\n\nRELATED:\nt.special.gammaln is the one-dimensional case. t.special.digamma and\nt.special.polygamma are its derivatives."
+            "text": "Computes the log of the multivariate gamma function of dimension p for every element of a tensor.\n\nIt is the normalising constant of the Wishart distribution - the distribution of random covariance matrices - so it appears when you work with uncertainty about a whole matrix rather than a single number.\n\nTHE CURVE:\nIt is a sum of p ordinary log gammas, at x, x - 0.5, x - 1 and so on down to x - (p - 1)/2, plus a constant p(p - 1)/4 times log pi. So p = 1 is exactly t.special.gammaln, and each increase in p adds another rising log gamma curve: at x = 10 it is 12.8 for p = 1, 25.1 for p = 2, 36.8 for p = 3, 58.9 for p = 5.\n\nSYNTAX:\nt.special.multigammaln\n\nThere is no argument: p starts at 1 and is set on the node.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately.\n\np (int, also an inlet):\nThe dimension. Default 1, minimum 1. Changing it does not send by itself;\nthe next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape as the input.\n\nWHERE IT IS DEFINED:\nEvery element must be greater than (p - 1) / 2. Values at or below that come out as infinity. The demo starts at 2.6 so that p up to 5 is safe.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values from 2.6 to 10, drawn in the upper plot. The lower plot is multigammaln of each for dimension p, from 0 (bottom) to 60 (top). Drag p on the node and the curve climbs.\n\nRELATED:\nt.special.gammaln is the one-dimensional case. t.special.digamma and t.special.polygamma are its derivatives."
         },
         "3": {
             "name": "metro",
@@ -438,8 +438,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 870,
-            "width": 121,
+            "position_y": 904,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -450,9 +450,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 204,
-            "position_y": 870,
-            "width": 121,
+            "position_x": 169,
+            "position_y": 904,
+            "width": 123,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -463,9 +463,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 378,
-            "position_y": 870,
-            "width": 133,
+            "position_x": 308,
+            "position_y": 904,
+            "width": 136,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -477,8 +477,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 829,
-            "position_x": 537,
-            "position_y": 914,
+            "position_x": 30,
+            "position_y": 870,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -502,7 +502,7 @@
             "name": "close",
             "id": 866,
             "position_x": 24,
-            "position_y": 944,
+            "position_y": 978,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

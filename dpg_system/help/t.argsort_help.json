@@ -1,5 +1,5 @@
 {
-    "height": 1252,
+    "height": 1286,
     "width": 1762,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Gives the positions that would put a tensor in order: the index of\nthe smallest value first, then the next smallest, and so on.\n\nIt does not move any values - it tells you where they are. Use it when\nyou want to reorder something ELSE by the same ranking: sort joints by\nspeed, then use the same order for their names or colours; find which\nthree sensors read highest; rank a set of scores and keep track of whose\nthey were.\n\nREADING THE INDICES:\nPositions count from 0. If the first index is 5, the smallest value is\nin cell 5 of the input. Reading the input at each index in turn gives the\nvalues sorted.\n\nSYNTAX:\nt.argsort <dim: int>\nWith no argument it ranks along the LAST axis (each row of a table on its\nown) and there is no dim inlet. Give an axis - t.argsort 0 - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.argsort\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is ranked and sent - the only inlet that makes the node send.\n\ndim (int box, only with an argument):\nWhich axis to rank along. For a 2-D tensor, -1 or 1 ranks each row\n(indices are column numbers), 0 ranks each column (indices are row\nnumbers).\n\ndescending (checkbox):\nLargest first. Changing it does not send by itself; the next tensor\nuses it.\n\nstable (checkbox):\nEqual values keep their original order. Without it, the order of ties is\nnot guaranteed - which matters when the ranking drives something that\nwould flicker between two joints that are momentarily equal.\n\nOUTPUTS:\n\noutput:\nThe indices, whole numbers (int64), the same shape as the input.\n\nREADING THE DEMO:\nt.rand makes 8 values when the patch opens; click its small button for\nnew ones. The top strip shows them with their values. The middle strip\nand the list are the indices from t.argsort: the first names the cell of\nthe top strip holding the smallest value, the next the cell holding the\nnext smallest, and so on.\n\nThe bottom strip USES those indices: t.take_along_dim reads the values at\nthe positions it is given, in the order given, so it sends the values\nsorted. Its indices inlet does not trigger it - the values arriving at\ntensor in do - so the cord into t.argsort was made first, and the\nindices are already waiting. Tick descending, click t.rand, and every\nstrip below the first turns round.\n\nTo reorder something ELSE by the same ranking, send the other tensor into\nt.take_along_dim instead - the indices still come from the first.\n\nRELATED:\nnp.argsort is the NumPy version (descending is an option there). np.sort\ngives the sorted values directly. t.take_along_dim reads values at the\nindices. t.argmax is the first entry of a descending argsort, on its own.\nt.flip reverses an index list.",
+                    "value": "Gives the positions that would put a tensor in order: the index of the smallest value first, then the next smallest, and so on.\n\nIt does not move any values - it tells you where they are. Use it when you want to reorder something ELSE by the same ranking: sort joints by speed, then use the same order for their names or colours; find which three sensors read highest; rank a set of scores and keep track of whose they were.\n\nREADING THE INDICES:\nPositions count from 0. If the first index is 5, the smallest value is in cell 5 of the input. Reading the input at each index in turn gives the values sorted.\n\nSYNTAX:\nt.argsort <dim: int>\nWith no argument it ranks along the LAST axis (each row of a table on its\nown) and there is no dim inlet. Give an axis - t.argsort 0 - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.argsort\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is ranked and sent - the only inlet that makes the node send.\n\ndim (int box, only with an argument):\nWhich axis to rank along. For a 2-D tensor, -1 or 1 ranks each row (indices are column numbers), 0 ranks each column (indices are row numbers).\n\ndescending (checkbox):\nLargest first. Changing it does not send by itself; the next tensor uses it.\n\nstable (checkbox):\nEqual values keep their original order. Without it, the order of ties is not guaranteed - which matters when the ranking drives something that would flicker between two joints that are momentarily equal.\n\nOUTPUTS:\n\noutput:\nThe indices, whole numbers (int64), the same shape as the input.\n\nREADING THE DEMO:\nt.rand makes 8 values when the patch opens; click its small button for new ones. The top strip shows them with their values. The middle strip and the list are the indices from t.argsort: the first names the cell of the top strip holding the smallest value, the next the cell holding the next smallest, and so on.\n\nThe bottom strip USES those indices: t.take_along_dim reads the values at the positions it is given, in the order given, so it sends the values sorted. Its indices inlet does not trigger it - the values arriving at tensor in do - so the cord into t.argsort was made first, and the indices are already waiting. Tick descending, click t.rand, and every strip below the first turns round.\n\nTo reorder something ELSE by the same ranking, send the other tensor into t.take_along_dim instead - the indices still come from the first.\n\nRELATED:\nnp.argsort is the NumPy version (descending is an option there). np.sort gives the sorted values directly. t.take_along_dim reads values at the indices. t.argmax is the first entry of a descending argsort, on its own. t.flip reverses an index list.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Gives the positions that would put a tensor in order: the index of\nthe smallest value first, then the next smallest, and so on.\n\nIt does not move any values - it tells you where they are. Use it when\nyou want to reorder something ELSE by the same ranking: sort joints by\nspeed, then use the same order for their names or colours; find which\nthree sensors read highest; rank a set of scores and keep track of whose\nthey were.\n\nREADING THE INDICES:\nPositions count from 0. If the first index is 5, the smallest value is\nin cell 5 of the input. Reading the input at each index in turn gives the\nvalues sorted.\n\nSYNTAX:\nt.argsort <dim: int>\nWith no argument it ranks along the LAST axis (each row of a table on its\nown) and there is no dim inlet. Give an axis - t.argsort 0 - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.argsort\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is ranked and sent - the only inlet that makes the node send.\n\ndim (int box, only with an argument):\nWhich axis to rank along. For a 2-D tensor, -1 or 1 ranks each row\n(indices are column numbers), 0 ranks each column (indices are row\nnumbers).\n\ndescending (checkbox):\nLargest first. Changing it does not send by itself; the next tensor\nuses it.\n\nstable (checkbox):\nEqual values keep their original order. Without it, the order of ties is\nnot guaranteed - which matters when the ranking drives something that\nwould flicker between two joints that are momentarily equal.\n\nOUTPUTS:\n\noutput:\nThe indices, whole numbers (int64), the same shape as the input.\n\nREADING THE DEMO:\nt.rand makes 8 values when the patch opens; click its small button for\nnew ones. The top strip shows them with their values. The middle strip\nand the list are the indices from t.argsort: the first names the cell of\nthe top strip holding the smallest value, the next the cell holding the\nnext smallest, and so on.\n\nThe bottom strip USES those indices: t.take_along_dim reads the values at\nthe positions it is given, in the order given, so it sends the values\nsorted. Its indices inlet does not trigger it - the values arriving at\ntensor in do - so the cord into t.argsort was made first, and the\nindices are already waiting. Tick descending, click t.rand, and every\nstrip below the first turns round.\n\nTo reorder something ELSE by the same ranking, send the other tensor into\nt.take_along_dim instead - the indices still come from the first.\n\nRELATED:\nnp.argsort is the NumPy version (descending is an option there). np.sort\ngives the sorted values directly. t.take_along_dim reads values at the\nindices. t.argmax is the first entry of a descending argsort, on its own.\nt.flip reverses an index list."
+            "text": "Gives the positions that would put a tensor in order: the index of the smallest value first, then the next smallest, and so on.\n\nIt does not move any values - it tells you where they are. Use it when you want to reorder something ELSE by the same ranking: sort joints by speed, then use the same order for their names or colours; find which three sensors read highest; rank a set of scores and keep track of whose they were.\n\nREADING THE INDICES:\nPositions count from 0. If the first index is 5, the smallest value is in cell 5 of the input. Reading the input at each index in turn gives the values sorted.\n\nSYNTAX:\nt.argsort <dim: int>\nWith no argument it ranks along the LAST axis (each row of a table on its\nown) and there is no dim inlet. Give an axis - t.argsort 0 - and a dim\nbox appears so it can be changed.\n\nEXAMPLE:\nt.argsort\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every input is ranked and sent - the only inlet that makes the node send.\n\ndim (int box, only with an argument):\nWhich axis to rank along. For a 2-D tensor, -1 or 1 ranks each row (indices are column numbers), 0 ranks each column (indices are row numbers).\n\ndescending (checkbox):\nLargest first. Changing it does not send by itself; the next tensor uses it.\n\nstable (checkbox):\nEqual values keep their original order. Without it, the order of ties is not guaranteed - which matters when the ranking drives something that would flicker between two joints that are momentarily equal.\n\nOUTPUTS:\n\noutput:\nThe indices, whole numbers (int64), the same shape as the input.\n\nREADING THE DEMO:\nt.rand makes 8 values when the patch opens; click its small button for new ones. The top strip shows them with their values. The middle strip and the list are the indices from t.argsort: the first names the cell of the top strip holding the smallest value, the next the cell holding the next smallest, and so on.\n\nThe bottom strip USES those indices: t.take_along_dim reads the values at the positions it is given, in the order given, so it sends the values sorted. Its indices inlet does not trigger it - the values arriving at tensor in do - so the cord into t.argsort was made first, and the indices are already waiting. Tick descending, click t.rand, and every strip below the first turns round.\n\nTo reorder something ELSE by the same ranking, send the other tensor into t.take_along_dim instead - the indices still come from the first.\n\nRELATED:\nnp.argsort is the NumPy version (descending is an option there). np.sort gives the sorted values directly. t.take_along_dim reads values at the indices. t.argmax is the first entry of a descending argsort, on its own. t.flip reverses an index list."
         },
         "3": {
             "name": "load_bang",
@@ -504,8 +504,8 @@
             "name": "help_link",
             "id": 866,
             "position_x": 30,
-            "position_y": 1030,
-            "width": 78,
+            "position_y": 1064,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -516,8 +516,8 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 151,
-            "position_y": 1030,
+            "position_x": 125,
+            "position_y": 1064,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -529,9 +529,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 248,
-            "position_y": 1030,
-            "width": 115,
+            "position_x": 201,
+            "position_y": 1064,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -542,8 +542,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 415,
-            "position_y": 1030,
+            "position_x": 334,
+            "position_y": 1064,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -556,7 +556,7 @@
             "name": "help_link",
             "id": 1014,
             "position_x": 30,
-            "position_y": 1074,
+            "position_y": 1108,
             "width": 53,
             "height": 44,
             "visibility": "show_all",
@@ -569,8 +569,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1051,
-            "position_x": 584,
-            "position_y": 1074,
+            "position_x": 30,
+            "position_y": 1030,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -594,7 +594,7 @@
             "name": "close",
             "id": 1088,
             "position_x": 24,
-            "position_y": 1148,
+            "position_y": 1182,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

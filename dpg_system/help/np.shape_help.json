@@ -1,5 +1,5 @@
 {
-    "height": 1138,
+    "height": 1172,
     "width": 1797,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Reports the shape of an array: how many entries along each axis, as a list.\n\nIt is the first thing to check when a node refuses data or does something\nodd with it - most \"why won't this work\" problems in array work are a\nshape mismatch rather than a data problem, and the shape is often not\nwhat the picture suggests.\n\nWHAT THE LIST MEANS:\nOne number per axis. [3, 5] is three rows of five. [12] is a plain row of\ntwelve, a 1-D array. [1, 12] holds the same twelve numbers as a 2-D array\nwith a single row - many nodes treat these two differently even though\nthey draw the same. A colour image is [rows, columns, 3]. A single number\nis measured as an array of one value: [1].\n\nSYNTAX:\nnp.shape\nIt takes no arguments.\n\nINPUTS:\n\nnp in:\nAny array. A list is measured as the array it would become, and a torch\ntensor is measured too. Receiving it is what makes the node send.\n\nOUTPUTS:\n\nshape:\nA list of whole numbers, one per axis, outermost first.\n\nREADING THE DEMO:\nTop: change dim 0 or dim 1 on np.rand, then click its button. The\nheat_map shows the new array and np.shape follows - dim 0 is the number\nof rows, dim 1 the number of columns.\n\nBottom: two arrays that LOOK identical. The first strip is np.linspace's\noutput, shape [8]. The second is the same strip after np.reshape 1 8:\nshape [1, 8]. Only np.shape can tell them apart.\n\nRELATED:\nt.info reports the shape of a torch tensor, along with its type and\ndevice. np.reshape changes a shape; np.expand_dims and np.squeeze add or\nremove axes of length 1 - the difference between [8] and [1, 8].",
+                    "value": "Reports the shape of an array: how many entries along each axis, as a list.\n\nIt is the first thing to check when a node refuses data or does something odd with it - most \"why won't this work\" problems in array work are a shape mismatch rather than a data problem, and the shape is often not what the picture suggests.\n\nWHAT THE LIST MEANS:\nOne number per axis. [3, 5] is three rows of five. [12] is a plain row of twelve, a 1-D array. [1, 12] holds the same twelve numbers as a 2-D array with a single row - many nodes treat these two differently even though they draw the same. A colour image is [rows, columns, 3]. A single number is measured as an array of one value: [1].\n\nSYNTAX:\nnp.shape\nIt takes no arguments.\n\nINPUTS:\n\nnp in:\nAny array. A list is measured as the array it would become, and a torch tensor is measured too. Receiving it is what makes the node send.\n\nOUTPUTS:\n\nshape:\nA list of whole numbers, one per axis, outermost first.\n\nREADING THE DEMO:\nTop: change dim 0 or dim 1 on np.rand, then click its button. The heat_map shows the new array and np.shape follows - dim 0 is the number of rows, dim 1 the number of columns.\n\nBottom: two arrays that LOOK identical. The first strip is np.linspace's output, shape [8]. The second is the same strip after np.reshape 1 8: shape [1, 8]. Only np.shape can tell them apart.\n\nRELATED:\nt.info reports the shape of a torch tensor, along with its type and device. np.reshape changes a shape; np.expand_dims and np.squeeze add or remove axes of length 1 - the difference between [8] and [1, 8].",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Reports the shape of an array: how many entries along each axis, as a list.\n\nIt is the first thing to check when a node refuses data or does something\nodd with it - most \"why won't this work\" problems in array work are a\nshape mismatch rather than a data problem, and the shape is often not\nwhat the picture suggests.\n\nWHAT THE LIST MEANS:\nOne number per axis. [3, 5] is three rows of five. [12] is a plain row of\ntwelve, a 1-D array. [1, 12] holds the same twelve numbers as a 2-D array\nwith a single row - many nodes treat these two differently even though\nthey draw the same. A colour image is [rows, columns, 3]. A single number\nis measured as an array of one value: [1].\n\nSYNTAX:\nnp.shape\nIt takes no arguments.\n\nINPUTS:\n\nnp in:\nAny array. A list is measured as the array it would become, and a torch\ntensor is measured too. Receiving it is what makes the node send.\n\nOUTPUTS:\n\nshape:\nA list of whole numbers, one per axis, outermost first.\n\nREADING THE DEMO:\nTop: change dim 0 or dim 1 on np.rand, then click its button. The\nheat_map shows the new array and np.shape follows - dim 0 is the number\nof rows, dim 1 the number of columns.\n\nBottom: two arrays that LOOK identical. The first strip is np.linspace's\noutput, shape [8]. The second is the same strip after np.reshape 1 8:\nshape [1, 8]. Only np.shape can tell them apart.\n\nRELATED:\nt.info reports the shape of a torch tensor, along with its type and\ndevice. np.reshape changes a shape; np.expand_dims and np.squeeze add or\nremove axes of length 1 - the difference between [8] and [1, 8]."
+            "text": "Reports the shape of an array: how many entries along each axis, as a list.\n\nIt is the first thing to check when a node refuses data or does something odd with it - most \"why won't this work\" problems in array work are a shape mismatch rather than a data problem, and the shape is often not what the picture suggests.\n\nWHAT THE LIST MEANS:\nOne number per axis. [3, 5] is three rows of five. [12] is a plain row of twelve, a 1-D array. [1, 12] holds the same twelve numbers as a 2-D array with a single row - many nodes treat these two differently even though they draw the same. A colour image is [rows, columns, 3]. A single number is measured as an array of one value: [1].\n\nSYNTAX:\nnp.shape\nIt takes no arguments.\n\nINPUTS:\n\nnp in:\nAny array. A list is measured as the array it would become, and a torch tensor is measured too. Receiving it is what makes the node send.\n\nOUTPUTS:\n\nshape:\nA list of whole numbers, one per axis, outermost first.\n\nREADING THE DEMO:\nTop: change dim 0 or dim 1 on np.rand, then click its button. The heat_map shows the new array and np.shape follows - dim 0 is the number of rows, dim 1 the number of columns.\n\nBottom: two arrays that LOOK identical. The first strip is np.linspace's output, shape [8]. The second is the same strip after np.reshape 1 8: shape [1, 8]. Only np.shape can tell them apart.\n\nRELATED:\nt.info reports the shape of a torch tensor, along with its type and device. np.reshape changes a shape; np.expand_dims and np.squeeze add or remove axes of length 1 - the difference between [8] and [1, 8]."
         },
         "3": {
             "name": "load_bang",
@@ -583,8 +583,8 @@
             "name": "help_link",
             "id": 1014,
             "position_x": 30,
-            "position_y": 960,
-            "width": 53,
+            "position_y": 994,
+            "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -595,9 +595,9 @@
         "22": {
             "name": "help_link",
             "id": 1051,
-            "position_x": 120,
-            "position_y": 960,
-            "width": 78,
+            "position_x": 100,
+            "position_y": 994,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -608,9 +608,9 @@
         "23": {
             "name": "help_link",
             "id": 1088,
-            "position_x": 241,
-            "position_y": 960,
-            "width": 103,
+            "position_x": 195,
+            "position_y": 994,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -621,9 +621,9 @@
         "24": {
             "name": "help_link",
             "id": 1125,
-            "position_x": 392,
-            "position_y": 960,
-            "width": 78,
+            "position_x": 315,
+            "position_y": 994,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -635,7 +635,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1162,
-            "position_x": 686,
+            "position_x": 30,
             "position_y": 960,
             "width": 156,
             "height": 30,
@@ -660,7 +660,7 @@
             "name": "close",
             "id": 1199,
             "position_x": 24,
-            "position_y": 1034,
+            "position_y": 1068,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1021,
+            "height": 1055,
             "width": 2036,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Takes values by their position in the tensor read as one flat list, whatever its shape.\n\nPosition 0 is the first value, and the count runs along the first row,\nthen the next: on a 10 x 10 tensor position 37 is row 3, column 7. Use it\nwhen your positions come from something that counts cells rather than\nrows and columns - t.argmax with no dim, a flattened index, a list of\npixel numbers.\n\nSYNTAX:\nt.take\nIt takes no arguments.\n\nINPUTS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nSends on arrival. This is the only inlet that sends.\n\nindices in:\nThe flat positions, as whole numbers: a list, an array or a tensor.\nNegative positions count back from the end (-1 is the last value). A\nposition past the end prints an error in the console and nothing is\nsent. The node sends nothing until indices have arrived. This inlet is\ncold - the next tensor uses the new list; in the demo a metro re-sends\nthe source ten times a second.\n\nOUTPUTS:\n\noutput:\nThe values taken, shaped like the INDICES, not like the input: a list of\n4 positions gives 4 values; a 2 x 2 tensor of positions gives a 2 x 2\nresult.\n\nREADING THE DEMO:\nIn the numbered source every cell's number is also its flat position, so\nwhat comes out names the cells taken. 0 11 22 ... 99 walks down the\ndiagonal; 9 19 29 39 goes down the last column; 99 0 50 jumps about.\nThe strip and the list show the values, in the order asked for.\n\nRELATED:\nt.index_select takes whole rows or columns by position. t[] slices by\nrow and column. t.take_along_dim takes one position per row. t.argmax\n(with no dim) gives a flat position that t.take can use. np.[] is the\nnearest numpy node.",
+                            "value": "Takes values by their position in the tensor read as one flat list, whatever its shape.\n\nPosition 0 is the first value, and the count runs along the first row, then the next: on a 10 x 10 tensor position 37 is row 3, column 7. Use it when your positions come from something that counts cells rather than rows and columns - t.argmax with no dim, a flattened index, a list of pixel numbers.\n\nSYNTAX:\nt.take\nIt takes no arguments.\n\nINPUTS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor). Sends on arrival. This is the only inlet that sends.\n\nindices in:\nThe flat positions, as whole numbers: a list, an array or a tensor. Negative positions count back from the end (-1 is the last value). A position past the end prints an error in the console and nothing is sent. The node sends nothing until indices have arrived. This inlet is cold - the next tensor uses the new list; in the demo a metro re-sends the source ten times a second.\n\nOUTPUTS:\n\noutput:\nThe values taken, shaped like the INDICES, not like the input: a list of 4 positions gives 4 values; a 2 x 2 tensor of positions gives a 2 x 2 result.\n\nREADING THE DEMO:\nIn the numbered source every cell's number is also its flat position, so what comes out names the cells taken. 0 11 22 ... 99 walks down the diagonal; 9 19 29 39 goes down the last column; 99 0 50 jumps about. The strip and the list show the values, in the order asked for.\n\nRELATED:\nt.index_select takes whole rows or columns by position. t[] slices by row and column. t.take_along_dim takes one position per row. t.argmax (with no dim) gives a flat position that t.take can use. np.[] is the nearest numpy node.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Takes values by their position in the tensor read as one flat list, whatever its shape.\n\nPosition 0 is the first value, and the count runs along the first row,\nthen the next: on a 10 x 10 tensor position 37 is row 3, column 7. Use it\nwhen your positions come from something that counts cells rather than\nrows and columns - t.argmax with no dim, a flattened index, a list of\npixel numbers.\n\nSYNTAX:\nt.take\nIt takes no arguments.\n\nINPUTS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nSends on arrival. This is the only inlet that sends.\n\nindices in:\nThe flat positions, as whole numbers: a list, an array or a tensor.\nNegative positions count back from the end (-1 is the last value). A\nposition past the end prints an error in the console and nothing is\nsent. The node sends nothing until indices have arrived. This inlet is\ncold - the next tensor uses the new list; in the demo a metro re-sends\nthe source ten times a second.\n\nOUTPUTS:\n\noutput:\nThe values taken, shaped like the INDICES, not like the input: a list of\n4 positions gives 4 values; a 2 x 2 tensor of positions gives a 2 x 2\nresult.\n\nREADING THE DEMO:\nIn the numbered source every cell's number is also its flat position, so\nwhat comes out names the cells taken. 0 11 22 ... 99 walks down the\ndiagonal; 9 19 29 39 goes down the last column; 99 0 50 jumps about.\nThe strip and the list show the values, in the order asked for.\n\nRELATED:\nt.index_select takes whole rows or columns by position. t[] slices by\nrow and column. t.take_along_dim takes one position per row. t.argmax\n(with no dim) gives a flat position that t.take can use. np.[] is the\nnearest numpy node."
+                    "text": "Takes values by their position in the tensor read as one flat list, whatever its shape.\n\nPosition 0 is the first value, and the count runs along the first row, then the next: on a 10 x 10 tensor position 37 is row 3, column 7. Use it when your positions come from something that counts cells rather than rows and columns - t.argmax with no dim, a flattened index, a list of pixel numbers.\n\nSYNTAX:\nt.take\nIt takes no arguments.\n\nINPUTS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor). Sends on arrival. This is the only inlet that sends.\n\nindices in:\nThe flat positions, as whole numbers: a list, an array or a tensor. Negative positions count back from the end (-1 is the last value). A position past the end prints an error in the console and nothing is sent. The node sends nothing until indices have arrived. This inlet is cold - the next tensor uses the new list; in the demo a metro re-sends the source ten times a second.\n\nOUTPUTS:\n\noutput:\nThe values taken, shaped like the INDICES, not like the input: a list of 4 positions gives 4 values; a 2 x 2 tensor of positions gives a 2 x 2 result.\n\nREADING THE DEMO:\nIn the numbered source every cell's number is also its flat position, so what comes out names the cells taken. 0 11 22 ... 99 walks down the diagonal; 9 19 29 39 goes down the last column; 99 0 50 jumps about. The strip and the list show the values, in the order asked for.\n\nRELATED:\nt.index_select takes whole rows or columns by position. t[] slices by row and column. t.take_along_dim takes one position per row. t.argmax (with no dim) gives a flat position that t.take can use. np.[] is the nearest numpy node."
                 },
                 "3": {
                     "name": "p",
@@ -664,8 +664,8 @@
                     "name": "help_link",
                     "id": 829,
                     "position_x": 30,
-                    "position_y": 620,
-                    "width": 103,
+                    "position_y": 654,
+                    "width": 104,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -676,8 +676,8 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 181,
-                    "position_y": 620,
+                    "position_x": 150,
+                    "position_y": 654,
                     "width": 35,
                     "height": 44,
                     "visibility": "show_all",
@@ -689,9 +689,9 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 248,
-                    "position_y": 620,
-                    "width": 115,
+                    "position_x": 201,
+                    "position_y": 654,
+                    "width": 117,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -702,8 +702,8 @@
                 "19": {
                     "name": "help_link",
                     "id": 940,
-                    "position_x": 415,
-                    "position_y": 620,
+                    "position_x": 334,
+                    "position_y": 654,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -715,9 +715,9 @@
                 "20": {
                     "name": "help_link",
                     "id": 977,
-                    "position_x": 520,
-                    "position_y": 620,
-                    "width": 47,
+                    "position_x": 416,
+                    "position_y": 654,
+                    "width": 48,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -729,7 +729,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1014,
-                    "position_x": 924,
+                    "position_x": 30,
                     "position_y": 620,
                     "width": 156,
                     "height": 30,
@@ -754,7 +754,7 @@
                     "name": "close",
                     "id": 1051,
                     "position_x": 24,
-                    "position_y": 694,
+                    "position_y": 728,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

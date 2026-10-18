@@ -1,5 +1,5 @@
 {
-    "height": 1262,
+    "height": 1296,
     "width": 1839,
     "position": [
         100,
@@ -68,7 +68,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Adds a fourth channel - alpha, the opacity - to a three-channel image, made from its brightness.\n\nThe new channel is the AVERAGE of each pixel's three channels. So it is not a\nplain \"fully opaque\" alpha: used as opacity, bright pixels come out solid and\ndark ones see-through, and black disappears altogether. That is what you want\nfor laying light material - text, glows, a camera image of a lit figure on\nblack - over something else, so that the black background drops out.\n\nIf you want a fully opaque alpha instead, this is not the node; build the\nchannel yourself and join it on with np.concatenate.\n\nWHAT IT ACCEPTS:\nAn image as an array of height x width x channels. Anything that is not three\ndimensional is ignored (nothing is sent). An image that already has four\nchannels is taken to have its alpha and is passed through unchanged.\n\nTHE TYPE IS KEPT:\nThe image comes out in the type it came in: a uint8 image (0 to 255) stays\nuint8, with the average rounded down to a whole number; a float image stays\nfloat, with its range unchanged.\n\nSYNTAX:\nnp.add_alpha\n\nEXAMPLE:\nnp.add_alpha\n\nINPUTS and PARAMETERS:\n\ninput:\nThe image. Receiving it triggers the node.\n\nOUTPUTS:\n\nimage with alpha:\nThe image with the brightness channel added as its last channel.\n\nREADING THE DEMO:\nnp.grid makes a 32 x 32 x 3 array - every point's x, y and z - which is\nalso a picture: x as red, rising to the right, y as green, rising down the\npicture, and z as a flat amount of blue. The metro re-sends it ten times a\nsecond, so drag z and both pictures follow.\n\nEach side has its own mgl_context that draws a sphere first, then the\nimage in front of it with mgl_image. Left: the image as it is - with no\nalpha it is solid everywhere and hides the sphere completely. Right: the\nsame image after np.add_alpha. The dark top-left corner is nearly\ntransparent, so the sphere shows through it; the bright bottom-right\ncorner is nearly solid and hides it. Raise z and the whole image\nbrightens, so it becomes more opaque everywhere.\n\nnp.shape shows the fourth channel arriving: (32, 32, 3) in, (32, 32, 4) out.\n\nThe sphere is there because a display needs something behind the image to\nshow alpha at all - over plain black, a see-through dark pixel looks just\nlike an opaque one.\n\nRELATED:\nmgl_texture and mgl_image draw arrays as pictures. np.astype changes the\nnumber type (uint8 or float). np.concatenate joins a channel you made\nyourself; np.[] slices one out again.",
+                    "value": "Adds a fourth channel - alpha, the opacity - to a three-channel image, made from its brightness.\n\nThe new channel is the AVERAGE of each pixel's three channels. So it is not a plain \"fully opaque\" alpha: used as opacity, bright pixels come out solid and dark ones see-through, and black disappears altogether. That is what you want for laying light material - text, glows, a camera image of a lit figure on black - over something else, so that the black background drops out.\n\nIf you want a fully opaque alpha instead, this is not the node; build the channel yourself and join it on with np.concatenate.\n\nWHAT IT ACCEPTS:\nAn image as an array of height x width x channels. Anything that is not three dimensional is ignored (nothing is sent). An image that already has four channels is taken to have its alpha and is passed through unchanged.\n\nTHE TYPE IS KEPT:\nThe image comes out in the type it came in: a uint8 image (0 to 255) stays uint8, with the average rounded down to a whole number; a float image stays float, with its range unchanged.\n\nSYNTAX:\nnp.add_alpha\n\nEXAMPLE:\nnp.add_alpha\n\nINPUTS and PARAMETERS:\n\ninput:\nThe image. Receiving it triggers the node.\n\nOUTPUTS:\n\nimage with alpha:\nThe image with the brightness channel added as its last channel.\n\nREADING THE DEMO:\nnp.grid makes a 32 x 32 x 3 array - every point's x, y and z - which is also a picture: x as red, rising to the right, y as green, rising down the picture, and z as a flat amount of blue. The metro re-sends it ten times a second, so drag z and both pictures follow.\n\nEach side has its own mgl_context that draws a sphere first, then the image in front of it with mgl_image. Left: the image as it is - with no alpha it is solid everywhere and hides the sphere completely. Right: the same image after np.add_alpha. The dark top-left corner is nearly transparent, so the sphere shows through it; the bright bottom-right corner is nearly solid and hides it. Raise z and the whole image brightens, so it becomes more opaque everywhere.\n\nnp.shape shows the fourth channel arriving: (32, 32, 3) in, (32, 32, 4) out.\n\nThe sphere is there because a display needs something behind the image to show alpha at all - over plain black, a see-through dark pixel looks just like an opaque one.\n\nRELATED:\nmgl_texture and mgl_image draw arrays as pictures. np.astype changes the number type (uint8 or float). np.concatenate joins a channel you made yourself; np.[] slices one out again.",
                     "value_type": "string"
                 },
                 "1": {
@@ -92,7 +92,7 @@
                     "value_type": "string"
                 }
             },
-            "text": "Adds a fourth channel - alpha, the opacity - to a three-channel image, made from its brightness.\n\nThe new channel is the AVERAGE of each pixel's three channels. So it is not a\nplain \"fully opaque\" alpha: used as opacity, bright pixels come out solid and\ndark ones see-through, and black disappears altogether. That is what you want\nfor laying light material - text, glows, a camera image of a lit figure on\nblack - over something else, so that the black background drops out.\n\nIf you want a fully opaque alpha instead, this is not the node; build the\nchannel yourself and join it on with np.concatenate.\n\nWHAT IT ACCEPTS:\nAn image as an array of height x width x channels. Anything that is not three\ndimensional is ignored (nothing is sent). An image that already has four\nchannels is taken to have its alpha and is passed through unchanged.\n\nTHE TYPE IS KEPT:\nThe image comes out in the type it came in: a uint8 image (0 to 255) stays\nuint8, with the average rounded down to a whole number; a float image stays\nfloat, with its range unchanged.\n\nSYNTAX:\nnp.add_alpha\n\nEXAMPLE:\nnp.add_alpha\n\nINPUTS and PARAMETERS:\n\ninput:\nThe image. Receiving it triggers the node.\n\nOUTPUTS:\n\nimage with alpha:\nThe image with the brightness channel added as its last channel.\n\nREADING THE DEMO:\nnp.grid makes a 32 x 32 x 3 array - every point's x, y and z - which is\nalso a picture: x as red, rising to the right, y as green, rising down the\npicture, and z as a flat amount of blue. The metro re-sends it ten times a\nsecond, so drag z and both pictures follow.\n\nEach side has its own mgl_context that draws a sphere first, then the\nimage in front of it with mgl_image. Left: the image as it is - with no\nalpha it is solid everywhere and hides the sphere completely. Right: the\nsame image after np.add_alpha. The dark top-left corner is nearly\ntransparent, so the sphere shows through it; the bright bottom-right\ncorner is nearly solid and hides it. Raise z and the whole image\nbrightens, so it becomes more opaque everywhere.\n\nnp.shape shows the fourth channel arriving: (32, 32, 3) in, (32, 32, 4) out.\n\nThe sphere is there because a display needs something behind the image to\nshow alpha at all - over plain black, a see-through dark pixel looks just\nlike an opaque one.\n\nRELATED:\nmgl_texture and mgl_image draw arrays as pictures. np.astype changes the\nnumber type (uint8 or float). np.concatenate joins a channel you made\nyourself; np.[] slices one out again."
+            "text": "Adds a fourth channel - alpha, the opacity - to a three-channel image, made from its brightness.\n\nThe new channel is the AVERAGE of each pixel's three channels. So it is not a plain \"fully opaque\" alpha: used as opacity, bright pixels come out solid and dark ones see-through, and black disappears altogether. That is what you want for laying light material - text, glows, a camera image of a lit figure on black - over something else, so that the black background drops out.\n\nIf you want a fully opaque alpha instead, this is not the node; build the channel yourself and join it on with np.concatenate.\n\nWHAT IT ACCEPTS:\nAn image as an array of height x width x channels. Anything that is not three dimensional is ignored (nothing is sent). An image that already has four channels is taken to have its alpha and is passed through unchanged.\n\nTHE TYPE IS KEPT:\nThe image comes out in the type it came in: a uint8 image (0 to 255) stays uint8, with the average rounded down to a whole number; a float image stays float, with its range unchanged.\n\nSYNTAX:\nnp.add_alpha\n\nEXAMPLE:\nnp.add_alpha\n\nINPUTS and PARAMETERS:\n\ninput:\nThe image. Receiving it triggers the node.\n\nOUTPUTS:\n\nimage with alpha:\nThe image with the brightness channel added as its last channel.\n\nREADING THE DEMO:\nnp.grid makes a 32 x 32 x 3 array - every point's x, y and z - which is also a picture: x as red, rising to the right, y as green, rising down the picture, and z as a flat amount of blue. The metro re-sends it ten times a second, so drag z and both pictures follow.\n\nEach side has its own mgl_context that draws a sphere first, then the image in front of it with mgl_image. Left: the image as it is - with no alpha it is solid everywhere and hides the sphere completely. Right: the same image after np.add_alpha. The dark top-left corner is nearly transparent, so the sphere shows through it; the bright bottom-right corner is nearly solid and hides it. Raise z and the whole image brightens, so it becomes more opaque everywhere.\n\nnp.shape shows the fourth channel arriving: (32, 32, 3) in, (32, 32, 4) out.\n\nThe sphere is there because a display needs something behind the image to show alpha at all - over plain black, a see-through dark pixel looks just like an opaque one.\n\nRELATED:\nmgl_texture and mgl_image draw arrays as pictures. np.astype changes the number type (uint8 or float). np.concatenate joins a channel you made yourself; np.[] slices one out again."
         },
         "3": {
             "init": "metro 100",
@@ -657,8 +657,8 @@
             "id": 8382,
             "sid": 25,
             "position_x": 21,
-            "position_y": 1266,
-            "width": 84,
+            "position_y": 1300,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -686,9 +686,9 @@
             "name": "help_link",
             "id": 8393,
             "sid": 26,
-            "position_x": 149,
-            "position_y": 1266,
-            "width": 72,
+            "position_x": 122,
+            "position_y": 1300,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -716,9 +716,9 @@
             "name": "help_link",
             "id": 8404,
             "sid": 27,
-            "position_x": 262,
-            "position_y": 1266,
-            "width": 103,
+            "position_x": 211,
+            "position_y": 1300,
+            "width": 104,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -746,9 +746,9 @@
             "name": "help_link",
             "id": 8415,
             "sid": 28,
-            "position_x": 413,
-            "position_y": 1266,
-            "width": 47,
+            "position_x": 331,
+            "position_y": 1300,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -776,8 +776,8 @@
             "name": "help_link",
             "id": 8426,
             "sid": 29,
-            "position_x": 495,
-            "position_y": 1266,
+            "position_x": 395,
+            "position_y": 1300,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -806,7 +806,7 @@
             "name": "comment",
             "id": 8437,
             "sid": 30,
-            "position_x": 713,
+            "position_x": 21,
             "position_y": 1266,
             "width": 156,
             "height": 30,
@@ -832,7 +832,7 @@
             "id": 8448,
             "sid": 31,
             "position_x": 15,
-            "position_y": 1340,
+            "position_y": 1374,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

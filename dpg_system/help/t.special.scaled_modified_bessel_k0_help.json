@@ -1,5 +1,5 @@
 {
-    "height": 1018,
+    "height": 1052,
     "width": 1543,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Applies the modified Bessel function of the second kind of order 0, K0,\nmultiplied by e to the x, to every element of a tensor.\n\nK0 describes how something spreading out from a long thin source falls\noff with distance - heat from a wire, or a field that is screened as it\nspreads - and this scaled form keeps it from underflowing far from the\nsource.\n\nTHE CURVE:\nDefined for positive x. Infinite at 0, falling steeply at first and then\nvery slowly, approaching the square root of (pi / 2x): 2.68 at 0.1, 0.39 at\n10. K0 itself dies away like e to the minus x; multiplying by e to the x\nremoves that so the numbers stay ordinary.\n\nSYNTAX:\nt.special.scaled_modified_bessel_k0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives infinity, negative inputs give NaN (not a number). Keep start\nabove 0.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (0.1 to 10 here), and the\nupper plot draws them: a straight ramp. The lower plot is e to the x times K0(x) of each\nof those 200 values, so it is the graph of the function from 0.1 to 10,\ndrawn from 0 (bottom) to 3 (top). Drag start and stop on t.linspace\nto look at another stretch (keep start above 0).\n\nRELATED:\nt.special.i0e is the matching scaled version of I0, the growing\npartner of K0.",
+                    "value": "Applies the modified Bessel function of the second kind of order 0, K0, multiplied by e to the x, to every element of a tensor.\n\nK0 describes how something spreading out from a long thin source falls off with distance - heat from a wire, or a field that is screened as it spreads - and this scaled form keeps it from underflowing far from the source.\n\nTHE CURVE:\nDefined for positive x. Infinite at 0, falling steeply at first and then very slowly, approaching the square root of (pi / 2x): 2.68 at 0.1, 0.39 at 10. K0 itself dies away like e to the minus x; multiplying by e to the x removes that so the numbers stay ordinary.\n\nSYNTAX:\nt.special.scaled_modified_bessel_k0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives infinity, negative inputs give NaN (not a number). Keep start above 0.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (0.1 to 10 here), and the upper plot draws them: a straight ramp. The lower plot is e to the x times K0(x) of each of those 200 values, so it is the graph of the function from 0.1 to 10, drawn from 0 (bottom) to 3 (top). Drag start and stop on t.linspace to look at another stretch (keep start above 0).\n\nRELATED:\nt.special.i0e is the matching scaled version of I0, the growing partner of K0.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Applies the modified Bessel function of the second kind of order 0, K0,\nmultiplied by e to the x, to every element of a tensor.\n\nK0 describes how something spreading out from a long thin source falls\noff with distance - heat from a wire, or a field that is screened as it\nspreads - and this scaled form keeps it from underflowing far from the\nsource.\n\nTHE CURVE:\nDefined for positive x. Infinite at 0, falling steeply at first and then\nvery slowly, approaching the square root of (pi / 2x): 2.68 at 0.1, 0.39 at\n10. K0 itself dies away like e to the minus x; multiplying by e to the x\nremoves that so the numbers stay ordinary.\n\nSYNTAX:\nt.special.scaled_modified_bessel_k0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately, so the output is\nthe same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device\nas the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives infinity, negative inputs give NaN (not a number). Keep start\nabove 0.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200\nevenly spaced values from its start to its stop (0.1 to 10 here), and the\nupper plot draws them: a straight ramp. The lower plot is e to the x times K0(x) of each\nof those 200 values, so it is the graph of the function from 0.1 to 10,\ndrawn from 0 (bottom) to 3 (top). Drag start and stop on t.linspace\nto look at another stretch (keep start above 0).\n\nRELATED:\nt.special.i0e is the matching scaled version of I0, the growing\npartner of K0."
+            "text": "Applies the modified Bessel function of the second kind of order 0, K0, multiplied by e to the x, to every element of a tensor.\n\nK0 describes how something spreading out from a long thin source falls off with distance - heat from a wire, or a field that is screened as it spreads - and this scaled form keeps it from underflowing far from the source.\n\nTHE CURVE:\nDefined for positive x. Infinite at 0, falling steeply at first and then very slowly, approaching the square root of (pi / 2x): 2.68 at 0.1, 0.39 at 10. K0 itself dies away like e to the minus x; multiplying by e to the x removes that so the numbers stay ordinary.\n\nSYNTAX:\nt.special.scaled_modified_bessel_k0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it triggers the node. Each element is worked on separately, so the output is the same shape as the input. Whole-number input comes out as floats.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape. On the same device as the input; float32 in gives float32 out.\n\nWHERE IT IS DEFINED:\n0 gives infinity, negative inputs give NaN (not a number). Keep start above 0.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second. t.linspace makes 200 evenly spaced values from its start to its stop (0.1 to 10 here), and the upper plot draws them: a straight ramp. The lower plot is e to the x times K0(x) of each of those 200 values, so it is the graph of the function from 0.1 to 10, drawn from 0 (bottom) to 3 (top). Drag start and stop on t.linspace to look at another stretch (keep start above 0).\n\nRELATED:\nt.special.i0e is the matching scaled version of I0, the growing partner of K0."
         },
         "3": {
             "name": "metro",
@@ -432,8 +432,8 @@
             "name": "help_link",
             "id": 718,
             "position_x": 30,
-            "position_y": 840,
-            "width": 96,
+            "position_y": 874,
+            "width": 98,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -444,9 +444,9 @@
         "14": {
             "name": "help_link",
             "id": 755,
-            "position_x": 174,
-            "position_y": 840,
-            "width": 90,
+            "position_x": 144,
+            "position_y": 874,
+            "width": 92,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -457,9 +457,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 310,
-            "position_y": 840,
-            "width": 109,
+            "position_x": 252,
+            "position_y": 874,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -471,8 +471,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 829,
-            "position_x": 445,
-            "position_y": 884,
+            "position_x": 30,
+            "position_y": 840,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -496,7 +496,7 @@
             "name": "close",
             "id": 866,
             "position_x": 24,
-            "position_y": 914,
+            "position_y": 948,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

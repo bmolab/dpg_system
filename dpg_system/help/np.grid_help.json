@@ -1,5 +1,5 @@
 {
-    "height": 908,
+    "height": 942,
     "width": 1637,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a grid of points covering a rectangle: the x, y and z of every point.\n\nUse it for anything laid out on a regular grid - positions to draw or\nplace things at, points to sample a field or an image at, or the x and y\ninputs to a calculation over a plane.\n\nTHE OUTPUT IS A 3-D ARRAY:\nshaped (divisions y, divisions x, 3) - rows going down, columns going\nacross, and three numbers in every cell: that point's x, its y and its z.\nSlice the last axis to get one coordinate as a plane: np.[] :,:,0 gives\nevery point's x, np.[] :,:,1 every point's y.\n\nx runs from min x to max x along each row; y runs from min y to max y\ndown the rows, so row 0 holds min y. Both ends are included, as in\nnp.linspace - the grid is two linspaces crossed. z is the same at every\npoint.\n\nSYNTAX:\nnp.grid <min x> <max x> <min y> <max y> <divisions x> <divisions y>\nDefaults: 0 1 0 1 10 10.\n\nEXAMPLE:\nnp.grid 0 1 0 1 5 4\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to send the grid. Changing the properties\ndoes not send by itself - in the demo a metro clicks the node 10 times a\nsecond, so the planes follow your drags.\n\nmin x / max x / min y / max y (drag floats):\nThe rectangle.\n\ndivisions x / divisions y (drag ints):\nHow many POINTS along each direction (not gaps). Anything below 2 is\ntreated as 2.\n\nz (drag float):\nThe z of every point. Default 0; it has no argument.\n\nOUTPUTS:\n\ngrid points:\nfloat32, shaped (divisions y, divisions x, 3).\n\nREADING THE DEMO:\nnp.shape shows the layout: 4 rows, 5 columns, 3 numbers each. The left\nheat_map is the x plane - the same across every row, rising to the right.\nThe right one is the y plane - the same along every row, rising row by\nrow. Each cell prints its value while there is room.\n\nThe heat_map draws row 0 at the TOP, so y grows DOWN the picture - the\nopposite of a graph. Both heat_maps are scaled 0 to 1; drag max x or\nmax y past 1 and the far cells saturate.\n\nRELATED:\nnp.linspace makes one of these axes on its own. np.[] slices out a plane.\nnp.reshape turns the grid into a plain list of points: np.reshape -1 3.",
+                    "value": "Makes a grid of points covering a rectangle: the x, y and z of every point.\n\nUse it for anything laid out on a regular grid - positions to draw or place things at, points to sample a field or an image at, or the x and y inputs to a calculation over a plane.\n\nTHE OUTPUT IS A 3-D ARRAY:\nshaped (divisions y, divisions x, 3) - rows going down, columns going across, and three numbers in every cell: that point's x, its y and its z. Slice the last axis to get one coordinate as a plane: np.[] :,:,0 gives every point's x, np.[] :,:,1 every point's y.\n\nx runs from min x to max x along each row; y runs from min y to max y down the rows, so row 0 holds min y. Both ends are included, as in np.linspace - the grid is two linspaces crossed. z is the same at every point.\n\nSYNTAX:\nnp.grid <min x> <max x> <min y> <max y> <divisions x> <divisions y>\nDefaults: 0 1 0 1 10 10.\n\nEXAMPLE:\nnp.grid 0 1 0 1 5 4\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to send the grid. Changing the properties does not send by itself - in the demo a metro clicks the node 10 times a second, so the planes follow your drags.\n\nmin x / max x / min y / max y (drag floats):\nThe rectangle.\n\ndivisions x / divisions y (drag ints):\nHow many POINTS along each direction (not gaps). Anything below 2 is treated as 2.\n\nz (drag float):\nThe z of every point. Default 0; it has no argument.\n\nOUTPUTS:\n\ngrid points:\nfloat32, shaped (divisions y, divisions x, 3).\n\nREADING THE DEMO:\nnp.shape shows the layout: 4 rows, 5 columns, 3 numbers each. The left heat_map is the x plane - the same across every row, rising to the right. The right one is the y plane - the same along every row, rising row by row. Each cell prints its value while there is room.\n\nThe heat_map draws row 0 at the TOP, so y grows DOWN the picture - the opposite of a graph. Both heat_maps are scaled 0 to 1; drag max x or max y past 1 and the far cells saturate.\n\nRELATED:\nnp.linspace makes one of these axes on its own. np.[] slices out a plane. np.reshape turns the grid into a plain list of points: np.reshape -1 3.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a grid of points covering a rectangle: the x, y and z of every point.\n\nUse it for anything laid out on a regular grid - positions to draw or\nplace things at, points to sample a field or an image at, or the x and y\ninputs to a calculation over a plane.\n\nTHE OUTPUT IS A 3-D ARRAY:\nshaped (divisions y, divisions x, 3) - rows going down, columns going\nacross, and three numbers in every cell: that point's x, its y and its z.\nSlice the last axis to get one coordinate as a plane: np.[] :,:,0 gives\nevery point's x, np.[] :,:,1 every point's y.\n\nx runs from min x to max x along each row; y runs from min y to max y\ndown the rows, so row 0 holds min y. Both ends are included, as in\nnp.linspace - the grid is two linspaces crossed. z is the same at every\npoint.\n\nSYNTAX:\nnp.grid <min x> <max x> <min y> <max y> <divisions x> <divisions y>\nDefaults: 0 1 0 1 10 10.\n\nEXAMPLE:\nnp.grid 0 1 0 1 5 4\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to send the grid. Changing the properties\ndoes not send by itself - in the demo a metro clicks the node 10 times a\nsecond, so the planes follow your drags.\n\nmin x / max x / min y / max y (drag floats):\nThe rectangle.\n\ndivisions x / divisions y (drag ints):\nHow many POINTS along each direction (not gaps). Anything below 2 is\ntreated as 2.\n\nz (drag float):\nThe z of every point. Default 0; it has no argument.\n\nOUTPUTS:\n\ngrid points:\nfloat32, shaped (divisions y, divisions x, 3).\n\nREADING THE DEMO:\nnp.shape shows the layout: 4 rows, 5 columns, 3 numbers each. The left\nheat_map is the x plane - the same across every row, rising to the right.\nThe right one is the y plane - the same along every row, rising row by\nrow. Each cell prints its value while there is room.\n\nThe heat_map draws row 0 at the TOP, so y grows DOWN the picture - the\nopposite of a graph. Both heat_maps are scaled 0 to 1; drag max x or\nmax y past 1 and the far cells saturate.\n\nRELATED:\nnp.linspace makes one of these axes on its own. np.[] slices out a plane.\nnp.reshape turns the grid into a plain list of points: np.reshape -1 3."
+            "text": "Makes a grid of points covering a rectangle: the x, y and z of every point.\n\nUse it for anything laid out on a regular grid - positions to draw or place things at, points to sample a field or an image at, or the x and y inputs to a calculation over a plane.\n\nTHE OUTPUT IS A 3-D ARRAY:\nshaped (divisions y, divisions x, 3) - rows going down, columns going across, and three numbers in every cell: that point's x, its y and its z. Slice the last axis to get one coordinate as a plane: np.[] :,:,0 gives every point's x, np.[] :,:,1 every point's y.\n\nx runs from min x to max x along each row; y runs from min y to max y down the rows, so row 0 holds min y. Both ends are included, as in np.linspace - the grid is two linspaces crossed. z is the same at every point.\n\nSYNTAX:\nnp.grid <min x> <max x> <min y> <max y> <divisions x> <divisions y>\nDefaults: 0 1 0 1 10 10.\n\nEXAMPLE:\nnp.grid 0 1 0 1 5 4\n\nINPUTS and PARAMETERS:\n\nin (button):\nClick it, or send it anything, to send the grid. Changing the properties does not send by itself - in the demo a metro clicks the node 10 times a second, so the planes follow your drags.\n\nmin x / max x / min y / max y (drag floats):\nThe rectangle.\n\ndivisions x / divisions y (drag ints):\nHow many POINTS along each direction (not gaps). Anything below 2 is treated as 2.\n\nz (drag float):\nThe z of every point. Default 0; it has no argument.\n\nOUTPUTS:\n\ngrid points:\nfloat32, shaped (divisions y, divisions x, 3).\n\nREADING THE DEMO:\nnp.shape shows the layout: 4 rows, 5 columns, 3 numbers each. The left heat_map is the x plane - the same across every row, rising to the right. The right one is the y plane - the same along every row, rising row by row. Each cell prints its value while there is room.\n\nThe heat_map draws row 0 at the TOP, so y grows DOWN the picture - the opposite of a graph. Both heat_maps are scaled 0 to 1; drag max x or max y past 1 and the far cells saturate.\n\nRELATED:\nnp.linspace makes one of these axes on its own. np.[] slices out a plane. np.reshape turns the grid into a plain list of points: np.reshape -1 3."
         },
         "3": {
             "name": "metro",
@@ -416,8 +416,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 730,
-            "width": 84,
+            "position_y": 764,
+            "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -428,9 +428,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 158,
-            "position_y": 730,
-            "width": 47,
+            "position_x": 131,
+            "position_y": 764,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -441,9 +441,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 240,
-            "position_y": 730,
-            "width": 78,
+            "position_x": 195,
+            "position_y": 764,
+            "width": 79,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -454,8 +454,8 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 361,
-            "position_y": 730,
+            "position_x": 290,
+            "position_y": 764,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -468,7 +468,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 903,
-            "position_x": 594,
+            "position_x": 30,
             "position_y": 730,
             "width": 156,
             "height": 30,
@@ -493,7 +493,7 @@
             "name": "close",
             "id": 940,
             "position_x": 24,
-            "position_y": 804,
+            "position_y": 838,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

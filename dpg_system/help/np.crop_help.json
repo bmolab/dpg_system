@@ -1,5 +1,5 @@
 {
-    "height": 1101,
+    "height": 1135,
     "width": 2036,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Cuts a rectangle out of a 2-D array or an image, given its left, top, right and bottom edges.\n\nIt is the picture-shaped way of selecting: four numbers you can put on\nsliders, rather than a slice to type. Use it to keep a region of a camera\nframe, a window of a depth map, or the corner of a matrix.\n\nTHE EDGES:\nleft and top are the first column and row KEPT. right and bottom are the\nfirst column and row LEFT OUT - so the result is (bottom - top) rows by\n(right - left) columns. np.crop 2 3 7 8 keeps rows 3 to 7 and columns 2 to\n6: 5 x 5. This is the same as np.[] 3:8,2:7 - note the order differs:\nnp.crop is x first (left, top...), the slice is rows first.\n\nOnly the first two dimensions are cut, so an image shaped (height, width,\n3) keeps all three colours. A 1-D array is ignored: nothing is sent.\n\nSYNTAX:\nnp.crop <left: int> <top: int> <right: int> <bottom: int>\nDefaults: 0 0 256 256.\n\nEXAMPLE:\nnp.crop 2 3 7 8\n\nINPUTS and PARAMETERS:\n\nimage in:\nThe array (a list is converted). Sends the cropped piece on arrival.\nThis is the ONLY inlet that makes the node send.\n\nleft / top / right / bottom (drag ints, also inlets):\nThe edges. Changing them does NOT re-crop the last array - the next one\nto arrive uses them. In the demo a metro resends the source 10 times a\nsecond, so the crop follows your drags.\nOut-of-range edges are pulled inside the array before cutting: a right or\nbottom beyond the array means its far edge, and the rectangle is never\nless than one cell. The boxes keep showing what you typed - right 256 on a\n10-column array crops at column 10.\n\nuncrop (button):\nSets the edges to the whole array (0, 0, width, height) of the last array\nreceived. It does not send by itself; the next array comes out whole.\n\nOUTPUTS:\n\nout array:\nThe rectangle, as a new contiguous array.\n\nREADING THE DEMO:\nThe left heat_map is the source, each cell printing its own number - tens\ndigit the row, units digit the column. Drag the edges on np.crop and the\nright heat_map shows the rectangle kept, still numbered, so you can read\nwhich rows and columns survived. np.shape gives its size.\n\nRELATED:\nnp.[] selects by a typed slice and can also step, reverse and pick lists\nof rows. np.clip is a different thing despite the similar name: it limits\nVALUES, keeping the shape. np.edit writes into a region. pc_crop crops a\npoint cloud by a 3-D box.",
+                    "value": "Cuts a rectangle out of a 2-D array or an image, given its left, top, right and bottom edges.\n\nIt is the picture-shaped way of selecting: four numbers you can put on sliders, rather than a slice to type. Use it to keep a region of a camera frame, a window of a depth map, or the corner of a matrix.\n\nTHE EDGES:\nleft and top are the first column and row KEPT. right and bottom are the first column and row LEFT OUT - so the result is (bottom - top) rows by (right - left) columns. np.crop 2 3 7 8 keeps rows 3 to 7 and columns 2 to 6: 5 x 5. This is the same as np.[] 3:8,2:7 - note the order differs: np.crop is x first (left, top...), the slice is rows first.\n\nOnly the first two dimensions are cut, so an image shaped (height, width, 3) keeps all three colours. A 1-D array is ignored: nothing is sent.\n\nSYNTAX:\nnp.crop <left: int> <top: int> <right: int> <bottom: int>\nDefaults: 0 0 256 256.\n\nEXAMPLE:\nnp.crop 2 3 7 8\n\nINPUTS and PARAMETERS:\n\nimage in:\nThe array (a list is converted). Sends the cropped piece on arrival. This is the ONLY inlet that makes the node send.\n\nleft / top / right / bottom (drag ints, also inlets):\nThe edges. Changing them does NOT re-crop the last array - the next one to arrive uses them. In the demo a metro resends the source 10 times a second, so the crop follows your drags.\nOut-of-range edges are pulled inside the array before cutting: a right or bottom beyond the array means its far edge, and the rectangle is never less than one cell. The boxes keep showing what you typed - right 256 on a 10-column array crops at column 10.\n\nuncrop (button):\nSets the edges to the whole array (0, 0, width, height) of the last array received. It does not send by itself; the next array comes out whole.\n\nOUTPUTS:\n\nout array:\nThe rectangle, as a new contiguous array.\n\nREADING THE DEMO:\nThe left heat_map is the source, each cell printing its own number - tens digit the row, units digit the column. Drag the edges on np.crop and the right heat_map shows the rectangle kept, still numbered, so you can read which rows and columns survived. np.shape gives its size.\n\nRELATED:\nnp.[] selects by a typed slice and can also step, reverse and pick lists of rows. np.clip is a different thing despite the similar name: it limits VALUES, keeping the shape. np.edit writes into a region. pc_crop crops a point cloud by a 3-D box.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Cuts a rectangle out of a 2-D array or an image, given its left, top, right and bottom edges.\n\nIt is the picture-shaped way of selecting: four numbers you can put on\nsliders, rather than a slice to type. Use it to keep a region of a camera\nframe, a window of a depth map, or the corner of a matrix.\n\nTHE EDGES:\nleft and top are the first column and row KEPT. right and bottom are the\nfirst column and row LEFT OUT - so the result is (bottom - top) rows by\n(right - left) columns. np.crop 2 3 7 8 keeps rows 3 to 7 and columns 2 to\n6: 5 x 5. This is the same as np.[] 3:8,2:7 - note the order differs:\nnp.crop is x first (left, top...), the slice is rows first.\n\nOnly the first two dimensions are cut, so an image shaped (height, width,\n3) keeps all three colours. A 1-D array is ignored: nothing is sent.\n\nSYNTAX:\nnp.crop <left: int> <top: int> <right: int> <bottom: int>\nDefaults: 0 0 256 256.\n\nEXAMPLE:\nnp.crop 2 3 7 8\n\nINPUTS and PARAMETERS:\n\nimage in:\nThe array (a list is converted). Sends the cropped piece on arrival.\nThis is the ONLY inlet that makes the node send.\n\nleft / top / right / bottom (drag ints, also inlets):\nThe edges. Changing them does NOT re-crop the last array - the next one\nto arrive uses them. In the demo a metro resends the source 10 times a\nsecond, so the crop follows your drags.\nOut-of-range edges are pulled inside the array before cutting: a right or\nbottom beyond the array means its far edge, and the rectangle is never\nless than one cell. The boxes keep showing what you typed - right 256 on a\n10-column array crops at column 10.\n\nuncrop (button):\nSets the edges to the whole array (0, 0, width, height) of the last array\nreceived. It does not send by itself; the next array comes out whole.\n\nOUTPUTS:\n\nout array:\nThe rectangle, as a new contiguous array.\n\nREADING THE DEMO:\nThe left heat_map is the source, each cell printing its own number - tens\ndigit the row, units digit the column. Drag the edges on np.crop and the\nright heat_map shows the rectangle kept, still numbered, so you can read\nwhich rows and columns survived. np.shape gives its size.\n\nRELATED:\nnp.[] selects by a typed slice and can also step, reverse and pick lists\nof rows. np.clip is a different thing despite the similar name: it limits\nVALUES, keeping the shape. np.edit writes into a region. pc_crop crops a\npoint cloud by a 3-D box."
+            "text": "Cuts a rectangle out of a 2-D array or an image, given its left, top, right and bottom edges.\n\nIt is the picture-shaped way of selecting: four numbers you can put on sliders, rather than a slice to type. Use it to keep a region of a camera frame, a window of a depth map, or the corner of a matrix.\n\nTHE EDGES:\nleft and top are the first column and row KEPT. right and bottom are the first column and row LEFT OUT - so the result is (bottom - top) rows by (right - left) columns. np.crop 2 3 7 8 keeps rows 3 to 7 and columns 2 to 6: 5 x 5. This is the same as np.[] 3:8,2:7 - note the order differs: np.crop is x first (left, top...), the slice is rows first.\n\nOnly the first two dimensions are cut, so an image shaped (height, width, 3) keeps all three colours. A 1-D array is ignored: nothing is sent.\n\nSYNTAX:\nnp.crop <left: int> <top: int> <right: int> <bottom: int>\nDefaults: 0 0 256 256.\n\nEXAMPLE:\nnp.crop 2 3 7 8\n\nINPUTS and PARAMETERS:\n\nimage in:\nThe array (a list is converted). Sends the cropped piece on arrival. This is the ONLY inlet that makes the node send.\n\nleft / top / right / bottom (drag ints, also inlets):\nThe edges. Changing them does NOT re-crop the last array - the next one to arrive uses them. In the demo a metro resends the source 10 times a second, so the crop follows your drags.\nOut-of-range edges are pulled inside the array before cutting: a right or bottom beyond the array means its far edge, and the rectangle is never less than one cell. The boxes keep showing what you typed - right 256 on a 10-column array crops at column 10.\n\nuncrop (button):\nSets the edges to the whole array (0, 0, width, height) of the last array received. It does not send by itself; the next array comes out whole.\n\nOUTPUTS:\n\nout array:\nThe rectangle, as a new contiguous array.\n\nREADING THE DEMO:\nThe left heat_map is the source, each cell printing its own number - tens digit the row, units digit the column. Drag the edges on np.crop and the right heat_map shows the rectangle kept, still numbered, so you can read which rows and columns survived. np.shape gives its size.\n\nRELATED:\nnp.[] selects by a typed slice and can also step, reverse and pick lists of rows. np.clip is a different thing despite the similar name: it limits VALUES, keeping the shape. np.edit writes into a region. pc_crop crops a point cloud by a 3-D box."
         },
         "3": {
             "name": "metro",
@@ -487,8 +487,8 @@
             "name": "help_link",
             "id": 829,
             "position_x": 30,
-            "position_y": 910,
-            "width": 47,
+            "position_y": 944,
+            "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -499,8 +499,8 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 112,
-            "position_y": 910,
+            "position_x": 94,
+            "position_y": 944,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -512,8 +512,8 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 209,
-            "position_y": 910,
+            "position_x": 170,
+            "position_y": 944,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -525,8 +525,8 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 306,
-            "position_y": 910,
+            "position_x": 246,
+            "position_y": 944,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
@@ -539,7 +539,7 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 977,
-            "position_x": 924,
+            "position_x": 30,
             "position_y": 910,
             "width": 156,
             "height": 30,
@@ -564,7 +564,7 @@
             "name": "close",
             "id": 1014,
             "position_x": 24,
-            "position_y": 984,
+            "position_y": 1018,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

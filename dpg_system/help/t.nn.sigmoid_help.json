@@ -1,5 +1,5 @@
 {
-    "height": 1152,
+    "height": 1186,
     "width": 1688,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Squeezes every value into the range 0 to 1 along a smooth S-shaped curve:\n1 divided by (1 plus e to the minus x).\n\nReach for it to turn any number - a score, a difference, an unbounded\ncontrol - into something between 0 and 1: a probability, a mix amount, a\ngate that opens gradually. However large the input, the output never\nleaves 0..1, which makes it safe in front of anything that needs that\nrange.\n\nTHE CURVE:\n0 gives exactly 0.5. Positive values rise towards 1 and negative values\nfall towards 0, but neither limit is ever reached: 2 gives 0.88, 4 gives\n0.98, 6 gives 0.998. The curve is steepest at 0 (slope 0.25) and flattens\nout on both sides, so it is most sensitive to changes near zero and nearly\ndeaf to changes far from it. To make the S sharper or gentler, scale the\ninput before it (multiply by 4 and the S is four times as steep).\n\nSYNTAX:\nt.nn.sigmoid\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -6 (left edge of the\nplot) to 6 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -1.5 to 1.5; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.special.expit is the same function under its statistics name.\nt.nn.tanh is the same S stretched to run from -1 to 1. t.nn.hardsigmoid is\na straight-line imitation. t.nn.logsigmoid is its logarithm, computed\nsafely. t.special.logits goes the other way, from 0..1 back to a score.",
+                    "value": "Squeezes every value into the range 0 to 1 along a smooth S-shaped curve:\n1 divided by (1 plus e to the minus x).\n\nReach for it to turn any number - a score, a difference, an unbounded control - into something between 0 and 1: a probability, a mix amount, a gate that opens gradually. However large the input, the output never leaves 0..1, which makes it safe in front of anything that needs that range.\n\nTHE CURVE:\n0 gives exactly 0.5. Positive values rise towards 1 and negative values fall towards 0, but neither limit is ever reached: 2 gives 0.88, 4 gives 0.98, 6 gives 0.998. The curve is steepest at 0 (slope 0.25) and flattens out on both sides, so it is most sensitive to changes near zero and nearly deaf to changes far from it. To make the S sharper or gentler, scale the input before it (multiply by 4 and the S is four times as steep).\n\nSYNTAX:\nt.nn.sigmoid\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -6 (left edge of the plot) to 6 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -1.5 to 1.5; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.special.expit is the same function under its statistics name. t.nn.tanh is the same S stretched to run from -1 to 1. t.nn.hardsigmoid is a straight-line imitation. t.nn.logsigmoid is its logarithm, computed safely. t.special.logits goes the other way, from 0..1 back to a score.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Squeezes every value into the range 0 to 1 along a smooth S-shaped curve:\n1 divided by (1 plus e to the minus x).\n\nReach for it to turn any number - a score, a difference, an unbounded\ncontrol - into something between 0 and 1: a probability, a mix amount, a\ngate that opens gradually. However large the input, the output never\nleaves 0..1, which makes it safe in front of anything that needs that\nrange.\n\nTHE CURVE:\n0 gives exactly 0.5. Positive values rise towards 1 and negative values\nfall towards 0, but neither limit is ever reached: 2 gives 0.88, 4 gives\n0.98, 6 gives 0.998. The curve is steepest at 0 (slope 0.25) and flattens\nout on both sides, so it is most sensitive to changes near zero and nearly\ndeaf to changes far from it. To make the S sharper or gentler, scale the\ninput before it (multiply by 4 and the S is four times as steep).\n\nSYNTAX:\nt.nn.sigmoid\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -6 (left edge of the\nplot) to 6 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -1.5 to 1.5; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.special.expit is the same function under its statistics name.\nt.nn.tanh is the same S stretched to run from -1 to 1. t.nn.hardsigmoid is\na straight-line imitation. t.nn.logsigmoid is its logarithm, computed\nsafely. t.special.logits goes the other way, from 0..1 back to a score."
+            "text": "Squeezes every value into the range 0 to 1 along a smooth S-shaped curve:\n1 divided by (1 plus e to the minus x).\n\nReach for it to turn any number - a score, a difference, an unbounded control - into something between 0 and 1: a probability, a mix amount, a gate that opens gradually. However large the input, the output never leaves 0..1, which makes it safe in front of anything that needs that range.\n\nTHE CURVE:\n0 gives exactly 0.5. Positive values rise towards 1 and negative values fall towards 0, but neither limit is ever reached: 2 gives 0.88, 4 gives 0.98, 6 gives 0.998. The curve is steepest at 0 (slope 0.25) and flattens out on both sides, so it is most sensitive to changes near zero and nearly deaf to changes far from it. To make the S sharper or gentler, scale the input before it (multiply by 4 and the S is four times as steep).\n\nSYNTAX:\nt.nn.sigmoid\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy array is turned into a float32 tensor on the cpu first; a tensor arriving as a tensor keeps its own dtype and device. The curve is applied to every element on its own, so the output has the same shape as the input. An integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -6 (left edge of the plot) to 6 (right edge); the middle of the plot is 0. The plot draws two lines over each other: the straight diagonal is the input itself, and the other is the node's output for the same values. Where the two lines coincide the node passes the value unchanged; where they part, that is the bend. The plot's height runs from -1.5 to 1.5; the input line runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.special.expit is the same function under its statistics name. t.nn.tanh is the same S stretched to run from -1 to 1. t.nn.hardsigmoid is a straight-line imitation. t.nn.logsigmoid is its logarithm, computed safely. t.special.logits goes the other way, from 0..1 back to a score."
         },
         "3": {
             "name": "metro",
@@ -379,8 +379,8 @@
             "name": "help_link",
             "id": 755,
             "position_x": 30,
-            "position_y": 930,
-            "width": 109,
+            "position_y": 964,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -391,9 +391,9 @@
         "15": {
             "name": "help_link",
             "id": 792,
-            "position_x": 189,
-            "position_y": 930,
-            "width": 72,
+            "position_x": 156,
+            "position_y": 964,
+            "width": 73,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -404,9 +404,9 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 302,
-            "position_y": 930,
-            "width": 115,
+            "position_x": 245,
+            "position_y": 964,
+            "width": 117,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -418,7 +418,7 @@
             "name": "help_link",
             "id": 866,
             "position_x": 30,
-            "position_y": 974,
+            "position_y": 1008,
             "width": 109,
             "height": 44,
             "visibility": "show_all",
@@ -431,7 +431,7 @@
             "name": "help_link",
             "id": 903,
             "position_x": 189,
-            "position_y": 974,
+            "position_y": 1008,
             "width": 96,
             "height": 44,
             "visibility": "show_all",
@@ -444,7 +444,7 @@
             "name": "help_link",
             "id": 940,
             "position_x": 333,
-            "position_y": 974,
+            "position_y": 1008,
             "width": 115,
             "height": 44,
             "visibility": "show_all",
@@ -457,8 +457,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 977,
-            "position_x": 484,
-            "position_y": 1018,
+            "position_x": 30,
+            "position_y": 930,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -482,7 +482,7 @@
             "name": "close",
             "id": 1014,
             "position_x": 24,
-            "position_y": 1048,
+            "position_y": 1082,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

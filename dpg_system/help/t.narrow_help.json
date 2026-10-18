@@ -211,7 +211,7 @@
             }
         },
         "1": {
-            "height": 1121,
+            "height": 1155,
             "width": 2041,
             "position": [
                 100,
@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Takes a run of consecutive positions along one dimension: start here, take this many.\n\nt.narrow with dim 0, start 2, length 3 gives rows 2, 3 and 4 - the same as\nt[] 2:5 - but the three numbers sit in boxes you can drag or drive from\nthe patch, which a typed slice cannot. Use it for a moving window over\nframes, a band of rows, a block of channels.\n\nSYNTAX:\nt.narrow <dim: int> <start: int> <length: int>\nDefaults: dim 0, start 0, length 1. t.narrow 0 2 3 takes rows 2, 3 and\n4; t.narrow 1 0 4 the first four columns.\n\nEXAMPLE:\nt.narrow 0 2 3\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nSends the run on arrival. This is the only inlet that sends.\n\ndim (int box, also an inlet):\nWhich dimension to cut along: 0 rows, 1 columns. Negative counts from\nthe end.\n\nstart (drag int, also an inlet):\nThe first position kept. Negative counts from the end (-3 is three from\nthe end). Default 0, or the second argument.\n\nlength (drag int, also an inlet):\nHow many positions to keep. Default 1, or the third argument.\n\nChanging dim, start or length does NOT send by itself - the next tensor\nuses them; in the demo a metro inside make_numbered re-sends the source\nten times a second. The run must fit: a start past the end, a length of\n0 or less, or a run that would go past the end sends nothing and prints\nan error in the console - once per tensor, so with a streaming source\nthe console fills until you bring the numbers back in range.\n\nOUTPUTS:\n\ntensor out:\nThe run. The dimension is KEPT (length 1 gives one row, still a matrix).\nIt is a view of the input, not a copy.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source - tens digit the row, units\ndigit the column. t.narrow 0 2 3 starts on rows 2, 3 and 4 (20 to 49).\nDrag start and the band of rows slides; drag length\nand it widens. Set dim to 1 and it cuts columns instead.\n\nRELATED:\nt[] does the same with a typed slice (2:5), and more. t.select takes one\nposition and removes the dimension. t.chunk cuts a tensor into equal\npieces. np.crop cuts a rectangle in numpy.",
+                            "value": "Takes a run of consecutive positions along one dimension: start here, take this many.\n\nt.narrow with dim 0, start 2, length 3 gives rows 2, 3 and 4 - the same as t[] 2:5 - but the three numbers sit in boxes you can drag or drive from the patch, which a typed slice cannot. Use it for a moving window over frames, a band of rows, a block of channels.\n\nSYNTAX:\nt.narrow <dim: int> <start: int> <length: int>\nDefaults: dim 0, start 0, length 1. t.narrow 0 2 3 takes rows 2, 3 and\n4; t.narrow 1 0 4 the first four columns.\n\nEXAMPLE:\nt.narrow 0 2 3\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor). Sends the run on arrival. This is the only inlet that sends.\n\ndim (int box, also an inlet):\nWhich dimension to cut along: 0 rows, 1 columns. Negative counts from the end.\n\nstart (drag int, also an inlet):\nThe first position kept. Negative counts from the end (-3 is three from the end). Default 0, or the second argument.\n\nlength (drag int, also an inlet):\nHow many positions to keep. Default 1, or the third argument.\n\nChanging dim, start or length does NOT send by itself - the next tensor uses them; in the demo a metro inside make_numbered re-sends the source ten times a second. The run must fit: a start past the end, a length of 0 or less, or a run that would go past the end sends nothing and prints an error in the console - once per tensor, so with a streaming source the console fills until you bring the numbers back in range.\n\nOUTPUTS:\n\ntensor out:\nThe run. The dimension is KEPT (length 1 gives one row, still a matrix). It is a view of the input, not a copy.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source - tens digit the row, units digit the column. t.narrow 0 2 3 starts on rows 2, 3 and 4 (20 to 49). Drag start and the band of rows slides; drag length and it widens. Set dim to 1 and it cuts columns instead.\n\nRELATED:\nt[] does the same with a typed slice (2:5), and more. t.select takes one position and removes the dimension. t.chunk cuts a tensor into equal pieces. np.crop cuts a rectangle in numpy.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Takes a run of consecutive positions along one dimension: start here, take this many.\n\nt.narrow with dim 0, start 2, length 3 gives rows 2, 3 and 4 - the same as\nt[] 2:5 - but the three numbers sit in boxes you can drag or drive from\nthe patch, which a typed slice cannot. Use it for a moving window over\nframes, a band of rows, a block of channels.\n\nSYNTAX:\nt.narrow <dim: int> <start: int> <length: int>\nDefaults: dim 0, start 0, length 1. t.narrow 0 2 3 takes rows 2, 3 and\n4; t.narrow 1 0 4 the first four columns.\n\nEXAMPLE:\nt.narrow 0 2 3\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nSends the run on arrival. This is the only inlet that sends.\n\ndim (int box, also an inlet):\nWhich dimension to cut along: 0 rows, 1 columns. Negative counts from\nthe end.\n\nstart (drag int, also an inlet):\nThe first position kept. Negative counts from the end (-3 is three from\nthe end). Default 0, or the second argument.\n\nlength (drag int, also an inlet):\nHow many positions to keep. Default 1, or the third argument.\n\nChanging dim, start or length does NOT send by itself - the next tensor\nuses them; in the demo a metro inside make_numbered re-sends the source\nten times a second. The run must fit: a start past the end, a length of\n0 or less, or a run that would go past the end sends nothing and prints\nan error in the console - once per tensor, so with a streaming source\nthe console fills until you bring the numbers back in range.\n\nOUTPUTS:\n\ntensor out:\nThe run. The dimension is KEPT (length 1 gives one row, still a matrix).\nIt is a view of the input, not a copy.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source - tens digit the row, units\ndigit the column. t.narrow 0 2 3 starts on rows 2, 3 and 4 (20 to 49).\nDrag start and the band of rows slides; drag length\nand it widens. Set dim to 1 and it cuts columns instead.\n\nRELATED:\nt[] does the same with a typed slice (2:5), and more. t.select takes one\nposition and removes the dimension. t.chunk cuts a tensor into equal\npieces. np.crop cuts a rectangle in numpy."
+                    "text": "Takes a run of consecutive positions along one dimension: start here, take this many.\n\nt.narrow with dim 0, start 2, length 3 gives rows 2, 3 and 4 - the same as t[] 2:5 - but the three numbers sit in boxes you can drag or drive from the patch, which a typed slice cannot. Use it for a moving window over frames, a band of rows, a block of channels.\n\nSYNTAX:\nt.narrow <dim: int> <start: int> <length: int>\nDefaults: dim 0, start 0, length 1. t.narrow 0 2 3 takes rows 2, 3 and\n4; t.narrow 1 0 4 the first four columns.\n\nEXAMPLE:\nt.narrow 0 2 3\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor). Sends the run on arrival. This is the only inlet that sends.\n\ndim (int box, also an inlet):\nWhich dimension to cut along: 0 rows, 1 columns. Negative counts from the end.\n\nstart (drag int, also an inlet):\nThe first position kept. Negative counts from the end (-3 is three from the end). Default 0, or the second argument.\n\nlength (drag int, also an inlet):\nHow many positions to keep. Default 1, or the third argument.\n\nChanging dim, start or length does NOT send by itself - the next tensor uses them; in the demo a metro inside make_numbered re-sends the source ten times a second. The run must fit: a start past the end, a length of 0 or less, or a run that would go past the end sends nothing and prints an error in the console - once per tensor, so with a streaming source the console fills until you bring the numbers back in range.\n\nOUTPUTS:\n\ntensor out:\nThe run. The dimension is KEPT (length 1 gives one row, still a matrix). It is a view of the input, not a copy.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source - tens digit the row, units digit the column. t.narrow 0 2 3 starts on rows 2, 3 and 4 (20 to 49). Drag start and the band of rows slides; drag length and it widens. Set dim to 1 and it cuts columns instead.\n\nRELATED:\nt[] does the same with a typed slice (2:5), and more. t.select takes one position and removes the dimension. t.chunk cuts a tensor into equal pieces. np.crop cuts a rectangle in numpy."
                 },
                 "3": {
                     "name": "p",
@@ -632,7 +632,7 @@
                     "name": "help_link",
                     "id": 755,
                     "position_x": 30,
-                    "position_y": 720,
+                    "position_y": 754,
                     "width": 35,
                     "height": 44,
                     "visibility": "show_all",
@@ -644,8 +644,8 @@
                 "15": {
                     "name": "help_link",
                     "id": 792,
-                    "position_x": 97,
-                    "position_y": 720,
+                    "position_x": 81,
+                    "position_y": 754,
                     "width": 66,
                     "height": 44,
                     "visibility": "show_all",
@@ -657,8 +657,8 @@
                 "16": {
                     "name": "help_link",
                     "id": 829,
-                    "position_x": 202,
-                    "position_y": 720,
+                    "position_x": 163,
+                    "position_y": 754,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -670,9 +670,9 @@
                 "17": {
                     "name": "help_link",
                     "id": 866,
-                    "position_x": 299,
-                    "position_y": 720,
-                    "width": 103,
+                    "position_x": 239,
+                    "position_y": 754,
+                    "width": 104,
                     "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
@@ -683,8 +683,8 @@
                 "18": {
                     "name": "help_link",
                     "id": 903,
-                    "position_x": 450,
-                    "position_y": 720,
+                    "position_x": 359,
+                    "position_y": 754,
                     "width": 60,
                     "height": 44,
                     "visibility": "show_all",
@@ -697,7 +697,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 940,
-                    "position_x": 924,
+                    "position_x": 30,
                     "position_y": 720,
                     "width": 156,
                     "height": 30,
@@ -722,7 +722,7 @@
                     "name": "close",
                     "id": 977,
                     "position_x": 24,
-                    "position_y": 794,
+                    "position_y": 828,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",

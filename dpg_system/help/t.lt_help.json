@@ -1,5 +1,5 @@
 {
-    "height": 976,
+    "height": 1010,
     "width": 1712,
     "position": [
         100,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Compares two tensors element by element and gives back a tensor of\ntrue and false: true wherever a is less than b.\n\nThe answer is not one yes or no but a whole tensor of them, the same\nshape as the inputs, holding the outcome at every position. That tensor\nis a MASK - the way to say \"these elements, not those\" to everything that\nfollows.\n\nWHAT TO DO WITH A MASK:\nMultiply by it and everything that failed becomes zero. t.masked_select\ntakes out just the values where it is true. t.count_nonzero (or t.sum)\ncounts how many passed. To get the PROPORTION that passed, put t.to\nfloat32 in front of t.mean: torch will not average a bool tensor (t.mean\non it raises 'could not infer output dtype'). Summing and multiplying\nwork on it as it is.\n\nSYNTAX:\nt.lt\nIt takes no arguments.\n\nEXAMPLE:\nt.lt\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe tensor to test (a list or number is turned into a float32 tensor).\nReceiving it makes the node compare and send.\n\ntensor b in:\nWhat to test against: another tensor, or a single number used for every\nelement. It is only stored when it arrives, so send it FIRST; until it\nhas received something the node sends nothing. It is converted to tensor\na's type, so against an integer tensor a threshold of 4.5 becomes 4.\n\nThe shapes must broadcast: the same shape, a single number, or shapes\nthat differ only where one has length 1 - so a column of thresholds\ntests each row against its own.\n\nOUTPUTS:\n\ntensor result:\nA bool tensor, true where a < b, in the broadcast shape.\n\nREADING THE DEMO:\nThe top strip is tensor a: the whole numbers 0 to 11. The strip under\nit is the mask - white (1) where the number is less than the slider,\nblack (0) elsewhere. At 5 the cells 0 to 4 are white; the cell holding 5\nitself is black, because 5 is not less than 5 (compare t.le). Drag the\nslider and the edge moves.\n\nRELATED:\nt.le also counts equality as true. t.gt is the other direction. < does\nthe same for numbers and NumPy arrays. np.where uses a mask to choose\nbetween two arrays.",
+                    "value": "Compares two tensors element by element and gives back a tensor of true and false: true wherever a is less than b.\n\nThe answer is not one yes or no but a whole tensor of them, the same shape as the inputs, holding the outcome at every position. That tensor is a MASK - the way to say \"these elements, not those\" to everything that follows.\n\nWHAT TO DO WITH A MASK:\nMultiply by it and everything that failed becomes zero. t.masked_select takes out just the values where it is true. t.count_nonzero (or t.sum) counts how many passed. To get the PROPORTION that passed, put t.to float32 in front of t.mean: torch will not average a bool tensor (t.mean on it raises 'could not infer output dtype'). Summing and multiplying work on it as it is.\n\nSYNTAX:\nt.lt\nIt takes no arguments.\n\nEXAMPLE:\nt.lt\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe tensor to test (a list or number is turned into a float32 tensor). Receiving it makes the node compare and send.\n\ntensor b in:\nWhat to test against: another tensor, or a single number used for every element. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing. It is converted to tensor a's type, so against an integer tensor a threshold of 4.5 becomes 4.\n\nThe shapes must broadcast: the same shape, a single number, or shapes that differ only where one has length 1 - so a column of thresholds tests each row against its own.\n\nOUTPUTS:\n\ntensor result:\nA bool tensor, true where a < b, in the broadcast shape.\n\nREADING THE DEMO:\nThe top strip is tensor a: the whole numbers 0 to 11. The strip under it is the mask - white (1) where the number is less than the slider, black (0) elsewhere. At 5 the cells 0 to 4 are white; the cell holding 5 itself is black, because 5 is not less than 5 (compare t.le). Drag the slider and the edge moves.\n\nRELATED:\nt.le also counts equality as true. t.gt is the other direction. < does the same for numbers and NumPy arrays. np.where uses a mask to choose between two arrays.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Compares two tensors element by element and gives back a tensor of\ntrue and false: true wherever a is less than b.\n\nThe answer is not one yes or no but a whole tensor of them, the same\nshape as the inputs, holding the outcome at every position. That tensor\nis a MASK - the way to say \"these elements, not those\" to everything that\nfollows.\n\nWHAT TO DO WITH A MASK:\nMultiply by it and everything that failed becomes zero. t.masked_select\ntakes out just the values where it is true. t.count_nonzero (or t.sum)\ncounts how many passed. To get the PROPORTION that passed, put t.to\nfloat32 in front of t.mean: torch will not average a bool tensor (t.mean\non it raises 'could not infer output dtype'). Summing and multiplying\nwork on it as it is.\n\nSYNTAX:\nt.lt\nIt takes no arguments.\n\nEXAMPLE:\nt.lt\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe tensor to test (a list or number is turned into a float32 tensor).\nReceiving it makes the node compare and send.\n\ntensor b in:\nWhat to test against: another tensor, or a single number used for every\nelement. It is only stored when it arrives, so send it FIRST; until it\nhas received something the node sends nothing. It is converted to tensor\na's type, so against an integer tensor a threshold of 4.5 becomes 4.\n\nThe shapes must broadcast: the same shape, a single number, or shapes\nthat differ only where one has length 1 - so a column of thresholds\ntests each row against its own.\n\nOUTPUTS:\n\ntensor result:\nA bool tensor, true where a < b, in the broadcast shape.\n\nREADING THE DEMO:\nThe top strip is tensor a: the whole numbers 0 to 11. The strip under\nit is the mask - white (1) where the number is less than the slider,\nblack (0) elsewhere. At 5 the cells 0 to 4 are white; the cell holding 5\nitself is black, because 5 is not less than 5 (compare t.le). Drag the\nslider and the edge moves.\n\nRELATED:\nt.le also counts equality as true. t.gt is the other direction. < does\nthe same for numbers and NumPy arrays. np.where uses a mask to choose\nbetween two arrays."
+            "text": "Compares two tensors element by element and gives back a tensor of true and false: true wherever a is less than b.\n\nThe answer is not one yes or no but a whole tensor of them, the same shape as the inputs, holding the outcome at every position. That tensor is a MASK - the way to say \"these elements, not those\" to everything that follows.\n\nWHAT TO DO WITH A MASK:\nMultiply by it and everything that failed becomes zero. t.masked_select takes out just the values where it is true. t.count_nonzero (or t.sum) counts how many passed. To get the PROPORTION that passed, put t.to float32 in front of t.mean: torch will not average a bool tensor (t.mean on it raises 'could not infer output dtype'). Summing and multiplying work on it as it is.\n\nSYNTAX:\nt.lt\nIt takes no arguments.\n\nEXAMPLE:\nt.lt\n\nINPUTS and PARAMETERS:\n\ntensor a in:\nThe tensor to test (a list or number is turned into a float32 tensor). Receiving it makes the node compare and send.\n\ntensor b in:\nWhat to test against: another tensor, or a single number used for every element. It is only stored when it arrives, so send it FIRST; until it has received something the node sends nothing. It is converted to tensor a's type, so against an integer tensor a threshold of 4.5 becomes 4.\n\nThe shapes must broadcast: the same shape, a single number, or shapes that differ only where one has length 1 - so a column of thresholds tests each row against its own.\n\nOUTPUTS:\n\ntensor result:\nA bool tensor, true where a < b, in the broadcast shape.\n\nREADING THE DEMO:\nThe top strip is tensor a: the whole numbers 0 to 11. The strip under it is the mask - white (1) where the number is less than the slider, black (0) elsewhere. At 5 the cells 0 to 4 are white; the cell holding 5 itself is black, because 5 is not less than 5 (compare t.le). Drag the slider and the edge moves.\n\nRELATED:\nt.le also counts equality as true. t.gt is the other direction. < does the same for numbers and NumPy arrays. np.where uses a mask to choose between two arrays."
         },
         "3": {
             "name": "load_bang",
@@ -446,7 +446,7 @@
             "name": "help_link",
             "id": 792,
             "position_x": 30,
-            "position_y": 790,
+            "position_y": 824,
             "width": 41,
             "height": 44,
             "visibility": "show_all",
@@ -458,8 +458,8 @@
         "16": {
             "name": "help_link",
             "id": 829,
-            "position_x": 104,
-            "position_y": 790,
+            "position_x": 87,
+            "position_y": 824,
             "width": 41,
             "height": 44,
             "visibility": "show_all",
@@ -471,8 +471,8 @@
         "17": {
             "name": "help_link",
             "id": 866,
-            "position_x": 178,
-            "position_y": 790,
+            "position_x": 144,
+            "position_y": 824,
             "width": 41,
             "height": 44,
             "visibility": "show_all",
@@ -484,8 +484,8 @@
         "18": {
             "name": "help_link",
             "id": 903,
-            "position_x": 252,
-            "position_y": 790,
+            "position_x": 201,
+            "position_y": 824,
             "width": 41,
             "height": 44,
             "visibility": "show_all",
@@ -497,9 +497,9 @@
         "19": {
             "name": "help_link",
             "id": 940,
-            "position_x": 326,
-            "position_y": 790,
-            "width": 109,
+            "position_x": 258,
+            "position_y": 824,
+            "width": 110,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
@@ -510,8 +510,8 @@
         "20": {
             "name": "help_link",
             "id": 977,
-            "position_x": 485,
-            "position_y": 790,
+            "position_x": 384,
+            "position_y": 824,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -524,8 +524,8 @@
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
             "id": 1014,
-            "position_x": 577,
-            "position_y": 834,
+            "position_x": 30,
+            "position_y": 790,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -549,7 +549,7 @@
             "name": "close",
             "id": 1051,
             "position_x": 24,
-            "position_y": 864,
+            "position_y": 898,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

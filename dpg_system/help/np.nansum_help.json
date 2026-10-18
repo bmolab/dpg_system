@@ -396,7 +396,7 @@
             }
         },
         "1": {
-            "height": 1214,
+            "height": 1248,
             "width": 1605,
             "position": [
                 100,
@@ -463,7 +463,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Adds up the values in an array as np.sum does, but skips any NaN\n(not-a-number) values instead of letting them spoil the total.\n\nReal data has holes in it - a dropped frame, a sensor that lost\ntracking, a division by zero upstream - and those often arrive as NaN.\nNaN plus anything is NaN, so ONE missing value turns an np.sum total\ninto NaN. np.nansum treats each NaN as 0 and adds up what is actually\nthere. Reach for it whenever an array might contain gaps you would\nrather ignore than pass on.\n\nWHAT IT GIVES FOR A ROW OF NOTHING BUT NaN:\n0 - an empty total, not NaN. If you need to know that a row had no data\nat all, count the NaNs separately.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.nansum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.nansum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into\nan array. An empty array sums to 0. With no NaN in it, the answer is\nexactly what np.sum gives.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.nansum 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\nnansum:\nWith axis None, one number; with an axis, an array of totals, one per\nrow or column, never NaN.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in\nthe cells; click its button for new ones. The page opens with a hole:\nload_bang switches the toggle on, and make_hole puts a NaN into the\ncell at row 2, column 3 (third row down, fourth column across), where\nthe heat_map writes nan. Click the toggle off to fill the hole again.\nAt the top right np.sum and np.nansum each add up all 48 cells. With\nthe hole, np.sum gives nan and np.nansum gives the total of the other\n47; with the toggle off they agree.\nnp.nansum 1 adds along each ROW: the 6 totals stand in the column to\nthe right, each beside its row (np.expand_dims only turns them into a\ncolumn). np.nansum 0 adds down each COLUMN: the 8 totals in the strip\nunderneath, each under its column. The row and the column that run\nthrough the hole drop by the value that was there, but neither total\nturns into nan - with np.sum, both would be nan.\n\nRELATED:\nnp.sum is the plain version. np.nanmean and np.nanmedian skip NaNs the\nsame way for the average and the middle value; np.mean and np.median\ndo not. np.where can replace NaNs (or anything else) with a chosen\nvalue before an ordinary reduction.",
+                            "value": "Adds up the values in an array as np.sum does, but skips any NaN (not-a-number) values instead of letting them spoil the total.\n\nReal data has holes in it - a dropped frame, a sensor that lost tracking, a division by zero upstream - and those often arrive as NaN. NaN plus anything is NaN, so ONE missing value turns an np.sum total into NaN. np.nansum treats each NaN as 0 and adds up what is actually there. Reach for it whenever an array might contain gaps you would rather ignore than pass on.\n\nWHAT IT GIVES FOR A ROW OF NOTHING BUT NaN:\n0 - an empty total, not NaN. If you need to know that a row had no data at all, count the NaNs separately.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.nansum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.nansum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into an array. An empty array sums to 0. With no NaN in it, the answer is exactly what np.sum gives.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.nansum 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\nnansum:\nWith axis None, one number; with an axis, an array of totals, one per row or column, never NaN.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in the cells; click its button for new ones. The page opens with a hole: load_bang switches the toggle on, and make_hole puts a NaN into the cell at row 2, column 3 (third row down, fourth column across), where the heat_map writes nan. Click the toggle off to fill the hole again. At the top right np.sum and np.nansum each add up all 48 cells. With the hole, np.sum gives nan and np.nansum gives the total of the other 47; with the toggle off they agree.\nnp.nansum 1 adds along each ROW: the 6 totals stand in the column to the right, each beside its row (np.expand_dims only turns them into a column). np.nansum 0 adds down each COLUMN: the 8 totals in the strip underneath, each under its column. The row and the column that run through the hole drop by the value that was there, but neither total turns into nan - with np.sum, both would be nan.\n\nRELATED:\nnp.sum is the plain version. np.nanmean and np.nanmedian skip NaNs the same way for the average and the middle value; np.mean and np.median do not. np.where can replace NaNs (or anything else) with a chosen value before an ordinary reduction.",
                             "value_type": "str"
                         },
                         "1": {
@@ -487,7 +487,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Adds up the values in an array as np.sum does, but skips any NaN\n(not-a-number) values instead of letting them spoil the total.\n\nReal data has holes in it - a dropped frame, a sensor that lost\ntracking, a division by zero upstream - and those often arrive as NaN.\nNaN plus anything is NaN, so ONE missing value turns an np.sum total\ninto NaN. np.nansum treats each NaN as 0 and adds up what is actually\nthere. Reach for it whenever an array might contain gaps you would\nrather ignore than pass on.\n\nWHAT IT GIVES FOR A ROW OF NOTHING BUT NaN:\n0 - an empty total, not NaN. If you need to know that a row had no data\nat all, count the NaNs separately.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN\n(across the rows), giving one answer per column. 1 reduces along each\nROW (across the columns), giving one answer per row. In general the\naxis you name is the one that disappears: an 8 by 10 array reduced\nalong axis 0 gives 10 answers, along axis 1 gives 8. The answers come\nout as a flat 1-D array - the reduced axis is removed, not kept as a\nlength-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.nansum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.nansum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into\nan array. An empty array sums to 0. With no NaN in it, the answer is\nexactly what np.sum gives.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name\nsets it (np.nansum 1); with no number it starts at None. The menu lists\nNone, 0 and 1 at first, and once an array arrives it lists None and\nexactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis\nis past the end of a smaller array, that array is reduced along its last\naxis, but the choice is kept for the arrays that follow. Changing the\naxis does NOT send by itself; the next array uses it. Pick None in the\nmenu, or send the message None into the axis inlet, to reduce the whole\narray again.\n\nOUTPUTS:\n\nnansum:\nWith axis None, one number; with an axis, an array of totals, one per\nrow or column, never NaN.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in\nthe cells; click its button for new ones. The page opens with a hole:\nload_bang switches the toggle on, and make_hole puts a NaN into the\ncell at row 2, column 3 (third row down, fourth column across), where\nthe heat_map writes nan. Click the toggle off to fill the hole again.\nAt the top right np.sum and np.nansum each add up all 48 cells. With\nthe hole, np.sum gives nan and np.nansum gives the total of the other\n47; with the toggle off they agree.\nnp.nansum 1 adds along each ROW: the 6 totals stand in the column to\nthe right, each beside its row (np.expand_dims only turns them into a\ncolumn). np.nansum 0 adds down each COLUMN: the 8 totals in the strip\nunderneath, each under its column. The row and the column that run\nthrough the hole drop by the value that was there, but neither total\nturns into nan - with np.sum, both would be nan.\n\nRELATED:\nnp.sum is the plain version. np.nanmean and np.nanmedian skip NaNs the\nsame way for the average and the middle value; np.mean and np.median\ndo not. np.where can replace NaNs (or anything else) with a chosen\nvalue before an ordinary reduction."
+                    "text": "Adds up the values in an array as np.sum does, but skips any NaN (not-a-number) values instead of letting them spoil the total.\n\nReal data has holes in it - a dropped frame, a sensor that lost tracking, a division by zero upstream - and those often arrive as NaN. NaN plus anything is NaN, so ONE missing value turns an np.sum total into NaN. np.nansum treats each NaN as 0 and adds up what is actually there. Reach for it whenever an array might contain gaps you would rather ignore than pass on.\n\nWHAT IT GIVES FOR A ROW OF NOTHING BUT NaN:\n0 - an empty total, not NaN. If you need to know that a row had no data at all, count the NaNs separately.\n\nTHE axis MENU:\nNone reduces the WHOLE array to one answer. 0 reduces down each COLUMN (across the rows), giving one answer per column. 1 reduces along each ROW (across the columns), giving one answer per row. In general the axis you name is the one that disappears: an 8 by 10 array reduced along axis 0 gives 10 answers, along axis 1 gives 8. The answers come out as a flat 1-D array - the reduced axis is removed, not kept as a length-1 axis (there is no keepdims option).\n\nSYNTAX:\nnp.nansum <axis: int>\nDefault: no axis - the whole array.\n\nEXAMPLE:\nnp.nansum 1\n\nINPUTS and PARAMETERS:\n\nin:\nThe array. Every array that arrives is added up and the total sent;\nthis is the only inlet that makes the node send. A list is turned into an array. An empty array sums to 0. With no NaN in it, the answer is exactly what np.sum gives.\n\naxis (menu, also an inlet):\nNone, or one of the input's axes. A number typed after the node name sets it (np.nansum 1); with no number it starts at None. The menu lists None, 0 and 1 at first, and once an array arrives it lists None and exactly that array's axes (0, 1, 2 for a 3-D array). If the chosen axis is past the end of a smaller array, that array is reduced along its last axis, but the choice is kept for the arrays that follow. Changing the axis does NOT send by itself; the next array uses it. Pick None in the menu, or send the message None into the axis inlet, to reduce the whole array again.\n\nOUTPUTS:\n\nnansum:\nWith axis None, one number; with an axis, an array of totals, one per row or column, never NaN.\n\nREADING THE DEMO:\nnp.rand makes 6 rows by 8 columns of whole numbers 0 to 3, written in the cells; click its button for new ones. The page opens with a hole: load_bang switches the toggle on, and make_hole puts a NaN into the cell at row 2, column 3 (third row down, fourth column across), where the heat_map writes nan. Click the toggle off to fill the hole again. At the top right np.sum and np.nansum each add up all 48 cells. With the hole, np.sum gives nan and np.nansum gives the total of the other 47; with the toggle off they agree.\nnp.nansum 1 adds along each ROW: the 6 totals stand in the column to the right, each beside its row (np.expand_dims only turns them into a column). np.nansum 0 adds down each COLUMN: the 8 totals in the strip underneath, each under its column. The row and the column that run through the hole drop by the value that was there, but neither total turns into nan - with np.sum, both would be nan.\n\nRELATED:\nnp.sum is the plain version. np.nanmean and np.nanmedian skip NaNs the same way for the average and the middle value; np.mean and np.median do not. np.where can replace NaNs (or anything else) with a chosen value before an ordinary reduction."
                 },
                 "3": {
                     "init": "comment an array of whole numbers 0 to 3 - click to refresh",
@@ -1003,8 +1003,8 @@
                     "name": "help_link",
                     "id": 1051,
                     "position_x": 30,
-                    "position_y": 808,
-                    "width": 76,
+                    "position_y": 842,
+                    "width": 54,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1015,9 +1015,9 @@
                 "23": {
                     "name": "help_link",
                     "id": 1088,
-                    "position_x": 120,
-                    "position_y": 808,
-                    "width": 107,
+                    "position_x": 100,
+                    "position_y": 842,
+                    "width": 79,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1028,9 +1028,9 @@
                 "24": {
                     "name": "help_link",
                     "id": 1125,
-                    "position_x": 241,
-                    "position_y": 808,
-                    "width": 122,
+                    "position_x": 195,
+                    "position_y": 842,
+                    "width": 92,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1041,9 +1041,9 @@
                 "25": {
                     "name": "help_link",
                     "id": 1162,
-                    "position_x": 377,
-                    "position_y": 808,
-                    "width": 91,
+                    "position_x": 303,
+                    "position_y": 842,
+                    "width": 66,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -1055,7 +1055,7 @@
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
                     "id": 1199,
-                    "position_x": 482,
+                    "position_x": 30,
                     "position_y": 808,
                     "width": 168,
                     "height": 30,
@@ -1080,7 +1080,7 @@
                     "name": "close",
                     "id": 1236,
                     "position_x": 24,
-                    "position_y": 918,
+                    "position_y": 952,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",
