@@ -177,6 +177,11 @@ to show anything. It found three real node bugs the first time it ran — see th
 note at the end of this file. Outlets that only fire on a click (toggle, button)
 are skipped; "never sent" on a counter's carry outlet is normal.
 
+`--click` runs the same 220 frames as a plain run. It used to stop after 40
+(under a second), and every demo driven by a metro of a second or more then
+read "metro never sent": the metro's first bang goes out during load, before
+smoke's taps exist, and its next tick came after the run had ended.
+
 ### test_node_fixes.py  (needs the conda env)
 Regression tests for the node bugs listed at the end of this file. Each was
 silent — the patch loaded, validated and looked right, and the demo sat at zero.

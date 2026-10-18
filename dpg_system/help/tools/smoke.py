@@ -132,7 +132,11 @@ def main():
                 out.set_value = tap_set
 
         buttons = [n for n in editor._nodes if getattr(n, 'label', '') == 'button']
-        frames = 40 if click else FRAMES
+        # --click used to run only 40 frames (under a second): a metro of a
+        # second or more sends its first bang during load, before the taps
+        # above exist, and its next tick fell after the run, so every such
+        # demo read as 'metro never sent'. Clicking needs the full window too.
+        frames = FRAMES
         for i in range(frames):
             if click and i in (5, 20) and buttons:
                 for b in buttons:
