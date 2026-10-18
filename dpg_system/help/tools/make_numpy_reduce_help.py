@@ -1,5 +1,5 @@
-"""np reductions: np.amax, np.amin, np.argmax, np.argmin -- one page each.
-(The np.sum, np.nansum, np.any and np.all pages are hand-made.)
+"""np reductions: np.amin, np.argmax, np.argmin -- one page each.
+(The np.sum, np.nansum, np.any, np.all and np.amax pages are hand-made.)
 
 These were part of one family page (np_stats). Each now has its own page whose
 demo shows the array as a heat_map and the reduction beside it: the whole
@@ -238,71 +238,8 @@ def index_page(op):
     return demo, links
 
 
-# ---------------------------------------------------------------------- np.amax
-body = """Finds the largest value in an array - in the whole array, or in each
-row or each column.
-
-Use it for the peak of a signal, the loudest band of a spectrum, the
-highest reading among a set of sensors, or the brightest pixel of an
-image. To know WHERE the largest value is rather than what it is, use
-np.argmax.
-
-NOT THE SAME AS np.max:
-np.amax REDUCES - an array goes in and one value (or one per row or
-column) comes out. np.max, a different node, works element by element:
-it compares every value with a fixed number and keeps the larger, so
-an array goes in and an array of the same shape comes out (a floor).
-np.max is the clamp; np.amax is the question "what is the largest?".
-
-""" + AXIS_TEXT + """
-
-SYNTAX:
-np.amax <axis: int>
-Default: no axis - the whole array.
-
-EXAMPLE:
-np.amax 1
-
-INPUTS and PARAMETERS:
-
-in:
-The array. Every array that arrives is reduced and the answer sent;
-this is the only inlet that makes the node send.
-""" + wrong_input('amax') + """
-If the array holds a NaN (not-a-number) the answer is NaN - there is
-no nan-skipping version of this node.
-
-""" + AXIS_PARAM.replace('{op}', 'amax') + """
-
-OUTPUTS:
-
-amax:
-With axis None, one number (the largest value). With an axis, an array
-holding the largest value of each row or column, as described above.
-It has the type of the input (float32 in, float32 out).
-
-READING THE DEMO:
-make_spot draws 8 by 10 of dim noise (0 to 0.6) with one bright cell,
-exactly 1.0, where the two sliders put it. np.amax with axis None
-always answers 1.0: the spot is the largest value wherever it is.
-np.amax 1 asks each ROW: its 8 answers stand beside the picture (the
-expand_dims node only turns the flat row of 8 into a column so each
-answer sits next to its row). The spot's row reads 1.0, the others
-their own brightest noise. np.amax 0 asks each COLUMN: the strip under
-the picture has 10 answers, one under each column, and the spot's
-column reads 1.0. Move a slider and the 1.0 moves with the spot.
-
-RELATED:
-np.amin finds the smallest. np.argmax gives the position of the
-largest. np.max is the element-wise floor described above, not a
-reduction. np.mean, np.median and np.sum are the other common
-reductions. t.max is the PyTorch version."""
-
-demo, links = value_page('amax', dark=False)
-demo += see_also(890, ['np.amin', 'np.argmax', 'np.max', 'np.mean', 't.max'])
-print(build('np.amax', 'np.amax - the largest value',
-            body, demo, links, demo_width=830, text_width=760, text_height=th(body),
-            subpatch=spot_sub(dark=False)))
+# np.amax: its page is hand-made now (see tools/README.md); value_page and
+# make_spot stay for np.amin.
 
 # ---------------------------------------------------------------------- np.amin
 body = """Finds the smallest value in an array - in the whole array, or in
