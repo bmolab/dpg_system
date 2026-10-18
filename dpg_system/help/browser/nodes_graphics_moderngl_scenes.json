@@ -1,6 +1,6 @@
 {
-    "height": 1368,
-    "width": 891,
+    "height": 796,
+    "width": 1439,
     "position": [
         100,
         100
@@ -897,8 +897,8 @@
         "27": {
             "init": "help_link mgl_line_array mgl_line_array",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 738,
+            "position_x": 911,
+            "position_y": 150,
             "width": 237,
             "height": 44,
             "properties": {
@@ -926,8 +926,8 @@
         "28": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 742,
+            "position_x": 1162,
+            "position_y": 154,
             "width": 188,
             "height": 28,
             "properties": {
@@ -966,8 +966,8 @@
         "29": {
             "init": "help_link mgl_texture mgl_texture / mgl_image",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 790,
+            "position_x": 911,
+            "position_y": 202,
             "width": 237,
             "height": 44,
             "properties": {
@@ -995,8 +995,8 @@
         "30": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 794,
+            "position_x": 1162,
+            "position_y": 206,
             "width": 181,
             "height": 40,
             "properties": {
@@ -1035,8 +1035,8 @@
         "31": {
             "init": "help_link mgl_text mgl_text",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 842,
+            "position_x": 911,
+            "position_y": 254,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1064,8 +1064,8 @@
         "32": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 846,
+            "position_x": 1162,
+            "position_y": 258,
             "width": 138,
             "height": 28,
             "properties": {
@@ -1104,8 +1104,8 @@
         "33": {
             "init": "help_link mgl_shader mgl_shader",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 894,
+            "position_x": 911,
+            "position_y": 306,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1133,8 +1133,8 @@
         "34": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 898,
+            "position_x": 1162,
+            "position_y": 310,
             "width": 114,
             "height": 28,
             "properties": {
@@ -1173,8 +1173,8 @@
         "35": {
             "init": "help_link mgl_body mgl_body",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 946,
+            "position_x": 911,
+            "position_y": 358,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1202,8 +1202,8 @@
         "36": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 950,
+            "position_x": 1162,
+            "position_y": 362,
             "width": 163,
             "height": 28,
             "properties": {
@@ -1242,8 +1242,8 @@
         "37": {
             "init": "help_link body_proportions body_proportions",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 998,
+            "position_x": 911,
+            "position_y": 410,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1271,8 +1271,8 @@
         "38": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 1002,
+            "position_x": 1162,
+            "position_y": 414,
             "width": 181,
             "height": 28,
             "properties": {
@@ -1311,8 +1311,8 @@
         "39": {
             "init": "help_link mgl_body_orientation mgl_body_orientation",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 1050,
+            "position_x": 911,
+            "position_y": 462,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1340,8 +1340,8 @@
         "40": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 1054,
+            "position_x": 1162,
+            "position_y": 466,
             "width": 194,
             "height": 28,
             "properties": {
@@ -1380,8 +1380,8 @@
         "41": {
             "init": "help_link mgl_orientation_disks mgl_orientation_disks",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 1102,
+            "position_x": 911,
+            "position_y": 514,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1409,8 +1409,8 @@
         "42": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 1106,
+            "position_x": 1162,
+            "position_y": 518,
             "width": 132,
             "height": 28,
             "properties": {
@@ -1449,8 +1449,8 @@
         "43": {
             "init": "help_link mgl_contact_disks mgl_contact_disks",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 1154,
+            "position_x": 911,
+            "position_y": 566,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1478,8 +1478,8 @@
         "44": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 1158,
+            "position_x": 1162,
+            "position_y": 570,
             "width": 151,
             "height": 28,
             "properties": {
@@ -1518,8 +1518,8 @@
         "45": {
             "init": "help_link mgl_torque_arc mgl_torque_arc",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 1206,
+            "position_x": 911,
+            "position_y": 618,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1547,8 +1547,8 @@
         "46": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 1210,
+            "position_x": 1162,
+            "position_y": 622,
             "width": 181,
             "height": 28,
             "properties": {
@@ -1587,8 +1587,8 @@
         "47": {
             "init": "help_link mgl_smpl_mesh mgl_smpl_mesh / mgl_smpl_heatmap",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 1258,
+            "position_x": 911,
+            "position_y": 670,
             "width": 237,
             "height": 44,
             "properties": {
@@ -1616,8 +1616,8 @@
         "48": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 275,
-            "position_y": 1262,
+            "position_x": 1162,
+            "position_y": 674,
             "width": 237,
             "height": 40,
             "properties": {

@@ -1,5 +1,5 @@
-"""np reductions: np.amin, np.argmax, np.argmin -- one page each.
-(The np.sum, np.nansum, np.any, np.all and np.amax pages are hand-made.)
+"""np reductions: np.argmax, np.argmin -- one page each. (The np.sum,
+np.nansum, np.any, np.all, np.amax and np.amin pages are hand-made.)
 
 These were part of one family page (np_stats). Each now has its own page whose
 demo shows the array as a heat_map and the reduction beside it: the whole
@@ -168,40 +168,6 @@ SPOT_LINKS = [('lb', 'out', 'tt', ''), ('tt', '', 'slr', '', 0), ('tt', '', 'slc
               ('spot', 'spot', 'hm', 'y')]
 
 
-def value_page(op, dark):
-    """Demo for np.amax / np.amin: whole array -> float; axis 1 -> one per
-    row, turned into a column beside the picture; axis 0 -> one per column,
-    a strip under the picture."""
-    demo = spot_source() + [
-        {'key': 'r1', 'init': 'np.%s 1' % op, 'pos': (530, 130), 'w': 150, 'h': 70,
-         'props': {'axis': '1'}},
-        {'key': 'c1', 'comment': True, 'text': 'axis 1: one answer per row',
-         'pos': (530, 135)},
-        {'key': 'ex', 'init': 'np.expand_dims 1', 'pos': (530, 220), 'w': 170, 'h': 70,
-         'props': {'axis': 1}},
-        {'key': 'cx', 'comment': True, 'text': 'only stands the 8 answers up as a column',
-         'pos': (530, 225)},
-        {'key': 'hcol', 'init': 'heat_map', 'pos': (530, 320), 'w': 90, 'h': 290,
-         'props': HM(60, 240, 8)},
-        {'key': 'r', 'init': 'np.%s' % op, 'pos': (660, 320), 'w': 150, 'h': 70,
-         'props': {'axis': 'None'}},
-        {'key': 'cr', 'comment': True, 'text': 'axis None: the whole array',
-         'pos': (660, 325)},
-        {'key': 'f', 'init': 'float', 'pos': (660, 410), 'w': 127, 'h': 42, 'props': FLT},
-        {'key': 'r0', 'init': 'np.%s 0' % op, 'pos': (30, 650), 'w': 150, 'h': 70,
-         'props': {'axis': '0'}},
-        {'key': 'c0', 'comment': True, 'text': 'axis 0: one answer per column',
-         'pos': (30, 655)},
-        {'key': 'hrow', 'init': 'heat_map', 'pos': (30, 740), 'w': 460, 'h': 110,
-         'props': HM(440, 60, 1)},
-    ]
-    links = SPOT_LINKS + [('spot', 'spot', 'r1', 'in'), ('r1', op, 'ex', 'input'),
-                          ('ex', 'array out', 'hcol', 'y'),
-                          ('spot', 'spot', 'r', 'in'), ('r', op, 'f', ''),
-                          ('spot', 'spot', 'r0', 'in'), ('r0', op, 'hrow', 'y')]
-    return demo, links
-
-
 def index_page(op):
     """Demo for np.argmax / np.argmin: whole array -> flat index, split into
     row and column with // and %; axis 1 and axis 0 -> lists of indices."""
@@ -238,73 +204,9 @@ def index_page(op):
     return demo, links
 
 
-# np.amax: its page is hand-made now (see tools/README.md); value_page and
-# make_spot stay for np.amin.
+# np.amax: its page is hand-made now (see tools/README.md).
 
-# ---------------------------------------------------------------------- np.amin
-body = """Finds the smallest value in an array - in the whole array, or in
-each row or each column.
-
-Use it for the trough of a signal, the quietest channel, the closest of
-a set of distances, or the darkest pixel of an image. To know WHERE the
-smallest value is rather than what it is, use np.argmin.
-
-NOT THE SAME AS np.min:
-np.amin REDUCES - an array goes in and one value (or one per row or
-column) comes out. np.min, a different node, works element by element:
-it compares every value with a fixed number and keeps the smaller, so
-an array goes in and an array of the same shape comes out (a ceiling).
-np.min is the clamp; np.amin is the question "what is the smallest?".
-
-""" + AXIS_TEXT + """
-
-SYNTAX:
-np.amin <axis: int>
-Default: no axis - the whole array.
-
-EXAMPLE:
-np.amin 0
-
-INPUTS and PARAMETERS:
-
-in:
-The array. Every array that arrives is reduced and the answer sent;
-this is the only inlet that makes the node send.
-""" + wrong_input('amin') + """
-If the array holds a NaN (not-a-number) the answer is NaN - there is
-no nan-skipping version of this node.
-
-""" + AXIS_PARAM.replace('{op}', 'amin') + """
-
-OUTPUTS:
-
-amin:
-With axis None, one number (the smallest value). With an axis, an
-array holding the smallest value of each row or column. It has the
-type of the input.
-
-READING THE DEMO:
-make_dark_spot draws 8 by 10 of light noise (0.4 to 1) with one dark
-cell, exactly 0, where the two sliders put it. np.amin with axis None
-always answers 0: the spot is the smallest value wherever it is.
-np.amin 1 asks each ROW: its 8 answers stand beside the picture (the
-expand_dims node only turns them into a column so each sits next to
-its row), and the spot's row reads 0. np.amin 0 asks each COLUMN: the
-strip under the picture has 10 answers, one under each column, and the
-spot's column reads 0. Move a slider and the 0 moves with the spot.
-
-RELATED:
-np.amax finds the largest. np.argmin gives the position of the
-smallest. np.min is the element-wise ceiling described above, not a
-reduction. np.mean and np.median summarise the middle instead of the
-extremes. t.min is the PyTorch version."""
-
-demo, links = value_page('amin', dark=True)
-demo[[d['key'] for d in demo].index('spot')]['init'] = 'p make_dark_spot'
-demo += see_also(890, ['np.amax', 'np.argmin', 'np.min', 'np.median', 't.min'])
-print(build('np.amin', 'np.amin - the smallest value',
-            body, demo, links, demo_width=830, text_width=760, text_height=th(body),
-            subpatch=spot_sub(dark=True)))
+# np.amin: its page is hand-made now (see tools/README.md).
 
 # -------------------------------------------------------------------- np.argmax
 ARG_INDEX = """THE INDEX WITH NO AXIS:

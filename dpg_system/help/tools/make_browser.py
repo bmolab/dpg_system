@@ -507,19 +507,34 @@ def build_page(name, names_by_stem, taglines):
     parts = [[entry_parts(e) for e in entries] for _, entries in sections]
     button_w = int(max(len(label) for sec in parts for _, label, _ in sec) * G) + 24
 
+    def row_height(lines):
+        return max(44, len(lines) * LH + 16) + ROW_GAP
+
     def section_height(heading, sec):
         h = 34 if heading else 0
         for _, _, lines in sec:
-            h += max(44, len(lines) * LH + 16) + ROW_GAP
+            h += row_height(lines)
         return h + SECTION_GAP
 
-    heights = [section_height(sections[i][0], parts[i]) for i in range(len(sections))]
-    columns = [list(range(len(sections)))]
-    if sum(heights) > MAX_COLUMN_H and len(sections) > 1:
+    # blocks are what the columns are made of: normally one per section. A
+    # page with a single section whose column (title and intro included) runs
+    # past MAX_COLUMN_H - the top page - is cut into two blocks halfway down
+    # its entries, so it can still go into two columns.
+    blocks = [(i, sections[i][0], parts[i]) for i in range(len(sections))]
+    if len(sections) == 1 and y + section_height(*blocks[0][1:]) > MAX_COLUMN_H and len(parts[0]) > 1:
+        rows = [row_height(lines) for _, _, lines in parts[0]]
+        cut = min(range(1, len(rows)), key=lambda k: abs(sum(rows[:k]) - sum(rows[k:])))
+        blocks = [(0, sections[0][0], parts[0][:cut]), (0, '', parts[0][cut:])]
+
+    heights = [section_height(heading, sec) for _, heading, sec in blocks]
+    columns = [list(range(len(blocks)))]
+    if len(sections) == 1 and len(blocks) == 2:
+        columns = [[0], [1]]        # the cut section: one half per column
+    elif sum(heights) > MAX_COLUMN_H and len(blocks) > 1:
         # split where the two halves are most nearly equal
-        best = min(range(1, len(sections)),
+        best = min(range(1, len(blocks)),
                    key=lambda k: abs(sum(heights[:k]) - sum(heights[k:])))
-        columns = [list(range(best)), list(range(best, len(sections)))]
+        columns = [list(range(best)), list(range(best, len(blocks)))]
 
     top = y
     x = X0
@@ -534,12 +549,12 @@ def build_page(name, names_by_stem, taglines):
     for col in columns:
         y = top
         col_w = 0
-        for i in col:
-            heading = sections[i][0]
+        for b in col:
+            i, heading, block_parts = blocks[b]
             if heading:
                 comment(x, y, heading, '30')
                 y += 34
-            for target, label, lines in parts[i]:
+            for target, label, lines in block_parts:
                 is_page = target in TREE
                 link(x, y, target, label, button_w, None if is_page else colours.get(i))
                 row_h = 44

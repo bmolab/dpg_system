@@ -301,7 +301,8 @@ totals in a column beside it and the column totals in a strip under it);
 `make_numpy_reduce_help.py` builds neither now, nor `np.any_help.json`
 (David's rework) and `np.all_help.json` (np.any's layout with np.all in it),
 nor `np.amax_help.json` (make_spot feeding the array, row maxima in a column
-beside it, column maxima in a strip under it). `np.mean_help.json` follows
+beside it, column maxima in a strip under it) and `np.amin_help.json` (the same
+with make_dark_spot). `np.mean_help.json` follows
 the same layout (a toggled glitch of 30 shows the mean jump and the median
 hold); `np.median_help.json` and `np.nanmean_help.json` are David's own
 reworks, and `np.nanmedian_help.json` is np.nanmean's layout with the median

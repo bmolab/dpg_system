@@ -1,6 +1,6 @@
 {
-    "height": 988,
-    "width": 490,
+    "height": 624,
+    "width": 890,
     "position": [
         100,
         100
@@ -621,8 +621,8 @@
         "19": {
             "init": "help_link np.median np.median",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 514,
+            "position_x": 424,
+            "position_y": 150,
             "width": 126,
             "height": 44,
             "properties": {
@@ -650,8 +650,8 @@
         "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
-            "position_y": 518,
+            "position_x": 564,
+            "position_y": 154,
             "width": 132,
             "height": 28,
             "properties": {
@@ -690,8 +690,8 @@
         "21": {
             "init": "help_link np.nanmean np.nanmean",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 566,
+            "position_x": 424,
+            "position_y": 202,
             "width": 126,
             "height": 44,
             "properties": {
@@ -719,8 +719,8 @@
         "22": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
-            "position_y": 570,
+            "position_x": 564,
+            "position_y": 206,
             "width": 255,
             "height": 28,
             "properties": {
@@ -759,8 +759,8 @@
         "23": {
             "init": "help_link np.nanmedian np.nanmedian",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 618,
+            "position_x": 424,
+            "position_y": 254,
             "width": 126,
             "height": 44,
             "properties": {
@@ -788,8 +788,8 @@
         "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
-            "position_y": 622,
+            "position_x": 564,
+            "position_y": 258,
             "width": 286,
             "height": 28,
             "properties": {
@@ -828,8 +828,8 @@
         "25": {
             "init": "help_link np.robust_mean np.robust_mean",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 670,
+            "position_x": 424,
+            "position_y": 306,
             "width": 126,
             "height": 44,
             "properties": {
@@ -857,8 +857,8 @@
         "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
-            "position_y": 674,
+            "position_x": 564,
+            "position_y": 310,
             "width": 231,
             "height": 28,
             "properties": {
@@ -897,8 +897,8 @@
         "27": {
             "init": "help_link np.std np.std",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 722,
+            "position_x": 424,
+            "position_y": 358,
             "width": 126,
             "height": 44,
             "properties": {
@@ -926,8 +926,8 @@
         "28": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
-            "position_y": 726,
+            "position_x": 564,
+            "position_y": 362,
             "width": 212,
             "height": 28,
             "properties": {
@@ -966,8 +966,8 @@
         "29": {
             "init": "help_link np.var np.var",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 774,
+            "position_x": 424,
+            "position_y": 410,
             "width": 126,
             "height": 44,
             "properties": {
@@ -995,8 +995,8 @@
         "30": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
-            "position_y": 778,
+            "position_x": 564,
+            "position_y": 414,
             "width": 206,
             "height": 28,
             "properties": {
@@ -1035,8 +1035,8 @@
         "31": {
             "init": "help_link np.any np.any",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 826,
+            "position_x": 424,
+            "position_y": 462,
             "width": 126,
             "height": 44,
             "properties": {
@@ -1064,8 +1064,8 @@
         "32": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
-            "position_y": 830,
+            "position_x": 564,
+            "position_y": 466,
             "width": 138,
             "height": 28,
             "properties": {
@@ -1104,8 +1104,8 @@
         "33": {
             "init": "help_link np.all np.all",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 878,
+            "position_x": 424,
+            "position_y": 514,
             "width": 126,
             "height": 44,
             "properties": {
@@ -1133,8 +1133,8 @@
         "34": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 164,
-            "position_y": 882,
+            "position_x": 564,
+            "position_y": 518,
             "width": 151,
             "height": 28,
             "properties": {
