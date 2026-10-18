@@ -1,10 +1,8 @@
 """np averages and spread: one page per node.
 
-np.var (the np.mean, np.median, np.nanmean, np.nanmedian, np.std and
-np.robust_mean pages are hand-made). These were part of the np_stats family page;
-each now has its own page whose demo shows how its statistic DIFFERS from its
-neighbours - a spread that var follows squared - with a SEE ALSO row under
-it.
+None any more: the np.mean, np.median, np.nanmean, np.nanmedian, np.std,
+np.var and np.robust_mean pages are all hand-made now (see tools/README.md).
+The shared pieces below are kept for reference; nothing calls build().
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -163,79 +161,6 @@ The plot shows the 64 values as points."""
 
 # np.std: its page is hand-made now (see tools/README.md); STD_DEMO_TEXT stays for np.var.
 
-# ========================================================================= np.var
-body = """Gives the variance of an array: the average of the squared distances
-of its values from their mean.
-
-The variance is the standard deviation squared. It carries the same
-information as np.std - how spread out the values are - but in squared
-units, so it grows much faster: double the spread and the variance goes
-up four times. Reach for it where the maths wants it: variances of
-independent noises add (stds do not), so combining or comparing noise
-levels, weighting by 1 / variance, or fitting is done in variance. For
-a number to read or a threshold to set, np.std, in the data's own units,
-is usually easier.
-
-HOW IT IS WORKED OUT:
-Take the mean; take each value's distance from it; square the distances
-and average them. It divides by the number of values N (the "population"
-variance); some tools divide by N - 1, which gives a larger answer for
-small arrays: for 1 2 3 4 np.var gives 1.25, a spreadsheet's VAR 1.667.
-
-""" + AXIS_TEXT + """
-
-SYNTAX:
-np.var <axis: int>
-With no argument there is no axis: one variance for the whole array.
-
-EXAMPLE:
-np.var
-
-INPUTS and PARAMETERS:
-
-in:
-The array (a list or a single number is turned into one). Every array
-that arrives is measured and the result sent - the only inlet that makes
-the node send.
-
-""" + AXIS_INLET.replace('np.mean 1', 'np.var 1') + """
-
-OUTPUTS:
-
-var:
-With no axis, one number, never negative. With an axis, an array one
-dimension smaller: one variance per column (axis 0) or per row (axis 1).
-
-""" + STD_DEMO_TEXT + """
-
-READING THE DEMO:
-np.var and np.std watch the same 64 values. Drag spread to 2: the std
-reads 2 and the variance 4. Spread 3: std 3, variance 9. The std through
-pow 2 (squared) reads the same as np.var, always. Below spread 1 the
-variance is the SMALLER of the two (0.5 squared is 0.25). Drag shift and
-neither moves - moving all the values together does not spread them.
-
-RELATED:
-np.std is the square root of the variance, in the data's own units.
-np.mean is the centre the distances are measured from. pow raises a
-number to a power - pow 2 squares, pow 0.5 takes the square root, which
-turns a variance back into a std."""
-
-demo = noise_controls() + [
-    {'key': 'vr', 'init': 'np.var', 'pos': (30, 560), 'w': 130, 'h': 70},
-    {'key': 'sd', 'init': 'np.std', 'pos': (290, 560), 'w': 130, 'h': 70},
-    {'key': 'fvr', 'init': 'float', 'pos': (30, 650), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'fsd', 'init': 'float', 'pos': (290, 650), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'cf1', 'comment': True, 'text': 'variance', 'pos': (30, 700)},
-    {'key': 'cf2', 'comment': True, 'text': 'standard deviation', 'pos': (290, 700)},
-    {'key': 'sq', 'init': 'pow 2', 'pos': (290, 740), 'w': 120, 'h': 46},
-    {'key': 'fsq', 'init': 'float', 'pos': (290, 810), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'csq', 'comment': True, 'text': 'std squared - the same as var', 'pos': (440, 815)},
-] + see_also(890, ['np.std', 'np.mean', 'pow'])
-links = NOISE_LINKS + [('nz', 'data', 'vr', 'in'), ('nz', 'data', 'sd', 'in'),
-                       ('vr', 'var', 'fvr', ''), ('sd', 'std', 'fsd', ''),
-                       ('sd', 'std', 'sq', 'in'), ('sq', 'result', 'fsq', '')]
-print(build('np.var', 'np.var - variance, the spread squared', body, demo, links,
-            demo_width=640, text_width=760, text_height=1200, subpatch=NOISE_SUB))
+# np.var: its page is hand-made now (see tools/README.md).
 
 # np.robust_mean: its page is hand-made now (see tools/README.md).

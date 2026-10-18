@@ -1,23 +1,23 @@
 {
-    "height": 1012,
-    "width": 1812,
+    "height": 845,
+    "width": 1554,
     "position": [
         100,
-        100
+        67
     ],
-    "id": 1199,
+    "id": 6616,
     "name": "np.all_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.all_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 237,
+            "id": 6644,
+            "sid": 1,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
+            "visibility": "hidden",
+            "draggable": false,
             "protected": true,
             "presentation_state": "hidden",
             "properties": {
@@ -31,11 +31,12 @@
         "1": {
             "init": "comment np.all - is everything true?",
             "name": "comment",
-            "id": 274,
+            "id": 6662,
+            "sid": 2,
             "position_x": 24,
             "position_y": -4,
             "width": 353,
-            "height": 42,
+            "height": 41,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -43,31 +44,32 @@
                 "0": {
                     "name": "text",
                     "value": "np.all - is everything true?",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "48",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "np.all - is everything true?"
         },
         "2": {
             "name": "text_block",
-            "id": 311,
-            "position_x": 1004,
-            "position_y": 45,
+            "id": 6673,
+            "sid": 3,
+            "position_x": 743,
+            "position_y": 17,
             "width": 768,
-            "height": 672,
+            "height": 685,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Answers True only if EVERY value in an array is true (non-zero), and False as soon as a single one is zero.\n\nUse it to check that a condition holds everywhere: are all joints inside their range, did every sensor report, is every value finite, has every step finished. It turns a whole mask into one yes or no.\n\nSYNTAX:\nnp.all\n\nEXAMPLE:\nnp.all\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one; a single number counts as a one-element array). Every array that arrives is tested and the answer sent - this is the only inlet. Any shape is accepted, and the WHOLE array is always tested: there is no axis, so you get one True or False, never one per row. Values are read as true or false the numpy way: 0, 0.0 and False are false, anything else - including negative numbers and NaN - is true.\nAn empty array gives True (there is nothing false in it).\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nnp.rand makes 6 by 6 values between 0.2 and 0.8. The > node compares each with the slider and draws the answer as a mask: white where the value is above the threshold, dark red where it is not. With the slider at 0 every cell is white and np.all lights the toggle. Drag the slider up: as soon as the FIRST cell goes dark - the smallest value, just over 0.2 - np.all turns False, even though nearly all the mask is still white. Click np.rand's button for new values.\n\nRELATED:\nnp.any is the opposite question: true if ANY value is true. np.sum of a mask counts how many are true; np.all is the same as that count equalling the number of cells. np.amin > threshold is the same test as np.all of (array > threshold). t.all is the PyTorch version.",
-                    "value_type": "str"
+                    "value": "Answers True only if EVERY value in an array is true (non-zero), and False as soon as a single one is zero.\n\nUse it to check that a condition holds everywhere: are all joints inside their range, did every sensor report, is every value finite, has every step finished. It turns a whole mask into one yes or no.\n\nSYNTAX:\nnp.all\n\nEXAMPLE:\nnp.all\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one; a single number counts as a one-element array). Every array that arrives is tested and the answer sent - this is the only inlet. Any shape is accepted, and the WHOLE array is always tested: there is no axis, so you get one True or False, never one per row. Values are read as true or false the numpy way: 0, 0.0 and False are false, anything else - including negative numbers and NaN - is true.\nAn empty array gives True (there is nothing false in it).\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nnp.rand makes 6 by 6 values between 0.2 and 0.8. The > node compares each with the slider and draws the answer as a mask: white where the value is above the threshold, dark red where it is not. With the slider below every value (it starts at 0.1) every cell is white and np.all lights the toggle. Drag the slider up: as soon as the FIRST cell goes dark - the smallest value, just over 0.2 - np.all turns False, even though nearly all the mask is still white. Click np.rand's button for new values.\n\nRELATED:\nnp.any is the opposite question: true if ANY value is true. np.sum of a mask counts how many are true; np.all is the same as that count equalling the number of cells. np.amin > threshold is the same test as np.all of (array > threshold). t.all is the PyTorch version.",
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "lock",
@@ -81,76 +83,90 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 656,
+                    "value": 670,
                     "value_type": "int"
                 },
                 "4": {
                     "name": "text_size",
                     "value": "30",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
-            "text": "Answers True only if EVERY value in an array is true (non-zero), and False as soon as a single one is zero.\n\nUse it to check that a condition holds everywhere: are all joints inside their range, did every sensor report, is every value finite, has every step finished. It turns a whole mask into one yes or no.\n\nSYNTAX:\nnp.all\n\nEXAMPLE:\nnp.all\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one; a single number counts as a one-element array). Every array that arrives is tested and the answer sent - this is the only inlet. Any shape is accepted, and the WHOLE array is always tested: there is no axis, so you get one True or False, never one per row. Values are read as true or false the numpy way: 0, 0.0 and False are false, anything else - including negative numbers and NaN - is true.\nAn empty array gives True (there is nothing false in it).\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nnp.rand makes 6 by 6 values between 0.2 and 0.8. The > node compares each with the slider and draws the answer as a mask: white where the value is above the threshold, dark red where it is not. With the slider at 0 every cell is white and np.all lights the toggle. Drag the slider up: as soon as the FIRST cell goes dark - the smallest value, just over 0.2 - np.all turns False, even though nearly all the mask is still white. Click np.rand's button for new values.\n\nRELATED:\nnp.any is the opposite question: true if ANY value is true. np.sum of a mask counts how many are true; np.all is the same as that count equalling the number of cells. np.amin > threshold is the same test as np.all of (array > threshold). t.all is the PyTorch version."
+            "text": "Answers True only if EVERY value in an array is true (non-zero), and False as soon as a single one is zero.\n\nUse it to check that a condition holds everywhere: are all joints inside their range, did every sensor report, is every value finite, has every step finished. It turns a whole mask into one yes or no.\n\nSYNTAX:\nnp.all\n\nEXAMPLE:\nnp.all\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one; a single number counts as a one-element array). Every array that arrives is tested and the answer sent - this is the only inlet. Any shape is accepted, and the WHOLE array is always tested: there is no axis, so you get one True or False, never one per row. Values are read as true or false the numpy way: 0, 0.0 and False are false, anything else - including negative numbers and NaN - is true.\nAn empty array gives True (there is nothing false in it).\n\nOUTPUTS:\n\nresult:\nTrue or False.\n\nREADING THE DEMO:\nnp.rand makes 6 by 6 values between 0.2 and 0.8. The > node compares each with the slider and draws the answer as a mask: white where the value is above the threshold, dark red where it is not. With the slider below every value (it starts at 0.1) every cell is white and np.all lights the toggle. Drag the slider up: as soon as the FIRST cell goes dark - the smallest value, just over 0.2 - np.all turns False, even though nearly all the mask is still white. Click np.rand's button for new values.\n\nRELATED:\nnp.any is the opposite question: true if ANY value is true. np.sum of a mask counts how many are true; np.all is the same as that count equalling the number of cells. np.amin > threshold is the same test as np.all of (array > threshold). t.all is the PyTorch version."
         },
         "3": {
             "name": "load_bang",
-            "id": 348,
-            "position_x": 30,
-            "position_y": 62,
+            "id": 6690,
+            "sid": 4,
+            "position_x": 28,
+            "position_y": 79,
             "width": 88,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "np.rand",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 130,
-            "width": 123,
-            "height": 98,
+            "height": 41,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "min",
-                    "value": 0.2,
-                    "value_type": "float"
+                    "name": "trigger",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "4": {
+            "init": "np.rand 6 6",
+            "name": "np.rand",
+            "id": 6697,
+            "sid": 5,
+            "position_x": 144,
+            "position_y": 74,
+            "width": 122,
+            "height": 97,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
                 },
                 "1": {
-                    "name": "max",
-                    "value": 0.8,
+                    "name": "min",
+                    "value": 0.20000000298023224,
                     "value_type": "float"
                 },
                 "2": {
+                    "name": "max",
+                    "value": 0.800000011920929,
+                    "value_type": "float"
+                },
+                "3": {
                     "name": "dim 0",
                     "value": 6,
                     "value_type": "int"
                 },
-                "3": {
+                "4": {
                     "name": "dim 1",
                     "value": 6,
                     "value_type": "int"
                 },
-                "4": {
+                "5": {
                     "name": "dtype",
                     "value": "float32",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
-            },
-            "init": "np.rand 6 6"
+            }
         },
         "5": {
             "init": "comment values 0.2 to 0.8 - click its button for new ones",
             "name": "comment",
-            "id": 422,
-            "position_x": 634,
-            "position_y": 135,
+            "id": 6719,
+            "sid": 6,
+            "position_x": 23,
+            "position_y": 43,
             "width": 310,
-            "height": 30,
+            "height": 29,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -158,23 +174,25 @@
                 "0": {
                     "name": "text",
                     "value": "values 0.2 to 0.8 - click its button for new ones",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "values 0.2 to 0.8 - click its button for new ones"
         },
         "6": {
+            "init": "metro 100",
             "name": "metro",
-            "id": 459,
-            "position_x": 300,
-            "position_y": 62,
-            "width": 129,
-            "height": 70,
+            "id": 6730,
+            "sid": 7,
+            "position_x": 87,
+            "position_y": 198,
+            "width": 128,
+            "height": 69,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -192,18 +210,19 @@
                 "2": {
                     "name": "units",
                     "value": "milliseconds",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
-            },
-            "init": "metro 100"
+            }
         },
         "7": {
+            "init": "var np_all_help_array",
             "name": "var",
-            "id": 496,
-            "position_x": 300,
-            "position_y": 170,
-            "width": 117,
-            "height": 56,
+            "id": 6743,
+            "sid": 8,
+            "position_x": 287,
+            "position_y": 164,
+            "width": 116,
+            "height": 55,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -211,43 +230,18 @@
                 "0": {
                     "name": "name",
                     "value": "np_all_help_array",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
-            },
-            "init": "var np_all_help_array"
+            }
         },
         "8": {
-            "init": "comment holds the array; the metro re-sends it",
-            "name": "comment",
-            "id": 533,
-            "position_x": 634,
-            "position_y": 175,
-            "width": 242,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "holds the array; the metro re-sends it",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "holds the array; the metro re-sends it"
-        },
-        "9": {
             "name": "heat_map",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 320,
-            "width": 248,
-            "height": 260,
+            "id": 6764,
+            "sid": 10,
+            "position_x": 441,
+            "position_y": 71,
+            "width": 252,
+            "height": 194,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -255,16 +249,16 @@
                 "0": {
                     "name": "color",
                     "value": "viridis",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "width",
-                    "value": 240,
+                    "value": 245,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 210,
+                    "value": 145,
                     "value_type": "int"
                 },
                 "3": {
@@ -285,23 +279,24 @@
                 "6": {
                     "name": "update_mode",
                     "value": "heat_map",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "7": {
                     "name": "number format",
                     "value": "%.2f",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             }
         },
-        "10": {
+        "9": {
             "init": "comment the array",
             "name": "comment",
-            "id": 607,
-            "position_x": 634,
-            "position_y": 585,
+            "id": 6801,
+            "sid": 11,
+            "position_x": 438,
+            "position_y": 37,
             "width": 64,
-            "height": 30,
+            "height": 29,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -309,57 +304,84 @@
                 "0": {
                     "name": "text",
                     "value": "the array",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "the array"
         },
-        "11": {
+        "10": {
             "name": "slider",
-            "id": 644,
-            "position_x": 360,
-            "position_y": 270,
-            "width": 210,
-            "height": 42,
+            "id": 6812,
+            "sid": 12,
+            "position_x": 58,
+            "position_y": 382,
+            "width": 130,
+            "height": 41,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
+                    "name": "",
+                    "value": 0.1,
+                    "value_type": "float"
+                },
+                "1": {
                     "name": "min",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "1": {
+                "2": {
                     "name": "max",
                     "value": 1.0,
                     "value_type": "float"
                 },
-                "2": {
+                "3": {
                     "name": "format",
                     "value": "%.3f",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
-                "3": {
+                "4": {
+                    "name": "power",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
                     "name": "width",
-                    "value": 180,
+                    "value": 100,
                     "value_type": "int"
+                },
+                "7": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
-        "12": {
+        "11": {
             "init": "comment threshold: drag it",
             "name": "comment",
-            "id": 681,
-            "position_x": 634,
-            "position_y": 275,
+            "id": 6845,
+            "sid": 13,
+            "position_x": 60,
+            "position_y": 351,
             "width": 119,
-            "height": 30,
+            "height": 29,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -367,23 +389,24 @@
                 "0": {
                     "name": "text",
                     "value": "threshold: drag it",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "threshold: drag it"
         },
-        "13": {
+        "12": {
             "name": ">",
-            "id": 718,
-            "position_x": 360,
-            "position_y": 330,
-            "width": 52,
-            "height": 56,
+            "id": 6856,
+            "sid": 14,
+            "position_x": 218,
+            "position_y": 344,
+            "width": 51,
+            "height": 55,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -391,17 +414,18 @@
                 "0": {
                     "name": "output_type",
                     "value": "float",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             }
         },
-        "14": {
+        "13": {
             "name": "heat_map",
-            "id": 755,
-            "position_x": 360,
-            "position_y": 420,
-            "width": 248,
-            "height": 260,
+            "id": 6869,
+            "sid": 15,
+            "position_x": 318,
+            "position_y": 424,
+            "width": 162,
+            "height": 186,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -409,16 +433,16 @@
                 "0": {
                     "name": "color",
                     "value": "hot",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "width",
-                    "value": 240,
+                    "value": 155,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 210,
+                    "value": 137,
                     "value_type": "int"
                 },
                 "3": {
@@ -439,23 +463,24 @@
                 "6": {
                     "name": "update_mode",
                     "value": "heat_map",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "7": {
                     "name": "number format",
                     "value": "none",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             }
         },
-        "15": {
+        "14": {
             "init": "comment the mask: white where the value is above the threshold",
             "name": "comment",
-            "id": 792,
-            "position_x": 634,
-            "position_y": 685,
+            "id": 6906,
+            "sid": 16,
+            "position_x": 318,
+            "position_y": 389,
             "width": 340,
-            "height": 30,
+            "height": 29,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -463,48 +488,82 @@
                 "0": {
                     "name": "text",
                     "value": "the mask: white where the value is above the threshold",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "the mask: white where the value is above the threshold"
         },
-        "16": {
+        "15": {
             "name": "np.all",
-            "id": 829,
-            "position_x": 30,
-            "position_y": 620,
+            "id": 6917,
+            "sid": 17,
+            "position_x": 319,
+            "position_y": 331,
             "width": 45,
-            "height": 42,
+            "height": 41,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "init": "np.all"
+        },
+        "16": {
+            "name": "toggle",
+            "id": 6924,
+            "sid": 18,
+            "position_x": 389,
+            "position_y": 334,
+            "width": 45,
+            "height": 41,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "prefix",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "3": {
+                    "name": "prefix_as_label",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "4": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
         },
         "17": {
-            "name": "toggle",
-            "id": 866,
-            "position_x": 30,
-            "position_y": 710,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "18": {
             "init": "comment True only if every cell of the mask is white",
             "name": "comment",
-            "id": 903,
-            "position_x": 634,
-            "position_y": 625,
-            "width": 279,
-            "height": 30,
+            "id": 6948,
+            "sid": 19,
+            "position_x": 320,
+            "position_y": 295,
+            "width": 281,
+            "height": 29,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -512,89 +571,175 @@
                 "0": {
                     "name": "text",
                     "value": "True only if every cell of the mask is white",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "True only if every cell of the mask is white"
         },
-        "19": {
+        "18": {
+            "init": "help_link np.any",
             "name": "help_link",
-            "id": 940,
-            "position_x": 30,
-            "position_y": 834,
+            "id": 6959,
+            "sid": 20,
+            "position_x": 45,
+            "position_y": 659,
             "width": 54,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "help_link np.any"
+            "properties": {
+                "0": {
+                    "name": "np.any",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
+        },
+        "19": {
+            "init": "help_link np.sum",
+            "name": "help_link",
+            "id": 6970,
+            "sid": 21,
+            "position_x": 115,
+            "position_y": 659,
+            "width": 54,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "np.sum",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
         },
         "20": {
+            "init": "help_link np.amin",
             "name": "help_link",
-            "id": 977,
-            "position_x": 100,
-            "position_y": 834,
-            "width": 54,
-            "height": 44,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "help_link np.sum"
-        },
-        "21": {
-            "name": "help_link",
-            "id": 1014,
-            "position_x": 170,
-            "position_y": 834,
+            "id": 6981,
+            "sid": 22,
+            "position_x": 185,
+            "position_y": 659,
             "width": 60,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "help_link np.amin"
+            "properties": {
+                "0": {
+                    "name": "np.amin",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
         },
-        "22": {
+        "21": {
+            "init": "help_link np.argwhere",
             "name": "help_link",
-            "id": 1051,
-            "position_x": 246,
-            "position_y": 834,
+            "id": 6992,
+            "sid": 23,
+            "position_x": 261,
+            "position_y": 659,
             "width": 85,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "help_link np.argwhere"
+            "properties": {
+                "0": {
+                    "name": "np.argwhere",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
         },
-        "23": {
+        "22": {
+            "init": "help_link t.all",
             "name": "help_link",
-            "id": 1088,
-            "position_x": 347,
-            "position_y": 834,
+            "id": 7003,
+            "sid": 24,
+            "position_x": 362,
+            "position_y": 659,
             "width": 48,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "help_link t.all"
+            "properties": {
+                "0": {
+                    "name": "t.all",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
         },
-        "24": {
+        "23": {
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
-            "id": 1125,
-            "position_x": 30,
-            "position_y": 800,
+            "id": 7014,
+            "sid": 25,
+            "position_x": 45,
+            "position_y": 625,
             "width": 156,
-            "height": 30,
+            "height": 29,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -602,21 +747,22 @@
                 "0": {
                     "name": "text",
                     "value": "SEE ALSO - click to open",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "SEE ALSO - click to open"
         },
-        "25": {
+        "24": {
             "name": "close",
-            "id": 1162,
-            "position_x": 24,
-            "position_y": 908,
+            "id": 7025,
+            "sid": 26,
+            "position_x": 39,
+            "position_y": 733,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -633,92 +779,92 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
+            "source_node": 6690,
+            "source_node_name": "load_bang",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 385,
-            "dest_node_name": "",
+            "dest_node": 6697,
+            "dest_node_name": "np.rand",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "1": {
-            "source_node": 385,
-            "source_node_name": "",
+            "source_node": 6697,
+            "source_node_name": "np.rand",
             "source_output_index": 0,
             "source_output_name": "random array",
-            "dest_node": 496,
-            "dest_node_name": "",
+            "dest_node": 6743,
+            "dest_node_name": "var",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "2": {
-            "source_node": 459,
-            "source_node_name": "",
+            "source_node": 6730,
+            "source_node_name": "metro",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 496,
-            "dest_node_name": "",
+            "dest_node": 6743,
+            "dest_node_name": "var",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "3": {
-            "source_node": 496,
-            "source_node_name": "",
+            "source_node": 6743,
+            "source_node_name": "var",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 570,
-            "dest_node_name": "",
+            "dest_node": 6764,
+            "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "4": {
-            "source_node": 496,
-            "source_node_name": "",
+            "source_node": 6743,
+            "source_node_name": "var",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 718,
-            "dest_node_name": "",
+            "dest_node": 6856,
+            "dest_node_name": ">",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "5": {
-            "source_node": 644,
-            "source_node_name": "",
+            "source_node": 6812,
+            "source_node_name": "slider",
             "source_output_index": 0,
             "source_output_name": "float out",
-            "dest_node": 718,
-            "dest_node_name": "",
-            "dest_input_index": 0,
+            "dest_node": 6856,
+            "dest_node_name": ">",
+            "dest_input_index": 1,
             "dest_input_name": "operand"
         },
         "6": {
-            "source_node": 718,
-            "source_node_name": "",
+            "source_node": 6856,
+            "source_node_name": ">",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 755,
-            "dest_node_name": "",
+            "dest_node": 6869,
+            "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "7": {
-            "source_node": 718,
-            "source_node_name": "",
+            "source_node": 6856,
+            "source_node_name": ">",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 829,
-            "dest_node_name": "",
+            "dest_node": 6917,
+            "dest_node_name": "np.all",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "8": {
-            "source_node": 829,
-            "source_node_name": "",
+            "source_node": 6917,
+            "source_node_name": "np.all",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 866,
-            "dest_node_name": "",
+            "dest_node": 6924,
+            "dest_node_name": "toggle",
             "dest_input_index": 0,
             "dest_input_name": ""
         }

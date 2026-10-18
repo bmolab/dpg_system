@@ -298,14 +298,16 @@ each image shows the transparency), and `make_numpy_c_help.py` no longer
 builds it. `np.sum_help.json` was redesigned by hand (2026-10-18), and
 `np.nansum_help.json` was rebuilt after it (the array's heat_map with the row
 totals in a column beside it and the column totals in a strip under it);
-`make_numpy_reduce_help.py` builds neither now. `np.mean_help.json` follows
+`make_numpy_reduce_help.py` builds neither now, nor `np.any_help.json`
+(David's rework) and `np.all_help.json` (np.any's layout with np.all in it). `np.mean_help.json` follows
 the same layout (a toggled glitch of 30 shows the mean jump and the median
 hold); `np.median_help.json` and `np.nanmean_help.json` are David's own
 reworks, and `np.nanmedian_help.json` is np.nanmean's layout with the median
 nodes. `np.std_help.json` is laid out the same way (spread and shift
 sliders into make_noise, and a make_jitter table whose np.std 0 strip sits
 under its columns), and `np.robust_mean_help.json` is David's rework.
-`make_numpy_average_help.py` now builds only np.var. Use `relayout.py --minimal`
+`np.var_help.json` is David's rework too, so `make_numpy_average_help.py`
+builds no pages at all now. Use `relayout.py --minimal`
 on these, never plain relayout.
 
 To hand-edit any generated page: open it, rework it, save over the same file
