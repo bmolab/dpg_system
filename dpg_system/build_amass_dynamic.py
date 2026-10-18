@@ -55,7 +55,8 @@ import traceback
 import dataclasses
 
 import numpy as np
-from rotation_band_pipeline import RotationBandPipeline
+from rotation_band_pipeline import RotationBandPipeline, axis_angle_to_quaternion
+
 
 # ── Constants ────────────────────────────────────────────────────────────
 N_JOINTS = 22  # SMPLProcessor.target_joint_count
@@ -210,7 +211,10 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
         dtype=np.float32,
     )
     first_frame_rotations = poses[0].reshape(-1, 3)[:N_JOINTS]
-    rotation_band_pipeline.capture(first_frame_rotations)
+    first_frame_quaternions = axis_angle_to_quaternion(
+        torch.as_tensor(first_frame_rotations, dtype=torch.float32)
+    )
+    rotation_band_pipeline.capture(first_frame_quaternions)
 
     # Betas: optional (constructor truncates to 10 internally)
     betas = None
