@@ -25,7 +25,8 @@ def register_torch_butterworth_nodes():
     Node.app.register_node("t.smart_clamp_quat_kf", TorchSmartClampQuaternionKFNode.factory)
     Node.app.register_node("t.hybrid_quat_kf", TorchHybridQuaternionKFNode.factory)
     Node.app.register_node("t.persistence_quat_kf", TorchPersistenceKFNode.factory)
-    Node.app.register_node("t.jerk_aware_quat_kf", TorchJerkAwareQuatKFNode.factory)
+    # t.jerk_aware_quat_kf is no longer used; its classes stay below, unregistered
+    # Node.app.register_node("t.jerk_aware_quat_kf", TorchJerkAwareQuatKFNode.factory)
     Node.app.register_node("t.rotation_band_diff", TorchRotationBandDiffNode.factory)
 
 

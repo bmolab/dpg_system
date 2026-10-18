@@ -222,7 +222,7 @@ TREE = {
                      't.window.kaiser', 't.window.exponential']),
         ('Wavelets', ['t.cwt', 't.ultracwt']),
         ('Kalman filters', ['t.ESEKF', 't.quat_ESEKF', 't.smart_clamp_kf', 't.smart_clamp_quat_kf',
-                            't.persistence_quat_kf', 't.hybrid_quat_kf', 't.jerk_aware_quat_kf']),
+                            't.persistence_quat_kf', 't.hybrid_quat_kf']),
         ('Smoothing and bands', ['t.sav_gol_filter', 't.filter_bank', 't.rotation_band_diff']),
     ]),
     'nodes_ai': ('AI models', 'Models that run in or alongside the patch.', [

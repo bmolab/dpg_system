@@ -9,13 +9,13 @@
                 160,
                 160
             ],
-            "id": 1014,
+            "id": 977,
             "name": "make_orientation",
             "parent_node_uuid": 348,
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 1051,
+                    "id": 1014,
                     "position_x": 0,
                     "position_y": 0,
                     "width": 9,
@@ -35,7 +35,7 @@
                 "1": {
                     "name": "signal",
                     "init": "signal 6.0 sin",
-                    "id": 1088,
+                    "id": 1051,
                     "position_x": 40,
                     "position_y": 40,
                     "width": 129,
@@ -79,7 +79,7 @@
                 "2": {
                     "name": "comment",
                     "init": "comment the turn: 60 degrees each way, one cycle in 6 seconds",
-                    "id": 1125,
+                    "id": 1088,
                     "position_x": 190,
                     "position_y": 50,
                     "width": 500,
@@ -99,7 +99,7 @@
                 "3": {
                     "name": "tick",
                     "init": "tick",
-                    "id": 1162,
+                    "id": 1125,
                     "position_x": 460,
                     "position_y": 110,
                     "width": 33,
@@ -118,7 +118,7 @@
                 "4": {
                     "name": "comment",
                     "init": "comment every frame",
-                    "id": 1199,
+                    "id": 1162,
                     "position_x": 510,
                     "position_y": 115,
                     "width": 160,
@@ -138,7 +138,7 @@
                 "5": {
                     "name": "random.gauss",
                     "init": "random.gauss 0.0 1.0",
-                    "id": 1236,
+                    "id": 1199,
                     "position_x": 240,
                     "position_y": 170,
                     "width": 175,
@@ -151,7 +151,7 @@
                 "6": {
                     "name": "comment",
                     "init": "comment a degree of jitter",
-                    "id": 1273,
+                    "id": 1236,
                     "position_x": 240,
                     "position_y": 280,
                     "width": 220,
@@ -171,7 +171,7 @@
                 "7": {
                     "name": "random",
                     "init": "random 1.0",
-                    "id": 1310,
+                    "id": 1273,
                     "position_x": 460,
                     "position_y": 170,
                     "width": 140,
@@ -195,7 +195,7 @@
                 "8": {
                     "name": ">",
                     "init": "> 0.985",
-                    "id": 1347,
+                    "id": 1310,
                     "position_x": 460,
                     "position_y": 270,
                     "width": 120,
@@ -219,7 +219,7 @@
                 "9": {
                     "name": "*",
                     "init": "* 45.0",
-                    "id": 1384,
+                    "id": 1347,
                     "position_x": 460,
                     "position_y": 340,
                     "width": 120,
@@ -238,7 +238,7 @@
                 "10": {
                     "name": "comment",
                     "init": "comment about one frame in 70: a 45 degree glitch",
-                    "id": 1421,
+                    "id": 1384,
                     "position_x": 460,
                     "position_y": 400,
                     "width": 400,
@@ -258,7 +258,7 @@
                 "11": {
                     "name": "signal",
                     "init": "signal 5.0 square",
-                    "id": 1458,
+                    "id": 1421,
                     "position_x": 40,
                     "position_y": 170,
                     "width": 129,
@@ -302,7 +302,7 @@
                 "12": {
                     "name": "comment",
                     "init": "comment a quick 30 degree turn that stays",
-                    "id": 1495,
+                    "id": 1458,
                     "position_x": 40,
                     "position_y": 260,
                     "width": 180,
@@ -322,7 +322,7 @@
                 "13": {
                     "name": "+",
                     "init": "+ 0.0",
-                    "id": 1532,
+                    "id": 1495,
                     "position_x": 40,
                     "position_y": 310,
                     "width": 120,
@@ -341,7 +341,7 @@
                 "14": {
                     "name": "+",
                     "init": "+ 0.0",
-                    "id": 1569,
+                    "id": 1532,
                     "position_x": 40,
                     "position_y": 380,
                     "width": 120,
@@ -360,7 +360,7 @@
                 "15": {
                     "name": "+",
                     "init": "+ 0.0",
-                    "id": 1606,
+                    "id": 1569,
                     "position_x": 40,
                     "position_y": 450,
                     "width": 120,
@@ -379,7 +379,7 @@
                 "16": {
                     "name": "random.gauss",
                     "init": "random.gauss 0.0 1.0",
-                    "id": 1643,
+                    "id": 1606,
                     "position_x": 240,
                     "position_y": 520,
                     "width": 175,
@@ -392,7 +392,7 @@
                 "17": {
                     "name": "random.gauss",
                     "init": "random.gauss 0.0 1.0",
-                    "id": 1680,
+                    "id": 1643,
                     "position_x": 440,
                     "position_y": 520,
                     "width": 175,
@@ -405,7 +405,7 @@
                 "18": {
                     "name": "comment",
                     "init": "comment and jitter on the other two axes",
-                    "id": 1717,
+                    "id": 1680,
                     "position_x": 640,
                     "position_y": 540,
                     "width": 340,
@@ -425,7 +425,7 @@
                 "19": {
                     "name": "pack",
                     "init": "pack 3",
-                    "id": 1754,
+                    "id": 1717,
                     "position_x": 40,
                     "position_y": 650,
                     "width": 160,
@@ -438,7 +438,7 @@
                 "20": {
                     "name": "euler_to_quaternion",
                     "init": "euler_to_quaternion",
-                    "id": 1791,
+                    "id": 1754,
                     "position_x": 40,
                     "position_y": 790,
                     "width": 220,
@@ -462,7 +462,7 @@
                 "21": {
                     "name": "comment",
                     "init": "comment angles in degrees -> a quaternion, w first",
-                    "id": 1828,
+                    "id": 1791,
                     "position_x": 280,
                     "position_y": 805,
                     "width": 420,
@@ -482,7 +482,7 @@
                 "22": {
                     "name": "t.reshape",
                     "init": "t.reshape 1 4",
-                    "id": 1865,
+                    "id": 1828,
                     "position_x": 40,
                     "position_y": 900,
                     "width": 180,
@@ -501,7 +501,7 @@
                 "23": {
                     "name": "comment",
                     "init": "comment one stream: a [1, 4] tensor",
-                    "id": 1902,
+                    "id": 1865,
                     "position_x": 240,
                     "position_y": 915,
                     "width": 300,
@@ -521,7 +521,7 @@
                 "24": {
                     "name": "out",
                     "init": "out quaternion",
-                    "id": 1939,
+                    "id": 1902,
                     "position_x": 40,
                     "position_y": 1020,
                     "width": 170,
@@ -534,27 +534,37 @@
             },
             "links": {
                 "0": {
-                    "source_node": 1162,
+                    "source_node": 1125,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 1236,
+                    "dest_node": 1199,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "trigger"
                 },
                 "1": {
-                    "source_node": 1162,
+                    "source_node": 1125,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 1310,
+                    "dest_node": 1273,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "trigger"
                 },
                 "2": {
-                    "source_node": 1162,
+                    "source_node": 1125,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1606,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "trigger"
+                },
+                "3": {
+                    "source_node": 1125,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "",
@@ -563,97 +573,97 @@
                     "dest_input_index": 0,
                     "dest_input_name": "trigger"
                 },
-                "3": {
-                    "source_node": 1162,
-                    "source_node_name": "",
-                    "source_output_index": 0,
-                    "source_output_name": "",
-                    "dest_node": 1680,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "trigger"
-                },
                 "4": {
-                    "source_node": 1236,
+                    "source_node": 1199,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 1569,
+                    "dest_node": 1532,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "operand"
                 },
                 "5": {
-                    "source_node": 1310,
+                    "source_node": 1273,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 1347,
+                    "dest_node": 1310,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "6": {
-                    "source_node": 1347,
+                    "source_node": 1310,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "result",
-                    "dest_node": 1384,
+                    "dest_node": 1347,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "7": {
-                    "source_node": 1384,
+                    "source_node": 1347,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "result",
-                    "dest_node": 1606,
+                    "dest_node": 1569,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "operand"
                 },
                 "8": {
-                    "source_node": 1643,
+                    "source_node": 1606,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 1754,
+                    "dest_node": 1717,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in 2"
                 },
                 "9": {
-                    "source_node": 1680,
+                    "source_node": 1643,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 1754,
+                    "dest_node": 1717,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in 3"
                 },
                 "10": {
-                    "source_node": 1458,
+                    "source_node": 1421,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 1532,
+                    "dest_node": 1495,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "operand"
                 },
                 "11": {
-                    "source_node": 1088,
+                    "source_node": 1051,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 1532,
+                    "dest_node": 1495,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "12": {
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1532,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "13": {
                     "source_node": 1532,
                     "source_node_name": "",
                     "source_output_index": 0,
@@ -663,52 +673,42 @@
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
-                "13": {
+                "14": {
                     "source_node": 1569,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "result",
-                    "dest_node": 1606,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "in"
-                },
-                "14": {
-                    "source_node": 1606,
-                    "source_node_name": "",
-                    "source_output_index": 0,
-                    "source_output_name": "result",
-                    "dest_node": 1754,
+                    "dest_node": 1717,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in 1"
                 },
                 "15": {
-                    "source_node": 1754,
+                    "source_node": 1717,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 1791,
+                    "dest_node": 1754,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "xyz rotation"
                 },
                 "16": {
-                    "source_node": 1791,
+                    "source_node": 1754,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "quaternion rotation",
-                    "dest_node": 1865,
+                    "dest_node": 1828,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "tensor in"
                 },
                 "17": {
-                    "source_node": 1865,
+                    "source_node": 1828,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "output",
-                    "dest_node": 1939,
+                    "dest_node": 1902,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "quaternion"
@@ -722,13 +722,13 @@
                 160,
                 160
             ],
-            "id": 1976,
+            "id": 1939,
             "name": "read_turn",
             "parent_node_uuid": 533,
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 2013,
+                    "id": 1976,
                     "position_x": 0,
                     "position_y": 0,
                     "width": 9,
@@ -748,7 +748,7 @@
                 "1": {
                     "name": "in",
                     "init": "in input",
-                    "id": 2050,
+                    "id": 2013,
                     "position_x": 300,
                     "position_y": 40,
                     "width": 150,
@@ -761,7 +761,7 @@
                 "2": {
                     "name": "in",
                     "init": "in filtered",
-                    "id": 2087,
+                    "id": 2050,
                     "position_x": 40,
                     "position_y": 40,
                     "width": 150,
@@ -774,7 +774,7 @@
                 "3": {
                     "name": "quaternion_to_euler",
                     "init": "quaternion_to_euler",
-                    "id": 2124,
+                    "id": 2087,
                     "position_x": 300,
                     "position_y": 140,
                     "width": 220,
@@ -787,7 +787,7 @@
                 "4": {
                     "name": "quaternion_to_euler",
                     "init": "quaternion_to_euler",
-                    "id": 2161,
+                    "id": 2124,
                     "position_x": 40,
                     "position_y": 140,
                     "width": 220,
@@ -800,7 +800,7 @@
                 "5": {
                     "name": "comment",
                     "init": "comment each orientation as three angles, in degrees",
-                    "id": 2198,
+                    "id": 2161,
                     "position_x": 40,
                     "position_y": 230,
                     "width": 420,
@@ -820,7 +820,7 @@
                 "6": {
                     "name": "np.ravel",
                     "init": "np.ravel",
-                    "id": 2235,
+                    "id": 2198,
                     "position_x": 300,
                     "position_y": 280,
                     "width": 120,
@@ -833,7 +833,7 @@
                 "7": {
                     "name": "np.ravel",
                     "init": "np.ravel",
-                    "id": 2272,
+                    "id": 2235,
                     "position_x": 40,
                     "position_y": 280,
                     "width": 120,
@@ -846,7 +846,7 @@
                 "8": {
                     "name": "unpack",
                     "init": "unpack 3",
-                    "id": 2309,
+                    "id": 2272,
                     "position_x": 300,
                     "position_y": 350,
                     "width": 160,
@@ -859,7 +859,7 @@
                 "9": {
                     "name": "unpack",
                     "init": "unpack 3",
-                    "id": 2346,
+                    "id": 2309,
                     "position_x": 40,
                     "position_y": 350,
                     "width": 160,
@@ -872,7 +872,7 @@
                 "10": {
                     "name": "comment",
                     "init": "comment the third angle is the turn",
-                    "id": 2383,
+                    "id": 2346,
                     "position_x": 40,
                     "position_y": 440,
                     "width": 300,
@@ -892,7 +892,7 @@
                 "11": {
                     "name": "pack",
                     "init": "pack 2",
-                    "id": 2420,
+                    "id": 2383,
                     "position_x": 40,
                     "position_y": 490,
                     "width": 140,
@@ -905,7 +905,7 @@
                 "12": {
                     "name": "comment",
                     "init": "comment filtered, input",
-                    "id": 2457,
+                    "id": 2420,
                     "position_x": 200,
                     "position_y": 510,
                     "width": 200,
@@ -925,7 +925,7 @@
                 "13": {
                     "name": "out",
                     "init": "out turn",
-                    "id": 2494,
+                    "id": 2457,
                     "position_x": 40,
                     "position_y": 610,
                     "width": 150,
@@ -938,26 +938,36 @@
             },
             "links": {
                 "0": {
-                    "source_node": 2050,
+                    "source_node": 2013,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "input",
-                    "dest_node": 2124,
+                    "dest_node": 2087,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "quaternion"
                 },
                 "1": {
-                    "source_node": 2087,
+                    "source_node": 2050,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "filtered",
-                    "dest_node": 2161,
+                    "dest_node": 2124,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "quaternion"
                 },
                 "2": {
+                    "source_node": 2087,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "euler angles",
+                    "dest_node": 2198,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "3": {
                     "source_node": 2124,
                     "source_node_name": "",
                     "source_output_index": 0,
@@ -967,17 +977,17 @@
                     "dest_input_index": 0,
                     "dest_input_name": "input"
                 },
-                "3": {
-                    "source_node": 2161,
+                "4": {
+                    "source_node": 2198,
                     "source_node_name": "",
                     "source_output_index": 0,
-                    "source_output_name": "euler angles",
+                    "source_output_name": "flattened array",
                     "dest_node": 2272,
                     "dest_node_name": "",
                     "dest_input_index": 0,
-                    "dest_input_name": "input"
+                    "dest_input_name": ""
                 },
-                "4": {
+                "5": {
                     "source_node": 2235,
                     "source_node_name": "",
                     "source_output_index": 0,
@@ -987,42 +997,32 @@
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
-                "5": {
+                "6": {
                     "source_node": 2272,
                     "source_node_name": "",
                     "source_output_index": 0,
-                    "source_output_name": "flattened array",
-                    "dest_node": 2346,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": ""
-                },
-                "6": {
-                    "source_node": 2309,
-                    "source_node_name": "",
-                    "source_output_index": 0,
                     "source_output_name": "out 3",
-                    "dest_node": 2420,
+                    "dest_node": 2383,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in 2"
                 },
                 "7": {
-                    "source_node": 2346,
+                    "source_node": 2309,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out 3",
-                    "dest_node": 2420,
+                    "dest_node": 2383,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in 1"
                 },
                 "8": {
-                    "source_node": 2420,
+                    "source_node": 2383,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 2494,
+                    "dest_node": 2457,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "turn"
@@ -1030,13 +1030,13 @@
             }
         },
         "2": {
-            "height": 1801,
+            "height": 1786,
             "width": 1986,
             "position": [
                 100,
                 100
             ],
-            "id": 977,
+            "id": 940,
             "name": "t.smart_clamp_quat_kf_help",
             "path": "/Users/drokeby/dpg_system/dpg_system/help/t.smart_clamp_quat_kf_help.json",
             "nodes": {
@@ -1090,14 +1090,14 @@
                     "position_x": 1178,
                     "position_y": 45,
                     "width": 768,
-                    "height": 1696,
+                    "height": 1681,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Smooths streams of quaternions with a Kalman filter that caps how far\nany one frame can turn it.\n\nUse it on mocap joint rotations that are mostly clean but now and then\nthrow a frame that is wildly wrong. The glitch moves the output by no\nmore than 'max jump' degrees, so it barely shows.\n\nHOW IT WORKS:\nIt works in the rotation's own terms (an error-state filter, like\nt.quat_ESEKF): it keeps an orientation and an angular velocity per\njoint, predicts the next frame, and measures the difference from the\ninput as a small rotation - the INNOVATION. Two caps are applied before\nthe correction is used:\n\n  max jump      the innovation is shortened to at most this many degrees\n  max_accel     the whole correction is scaled down if the angular\n                acceleration it implies is above this. The limit is\n                relaxed up to 50 times while the joint is already turning\n                fast (from about 60 to 85 degrees a second), so it is\n                strict at rest, where a sudden jump is most likely a\n                glitch, and lenient in motion.\n\nA real quick turn bigger than max jump is followed a bounded bite at a\ntime, so it takes several frames. Unlike t.quat_ESEKF there are no\nmodes: the same settings always apply.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all\nof them one moment in time. Every row gets its own filter state, so a\nwhole body - 22 joints, one row each - is filtered in one operation. The\nfirst frame (and any change in the number of rows) builds the state\nafresh.\nThe quaternions are w x y z, w first (as euler_to_quaternion makes\nthem), one row per joint: shape [joints, 4].\n\nSYNTAX:\nt.smart_clamp_quat_kf\nNo arguments.\n\nEXAMPLE:\nt.smart_clamp_quat_kf\n\nINPUTS and PARAMETERS:\n\ninput:\n[joints, 4], w first; a single quaternion [4] is accepted and comes back\nas [4]. Anything else is ignored. Each arrival runs one step and sends.\n\nresponsiveness (float, default 1.0):\nThe process noise: how freely the turning speed may change. Higher\nfollows changes sooner and smooths less.\n\nsmoothness (float, default 0.1):\nThe measurement noise: how much each reading is distrusted. Higher\nsmooths more and lags more.\n\nmax jump (deg) (float, default 5):\nThe largest correction used in one frame, in degrees. 0 turns this cap\noff.\n\naccel_rejection (float, default 0, off):\nWhen the estimated angular acceleration reverses from one frame to the\nnext, divide the process noise by (1 + 100 x this).\n\nmax_accel (deg/s^2) (float, default 50000):\nThe second cap: the angular acceleration a correction may imply. With the default the\nsize cap does almost all the work; lower this (to a few thousand) to\nmake the acceleration cap matter.\n\nreset (button):\nThe next input becomes the orientation outright, at rest. The filter\nalso starts this way, from its first input.\n\ndt (float, default 1/60):\nThe time between frames. Zero or less is taken as 1/60.\n\nOUTPUTS:\n\nfiltered:\nThe filtered quaternions, [joints, 4], unit length.\n\nREADING THE DEMO:\nMeasured on this input at the default 5 degrees: a 45 degree glitch moves\nthe output by only a degree or two; the jitter is about a sixth of the\ninput's; each 30 degree quick turn takes around ten frames to be\nfollowed. Drag max jump on the node: at 20 the turns are followed in\nthree or four frames but an eighth of each glitch shows; at 2 a turn\ntakes twenty frames and the output trails even the slow turning.\n\nTHE GLITCH OR THE MOVEMENT:\nA tracker throws two kinds of sudden change: a GLITCH, one bad frame\nthat comes straight back, and a real QUICK MOVEMENT, a change that stays.\nOn the frame it happens they look the same. Any filter that refuses the\nglitch will also hesitate on the quick movement; the filters in this\nfamily differ in how they make that bet. The demo input has both, so you\ncan see each filter's choice.\n\nTHE FAMILY:\nt.ESEKF            ordinary numbers, three modes blended by motion\nt.quat_ESEKF       the same for quaternions (error-state)\nt.smart_clamp_kf   ordinary numbers, the correction per frame capped\nt.smart_clamp_quat_kf      the same for quaternions, plus an acceleration cap\nt.persistence_quat_kf      acceleration cap that gives way if the change persists\nt.hybrid_quat_kf   three-mode blending driving a smart-clamped filter\nt.jerk_aware_quat_kf       spike detection from jerk; extrapolates through spikes\n\nRELATED:\nt.persistence_quat_kf is this filter with a different acceleration cap:\nit lets a change through once it has lasted a few frames. t.smart_clamp_kf\nis the version for ordinary numbers.",
+                            "value": "Smooths streams of quaternions with a Kalman filter that caps how far\nany one frame can turn it.\n\nUse it on mocap joint rotations that are mostly clean but now and then\nthrow a frame that is wildly wrong. The glitch moves the output by no\nmore than 'max jump' degrees, so it barely shows.\n\nHOW IT WORKS:\nIt works in the rotation's own terms (an error-state filter, like\nt.quat_ESEKF): it keeps an orientation and an angular velocity per\njoint, predicts the next frame, and measures the difference from the\ninput as a small rotation - the INNOVATION. Two caps are applied before\nthe correction is used:\n\n  max jump      the innovation is shortened to at most this many degrees\n  max_accel     the whole correction is scaled down if the angular\n                acceleration it implies is above this. The limit is\n                relaxed up to 50 times while the joint is already turning\n                fast (from about 60 to 85 degrees a second), so it is\n                strict at rest, where a sudden jump is most likely a\n                glitch, and lenient in motion.\n\nA real quick turn bigger than max jump is followed a bounded bite at a\ntime, so it takes several frames. Unlike t.quat_ESEKF there are no\nmodes: the same settings always apply.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all\nof them one moment in time. Every row gets its own filter state, so a\nwhole body - 22 joints, one row each - is filtered in one operation. The\nfirst frame (and any change in the number of rows) builds the state\nafresh.\nThe quaternions are w x y z, w first (as euler_to_quaternion makes\nthem), one row per joint: shape [joints, 4].\n\nSYNTAX:\nt.smart_clamp_quat_kf\nNo arguments.\n\nEXAMPLE:\nt.smart_clamp_quat_kf\n\nINPUTS and PARAMETERS:\n\ninput:\n[joints, 4], w first; a single quaternion [4] is accepted and comes back\nas [4]. Anything else is ignored. Each arrival runs one step and sends.\n\nresponsiveness (float, default 1.0):\nThe process noise: how freely the turning speed may change. Higher\nfollows changes sooner and smooths less.\n\nsmoothness (float, default 0.1):\nThe measurement noise: how much each reading is distrusted. Higher\nsmooths more and lags more.\n\nmax jump (deg) (float, default 5):\nThe largest correction used in one frame, in degrees. 0 turns this cap\noff.\n\naccel_rejection (float, default 0, off):\nWhen the estimated angular acceleration reverses from one frame to the\nnext, divide the process noise by (1 + 100 x this).\n\nmax_accel (deg/s^2) (float, default 50000):\nThe second cap: the angular acceleration a correction may imply. With the default the\nsize cap does almost all the work; lower this (to a few thousand) to\nmake the acceleration cap matter.\n\nreset (button):\nThe next input becomes the orientation outright, at rest. The filter\nalso starts this way, from its first input.\n\ndt (float, default 1/60):\nThe time between frames. Zero or less is taken as 1/60.\n\nOUTPUTS:\n\nfiltered:\nThe filtered quaternions, [joints, 4], unit length.\n\nREADING THE DEMO:\nMeasured on this input at the default 5 degrees: a 45 degree glitch moves\nthe output by only a degree or two; the jitter is about a sixth of the\ninput's; each 30 degree quick turn takes around ten frames to be\nfollowed. Drag max jump on the node: at 20 the turns are followed in\nthree or four frames but an eighth of each glitch shows; at 2 a turn\ntakes twenty frames and the output trails even the slow turning.\n\nTHE GLITCH OR THE MOVEMENT:\nA tracker throws two kinds of sudden change: a GLITCH, one bad frame\nthat comes straight back, and a real QUICK MOVEMENT, a change that stays.\nOn the frame it happens they look the same. Any filter that refuses the\nglitch will also hesitate on the quick movement; the filters in this\nfamily differ in how they make that bet. The demo input has both, so you\ncan see each filter's choice.\n\nTHE FAMILY:\nt.ESEKF            ordinary numbers, three modes blended by motion\nt.quat_ESEKF       the same for quaternions (error-state)\nt.smart_clamp_kf   ordinary numbers, the correction per frame capped\nt.smart_clamp_quat_kf      the same for quaternions, plus an acceleration cap\nt.persistence_quat_kf      acceleration cap that gives way if the change persists\nt.hybrid_quat_kf   three-mode blending driving a smart-clamped filter\n\nRELATED:\nt.persistence_quat_kf is this filter with a different acceleration cap:\nit lets a change through once it has lasted a few frames. t.smart_clamp_kf\nis the version for ordinary numbers.",
                             "value_type": "str"
                         },
                         "1": {
@@ -1112,7 +1112,7 @@
                         },
                         "3": {
                             "name": "height",
-                            "value": 1680,
+                            "value": 1665,
                             "value_type": "int"
                         },
                         "4": {
@@ -1121,7 +1121,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Smooths streams of quaternions with a Kalman filter that caps how far\nany one frame can turn it.\n\nUse it on mocap joint rotations that are mostly clean but now and then\nthrow a frame that is wildly wrong. The glitch moves the output by no\nmore than 'max jump' degrees, so it barely shows.\n\nHOW IT WORKS:\nIt works in the rotation's own terms (an error-state filter, like\nt.quat_ESEKF): it keeps an orientation and an angular velocity per\njoint, predicts the next frame, and measures the difference from the\ninput as a small rotation - the INNOVATION. Two caps are applied before\nthe correction is used:\n\n  max jump      the innovation is shortened to at most this many degrees\n  max_accel     the whole correction is scaled down if the angular\n                acceleration it implies is above this. The limit is\n                relaxed up to 50 times while the joint is already turning\n                fast (from about 60 to 85 degrees a second), so it is\n                strict at rest, where a sudden jump is most likely a\n                glitch, and lenient in motion.\n\nA real quick turn bigger than max jump is followed a bounded bite at a\ntime, so it takes several frames. Unlike t.quat_ESEKF there are no\nmodes: the same settings always apply.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all\nof them one moment in time. Every row gets its own filter state, so a\nwhole body - 22 joints, one row each - is filtered in one operation. The\nfirst frame (and any change in the number of rows) builds the state\nafresh.\nThe quaternions are w x y z, w first (as euler_to_quaternion makes\nthem), one row per joint: shape [joints, 4].\n\nSYNTAX:\nt.smart_clamp_quat_kf\nNo arguments.\n\nEXAMPLE:\nt.smart_clamp_quat_kf\n\nINPUTS and PARAMETERS:\n\ninput:\n[joints, 4], w first; a single quaternion [4] is accepted and comes back\nas [4]. Anything else is ignored. Each arrival runs one step and sends.\n\nresponsiveness (float, default 1.0):\nThe process noise: how freely the turning speed may change. Higher\nfollows changes sooner and smooths less.\n\nsmoothness (float, default 0.1):\nThe measurement noise: how much each reading is distrusted. Higher\nsmooths more and lags more.\n\nmax jump (deg) (float, default 5):\nThe largest correction used in one frame, in degrees. 0 turns this cap\noff.\n\naccel_rejection (float, default 0, off):\nWhen the estimated angular acceleration reverses from one frame to the\nnext, divide the process noise by (1 + 100 x this).\n\nmax_accel (deg/s^2) (float, default 50000):\nThe second cap: the angular acceleration a correction may imply. With the default the\nsize cap does almost all the work; lower this (to a few thousand) to\nmake the acceleration cap matter.\n\nreset (button):\nThe next input becomes the orientation outright, at rest. The filter\nalso starts this way, from its first input.\n\ndt (float, default 1/60):\nThe time between frames. Zero or less is taken as 1/60.\n\nOUTPUTS:\n\nfiltered:\nThe filtered quaternions, [joints, 4], unit length.\n\nREADING THE DEMO:\nMeasured on this input at the default 5 degrees: a 45 degree glitch moves\nthe output by only a degree or two; the jitter is about a sixth of the\ninput's; each 30 degree quick turn takes around ten frames to be\nfollowed. Drag max jump on the node: at 20 the turns are followed in\nthree or four frames but an eighth of each glitch shows; at 2 a turn\ntakes twenty frames and the output trails even the slow turning.\n\nTHE GLITCH OR THE MOVEMENT:\nA tracker throws two kinds of sudden change: a GLITCH, one bad frame\nthat comes straight back, and a real QUICK MOVEMENT, a change that stays.\nOn the frame it happens they look the same. Any filter that refuses the\nglitch will also hesitate on the quick movement; the filters in this\nfamily differ in how they make that bet. The demo input has both, so you\ncan see each filter's choice.\n\nTHE FAMILY:\nt.ESEKF            ordinary numbers, three modes blended by motion\nt.quat_ESEKF       the same for quaternions (error-state)\nt.smart_clamp_kf   ordinary numbers, the correction per frame capped\nt.smart_clamp_quat_kf      the same for quaternions, plus an acceleration cap\nt.persistence_quat_kf      acceleration cap that gives way if the change persists\nt.hybrid_quat_kf   three-mode blending driving a smart-clamped filter\nt.jerk_aware_quat_kf       spike detection from jerk; extrapolates through spikes\n\nRELATED:\nt.persistence_quat_kf is this filter with a different acceleration cap:\nit lets a change through once it has lasted a few frames. t.smart_clamp_kf\nis the version for ordinary numbers."
+                    "text": "Smooths streams of quaternions with a Kalman filter that caps how far\nany one frame can turn it.\n\nUse it on mocap joint rotations that are mostly clean but now and then\nthrow a frame that is wildly wrong. The glitch moves the output by no\nmore than 'max jump' degrees, so it barely shows.\n\nHOW IT WORKS:\nIt works in the rotation's own terms (an error-state filter, like\nt.quat_ESEKF): it keeps an orientation and an angular velocity per\njoint, predicts the next frame, and measures the difference from the\ninput as a small rotation - the INNOVATION. Two caps are applied before\nthe correction is used:\n\n  max jump      the innovation is shortened to at most this many degrees\n  max_accel     the whole correction is scaled down if the angular\n                acceleration it implies is above this. The limit is\n                relaxed up to 50 times while the joint is already turning\n                fast (from about 60 to 85 degrees a second), so it is\n                strict at rest, where a sudden jump is most likely a\n                glitch, and lenient in motion.\n\nA real quick turn bigger than max jump is followed a bounded bite at a\ntime, so it takes several frames. Unlike t.quat_ESEKF there are no\nmodes: the same settings always apply.\n\nMANY STREAMS AT ONCE:\nThe input is a tensor of shape [streams, values]: one row per stream, all\nof them one moment in time. Every row gets its own filter state, so a\nwhole body - 22 joints, one row each - is filtered in one operation. The\nfirst frame (and any change in the number of rows) builds the state\nafresh.\nThe quaternions are w x y z, w first (as euler_to_quaternion makes\nthem), one row per joint: shape [joints, 4].\n\nSYNTAX:\nt.smart_clamp_quat_kf\nNo arguments.\n\nEXAMPLE:\nt.smart_clamp_quat_kf\n\nINPUTS and PARAMETERS:\n\ninput:\n[joints, 4], w first; a single quaternion [4] is accepted and comes back\nas [4]. Anything else is ignored. Each arrival runs one step and sends.\n\nresponsiveness (float, default 1.0):\nThe process noise: how freely the turning speed may change. Higher\nfollows changes sooner and smooths less.\n\nsmoothness (float, default 0.1):\nThe measurement noise: how much each reading is distrusted. Higher\nsmooths more and lags more.\n\nmax jump (deg) (float, default 5):\nThe largest correction used in one frame, in degrees. 0 turns this cap\noff.\n\naccel_rejection (float, default 0, off):\nWhen the estimated angular acceleration reverses from one frame to the\nnext, divide the process noise by (1 + 100 x this).\n\nmax_accel (deg/s^2) (float, default 50000):\nThe second cap: the angular acceleration a correction may imply. With the default the\nsize cap does almost all the work; lower this (to a few thousand) to\nmake the acceleration cap matter.\n\nreset (button):\nThe next input becomes the orientation outright, at rest. The filter\nalso starts this way, from its first input.\n\ndt (float, default 1/60):\nThe time between frames. Zero or less is taken as 1/60.\n\nOUTPUTS:\n\nfiltered:\nThe filtered quaternions, [joints, 4], unit length.\n\nREADING THE DEMO:\nMeasured on this input at the default 5 degrees: a 45 degree glitch moves\nthe output by only a degree or two; the jitter is about a sixth of the\ninput's; each 30 degree quick turn takes around ten frames to be\nfollowed. Drag max jump on the node: at 20 the turns are followed in\nthree or four frames but an eighth of each glitch shows; at 2 a turn\ntakes twenty frames and the output trails even the slow turning.\n\nTHE GLITCH OR THE MOVEMENT:\nA tracker throws two kinds of sudden change: a GLITCH, one bad frame\nthat comes straight back, and a real QUICK MOVEMENT, a change that stays.\nOn the frame it happens they look the same. Any filter that refuses the\nglitch will also hesitate on the quick movement; the filters in this\nfamily differ in how they make that bet. The demo input has both, so you\ncan see each filter's choice.\n\nTHE FAMILY:\nt.ESEKF            ordinary numbers, three modes blended by motion\nt.quat_ESEKF       the same for quaternions (error-state)\nt.smart_clamp_kf   ordinary numbers, the correction per frame capped\nt.smart_clamp_quat_kf      the same for quaternions, plus an acceleration cap\nt.persistence_quat_kf      acceleration cap that gives way if the change persists\nt.hybrid_quat_kf   three-mode blending driving a smart-clamped filter\n\nRELATED:\nt.persistence_quat_kf is this filter with a different acceleration cap:\nit lets a change through once it has lasted a few frames. t.smart_clamp_kf\nis the version for ordinary numbers."
                 },
                 "3": {
                     "name": "p",
@@ -1135,7 +1135,7 @@
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "p make_orientation",
-                    "patcher id": 1014
+                    "patcher id": 977
                 },
                 "4": {
                     "name": "text_block",
@@ -1245,7 +1245,7 @@
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "p read_turn",
-                    "patcher id": 1976
+                    "patcher id": 1939
                 },
                 "9": {
                     "name": "text_block",
@@ -1468,22 +1468,9 @@
                     "init": "help_link t.hybrid_quat_kf"
                 },
                 "17": {
-                    "name": "help_link",
-                    "id": 866,
-                    "position_x": 197,
-                    "position_y": 734,
-                    "width": 139,
-                    "height": 44,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "help_link t.jerk_aware_quat_kf"
-                },
-                "18": {
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
-                    "id": 903,
+                    "id": 866,
                     "position_x": 794,
                     "position_y": 734,
                     "width": 156,
@@ -1505,9 +1492,9 @@
                     },
                     "comment": "SEE ALSO - click to open"
                 },
-                "19": {
+                "18": {
                     "name": "close",
-                    "id": 940,
+                    "id": 903,
                     "position_x": 24,
                     "position_y": 808,
                     "width": 88,

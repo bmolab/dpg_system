@@ -1,6 +1,6 @@
 {
     "height": 676,
-    "width": 478,
+    "width": 453,
     "position": [
         100,
         100
@@ -583,12 +583,12 @@
             "annotation": true,
             "position_x": 170,
             "position_y": 466,
-            "width": 268,
+            "width": 218,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "leaky relu with its slope from a range",
+                    "value": "leaky relu with a random slope",
                     "value_type": "str"
                 },
                 "1": {
@@ -598,7 +598,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 260,
+                    "value": 210,
                     "value_type": "int"
                 },
                 "3": {
@@ -612,7 +612,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "leaky relu with its slope from a range",
+            "text": "leaky relu with a random slope",
             "id": 1203,
             "visibility": "show_all",
             "draggable": true,

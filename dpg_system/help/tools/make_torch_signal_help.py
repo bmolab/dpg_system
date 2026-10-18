@@ -1,8 +1,8 @@
 """torch signal processing: one page per node.
 
 Spectra (t.fft, t.ifft, t.rfft, t.irfft), the ten t.window.* windows, and the
-torch filters (t.ESEKF, t.quat_ESEKF, the smart-clamp / persistence / hybrid /
-jerk-aware quaternion Kalman filters, t.filter_bank, t.rotation_band_diff,
+torch filters (t.ESEKF, t.quat_ESEKF, the smart-clamp / persistence / hybrid
+quaternion Kalman filters, t.filter_bank, t.rotation_band_diff,
 t.sav_gol_filter). These were family pages (t.fft, t.window, t.ESEKF,
 t.smart_clamp_kf, t.filter_bank); each node now has its own page whose demo
 shows what it does to a signal you can change while you watch.
@@ -961,8 +961,7 @@ t.quat_ESEKF       the same for quaternions (error-state)
 t.smart_clamp_kf   ordinary numbers, the correction per frame capped
 t.smart_clamp_quat_kf      the same for quaternions, plus an acceleration cap
 t.persistence_quat_kf      acceleration cap that gives way if the change persists
-t.hybrid_quat_kf   three-mode blending driving a smart-clamped filter
-t.jerk_aware_quat_kf       spike detection from jerk; extrapolates through spikes"""
+t.hybrid_quat_kf   three-mode blending driving a smart-clamped filter"""
 
 
 # ---------------------------------------------------------------------- t.ESEKF
@@ -1189,7 +1188,7 @@ sl, sl_links = slider_into('Resp Meas Noise', 0.05, 0.01, 0.5, '%.3f',
                            'drag: Resp Meas Noise', y=120)
 demo += sl
 demo += see_also(bottom + 30, ['t.ESEKF', 't.smart_clamp_quat_kf', 't.hybrid_quat_kf',
-                               't.jerk_aware_quat_kf', 'adaptive_quaternion_filter'])
+                               'adaptive_quaternion_filter'])
 print(build('t.quat_ESEKF', 't.quat_ESEKF - an error-state Kalman filter for rotations',
             body, demo, links + sl_links, demo_width=840, text_width=760,
             text_height=text_h(body), subpatch=[ORIENT_SUB, READ_SUB]))
@@ -1385,7 +1384,7 @@ is the version for ordinary numbers."""
 demo, links, bottom = quat_demo('t.smart_clamp_quat_kf', {'max jump (deg)': 5.0}, 'input',
                                 fh=360, note='drag max jump (deg) on the node')
 demo += see_also(bottom + 30, ['t.persistence_quat_kf', 't.smart_clamp_kf', 't.quat_ESEKF',
-                               't.hybrid_quat_kf', 't.jerk_aware_quat_kf'])
+                               't.hybrid_quat_kf'])
 print(build('t.smart_clamp_quat_kf', 't.smart_clamp_quat_kf - capped corrections for rotations',
             body, demo, links, demo_width=840, text_width=760,
             text_height=text_h(body), subpatch=[ORIENT_SUB, READ_SUB]))
@@ -1466,14 +1465,13 @@ about ten frames.
 """ + KF_FAMILY + """
 
 RELATED:
-t.smart_clamp_quat_kf caps by size and by speed instead of by duration;
-t.jerk_aware_quat_kf decides from the jerk of the input."""
+t.smart_clamp_quat_kf caps by size and by speed instead of by duration."""
 
 demo, links, bottom = quat_demo('t.persistence_quat_kf',
                                 {'max jump (deg)': 0.0, 'max_accel (deg/s^2)': 3000.0,
                                  'threshold_frames': 2}, 'input',
                                 fh=400, note='drag threshold_frames on the node')
-demo += see_also(bottom + 30, ['t.smart_clamp_quat_kf', 't.jerk_aware_quat_kf',
+demo += see_also(bottom + 30, ['t.smart_clamp_quat_kf',
                                't.hybrid_quat_kf', 't.quat_ESEKF'])
 print(build('t.persistence_quat_kf', 't.persistence_quat_kf - believe a change that lasts',
             body, demo, links, demo_width=840, text_width=760,
@@ -1583,126 +1581,9 @@ sl, sl_links = slider_into('Blending Speed', 0.1, 0.01, 1.0, '%.2f',
                            'drag: Blending Speed', y=120)
 demo += sl
 demo += see_also(bottom + 30, ['t.quat_ESEKF', 't.smart_clamp_quat_kf',
-                               't.persistence_quat_kf', 't.jerk_aware_quat_kf'])
+                               't.persistence_quat_kf'])
 print(build('t.hybrid_quat_kf', 't.hybrid_quat_kf - mode blending plus capped corrections',
             body, demo, links + sl_links, demo_width=840, text_width=760,
-            text_height=text_h(body), subpatch=[ORIENT_SUB, READ_SUB]))
-
-# --------------------------------------------------------- t.jerk_aware_quat_kf
-body = """Follows streams of quaternions closely, but recognises one-frame spikes
-by their jerk and coasts through them on the joint's recent turning
-speed instead of following them.
-
-Use it on mocap joint rotations where you want almost no lag in normal
-movement and only the glitches removed. It is not a Kalman filter: in
-normal tracking it simply moves most of the way (max_responsiveness)
-towards each new input, so it smooths very little - its work is all in
-deciding what is a spike.
-
-HOW IT WORKS:
-From the RAW input it computes, per joint, the turning speed, its change
-(angular acceleration) and the change of that (JERK). Each frame each
-joint is classed as:
-
-  dynamic motion   the joint's smoothed turning speed is above
-                   velocity_threshold: track it, never call it a spike.
-                   It stays in this class until the speed falls below 30
-                   percent of the threshold for spike_recovery_frames.
-  noise spike      the jerk is above jerk_threshold (or the acceleration
-                   reverses sharply above accel_limit) while the joint is
-                   not moving fast: a glitch.
-  normal           everything else: track it.
-
-During a spike the output carries on from the last good orientation at
-the smoothed turning speed - extrapolating, not freezing. When the spike
-ends it blends back to the input over spike_recovery_frames, with its
-turning speed limited so the return itself does not jerk.
-
-FOR WHOLE BODIES:
-With 22 or 24 rows (SMPL joints) or 52 or 55 (with fingers), the jerk
-threshold is scaled per joint: the pelvis is judged four times more
-strictly, the wrists twice as leniently, fingers four times. And if at
-least glitch_joint_threshold of all the joints spike in the same frame
-while the body is not moving fast, it is taken as a whole-body jump (a
-mocap recalibration): every joint glides to the new pose over
-glitch_transition_frames instead of being held.
-
-""" + PARALLEL + """
-""" + QUAT_IN + """ A single quaternion [4] is accepted and
-comes back as [4].
-
-SYNTAX:
-t.jerk_aware_quat_kf
-No arguments.
-
-EXAMPLE:
-t.jerk_aware_quat_kf
-
-INPUTS and PARAMETERS:
-
-input:
-[joints, 4], w first. Each arrival runs one step and sends.
-
-dt (float, default 1/60):
-The time between frames. The thresholds are scaled for it (jerk by the
-cube of the frame rate, acceleration by the square), so they mean the
-same at any rate.
-
-reset (button):
-Forget all history; the next input is taken as it is.
-
-jerk_threshold (rad/s cubed) (default 2000):
-Jerk above this, at low speed, marks a spike. Lower catches more.
-
-accel_limit (rad/s squared) (default 50):
-A sharp reversal of angular acceleration above half this also marks a
-spike.
-
-velocity_threshold (rad/s) (default 5, about 290 degrees a second):
-Above this the joint is in dynamic motion and nothing is called a spike.
-
-min_responsiveness (default 0.1):
-Has no effect - nothing in the filter reads it.
-
-max_responsiveness (0.5 to 1, default 0.95):
-How far towards each new input the output moves in normal tracking.
-0.95 is nearly the raw input; lower smooths (and lags) more.
-
-spike_recovery_frames (default 3):
-How long a spike is held after it ends, and how long the blend back
-takes.
-
-glitch_joint_threshold (default 0.3) / glitch_transition_frames (default 5):
-The whole-body jump rule above.
-
-OUTPUTS:
-
-filtered:
-The filtered quaternions, [joints, 4], unit length.
-
-READING THE DEMO:
-Measured on this one-joint input: glitches mostly vanish (about 6
-percent shows); the jitter is only roughly halved (the default moves 95
-percent of the way to each frame); a quick 30 degree turn - a jump that
-stays - is first treated as a spike and then recovered, taking seven to
-nine frames. Drag max_responsiveness on the node down to 0.5: the
-jitter drops to a third and the output starts to lag the turning.
-
-""" + TRADE + """
-
-""" + KF_FAMILY + """
-
-RELATED:
-t.persistence_quat_kf decides by how long a change lasts;
-t.smart_clamp_quat_kf caps every correction."""
-
-demo, links, bottom = quat_demo('t.jerk_aware_quat_kf', {'max_responsiveness': 0.95},
-                                'input', fh=480,
-                                note='drag max_responsiveness on the node')
-demo += see_also(bottom + 30, ['t.persistence_quat_kf', 't.smart_clamp_quat_kf',
-                               't.quat_ESEKF', 't.hybrid_quat_kf'])
-print(build('t.jerk_aware_quat_kf', 't.jerk_aware_quat_kf - coast through spikes',
-            body, demo, links, demo_width=840, text_width=760,
             text_height=text_h(body), subpatch=[ORIENT_SUB, READ_SUB]))
 
 # ------------------------------------------------------------- t.sav_gol_filter

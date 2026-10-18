@@ -361,7 +361,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.ESEKF, t.quat_ESEKF, t.smart_clamp_kf, t.smart_clamp_quat_kf,\nt.persistence_quat_kf, t.hybrid_quat_kf, t.jerk_aware_quat_kf",
+                    "value": "t.ESEKF, t.quat_ESEKF, t.smart_clamp_kf, t.smart_clamp_quat_kf,\nt.persistence_quat_kf, t.hybrid_quat_kf",
                     "value_type": "str"
                 },
                 "1": {
@@ -385,7 +385,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.ESEKF, t.quat_ESEKF, t.smart_clamp_kf, t.smart_clamp_quat_kf,\nt.persistence_quat_kf, t.hybrid_quat_kf, t.jerk_aware_quat_kf",
+            "text": "t.ESEKF, t.quat_ESEKF, t.smart_clamp_kf, t.smart_clamp_quat_kf,\nt.persistence_quat_kf, t.hybrid_quat_kf",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
