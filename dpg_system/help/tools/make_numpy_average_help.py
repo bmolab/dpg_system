@@ -1,10 +1,10 @@
 """np averages and spread: one page per node.
 
-np.std, np.var and np.robust_mean (the np.mean, np.median, np.nanmean and
-np.nanmedian pages are hand-made). These were part of the np_stats family page;
+np.var and np.robust_mean (the np.mean, np.median, np.nanmean, np.nanmedian
+and np.std pages are hand-made). These were part of the np_stats family page;
 each now has its own page whose demo shows how its statistic DIFFERS from its
-neighbours - a spread that std follows and var follows squared, an outlier
-that robust_mean leaves out - with a SEE ALSO row under it.
+neighbours - a spread that var follows squared, an outlier that
+robust_mean leaves out - with a SEE ALSO row under it.
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -161,77 +161,7 @@ make_noise makes 64 random values, scaled so that at spread 1 and shift
 spread slider multiplies them all; the shift slider adds to them all.
 The plot shows the 64 values as points."""
 
-body = """Measures how spread out the values of an array are: the standard
-deviation, the typical distance of a value from the mean.
-
-Values packed tightly together give a small std; values scattered widely
-give a large one; values all the same give 0. It is in the same units as
-the data, so a std of 0.2 on readings in metres means they typically sit
-about 20 cm either side of their average. Reach for it to tell a steady
-signal from a jittery one, to measure noise, or to set a threshold in
-"how many std from the mean".
-
-HOW IT IS WORKED OUT:
-Take the mean; take each value's distance from it; square those
-distances and average them (that average is the variance, np.var); take
-the square root to get back to the data's units. The average divides by
-the number of values N - the "population" std. Some tools (a
-spreadsheet's STDEV, for one) divide by N - 1 instead, which gives a
-slightly larger answer for small arrays: for 1 2 3 4 np.std gives 1.118,
-STDEV 1.291.
-
-""" + AXIS_TEXT + """
-
-SYNTAX:
-np.std <axis: int>
-With no argument there is no axis: one std for the whole array.
-
-EXAMPLE:
-np.std
-
-INPUTS and PARAMETERS:
-
-in:
-The array (a list or a single number is turned into one). Every array
-that arrives is measured and the result sent - the only inlet that makes
-the node send.
-
-""" + AXIS_INLET.replace('np.mean 1', 'np.std 1') + """
-
-OUTPUTS:
-
-std:
-With no axis, one number, never negative. With an axis, an array one
-dimension smaller: one std per column (axis 0) or per row (axis 1).
-
-""" + STD_DEMO_TEXT + """
-
-READING THE DEMO:
-Drag spread: the cloud of points widens and np.std follows it exactly -
-spread 2, std 2. Drag shift: the whole cloud moves up or down, np.mean
-follows it, and np.std does not change at all. The mean says WHERE the
-values are, the std how SPREAD they are; the two are independent. At
-spread 0 every value is the same and the std is 0.
-
-RELATED:
-np.var is the std squared - same information, squared units. np.mean is
-the centre the std is measured from. np.robust_mean uses a sturdier
-measure of spread (the median distance from the median) to reject
-outliers. np.amax and np.amin give the extremes rather than the typical
-spread."""
-
-demo = noise_controls() + [
-    {'key': 'mn', 'init': 'np.mean', 'pos': (30, 560), 'w': 130, 'h': 70},
-    {'key': 'sd', 'init': 'np.std', 'pos': (290, 560), 'w': 130, 'h': 70},
-    {'key': 'fmn', 'init': 'float', 'pos': (30, 650), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'fsd', 'init': 'float', 'pos': (290, 650), 'w': 130, 'h': 42, 'props': FLOATW()},
-    {'key': 'cf1', 'comment': True, 'text': 'mean follows shift', 'pos': (30, 700)},
-    {'key': 'cf2', 'comment': True, 'text': 'std follows spread', 'pos': (290, 700)},
-] + see_also(770, ['np.var', 'np.mean', 'np.robust_mean', 'np.amax'])
-links = NOISE_LINKS + [('nz', 'data', 'mn', 'in'), ('nz', 'data', 'sd', 'in'),
-                       ('mn', 'mean', 'fmn', ''), ('sd', 'std', 'fsd', '')]
-print(build('np.std', 'np.std - how spread out the values are', body, demo, links,
-            demo_width=600, text_width=760, text_height=1200, subpatch=NOISE_SUB))
+# np.std: its page is hand-made now (see tools/README.md); STD_DEMO_TEXT stays for np.var.
 
 # ========================================================================= np.var
 body = """Gives the variance of an array: the average of the squared distances
