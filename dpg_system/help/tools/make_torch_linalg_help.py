@@ -203,7 +203,7 @@ the t.rand node for a new one). t.length gives ONE number for all 16.
 
 RELATED:
 t.dist measures between two tensors. t.normalize divides a tensor by
-this length. t.cdist gives the same number for a single vector.
+this length. t.cdist gives the distances between many points at once.
 np.linalg.norm is the NumPy version, and can measure along an axis."""
 
 demo = [
@@ -274,8 +274,8 @@ answer too. Put B where A is and the distance reads 0.
 
 RELATED:
 t.length is the distance from zero (one input). t.cosine_similarity
-compares directions rather than positions. t.cdist, despite the name,
-measures a single vector. np.distance_from_target is the NumPy version,
+compares directions rather than positions. t.cdist gives the
+distances between many points at once. np.distance_from_target is the NumPy version,
 measuring against a captured spot; np.linalg.norm of a difference is
 the same number."""
 
@@ -298,20 +298,29 @@ print(build('t.dist', 't.dist - how far apart two tensors are',
             body, demo, links, demo_width=DW(700), text_width=760, text_height=th(body)))
 
 # ------------------------------------------------------------------- t.cdist
-body = """Gives the length of a single vector - the same number as t.length.
+CD_PTS = [[0.0, 0.0], [0.5, 0.2], [0.2, 0.6], [0.6, 0.5],
+          [3.0, 3.0], [3.4, 2.8], [2.8, 3.5], [3.3, 3.4]]
 
-Despite its name it does NOT make a table of distances between two sets
-of points (what torch.cdist does on its own). The node measures its one
-input against zeros of the same shape, which is the length of the
-input, and sends that as one number.
+body = """Measures how far apart points are: every row of the input is one
+point, and the answer is a table of the distance from each point to
+each other point - or to each of a second set of points you hold.
 
-ONLY ONE VECTOR AT A TIME:
-That one number only exists when the input is a single vector: a list,
-a 1-D tensor, or one row (1 x n). Give it several rows (a 4 x 3 tensor,
-say) and the distances between them make a 4 x 4 table, which cannot be
-sent as one number: an error is printed and nothing is sent. For the
-length of a whole tensor use t.length; for the distance between two
-points use t.dist.
+A table of distances is the starting point for anything that asks
+"which are near which": finding the nearest of a set of targets to a
+tracked hand, grouping poses that are alike, spotting the one point
+that sits apart from the rest. The distance is the ordinary straight
+line distance (square root of the sum of the squared differences).
+
+THREE CASES:
+A 2-D input (N rows of points) with nothing in points 2: an N x N
+table, row i column j the distance from point i to point j. It is
+symmetric and its diagonal is 0 (each point is 0 from itself).
+Anything with points 2 held (M points): an N x M table, row i column
+j the distance from input point i to held point j. A 1-D input counts
+as one point here, giving 1 x M.
+A 1-D input (a list, one vector) with nothing in points 2: its length
+- the distance from zero - as a plain float, the same number t.length
+gives.
 
 SYNTAX:
 t.cdist
@@ -320,40 +329,83 @@ t.cdist
 INPUTS and PARAMETERS:
 
 input:
-The vector (a list or a NumPy array is turned into a float32 tensor).
-Each one that arrives is measured and sent.
+The points, one per row (a list, a list of lists or a NumPy array is
+turned into a float32 tensor). Receiving it measures and sends.
+
+points 2:
+A second set of points, one per row, with the same number of columns
+as the input. It is only stored: send it before the input, and it is
+then used for every input that follows. A 1-D list is one point. Once
+something has been sent here there is no way to empty it again - for
+the all-pairs table use a separate t.cdist. Points with a different
+number of columns print an error and send nothing.
 
 OUTPUTS:
 
 output:
-Its length, as a plain float.
+The table of distances as a tensor (rows = input points, columns =
+the points they are measured to), or one float for the length of a
+single vector.
 
 READING THE DEMO:
-The sliders make the point [x y], starting at [3 4]. It goes to both
-t.cdist and t.length, and the two always agree: 5 for [3 4]. Move the
-sliders and both follow.
+make_points sends 8 points in 2-D ten times a second: four close
+together near [0.3 0.3] and four near [3.1 3.2]. The top picture shows
+them column by column (x on top, y below).
+Middle: t.cdist with nothing in points 2 gives the 8 x 8 table. The
+two dark squares on the diagonal are the two groups - their points
+are close to each other - and the bright squares off it are the
+distances between the groups, 3.5 to 4.7. The diagonal is 0.
+Bottom: the same 8 points, measured against one point held in points
+2 (the sliders, starting at [3 3]). The answer is 8 x 1, one distance
+per point; t.t lays it out as one row, so each cell sits under its
+point's column in the top picture. Drag the sliders towards [0 0] and
+the dark end moves from the right half to the left.
 
 RELATED:
-t.length does the same for any tensor. t.dist measures between two
-tensors. np.distance_from_target measures one or several points
-against stored targets. np.linalg.norm with an axis gives one length
-per row."""
+t.dist gives the one distance between two whole tensors. t.length is
+the distance from zero. np.distance_from_target measures one or
+several points against stored targets. np.linalg.norm with an axis
+gives one length per row. t.cosine_similarity compares directions
+instead of positions."""
 
 demo = [
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 62), 'w': 88, 'h': 46},
-] + point('a', 30, 130, 3.0, 4.0) + [
-    {'key': 'cd', 'init': 't.cdist', 'pos': (30, 410), 'w': 150, 'h': 80},
-    {'key': 'f1', 'init': 'float', 'pos': (30, 510), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c1', 'comment': True, 'text': 't.cdist: 5 for [3 4]', 'pos': (30, 560)},
-    {'key': 'ln', 'init': 't.length', 'pos': (330, 410), 'w': 150, 'h': 80},
-    {'key': 'f2', 'init': 'float', 'pos': (330, 510), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c2', 'comment': True, 'text': 't.length: the same number', 'pos': (330, 560)},
-] + see_also(620, ['t.length', 't.dist', 'np.distance_from_target', 'np.linalg.norm'])
+    {'key': 'lb', 'init': 'load_bang', 'pos': (560, 62), 'w': 88, 'h': 46},
+    {'key': 'pP', 'init': 'p make_points', 'pos': (30, 62), 'w': 180, 'h': 70},
+    {'key': 'cpP', 'comment': True, 'text': '8 points in 2-D: two groups of four',
+     'pos': (230, 77)},
+    {'key': 'tt', 'init': 't.t', 'pos': (30, 150), 'w': 130, 'h': 70},
+    {'key': 'hP', 'init': 'heat_map', 'pos': (30, 240), 'w': 500, 'h': 110,
+     'props': HM(480, 60, 2, 0.0, 4.0, fmt='%.1f')},
+    {'key': 'cP', 'comment': True, 'text': 'the 8 points, one per column: x on top, y below',
+     'pos': (30, 360)},
+    {'key': 'cd1', 'init': 't.cdist', 'pos': (30, 410), 'w': 150, 'h': 90},
+    {'key': 'ccd1', 'comment': True, 'text': 'nothing in points 2: every point to every point',
+     'pos': (200, 430)},
+    {'key': 'hD', 'init': 'heat_map', 'pos': (30, 520), 'w': 400, 'h': 400,
+     'props': HM(380, 380, 8, 0.0, 5.0, fmt='%.1f')},
+    {'key': 'cD', 'comment': True, 'text': 'row i, column j: how far point i is from point j',
+     'pos': (30, 930)},
+] + point('a', 30, 990, 3.0, 3.0, lo=0.0, hi=4.0, label='a point held in points 2') + [
+    {'key': 'cd2', 'init': 't.cdist', 'pos': (30, 1260), 'w': 150, 'h': 90},
+    {'key': 'ccd2', 'comment': True, 'text': 'the 8 points against the held point: 8 x 1',
+     'pos': (200, 1280)},
+    {'key': 'tt2', 'init': 't.t', 'pos': (30, 1370), 'w': 130, 'h': 70},
+    {'key': 'hS', 'init': 'heat_map', 'pos': (30, 1460), 'w': 500, 'h': 80,
+     'props': HM(480, 40, 1, 0.0, 5.0, fmt='%.1f')},
+    {'key': 'cS', 'comment': True, 'text': 'how far each point (same columns as the top) is from the held point',
+     'pos': (30, 1550)},
+] + see_also(1600, ['t.dist', 't.length', 'np.distance_from_target', 'np.linalg.norm',
+                    't.cosine_similarity'], right=700)
 links = point_links('a') + [
-    ('ap', 'out', 'cd', 'input'), ('cd', 'output', 'f1', ''),
-    ('ap', 'out', 'ln', 'tensor in'), ('ln', 'length', 'f2', '')]
-print(build('t.cdist', 't.cdist - the length of one vector',
-            body, demo, links, demo_width=DW(640), text_width=760, text_height=th(body)))
+    ('pP', 'points', 'tt', 'tensor in'), ('tt', 'tensor out', 'hP', 'y'),
+    ('pP', 'points', 'cd1', 'input'), ('cd1', 'output', 'hD', 'y'),
+    ('ap', 'out', 'cd2', 'points 2'),
+    ('pP', 'points', 'cd2', 'input'), ('cd2', 'output', 'tt2', 'tensor in'),
+    ('tt2', 'tensor out', 'hS', 'y')]
+print(build('t.cdist', 't.cdist - the distances between points',
+            body, demo, links, demo_width=DW(700), text_width=760, text_height=th(body),
+            subpatch=fixed_sub('make_points', 'pP', CD_PTS, 8, 2, 'points',
+                               '16 numbers: 8 points, two groups of four')))
 
 # ------------------------------------------------------- t.cosine_similarity
 body = """Gives how much two vectors point the same way, with their sizes taken
@@ -380,24 +432,28 @@ The first vector (a list or a NumPy array is turned into a float32
 tensor). Receiving it calculates and sends.
 
 input 2:
-The second vector, the same length as the first. It must arrive
-AFRESH before EVERY input 1: the node does not reuse an old input 2, so
-sending input 1 on its own a second time sends nothing. In the demo a
-metro re-sends both, input 2 first.
+The second vector, the same length as the first. It is only stored:
+send it before input 1, and it is then used for every input 1 that
+follows until a new one arrives. Nothing is sent until it has
+arrived. In the demo B goes through 't bang list', so that moving B
+also makes A re-send.
 
-Both should be 1-D vectors. Two tables are compared column by column,
-which gives more than one number: an error is printed and nothing is
-sent. A vector of all zeros has no direction and gives 0.
+Two 1-D vectors give one number. Two tables of the same shape are
+compared column by column (each column is one vector), giving one
+cosine per column. A vector of all zeros has no direction and gives 0.
+Lengths that do not match print an error and send nothing.
 
 OUTPUTS:
 
 output:
-The cosine, a plain float from -1 to 1.
+The cosine, a plain float from -1 to 1 - or, for two tables, a 1-D
+tensor with one cosine per column.
 
 READING THE DEMO:
 Vector A is two sliders packed into [x y], starting at [3 4]. Vector B
 is the angle on the slider turned into a direction (make_direction
-gives [cos, sin]). The metro re-sends B and then A ten times a second.
+gives [cos, sin]). B is stored in input 2 first, then the bang from
+'t bang list' makes A re-send, so moving either one updates the answer.
 With B at 53 degrees it points almost exactly along [3 4] and the
 answer is near 1. Turn B to 143 degrees (right angles): 0. To 233:
 -1. Now make A shorter in the same direction - [1.5 2] - and nothing
@@ -410,11 +466,6 @@ cosine. t.dist and t.length compare positions and sizes instead."""
 
 demo = [
     {'key': 'lb', 'init': 'load_bang', 'pos': (30, 62), 'w': 88, 'h': 46},
-    {'key': 'met', 'init': 'metro 100', 'pos': (150, 50), 'w': 129, 'h': 70,
-     'props': METRO},
-    {'key': 'tbb', 'init': 't bang bang', 'pos': (300, 62), 'w': 140, 'h': 46},
-    {'key': 'cm', 'comment': True, 'text': 'B first, then A, ten times a second',
-     'pos': (460, 67)},
 ] + point('a', 30, 130, 3.0, 4.0, label='vector A') + [
     {'key': 'sl', 'init': 'slider', 'pos': (360, 270), 'w': 220, 'h': 60,
      'props': SLIDER(0.0, 360.0, 53.0, width=200, fmt='%.0f')},
@@ -423,16 +474,18 @@ demo = [
     {'key': 'lB', 'init': 'list', 'pos': (360, 440), 'w': 220, 'h': 42, 'props': LIST},
     {'key': 'cB', 'comment': True, 'text': 'vector B: length 1, at that angle',
      'pos': (600, 445)},
-    {'key': 'cs', 'init': 't.cosine_similarity', 'pos': (30, 520), 'w': 220, 'h': 90},
-    {'key': 'f1', 'init': 'float', 'pos': (30, 630), 'w': 127, 'h': 42, 'props': FLT},
+    {'key': 'tb', 'init': 't bang list', 'pos': (360, 500), 'w': 140, 'h': 46},
+    {'key': 'ctb', 'comment': True, 'text': 'B stored first, then A re-sent', 'pos': (520, 505)},
+    {'key': 'cs', 'init': 't.cosine_similarity', 'pos': (30, 580), 'w': 220, 'h': 90},
+    {'key': 'f1', 'init': 'float', 'pos': (30, 690), 'w': 127, 'h': 42, 'props': FLT},
     {'key': 'c1', 'comment': True, 'text': '1 same way, 0 at right angles, -1 opposite',
-     'pos': (180, 635)},
-] + see_also(710, ['np.dot', 't.normalize', 't.dist', 't.length', 'np.inner'])
+     'pos': (180, 695)},
+] + see_also(770, ['np.dot', 't.normalize', 't.dist', 't.length', 'np.inner'])
 links = point_links('a') + [
-    ('lb', 'out', 'sl', ''), ('met', '', 'tbb', ''),
-    ('tbb', 'bang', 'sl', '', 1), ('tbb', 'bang', 'ax', '', 0),
+    ('lb', 'out', 'sl', ''),
     ('sl', 'float out', 'pB', 'angle'), ('pB', 'direction', 'lB', ''),
-    ('pB', 'direction', 'cs', 'input 2'),
+    ('pB', 'direction', 'tb', ''),
+    ('tb', 'list', 'cs', 'input 2', 1), ('tb', 'bang', 'ax', '', 0),
     ('ap', 'out', 'cs', 'input 1'), ('cs', 'output', 'f1', '')]
 print(build('t.cosine_similarity', 't.cosine_similarity - alike in direction, whatever the size',
             body, demo, links, demo_width=DW(700), text_width=760, text_height=th(body),
@@ -452,12 +505,11 @@ way, or turn a movement into a pure direction.
 
 IT WORKS ALONG AN AXIS - 'dim':
 dim says which axis the length is measured along, and every slice along
-it is scaled on its own. For a table of rows (8 rows of x y z), dim 1
-makes each ROW length 1; dim 0 makes each COLUMN length 1.
-
-The default is 1, which suits a table of rows but not a single vector:
-a 1-D tensor has no axis 1, so the node prints an error and sends
-nothing. For a single vector set dim to 0 or -1 (as in the top demo).
+it is scaled on its own. The default, -1, is the last axis: a single
+vector is made length 1 as a whole, and a table of rows (8 rows of
+x y z) has each ROW made length 1. For that table dim 0 makes each
+COLUMN length 1 instead. An axis the tensor does not have prints an
+error and sends nothing.
 
 SYNTAX:
 t.normalize
@@ -470,7 +522,8 @@ The tensor (a list or a NumPy array is turned into a float32 tensor).
 Receiving it normalizes and sends.
 
 dim (number box, also an inlet):
-The axis to measure length along. Default 1. Changing it does not send
+The axis to measure length along. Default -1, the last axis; negative
+counts from the end. Changing it does not send
 by itself - the next tensor uses it (in the bottom demo the rows are
 re-sent ten times a second, so a change shows at once).
 
@@ -487,13 +540,13 @@ while things are still, that is why: check the length first (t.length)
 and gate on it. Only an exactly zero slice comes back as zeros.
 
 READING THE DEMO:
-Top: the point [x y], starting at [3 4], normalized with dim 0 gives
-[0.6 0.8]. Move the sliders: the result always has length 1, and it
+Top: the point [x y], starting at [3 4], normalized with the default
+dim gives [0.6 0.8]. Move the sliders: the result always has length 1, and it
 only changes when the DIRECTION changes - drag both towards zero
 together and it stays put.
 Bottom: make_rows sends 8 rows of 3 values of very different sizes
-(lengths 0.5 to 3; picture on a 0 to 3 scale). Normalized with dim 1,
-each row keeps its pattern but every row now has length 1 (picture on
+(lengths 0.5 to 3; picture on a 0 to 3 scale). Normalized with the
+same default dim -1, each row keeps its pattern but every row now has length 1 (picture on
 a 0 to 1 scale). The strips under each picture are the length of each
 row (np.linalg.norm, axis 1): uneven before, all 1 after. Set dim to 0
 and the COLUMNS become length 1 instead, so the row lengths are no
@@ -508,20 +561,18 @@ axis."""
 demo = [
     {'key': 'lb', 'init': 'load_bang', 'pos': (30, 62), 'w': 88, 'h': 46},
 ] + point('a', 30, 130, 3.0, 4.0) + [
-    {'key': 'nv', 'init': 't.normalize', 'pos': (30, 410), 'w': 200, 'h': 90,
-     'props': {'dim': 0}},
-    {'key': 'cv', 'comment': True, 'text': 'dim 0: one vector', 'pos': (250, 430)},
+    {'key': 'nv', 'init': 't.normalize', 'pos': (30, 410), 'w': 200, 'h': 90},
+    {'key': 'cv', 'comment': True, 'text': 'default dim -1: the whole vector', 'pos': (250, 430)},
     {'key': 'lv', 'init': 'list', 'pos': (30, 520), 'w': 220, 'h': 42, 'props': LIST},
     {'key': 'c1', 'comment': True, 'text': 'the direction alone: [0.6 0.8] for [3 4]',
      'pos': (270, 525)},
     {'key': 'pR', 'init': 'p make_rows', 'pos': (30, 600), 'w': 170, 'h': 70},
     {'key': 'hI', 'init': 'heat_map', 'pos': (30, 690), 'w': 200, 'h': 290,
      'props': HM(180, 240, 8, 0.0, 3.0)},
-    {'key': 'nm', 'init': 't.normalize', 'pos': (400, 600), 'w': 200, 'h': 90,
-     'props': {'dim': 1}},
+    {'key': 'nm', 'init': 't.normalize', 'pos': (400, 600), 'w': 200, 'h': 90},
     {'key': 'hO', 'init': 'heat_map', 'pos': (400, 690), 'w': 200, 'h': 290,
      'props': HM(180, 240, 8, 0.0, 1.0)},
-    {'key': 'c2', 'comment': True, 'text': 'in: 8 rows of 3 (0 to 3)     out: dim 1 (0 to 1)',
+    {'key': 'c2', 'comment': True, 'text': 'in: 8 rows of 3 (0 to 3)     out: dim -1, each row (0 to 1)',
      'pos': (30, 990)},
     {'key': 'nI', 'init': 'np.linalg.norm', 'pos': (30, 1030), 'w': 170, 'h': 100,
      'props': {'axis': '1'}},
@@ -600,13 +651,6 @@ time, the answer is usually far fewer than the number of channels.
 U says how much of each pattern each ROW uses; the rows of Vh are the
 patterns themselves.
 
-THE OUTLETS ARE MISLABELLED:
-The node's outlet names do not match what they send. Read them as:
-  'S tensor out'  sends U   - one column per pattern, one row per input row
-  'V tensor out'  sends S   - the singular values, largest first
-  'D tensor out'  sends Vh  - one row per pattern, one column per input column
-They are sent in the order Vh, S, U.
-
 SYNTAX:
 t.linalg.svd
 (no arguments)
@@ -625,11 +669,19 @@ Off: the reduced form, U 6 x 4 - smaller, and what fits the rebuild
 in this demo (with full on, the rebuild prints a shape error). Changing
 it does not send by itself; the next matrix uses it.
 
-OUTPUTS:
+OUTPUTS (sent right to left - Vh first, U last):
 
-S tensor out: U.
-V tensor out: S, the singular values (1-D, never negative).
-D tensor out: Vh.
+U out:
+One column per pattern, one row per input row: how much of each
+pattern each row uses.
+
+S out:
+The singular values, largest first (1-D, never negative): how strong
+each pattern is.
+
+Vh out:
+One row per pattern, one column per input column: the patterns
+themselves, each of length 1.
 
 READING THE DEMO:
 make_matrix sends a 6 x 4 matrix ten times a second: every row a blend
@@ -664,14 +716,14 @@ demo = [
     {'key': 'lS', 'init': 'list', 'pos': (330, 300), 'w': 300, 'h': 42, 'props': LIST},
     {'key': 'hS', 'init': 'heat_map', 'pos': (330, 360), 'w': 280, 'h': 100,
      'props': HM(260, 50, 4, 0.0, 5.0)},
-    {'key': 'cS', 'comment': True, 'text': "S (from 'V tensor out'): largest first",
+    {'key': 'cS', 'comment': True, 'text': 'S: the singular values, largest first',
      'pos': (330, 470)},
     {'key': 'hU', 'init': 'heat_map', 'pos': (30, 540), 'w': 200, 'h': 250,
      'props': HM(180, 200, 6, -1.0, 1.0, color='red-blue')},
-    {'key': 'cU', 'comment': True, 'text': "U (from 'S tensor out'): 6 x 4", 'pos': (30, 800)},
+    {'key': 'cU', 'comment': True, 'text': 'U: 6 x 4, one column per pattern', 'pos': (30, 800)},
     {'key': 'hV', 'init': 'heat_map', 'pos': (330, 540), 'w': 200, 'h': 250,
      'props': HM(180, 200, 4, -1.0, 1.0, color='red-blue')},
-    {'key': 'cV', 'comment': True, 'text': "Vh (from 'D tensor out'): 4 x 4", 'pos': (330, 800)},
+    {'key': 'cV', 'comment': True, 'text': 'Vh: 4 x 4, one pattern per row', 'pos': (330, 800)},
     {'key': 'dg', 'init': 't.diag', 'pos': (330, 850), 'w': 150, 'h': 90},
     {'key': 'm2', 'init': 'np.matmul', 'pos': (330, 960), 'w': 150, 'h': 70},
     {'key': 'c2', 'comment': True, 'text': 'diag(S) x Vh', 'pos': (500, 975)},
@@ -684,11 +736,11 @@ demo = [
                     'np.linalg.matrix_rank', 'np.matmul'])
 links = [('lb', 'out', 'sl', ''), ('sl', 'float out', 'pM', 'amount'),
          ('pM', 'matrix', 'hA', 'y'), ('pM', 'matrix', 'sv', 'tensor in'),
-         ('sv', 'D tensor out', 'hV', 'y'), ('sv', 'D tensor out', 'm2', 'in 2'),
-         ('sv', 'V tensor out', 'lS', ''), ('sv', 'V tensor out', 'hS', 'y'),
-         ('sv', 'V tensor out', 'dg', 'tensor in'),
+         ('sv', 'Vh out', 'hV', 'y'), ('sv', 'Vh out', 'm2', 'in 2'),
+         ('sv', 'S out', 'lS', ''), ('sv', 'S out', 'hS', 'y'),
+         ('sv', 'S out', 'dg', 'tensor in'),
          ('dg', 'output', 'm2', 'in 1'), ('m2', 'mat mul result', 'm1', 'in 2'),
-         ('sv', 'S tensor out', 'hU', 'y'), ('sv', 'S tensor out', 'm1', 'in 1'),
+         ('sv', 'U out', 'hU', 'y'), ('sv', 'U out', 'm1', 'in 1'),
          ('m1', 'mat mul result', 'hR', 'y')]
 print(build('t.linalg.svd', 't.linalg.svd - the patterns a matrix is made of',
             body, demo, links, demo_width=DW(660), text_width=760, text_height=th(body),
@@ -882,10 +934,10 @@ leading few, quickly and approximately, which matters on big data.
 
 CENTRE FIRST - THE 'center' CHECKBOX:
 Principal components describe spread AROUND THE MIDDLE of the points,
-so the mean must be taken off first. Here 'center' is OFF by default
-(unlike torch's own default) - and then the first direction points from
-zero towards where the cloud sits, not along the way it spreads. Turn
-it on for principal component analysis proper.
+so the mean is taken off first: 'center' is on by default. Turn it off
+only for data that is already centred - otherwise the first direction
+points from zero towards where the cloud sits, not along the way it
+spreads.
 
 SYNTAX:
 t.linalg.pca_low_rank
@@ -899,12 +951,12 @@ into a float32 tensor). Receiving it calculates and sends. It keeps up
 to 6 components, or fewer if there are fewer rows or columns.
 
 center (checkbox):
-Take off the mean of each column first. Default off.
+Take off the mean of each column first. Default on.
 
-full (number box):
-Mislabelled: this is the number of refinement passes of the
-approximate method, default 2. More passes, more accurate on big data;
-small data like the demo's is exact anyway.
+iterations (number box):
+The number of refinement passes of the approximate method, default 2,
+0 or more. More passes, more accurate on big data; small data like the
+demo's is exact anyway.
 
 Changing either does not send by itself; the next points use it (here
 they are re-sent ten times a second, so a change shows at once).
@@ -949,7 +1001,7 @@ demo = [
     {'key': 'cP', 'comment': True, 'text': 'the 16 points: x on top, y below (blue above 0)',
      'pos': (30, 360)},
     {'key': 'pc', 'init': 't.linalg.pca_low_rank', 'pos': (330, 62), 'w': 240, 'h': 130,
-     'props': {'center': True, 'full': 2}},
+     'props': {'center': True, 'iterations': 2}},
     {'key': 'cc', 'comment': True, 'text': 'try center off', 'pos': (590, 75)},
     {'key': 'hV', 'init': 'heat_map', 'pos': (30, 410), 'w': 220, 'h': 210,
      'props': HM(200, 160, 2, -1.0, 1.0, color='red-blue')},

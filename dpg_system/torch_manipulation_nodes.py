@@ -80,7 +80,7 @@ class TorchUnsqueezeNode(TorchWithDimNode):
     def execute(self):
         input_tensor = self.input_to_tensor()
         if input_tensor is not None:
-            if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
+            if -1 - len(input_tensor.shape) <= self.dim <= len(input_tensor.shape):
                 self.output.send(torch.unsqueeze(input_tensor, self.dim))
                 return
 
@@ -224,10 +224,15 @@ class TorchFlipNode(TorchNode):
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
 
-        self.flip_list = [0]
+        # the dims to flip come from the arguments ('t.flip 1', 't.flip 0 1');
+        # they used to be ignored, leaving dim 0
+        self.flip_list = [any_to_int(a) for a in args if re.fullmatch(r'[-+]?\d+', any_to_string(a))] if args else []
+        if not self.flip_list:
+            self.flip_list = [0]
         self.input = self.add_input('tensor in', triggers_execution=True)
-        self.flip_property = self.add_property('flip dims', widget_type='text_input', default_value='0',
-                                                  callback=self.flip_changed)
+        self.flip_property = self.add_property('flip dims', widget_type='text_input',
+                                               default_value=' '.join(str(d) for d in self.flip_list),
+                                               callback=self.flip_changed)
         self.output = self.add_output('output')
 
     def flip_changed(self):
@@ -292,14 +297,14 @@ class TorchStackNode(TorchStackCatNode):
                             if a_tensor.shape[j] != input_tensor.shape[j]:
                                 ok_shape = False
                                 if self.app.verbose:
-                                    print('t.stack input tensor ' + str(i + 1) + ' has wrong shape')
+                                    print('t.stack input tensor ' + str(i + 2) + ' has wrong shape')
                                 break
                         if ok_shape:
                             stack_list.append(a_tensor)
                     else:
                         if self.app.verbose:
-                            print('t.stack input tensor ' + str(i + 1) + ' has wrong number of dimensions')
-            if -len(input_tensor.shape) <= self.dim <= len(input_tensor.shape):
+                            print('t.stack input tensor ' + str(i + 2) + ' has wrong number of dimensions')
+            if -len(input_tensor.shape) - 1 <= self.dim <= len(input_tensor.shape):
                 output_tensor = torch.stack(stack_list, self.dim)
                 self.output.send(output_tensor)
             else:
@@ -334,13 +339,13 @@ class TorchCatNode(TorchStackCatNode):
                                 if a_tensor.shape[j] != input_tensor.shape[j]:
                                     ok_shape = False
                                     if self.app.verbose:
-                                        print('t.cat input tensor ' + str(i) + ' has wrong shape')
+                                        print('t.cat input tensor ' + str(i + 2) + ' has wrong shape')
                                     break
                         if ok_shape:
                             cat_list.append(a_tensor)
                     else:
                         if self.app.verbose:
-                            print('t.cat input tensor ' + str(i) + ' has wrong number of dimensions')
+                            print('t.cat input tensor ' + str(i + 2) + ' has wrong number of dimensions')
             if -ndim <= self.dim < ndim:
                 output_tensor = torch.cat(cat_list, self.dim)
                 self.output.send(output_tensor)
@@ -368,6 +373,8 @@ class TorchHStackNode(TorchNode):
             self.op = torch.vstack
         elif self.label == 't.dstack':
             self.op = torch.dstack
+        elif self.label == 't.column_stack':
+            self.op = torch.column_stack   # it used to run hstack
 
         self.other_inputs = []
         self.input = self.add_input('tensor 1', triggers_execution=True)
@@ -383,13 +390,18 @@ class TorchHStackNode(TorchNode):
                 an_in = self.other_inputs[i]
                 a_tensor = self.data_to_tensor(an_in(), match_tensor=input_tensor)
                 if a_tensor is not None:
-                    if a_tensor.shape != input_tensor.shape:
+                    # column_stack joins columns of differing widths ([N] beside [N, 2])
+                    if a_tensor.shape != input_tensor.shape and self.label != 't.column_stack':
                         if self.app.verbose:
                             print(self.label + ' input tensors must have the same shape')
                         return
                     else:
                         stack_list.append(a_tensor)
-            output_tensor = self.op(tuple(stack_list))
+            try:
+                output_tensor = self.op(tuple(stack_list))
+            except Exception as e:
+                print(f'{self.label}: {type(e).__name__}: {e}')
+                return
             self.output.send(output_tensor)
 
 
@@ -413,7 +425,8 @@ class TorchChunkNode(TorchNode):
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.dim_input = self.add_input('dim', widget_type='input_int', default_value=self.dim, callback=self.dim_changed)
-        self.split_count_option = self.add_option('split', widget_type='input_int', default_value=self.splits)
+        self.split_count_option = self.add_option('split', widget_type='input_int', default_value=self.splits,
+                                                  min=1, max=self.splits, callback=self.split_changed)
         self.tensor_outputs = []
 
         for i in range(self.splits):
@@ -421,6 +434,11 @@ class TorchChunkNode(TorchNode):
 
     def dim_changed(self):
         self.dim = self.dim_input()
+
+    def split_changed(self):
+        # the outlets are made from the argument, so the count can drop below
+        # it (the later outlets go quiet) but not rise above it
+        self.splits = max(1, min(any_to_int(self.split_count_option()), len(self.tensor_outputs)))
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -582,8 +600,9 @@ class TorchTileNode(TorchNode):
                 self.output.send(input_tensor)
                 return
 
-            # We use * unpacking to handle torch.Size objects or lists correctly
-            tiled = input_tensor.repeat(*self.current_tile_dims)
+            # torch.tile, not repeat: tile pads short dims lists with 1s at the
+            # front, where repeat raises
+            tiled = torch.tile(input_tensor, tuple(self.current_tile_dims))
             self.output.send(tiled)
 
         except RuntimeError as e:
@@ -671,7 +690,8 @@ class TorchSubtensorNode(TorchNode):
 
         # Determine default string. Coerce args to strings — they may come in as
         # ints from the parsed-arg path; raw ''.join() would raise TypeError.
-        index_string = ''.join(any_to_string(a) for a in args) if args else ':'
+        # joined with spaces: 't[] 0 3' used to become '03'
+        index_string = ' '.join(any_to_string(a) for a in args) if args else ':'
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.indices_input = self.add_input(
@@ -703,7 +723,8 @@ class TorchSubtensorNode(TorchNode):
             self.slice_obj = (slice(None),)
             return
 
-        parts = dim_text.split(',')
+        # commas separate the axes; without any, spaces do ('0 3' is '0, 3')
+        parts = dim_text.split(',') if ',' in dim_text else dim_text.split()
         slices = []
 
         for part in parts:
@@ -880,7 +901,7 @@ class TorchTakeAlongDimNode(TorchWithDimNode):
             if data is not None:
                 index_tensor = self.data_to_tensor(data, device=input_tensor.device, requires_grad=input_tensor.requires_grad, dtype=torch.long)
                 if index_tensor is not None:
-                    if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
+                    if -len(input_tensor.shape) <= self.dim < len(input_tensor.shape):
                         try:
                             taken = torch.take_along_dim(input_tensor, indices=index_tensor, dim=self.dim)
                             self.output.send(taken)
@@ -918,7 +939,7 @@ class TorchScatterNode(TorchWithDimNode):
             if data is not None:
                 index_tensor = self.data_to_tensor(data, device=input_tensor.device, requires_grad=input_tensor.requires_grad, dtype=torch.long)
                 if index_tensor is not None:
-                    if -1 - len(input_tensor.shape) < self.dim <= len(input_tensor.shape):
+                    if -len(input_tensor.shape) <= self.dim < len(input_tensor.shape):
                         data_2 = self.source_input()
                         source_tensor = self.data_to_tensor(data_2, device=input_tensor.device, requires_grad=input_tensor.requires_grad)
                         if source_tensor is not None:
@@ -959,7 +980,10 @@ class TorchScatterHoldNode(TorchNode):
         self.accum = torch.zeros(length)
 
     def clear(self):
-        self.accum[:] = 0
+        # a fresh tensor, sent, so displays clear: the old in-place zeroing
+        # sent nothing and wiped tensors already handed downstream
+        self.accum = torch.zeros_like(self.accum)
+        self.output.send(self.accum.clone())
 
     def resize(self):
         self.accum = torch.zeros(self.length_input())
@@ -978,8 +1002,8 @@ class TorchScatterHoldNode(TorchNode):
             indices = indices.clamp(0, self.length_input() - 1)
             values = pairs_tensor[1]
             try:
-                self.accum.scatter_(0, indices, values)
-                self.output.send(self.accum)
+                self.accum.scatter_(0, indices, values.to(self.accum.dtype))
+                self.output.send(self.accum.clone())   # a copy: accum keeps changing
             except Exception as e:
                 print(f'{self.label}: {type(e).__name__}: {e}')
                 traceback.print_exc()
@@ -1052,9 +1076,13 @@ class TorchNarrowNode(TorchWithDimNode):
         super().__init__(label, data, args)
         self.input = self.add_input('tensor in', triggers_execution=True)
 
-        # Initialize state
+        # Initialize state: t.narrow <dim> <start> <length>
         self.start = 0
         self.length = 1
+        if len(args) > 1:
+            self.start = any_to_int(args[1])
+        if len(args) > 2:
+            self.length = any_to_int(args[2])
 
         # Setup specific to parent class logic
         self.dim_specified = True

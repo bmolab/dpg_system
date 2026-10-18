@@ -1,11 +1,11 @@
 {
     "height": 841,
-    "width": 1644,
+    "width": 1720,
     "position": [
         100,
         100
     ],
-    "id": 903,
+    "id": 1051,
     "name": "t.zeros_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.zeros_help.json",
     "nodes": {
@@ -56,7 +56,7 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 836,
+            "position_x": 912,
             "position_y": 45,
             "width": 768,
             "height": 736,
@@ -66,7 +66,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Makes a tensor filled with zeros, in the shape you give it.\n\nOn its own it is the dullest tensor there is, and that is its use: a\nblank to start from. Accumulate into it, add values into part of it,\nor hold a correctly shaped place in a chain until real data arrives.\n\nSYNTAX:\nt.zeros <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.zeros 8 8 is an 8 by 8 tensor,\nt.zeros 16 a row of 16. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.zeros 8 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send; each\nclick sends a new tensor.\n\nshape (text):\nThe dimensions, typed as numbers separated by spaces or commas - '8 8',\n'[4, 16]' or '2 3 4' for 3-D. Unlike np.zeros, the number of dimensions\ncan change here without retyping the node. Editing it does not send;\nthe next click uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.zeros 8 8 int64.\nOUTPUTS:\n\ntensor of zeros:\nThe tensor. A bool dtype gives all false.\n\nREADING THE DEMO:\nThe load_bang clicks t.zeros once when the page opens. The heat_map is\nthe tensor - every cell 0, one flat colour, each printing its 0. t.info\nreports its shape, dtype and device: [8, 8], torch.float32, cpu. Type\n'4 8' into shape and click the node's button: the picture becomes 4\nrows of 8 and t.info follows. Choose int64 as dtype and click again to\nsee t.info change.\n\nRELATED:\nt.ones is the same with every value 1, t.full with any value you pick.\nt.zeros_like takes its shape from another tensor. t.eye puts ones on the\ndiagonal of a square of zeros. np.zeros is the NumPy version.",
+                    "value": "Makes a tensor filled with zeros, in the shape you give it.\n\nOn its own it is the dullest tensor there is, and that is its use: a\nblank to start from. Accumulate into it, add values into part of it,\nor hold a correctly shaped place in a chain until real data arrives.\n\nSYNTAX:\nt.zeros <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.zeros 8 8 is an 8 by 8 tensor,\nt.zeros 16 a row of 16. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.zeros 8 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send; each\nclick sends a new tensor.\n\nshape (text, also an inlet):\nThe dimensions, typed as numbers separated by spaces or commas - '8 8',\n'[4, 16]' or '2 3 4' for 3-D. A list or tensor of numbers sent into the\ninlet works too (a message '4 16', or a shape from another node), and\nso does a single number (16 is a row of 16). Unlike np.zeros, the\nnumber of dimensions can change here without retyping the node. A new\nshape does not send; the next click uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.zeros 8 8 int64.\nOUTPUTS:\n\ntensor of zeros:\nThe tensor. A bool dtype gives all false.\n\nREADING THE DEMO:\nThe load_bang clicks t.zeros once when the page opens. The heat_map is\nthe tensor - every cell 0, one flat colour, each printing its 0. t.info\nreports its shape, dtype and device: [8, 8], torch.float32, cpu. Click\nthe message '4 8': 't bang list' sends the list into the shape inlet\nand THEN clicks the node, so the picture becomes 4 rows of 8 and t.info\nfollows; '8 8' puts it back. Typing a shape into the node and clicking\nits button does the same. Choose int64 as dtype and click again to see\nt.info change.\n\nRELATED:\nt.ones is the same with every value 1, t.full with any value you pick.\nt.zeros_like takes its shape from another tensor. t.eye puts ones on the\ndiagonal of a square of zeros. np.zeros is the NumPy version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Makes a tensor filled with zeros, in the shape you give it.\n\nOn its own it is the dullest tensor there is, and that is its use: a\nblank to start from. Accumulate into it, add values into part of it,\nor hold a correctly shaped place in a chain until real data arrives.\n\nSYNTAX:\nt.zeros <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.zeros 8 8 is an 8 by 8 tensor,\nt.zeros 16 a row of 16. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.zeros 8 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send; each\nclick sends a new tensor.\n\nshape (text):\nThe dimensions, typed as numbers separated by spaces or commas - '8 8',\n'[4, 16]' or '2 3 4' for 3-D. Unlike np.zeros, the number of dimensions\ncan change here without retyping the node. Editing it does not send;\nthe next click uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.zeros 8 8 int64.\nOUTPUTS:\n\ntensor of zeros:\nThe tensor. A bool dtype gives all false.\n\nREADING THE DEMO:\nThe load_bang clicks t.zeros once when the page opens. The heat_map is\nthe tensor - every cell 0, one flat colour, each printing its 0. t.info\nreports its shape, dtype and device: [8, 8], torch.float32, cpu. Type\n'4 8' into shape and click the node's button: the picture becomes 4\nrows of 8 and t.info follows. Choose int64 as dtype and click again to\nsee t.info change.\n\nRELATED:\nt.ones is the same with every value 1, t.full with any value you pick.\nt.zeros_like takes its shape from another tensor. t.eye puts ones on the\ndiagonal of a square of zeros. np.zeros is the NumPy version."
+            "text": "Makes a tensor filled with zeros, in the shape you give it.\n\nOn its own it is the dullest tensor there is, and that is its use: a\nblank to start from. Accumulate into it, add values into part of it,\nor hold a correctly shaped place in a chain until real data arrives.\n\nSYNTAX:\nt.zeros <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension: t.zeros 8 8 is an 8 by 8 tensor,\nt.zeros 16 a row of 16. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.zeros 8 8\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send; each\nclick sends a new tensor.\n\nshape (text, also an inlet):\nThe dimensions, typed as numbers separated by spaces or commas - '8 8',\n'[4, 16]' or '2 3 4' for 3-D. A list or tensor of numbers sent into the\ninlet works too (a message '4 16', or a shape from another node), and\nso does a single number (16 is a row of 16). Unlike np.zeros, the\nnumber of dimensions can change here without retyping the node. A new\nshape does not send; the next click uses it.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.zeros 8 8 int64.\nOUTPUTS:\n\ntensor of zeros:\nThe tensor. A bool dtype gives all false.\n\nREADING THE DEMO:\nThe load_bang clicks t.zeros once when the page opens. The heat_map is\nthe tensor - every cell 0, one flat colour, each printing its 0. t.info\nreports its shape, dtype and device: [8, 8], torch.float32, cpu. Click\nthe message '4 8': 't bang list' sends the list into the shape inlet\nand THEN clicks the node, so the picture becomes 4 rows of 8 and t.info\nfollows; '8 8' puts it back. Typing a shape into the node and clicking\nits button does the same. Choose int64 as dtype and click again to see\nt.info change.\n\nRELATED:\nt.ones is the same with every value 1, t.full with any value you pick.\nt.zeros_like takes its shape from another tensor. t.eye puts ones on the\ndiagonal of a square of zeros. np.zeros is the NumPy version."
         },
         "3": {
             "name": "load_bang",
@@ -108,7 +108,7 @@
             "init": "comment clicks t.zeros once when the page opens",
             "name": "comment",
             "id": 385,
-            "position_x": 520,
+            "position_x": 596,
             "position_y": 70,
             "width": 248,
             "height": 30,
@@ -130,8 +130,92 @@
             "comment": "clicks t.zeros once when the page opens"
         },
         "5": {
-            "name": "t.zeros",
+            "name": "message",
             "id": 422,
+            "position_x": 290,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "4 8",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 440,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "8 8",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment click a shape",
+            "name": "comment",
+            "id": 496,
+            "position_x": 596,
+            "position_y": 110,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click a shape",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click a shape"
+        },
+        "8": {
+            "name": "t",
+            "id": 533,
+            "position_x": 290,
+            "position_y": 120,
+            "width": 33,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t bang list"
+        },
+        "9": {
+            "name": "t.zeros",
+            "id": 570,
             "position_x": 30,
             "position_y": 125,
             "width": 163,
@@ -142,12 +226,12 @@
             "properties": {},
             "init": "t.zeros 8 8"
         },
-        "6": {
+        "10": {
             "name": "text_block",
-            "id": 459,
+            "id": 607,
             "annotation": true,
-            "position_x": 520,
-            "position_y": 130,
+            "position_x": 596,
+            "position_y": 150,
             "width": 286,
             "height": 40,
             "visibility": "show_all",
@@ -182,9 +266,9 @@
             },
             "text": "type another shape, then click the node's\nown button (top left)"
         },
-        "7": {
+        "11": {
             "name": "heat_map",
-            "id": 496,
+            "id": 644,
             "position_x": 30,
             "position_y": 305,
             "width": 268,
@@ -235,11 +319,11 @@
                 }
             }
         },
-        "8": {
+        "12": {
             "init": "comment every cell 0: one flat colour",
             "name": "comment",
-            "id": 533,
-            "position_x": 520,
+            "id": 681,
+            "position_x": 596,
             "position_y": 310,
             "width": 187,
             "height": 30,
@@ -260,9 +344,9 @@
             },
             "comment": "every cell 0: one flat colour"
         },
-        "9": {
+        "13": {
             "name": "t.info",
-            "id": 570,
+            "id": 718,
             "position_x": 340,
             "position_y": 305,
             "width": 45,
@@ -272,11 +356,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "10": {
+        "14": {
             "init": "comment shape, dtype, device",
             "name": "comment",
-            "id": 607,
-            "position_x": 520,
+            "id": 755,
+            "position_x": 596,
             "position_y": 350,
             "width": 131,
             "height": 30,
@@ -297,9 +381,9 @@
             },
             "comment": "shape, dtype, device"
         },
-        "11": {
+        "15": {
             "name": "help_link",
-            "id": 644,
+            "id": 792,
             "position_x": 30,
             "position_y": 620,
             "width": 53,
@@ -310,9 +394,9 @@
             "properties": {},
             "init": "help_link t.ones"
         },
-        "12": {
+        "16": {
             "name": "help_link",
-            "id": 681,
+            "id": 829,
             "position_x": 120,
             "position_y": 620,
             "width": 53,
@@ -323,9 +407,9 @@
             "properties": {},
             "init": "help_link t.full"
         },
-        "13": {
+        "17": {
             "name": "help_link",
-            "id": 718,
+            "id": 866,
             "position_x": 210,
             "position_y": 620,
             "width": 90,
@@ -336,9 +420,9 @@
             "properties": {},
             "init": "help_link t.zeros_like"
         },
-        "14": {
+        "18": {
             "name": "help_link",
-            "id": 755,
+            "id": 903,
             "position_x": 346,
             "position_y": 620,
             "width": 47,
@@ -349,9 +433,9 @@
             "properties": {},
             "init": "help_link t.eye"
         },
-        "15": {
+        "19": {
             "name": "help_link",
-            "id": 792,
+            "id": 940,
             "position_x": 428,
             "position_y": 620,
             "width": 66,
@@ -362,11 +446,11 @@
             "properties": {},
             "init": "help_link np.zeros"
         },
-        "16": {
+        "20": {
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
-            "id": 829,
-            "position_x": 520,
+            "id": 977,
+            "position_x": 596,
             "position_y": 620,
             "width": 156,
             "height": 30,
@@ -387,9 +471,9 @@
             },
             "comment": "SEE ALSO - click to open"
         },
-        "17": {
+        "21": {
             "name": "close",
-            "id": 866,
+            "id": 1014,
             "position_x": 24,
             "position_y": 694,
             "width": 88,
@@ -412,7 +496,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 422,
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###input"
@@ -421,18 +505,58 @@
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "list",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "shape"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
             "source_output_name": "tensor of zeros",
-            "dest_node": 496,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "2": {
-            "source_node": 422,
+        "6": {
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "tensor of zeros",
-            "dest_node": 570,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"

@@ -156,16 +156,19 @@ shape (text, also an inlet):
 The size of the tensor of samples, as whole numbers: [64, 64] is a 64
 by 64 grid, [1000] a row of a thousand. Numbers typed after the node
 name set it (t.dist.{n} 64 64); with none it is [1], a single sample.
-A list sent into the inlet works too. A new shape does not send by
-itself - the next click uses it."""
+A list or tensor of numbers, or a single number, sent into the inlet
+works too. A new shape does not send by itself - the next click uses
+it."""
 
 DIST_PARAM_NOTE = """Each parameter is a drag float on the node and also an inlet. Setting
 one rebuilds the distribution but does NOT send; the next click samples
 from it. In the demo each slider goes through 't bang float', which
 passes the number to the parameter first and THEN clicks the node, so
-dragging a slider re-samples at once. A value the distribution cannot
-take (see each parameter) is refused with an error in the console, and
-the node goes on sampling with the last value that worked."""
+dragging a slider re-samples at once. A parameter that must be above 0
+has a drag float that stops at 0.000001. A value the distribution
+cannot take (see each parameter) - 0 or below sent into such an inlet,
+say - prints a message in the console, and the node goes on sampling
+with the last parameters that worked."""
 
 DIST_OUT = """OUTPUTS:
 
@@ -187,7 +190,7 @@ arrives and is filled at once."""
 
 FILL_DTYPE = """The input must have a floating-point dtype (float32, the default for
 the t.* generators, is right). An integer tensor - from t.zeros with
-dtype int64, say - raises an error in the console and nothing is sent."""
+dtype int64, say - prints an error in the console and nothing is sent."""
 
 FILL_OUT = """OUTPUTS:
 
@@ -673,7 +676,7 @@ The bottom of the range; samples can equal it. Default 0.
 
 high (drag float, also an inlet):
 The top of the range; samples are always below it. It must be above
-low - a high at or below low is refused (an error in the console) and
+low - a high at or below low is refused (a message in the console) and
 the node keeps its last range. That is why the demo's sliders do not
 overlap. Default 1.""",
     """The heat_map (-1 dark, 3 bright) is even noise with no structure. The
@@ -806,8 +809,9 @@ masks (which cells to keep, which to drop), random triggers, sparse
 patterns of dots, or a yes/no decision whose odds you control.""",
     """probability (drag float, also an inlet):
 The chance that each element is 1, from 0 (all zeros) to 1 (all ones).
-Outside 0..1 is refused (an error in the console) and the node keeps
-its last value. Default 0.5.
+The drag float stays within 0..1; a number outside it sent to the inlet
+is refused (a message in the console) and the node keeps its last
+probability. Default 0.5.
 
 THE logits FORM:
 t.dist.bernoulli logits (any word after the name other than probs)
@@ -842,8 +846,9 @@ flat (uniform). It was introduced for neural networks whose outputs are
 grey levels rather than strict black and white.""",
     """probability (drag float, also an inlet):
 Which way and how steeply the shape leans: above 0.5 towards 1, below
-0.5 towards 0, 0.5 flat. Keep it within 0..1: values outside are not
-refused, but they mean nothing. It is NOT the mean - a probability of
+0.5 towards 0, 0.5 flat. The drag float stays within 0..1, and a
+number outside it sent to the inlet acts as the nearer end. It is NOT
+the mean - a probability of
 0.9 gives a mean of about 0.67. Default 0.5.
 
 THE logits FORM:

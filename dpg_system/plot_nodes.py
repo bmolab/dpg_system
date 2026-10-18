@@ -398,76 +398,79 @@ class PlotNode(BasePlotNode):
             self.pending_breadth = 0
 
         self.lock.acquire(blocking=True)
-        if self.input.fresh_input:   # standard plot
-            data = self.input()
-            # 'dump' hands the collected history out of the outlet. HeatMapNode
-            # and ProfileNode both answered it; PlotNode did not, so plot's
-            # outlet could never fire at all. Same three lines as its siblings.
-            if isinstance(data, str) and data == 'dump':
-                # block: a non-blocking get_buffer returns None while a frame
-                # task is drawing from the buffer
-                buffer = self.y_data.get_buffer(block=True)
-                if buffer is not None:
-                    self.output.send(buffer[0])
-                    self.y_data.release_buffer()
-                self.lock.release()
-                return
-            data_array = self._process_input_to_array(data)
+        # every exit releases the lock: an exception in here used to leave it
+        # held, and the next frame's acquire froze the app
+        try:
+            if self.input.fresh_input:   # standard plot
+                data = self.input()
+                # 'dump' hands the collected history out of the outlet. HeatMapNode
+                # and ProfileNode both answered it; PlotNode did not, so plot's
+                # outlet could never fire at all. Same three lines as its siblings.
+                if isinstance(data, str) and data == 'dump':
+                    # block: a non-blocking get_buffer returns None while a frame
+                    # task is drawing from the buffer
+                    buffer = self.y_data.get_buffer(block=True)
+                    if buffer is not None:
+                        self.output.send(buffer[0])
+                        self.y_data.release_buffer()
+                    return
+                data_array = self._process_input_to_array(data)
 
-            if data_array is not None:
-                if self.update_style == 'input is stream of samples':
-                    if self.rows > 1:
-                        self.rows = 1
-                        self.pending_breadth = self.rows
-                    if self.rows != self.y_data.breadth:
-                        self.lock.release()
-                        return
+                if data_array is not None:
+                    if self.update_style == 'input is stream of samples':
+                        if self.rows > 1:
+                            self.rows = 1
+                            self.pending_breadth = self.rows
+                        if self.rows != self.y_data.breadth:
+                            return
 
-                    if len(data_array.shape) == 1 and data_array.shape[0] > self.sample_count:
-                        self.pending_sample_count = data_array.shape[0]
-                    else:
+                        if len(data_array.shape) == 1 and data_array.shape[0] > self.sample_count:
+                            self.pending_sample_count = data_array.shape[0]
+                        else:
+                            self.y_data.update(data_array)
+
+                    elif self.update_style == 'input is multi-channel sample':
+                        rows = data_array.size
+                        sample_count = self.sample_count
+                        if len(data_array.shape) == 2 and data_array.shape[0] > 1 and data_array.shape[1] > 1:
+                            rows = data_array.shape[0]
+                            sample_count = data_array.shape[1]
+                            self.pending_sample_count = sample_count
+
+                        if rows != self.rows:
+                            self.rows = rows
+                            self.pending_breadth = self.rows
+
+                        if len(self.plot_data_tag) < self.rows:
+                            for i in range(len(self.plot_data_tag), rows):
+                                self.plot_data_tag.append(dpg.generate_uuid())
+
+                        if self.rows != self.y_data.breadth or self.sample_count != sample_count:
+                            return
+
+                        self.y_data.update(data_array.reshape((rows, -1)))
+
+                    elif self.update_style == 'buffer holds one sample of input' and len(data_array.shape) > 0:
+                        if len(data_array.shape) == 1 and data_array.shape[0] != 1:
+                            if self.sample_count != data_array.shape[0]:
+                                self.pending_sample_count = data_array.shape[0]
+                                return
                         self.y_data.update(data_array)
 
-                elif self.update_style == 'input is multi-channel sample':
-                    rows = data_array.size
-                    sample_count = self.sample_count
-                    if len(data_array.shape) == 2 and data_array.shape[0] > 1 and data_array.shape[1] > 1:
-                        rows = data_array.shape[0]
-                        sample_count = data_array.shape[1]
-                        self.pending_sample_count = sample_count
-
-                    if rows != self.rows:
-                        self.rows = rows
-                        self.pending_breadth = self.rows
-
-                    if len(self.plot_data_tag) < self.rows:
-                        for i in range(len(self.plot_data_tag), rows):
-                            self.plot_data_tag.append(dpg.generate_uuid())
-
-                    if self.rows != self.y_data.breadth or self.sample_count != sample_count:
-                        self.lock.release()
-                        return
-
-                    self.y_data.update(data_array.reshape((rows, -1)))
-
-                elif self.update_style == 'buffer holds one sample of input' and len(data_array.shape) > 0:
-                    if len(data_array.shape) == 1 and data_array.shape[0] != 1:
-                        if self.sample_count != data_array.shape[0]:
-                            self.pending_sample_count = data_array.shape[0]
-                            self.lock.release()
-                            return
-                    self.y_data.update(data_array)
-
-        buffer = self.y_data.get_buffer()
-        if buffer is not None:
-            if self.y_data.breadth > 1:
-                for i in range(self.y_data.breadth):
-                    if dpg.does_item_exist(self.plot_data_tag[i]):
-                        dpg.set_value(self.plot_data_tag[i], [self.x_data, buffer[i].ravel()])
-            else:
-                dpg.set_value(self.plot_data_tag[0], [self.x_data, buffer.ravel()])
-            self.y_data.release_buffer()
-        self.lock.release()
+            buffer = self.y_data.get_buffer()
+            if buffer is not None:
+                try:
+                    if self.y_data.breadth > 1:
+                        for i in range(self.y_data.breadth):
+                            # a fill can bring more rows than there are series yet
+                            if i < len(self.plot_data_tag) and dpg.does_item_exist(self.plot_data_tag[i]):
+                                dpg.set_value(self.plot_data_tag[i], [self.x_data, buffer[i].ravel()])
+                    else:
+                        dpg.set_value(self.plot_data_tag[0], [self.x_data, buffer.ravel()])
+                finally:
+                    self.y_data.release_buffer()
+        finally:
+            self.lock.release()
         self.send_all()
 
     def update_plot(self):

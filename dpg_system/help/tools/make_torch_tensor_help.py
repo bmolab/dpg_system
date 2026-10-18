@@ -319,7 +319,9 @@ in:
 The tensor. Every tensor that arrives is reported. A list or NumPy array
 is turned into a float32 cpu tensor first and that is what is reported -
 so t.info on a NumPy array always says float32, whatever the array's own
-type. An empty tensor is ignored.
+type. An empty tensor is reported like any other: its shape has a 0 in
+it ([0] for an empty 1-D tensor). An empty list is not turned into a
+tensor at all, so it is ignored.
 
 OUTPUTS (sent right to left - grad first, shape last):
 
@@ -390,7 +392,8 @@ INPUTS and PARAMETERS:
 tensor in:
 The tensor. Every tensor that arrives is counted. A list or NumPy array
 is turned into a tensor first, so t.numel counts a list's numbers too.
-An empty tensor is ignored (nothing is sent, rather than 0).
+An empty tensor gives 0. An empty list is ignored (it is not turned into
+a tensor).
 
 OUTPUTS:
 
@@ -644,7 +647,7 @@ INPUTS and PARAMETERS:
 
 input:
 Data to store. Every arrival is stored, and in "output buffer on every
-input" mode the buffer is then sent.
+input" mode the buffer is then sent. A single number is one sample.
 
 sample to output:
 A position (an int, 0 = the first slot). The value stored there is sent
@@ -655,9 +658,8 @@ round, so slot 0 is not necessarily the oldest.
 
 sample count (option):
 How many samples are kept. At one sample per frame (60 a second) 60 is
-one second of history. Changed, it takes effect at the next input in
-the stream mode (the buffer is cleared); in multi-channel mode see the
-note below.
+one second of history. A change takes effect at the next input: the
+buffer starts again, empty, at the new length.
 
 update style (option):
 "input is stream of samples" (the default) - each number that arrives is
@@ -666,16 +668,17 @@ list of several numbers writes them all in order, so a list exactly
 sample count long fills the store in one go.
 "input is multi-channel sample" - each arrival (a list or 1-D tensor of
 N values) is ONE sample of N channels, stored as one row: the buffer is
-sample count rows by N columns. A different N starts a new, empty
-buffer.
+sample count rows by N columns. A single number is one sample of one
+channel. A different N starts a new, empty buffer.
 "buffer holds one sample of input" - each arrival simply replaces the
 whole buffer (a copy of it, whatever its length).
 
 output style (option):
 "output samples on demand by index" (the default) - nothing is sent when
 data arrives; send a position into "sample to output".
-"output buffer on every input" - after each arrival the whole buffer is
-sent, rotated so that the oldest sample is first and the newest last.
+"output buffer on every input" - after each arrival a copy of the whole
+buffer is sent, rotated so that the oldest sample is first and the
+newest last. Rows not yet filled are zeros, at the oldest end.
 
 dtype / device / requires_grad (also inlets):
 What the stored tensor is. Incoming data is converted to it.
@@ -691,17 +694,13 @@ Top: make_bump sends a bump 16 values wide that steps one place along
 every 60 ms. t.buffer 32, set to multi-channel and to output on every
 input, keeps the last 32 of them: the heat_map has one row per sample,
 oldest at the top, newest at the bottom, so the moving bump draws a
-diagonal stripe that scrolls up as new rows arrive.
+diagonal stripe that scrolls up as new rows arrive. Change sample count
+in the node's options (16, or 64) and the store starts again at that
+length; the heat_map follows.
 Bottom: a t.buffer 8 with the default settings. The message stores 8
 numbers when the page opens (one list of 8 fills the 8 slots exactly);
 drag the slider to read any slot back. Click the message after editing
 it to store new numbers.
-
-NOTE:
-In multi-channel mode a sample count changed after data has arrived is
-not applied to the stored buffer. Lowering it does nothing; raising it
-makes the node print an error each time it reaches the old end. Set the
-count with the node's argument (t.buffer 64) instead.
 
 RELATED:
 t.rolling_buffer is the always-sends recorder with a reset. np.sequence
@@ -772,21 +771,21 @@ t.rolling_buffer 32
 INPUTS and PARAMETERS:
 
 input:
-The sample. Every arrival is stored and the whole buffer sent.
+The sample. Every arrival is stored and the whole buffer sent. A single
+number is one sample.
 
 reset (button, also an inlet):
 Sets every stored value to zero, keeping the shape, and sends the
 cleared buffer straight away.
 
 sample count (option):
-N, the number of samples kept. In the stream mode a change takes effect
-at the next input, starting an empty buffer. In multi-channel mode see
-the note below.
+N, the number of samples kept. A change takes effect at the next
+input: the buffer starts again, empty, at the new length.
 
 update style (option):
 "input is stream of samples" (the default) - each number is one sample;
-a list of several numbers is several samples, written in order. The
-output is N rows by 1 column.
+a list of several numbers is several samples, written in order (a list
+longer than N leaves just its last N). The output is N rows by 1 column.
 "input is multi-channel sample" - each arrival (a list or 1-D tensor of
 C values) is ONE sample of C channels; the output is N rows by C
 columns. A sample with a different C starts a new, empty buffer.
@@ -808,18 +807,12 @@ every 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last
 32: one heat_map row per sample, oldest at the top and newest at the
 bottom, so the moving bump draws a diagonal stripe that scrolls upward.
 Click reset on the node and the picture empties, then refills from the
-bottom.
+bottom. Change sample count in the node's options (16, or 64) and the
+window starts again at that length; the heat_map follows.
 Bottom: single random numbers (the default stream mode) gathered into
 the last 64 (64 rows of 1 column), drawn as a curve with the newest at
 the right (t.flatten makes the column one row for plot), and averaged
 by t.mean - a stream turned into something that can be measured.
-
-NOTE:
-In multi-channel mode, do not RAISE sample count in the options once
-data is arriving: the stored buffer is not resized, the node fails part
-way round and then stops updating for good, and clicking reset after
-that freezes the app. Lowering it works. To change the length, retype
-the node with a new argument (t.rolling_buffer 64).
 
 RELATED:
 t.buffer can also hand back one stored value by position. np.rolling_buffer

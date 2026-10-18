@@ -213,7 +213,7 @@ class TorchBandPassFilterBankNode(TorchDeviceDtypeNode):
                 low_bands = [[band[1]] for band in self.bands]
                 self.filter = TorchIIR2Filter(self.order, low_bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
             elif self.filter_type == 'highpass':
-                high_bands = [[band[1]] for band in self.bands]
+                high_bands = [[band[0]] for band in self.bands]   # lower edge (was band[1])
                 self.filter = TorchIIR2Filter(self.order, high_bands, filter_type=self.filter_type, design=self.filter_design, fs=self.sample_frequency, device=self.device, dtype=self.dtype)
         except Exception as e:
             # scipy.signal.butter/cheby raise ValueError on bad cutoff/order
@@ -398,7 +398,7 @@ class TorchRotationBandDiffNode(TorchDeviceDtypeNode):
 
 
 class TorchIIR2Filter:
-    def __init__(self, order, bands, filter_type, design='butter', rp=1, rs=1, fs=0, device='cpu', dtype=torch.float32):
+    def __init__(self, order, bands, filter_type, design='butter', rp=1, rs=40, fs=0, device='cpu', dtype=torch.float32):
         self.designs = ['butter', 'cheby1', 'cheby2']
         self.filter_types_1 = ['lowpass', 'highpass', 'Lowpass', 'Highpass', 'low', 'high']
         self.filter_types_2 = ['bandstop', 'bandpass', 'Bandstop', 'Bandpass']
@@ -421,7 +421,7 @@ class TorchIIR2Filter:
     def allocate_buffers(self, width):
         self.buffers = torch.zeros([self.coefficients.shape[0], 3, len(self.bands), width], dtype=self.dtype, device=self.device)
 
-    def update_filter(self, order, filter_type, design='butter', rp=1, rs=1, fs=0):
+    def update_filter(self, order, filter_type, design='butter', rp=1, rs=40, fs=0):
         self.order = order
         self.rp = rp
         self.rs = rs
@@ -612,8 +612,9 @@ class TorchParallelSavGolFilter:
         # --- Handle warm-up period ---
         if not self.is_warmed_up:
             if self.ptr == 1:
-                # Prime the buffer with the first frame
-                self.buffer = self.buffer + input_batch.unsqueeze(1)
+                # Prime the whole window with the first frame (adding it doubled
+                # the slot it had just been written to)
+                self.buffer[:] = input_batch.unsqueeze(1)
             if self.ptr == 0:
                 self.is_warmed_up = True
 
@@ -1420,8 +1421,6 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
         # --- NEW BLENDING SPEED INPUT ---
         self.blending_speed_in = self.add_input('Blending Speed', widget_type='drag_float', default_value=0.1,
                                                 min=0.01, max=1.0)
-        self.blending_speed_in = self.add_input('Blending Speed', widget_type='drag_float', default_value=0.1,
-                                                min=0.01, max=1.0)
         self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_filter)
 
         self.add_property("--- Acceleration Rejection ---", widget_type='label')
@@ -1514,6 +1513,10 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
     def execute(self):
         try:
             signal_in = any_to_tensor(self.quat_input())
+            # one quaternion [4] is one stream; it used to be dropped
+            single = signal_in is not None and signal_in.dim() == 1 and signal_in.shape[0] == 4
+            if single:
+                signal_in = signal_in.unsqueeze(0)
             if signal_in is None or signal_in.dim() != 2 or signal_in.shape[1] != 4:
                 return
 
@@ -1665,8 +1668,8 @@ class TorchTristateBlendESEKFNode(TorchDeviceDtypeNode):  # Renamed
             self.filter.update(signal_in)
 
 
-            self.output_port.send(self.filter.q)
-            self.alphas_output.send(self.blended_alphas)
+            self.output_port.send(self.filter.q[0] if single else self.filter.q)
+            self.alphas_output.send(self.blended_alphas[0] if single else self.blended_alphas)
             self.last_input_quat = signal_in.clone()
         except Exception as e:
             print(f'{self.label}: {type(e).__name__}: {e}')
@@ -1717,7 +1720,9 @@ class TorchSmartClampKF:
         self.I_x = torch.eye(self.state_dim, device=device, dtype=dtype).unsqueeze(0)
         self.jitter = torch.eye(dim, device=device, dtype=dtype).unsqueeze(0) * 1e-9
 
-        self._reset_pending = False
+        # start from the first measurement, as a reset does; from zeros the
+        # output glided in from the origin
+        self._reset_pending = True
         self.clamp_radius = 0.1 # Default
         self.accel_rejection_factor = 0.0
         # Init the per-stream history tensors as None so update_params doesn't
@@ -2269,8 +2274,6 @@ class TorchSmartClampQuaternionKFNode(TorchDeviceDtypeNode):
 
         self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_filter)
         
-        self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_filter)
-        
         # self.input_port is already defined above
         self.dt_input = self.add_input("dt", widget_type='drag_float', default_value=1.0/60.0)
         self.output = self.add_output("filtered")
@@ -2368,9 +2371,12 @@ class TorchHybridQuaternionKFNode(TorchDeviceDtypeNode):
         self.add_property("--- Smart Clamp Params ---", widget_type='label')
         self.clamp_prop = self.add_property('max jump (clamp)', widget_type='drag_float', default_value=5.0, min=0.0, max=100.0)
         self.accel_reject_prop = self.add_property('accel_rejection', widget_type='drag_float', default_value=0.0, min=0.0, max=10.0)
-        self.max_accel_prop = self.add_property('max_accel (deg/s^2)', widget_type='drag_float', default_value=500.0, min=1.0, max=100000.0)
+        # 50000 as on t.smart_clamp_quat_kf: at 500 the clamp held back
+        # ordinary arm movement and the output lagged
+        self.max_accel_prop = self.add_property('max_accel (deg/s^2)', widget_type='drag_float', default_value=50000.0, min=1.0, max=100000.0)
 
         self.reset_input = self.add_input('reset', widget_type='button', callback=self.reset_filter)
+        self.dt_input = self.add_input('dt (sec)', widget_type='drag_float', default_value=1.0 / 60.0)
 
         # Outputs
         self.output_port = self.add_output('filtered')
@@ -2406,19 +2412,18 @@ class TorchHybridQuaternionKFNode(TorchDeviceDtypeNode):
     def _calculate_angular_difference_deg(self, q1, q2):
         # q1, q2 are [S, 4]
         diff_q = q_mult(q_conjugate(q1), q2)
-        w = torch.clamp(diff_q[:, 0], -1.0, 1.0)
+        # abs: q and -q are the same rotation; without it a sign flip between
+        # frames read as a turn of nearly 360 degrees
+        w = torch.clamp(diff_q[:, 0].abs(), 0.0, 1.0)
         angle_rad = 2 * torch.acos(w)
         return torch.rad2deg(angle_rad)
 
     def execute(self):
         try:
             input_tensor = any_to_tensor(self.input_port())
-            dt = 1.0/60.0 # Standardize or get from input? Tristate usually infers or fixed?
-            # Check parent node for dt input?
-            # Actually Tristate node had dt_input separate? No, looking at my view_file output it wasn't obvious.
-            # Let's add dt input to be safe.
-            # Wait, TristateBlendESEKFNode uses self.dt_input() in execute usually.
-            # I didn't verify if it has one. Let's add it.
+            dt = self.dt_input()   # was fixed at 1/60
+            if dt is None or dt <= 0:
+                return
 
             if input_tensor is None: return
 

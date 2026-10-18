@@ -1111,9 +1111,8 @@ Max Error the error set. The weights (the ALPHAS) glide towards their
 targets at Blending Speed.
 
 """ + PARALLEL + """
-""" + QUAT_IN + """ The input MUST be 2-D: a single
-quaternion of shape [4] is ignored without a message - reshape it to
-[1, 4] (t.reshape 1 4), as make_orientation does.
+""" + QUAT_IN + """ A single quaternion [4] is accepted and
+comes back as [4] (and its alphas as [3]).
 
 SYNTAX:
 t.quat_ESEKF
@@ -1125,16 +1124,15 @@ t.quat_ESEKF
 INPUTS and PARAMETERS:
 
 quaternions:
-[joints, 4], w first. Each arrival runs one filter step and sends.
+[joints, 4], w first, or one quaternion [4]. Anything else is ignored.
+Each arrival runs one filter step and sends.
 
 dt (sec) (float, default 1/60):
 The time between frames; turning speeds are measured with it.
 
 Blending Speed (float, 0.01 to 1, default 0.1):
-How far the alphas move towards their targets each frame. NOTE: the node
-shows TWO Blending Speed boxes. Only the second one does anything; and a
-saved patch restores its value into the first, so set it again after
-loading if you changed it.
+How far the alphas move towards their targets each frame. 1 jumps at
+once; 0.1 takes some tens of frames to change mode.
 
 reset (button):
 The next input becomes the filter's orientation outright, at rest. The
@@ -1256,10 +1254,9 @@ max_accel (deg/s^2):
 Has no effect on this node - only the quaternion filters use it.
 
 reset (button):
-The next input becomes the state outright, at rest. NOTE: the filter
-does NOT start this way: its first state is zero, so after the patch
-opens the output climbs from 0 to the input by at most max jump a frame.
-Press reset to start from the current value.
+The next input becomes the state outright, at rest. The filter also
+starts this way, from its first input, so there is no glide in from zero
+when the patch opens.
 
 OUTPUTS:
 
@@ -1356,7 +1353,7 @@ INPUTS and PARAMETERS:
 size cap does almost all the work; lower this (to a few thousand) to
 make the acceleration cap matter.
 
-reset (button - the node shows two; either works):
+reset (button):
 The next input becomes the orientation outright, at rest. The filter
 also starts this way, from its first input.
 
@@ -1437,7 +1434,7 @@ INPUTS and PARAMETERS:
 """ + SMART_QUAT_PARAMS + """ Above this a frame
 counts as a violation.
 
-reset (button - the node shows two; either works):
+reset (button):
 The next input becomes the orientation outright, at rest, and the count
 is cleared. The filter also starts this way.
 
@@ -1498,15 +1495,8 @@ and the filter's prediction), fades between three sets of settings with
 the same rules as t.quat_ESEKF, and hands the blend to the filter inside
 t.smart_clamp_quat_kf as its smoothness and responsiveness. That filter
 then applies its max jump and max_accel caps. 'alphas' reports the
-blend.
-
-THE DEFAULT max_accel IS VERY STRICT:
-Its default is 500 degrees a second squared - a hundred times stricter
-than t.smart_clamp_quat_kf's. Measured on the demo's input, a quick 30
-degree turn then takes anything from a few frames to over 30 to be
-followed, and the output trails the slow turning by five degrees on
-average. The demo uses 5000; drag it
-back to 500 on the node to see the difference.
+blend. q and -q count as the same rotation in both measures, so a sign
+flip in the input is not mistaken for a turn.
 
 """ + PARALLEL + """
 """ + QUAT_IN + """ A single quaternion [4] is accepted and
@@ -1522,8 +1512,16 @@ t.hybrid_quat_kf
 INPUTS and PARAMETERS:
 
 input:
-[joints, 4], w first. Each arrival runs one step and sends. There is NO
-dt inlet: this node always assumes 60 frames a second.
+[joints, 4], w first. Each arrival runs one step and sends.
+
+reset (button):
+The next input becomes the orientation outright, and the alphas return
+to damping. The filter also starts this way.
+
+dt (sec) (float, default 1/60):
+The time between frames; turning speeds and accelerations are measured
+with it, so it must match the real frame rate. Zero or less: nothing is
+sent.
 
 Damp Smoothness / Damp Responsiveness (defaults 0.1, 1.0):
 Resp Smoothness / Resp Responsiveness (defaults 0.01, 100):
@@ -1547,13 +1545,11 @@ accel_rejection (float, default 0, off):
 On a reversal of the estimated angular acceleration, divide the process
 noise by (1 + 100 x this).
 
-max_accel (deg/s^2) (float, default 500):
-The acceleration cap; relaxed up to 50 times while the joint is already
-turning fast. See above.
-
-reset (button):
-The next input becomes the orientation outright, and the alphas return
-to damping. The filter also starts this way.
+max_accel (deg/s^2) (float, default 50000):
+The acceleration cap, as on t.smart_clamp_quat_kf; relaxed up to 50
+times while the joint is already turning fast. At the default the max
+jump cap does almost all the work; lower it (to a few thousand) to make
+the acceleration cap hold back sudden jumps at rest as well.
 
 OUTPUTS:
 
@@ -1564,9 +1560,9 @@ alphas (damp, resp, err):
 [joints, 3]: the weight of each mode, summing to 1.
 
 READING THE DEMO:
-Measured with max_accel 5000: glitches are cut to about a tenth, quick
-turns are followed in two to five frames, and the jitter is a little
-over half the input's. The jitter keeps the alphas
+Measured at the node's defaults: glitches are cut to about a tenth,
+quick 30 degree turns are followed in about three frames (overshooting
+by a few degrees), and the jitter is a little over half the input's. The jitter keeps the alphas
 mostly in the responsive mode, as on t.quat_ESEKF. Drag the slider
 (Blending Speed) towards 1 and the alphas jump from mode to mode; towards
 0.01 they barely move.
@@ -1580,13 +1576,12 @@ t.quat_ESEKF has the mode blending without the caps;
 t.smart_clamp_quat_kf has the caps without the modes."""
 
 demo, links, bottom = quat_demo('t.hybrid_quat_kf',
-                                {'max_accel (deg/s^2)': 5000.0, 'Blending Speed': 0.1},
+                                {'Blending Speed': 0.1},
                                 'input', fh=600, alphas='alphas (damp, resp, err)',
                                 note='')
 sl, sl_links = slider_into('Blending Speed', 0.1, 0.01, 1.0, '%.2f',
                            'drag: Blending Speed', y=120)
-demo += sl + [{'key': 'cma', 'comment': True,
-               'text': 'max_accel set to 5000 (default 500)', 'pos': (COL2, 960)}]
+demo += sl
 demo += see_also(bottom + 30, ['t.quat_ESEKF', 't.smart_clamp_quat_kf',
                                't.persistence_quat_kf', 't.jerk_aware_quat_kf'])
 print(build('t.hybrid_quat_kf', 't.hybrid_quat_kf - mode blending plus capped corrections',
@@ -1748,11 +1743,10 @@ signal:
 message in the console and sends nothing. Each arrival is one step.
 
 reset (button):
-Empties the history. The next input fills the whole window, so the
-output starts near that value rather than at zero - though for the
-first window's worth of frames it wobbles around it (a steady 1.0 at
-window 7 comes out between 0.9 and 1.33 until the window has filled
-with real samples).
+Empties the history. The next input fills the whole window, as if the
+signal had always been at that value, so the output starts AT it rather
+than climbing from zero: a steady 1.0 comes out as 1.0 from the first
+frame. The filter starts the same way from its first input.
 
 window length (int, 3 to 1001, default 31):
 How many recent samples each fit spans. An even number is raised by one.
@@ -1844,8 +1838,7 @@ What each band passes depends on filter type:
    bandpass   between its two edges (the default)
    bandstop   everything but its two edges' span
    lowpass    everything below its upper edge
-   highpass   everything above its upper edge (also the upper edge - so
-              the lowest band's highpass still sits above the low setting)
+   highpass   everything above its lower edge
 
 SAMPLE FREQ MUST BE RIGHT:
 The bands are in Hz only if 'sample freq' is the rate the samples really
@@ -1876,8 +1869,10 @@ start-up surge when a stream begins far from zero.
 filter type (menu): bandpass, lowpass, highpass, bandstop. See above.
 
 filter design (menu): butter (flat, the default), cheby1 (steeper, with
-1 dB of ripple in the passband), cheby2 (ripple in the stopband - but
-with only 1 dB of rejection, so it hardly filters at all).
+1 dB of ripple in the passband), cheby2 (steeper, with ripple in the
+stopband, which is held at least 40 dB down - a hundredth of the size;
+for cheby2 the band edges are where that rejection starts, so a band
+passes less of its own range than with butter).
 
 order (int, 1 to 8, default 1):
 How steeply each band cuts off. Higher separates the bands more cleanly
@@ -1908,10 +1903,17 @@ filtered:
 READING THE DEMO:
 The input is three sines added together: 0.5 Hz, 1.7 Hz and 6 Hz. With
 low 0.3, high 12, 4 band edges (3 bands) and order 2 the bands are
-about 3.3 to 12 Hz, 0.9 to 3.3 Hz and 0.3 to 0.9 Hz, and each picks out
-one sine: measured, line 1 swings at 6 Hz, line 2 at 1.6 Hz, line 3 at
-0.5 Hz. Change filter type to lowpass and each line becomes everything
-below its band's top: line 1 is then nearly the whole input.
+about 3.5 to 12 Hz, 1 to 3.5 Hz and 0.3 to 1 Hz, and each picks out
+one sine: measured, line 1 swings at 6 Hz, line 2 at 1.7 Hz, line 3 at
+0.5 Hz, with a seventh to a fifth of the neighbouring sines leaking in.
+Change filter type to lowpass and each line becomes everything below its
+band's top: line 1 is then nearly the whole input. With highpass each
+line is everything above its band's bottom, so it is line 3 that carries
+nearly the whole input and line 1 only the 6 Hz sine. Change filter
+design to cheby2 and the separation is much cleaner - the other sines
+are held to about 1 percent - but the band edges then mark where that
+rejection begins, so at order 2 each band passes its own sine at only
+about 0.6 of its size.
 
 RELATED:
 spectrum and band_pass do this for plain numbers; t.rotation_band_diff
@@ -1939,7 +1941,7 @@ demo = [
     {'key': 'pl', 'init': 'plot', 'pos': (COL2, 330), 'w': 400, 'h': 200,
      'props': MULTI_PLOT(-2.0, 2.0, 300, 380, 160)},
     {'key': 'cpl', 'comment': True,
-     'text': 'the bands: 1 fastest (3.3-12 Hz), 2 middle,\n3 slowest (0.3-0.9 Hz)',
+     'text': 'the bands: 1 fastest (3.5-12 Hz), 2 middle,\n3 slowest (0.3-1 Hz)',
      'pos': (COL2, 540)},
 ] + see_also(660, ['spectrum', 'band_pass', 't.rotation_band_diff', 't.rfft', 'filter_bank'])
 links = [('mk', 'mix', 'rs', 'tensor in'), ('mk', 'mix', 'pin', 'y'),

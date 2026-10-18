@@ -278,7 +278,7 @@
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Reverses a tensor along one or more dimensions: the first row becomes the last, or the first column the last.\n\nUse it to mirror an image or a grid (upside down, or left to right), to\nreverse a sequence in time, or to turn an ascending order into a\ndescending one. It is also the way to reverse in PyTorch: t[] does not\naccept a negative step (::-1).\n\nSYNTAX:\nt.flip\nSet the dimensions in the flip dims field. An argument does NOT set\nthem: t.flip 1 still flips dimension 0 until you type 1 into the field.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nEach tensor that arrives is flipped and sent. Only this inlet sends.\n\nflip dims (text field):\nWhich dimensions to reverse, default 0. 0 reverses the order of the\nROWS - the picture turns upside down. 1 reverses the COLUMNS - a mirror\nimage. Several at once, separated by commas or spaces: 0, 1 reverses\nboth, the same as a half turn. Negative counts from the end (-1 is the\nlast dimension). The next tensor uses a change.\n\nWhen there are more entries than the tensor has dimensions, or the\nfield is empty, the tensor is passed through unchanged. A dimension\nthe tensor does not have (2 on a matrix), or the same one twice (0, 0),\nraises an error in the console and nothing is sent.\n\nOUTPUTS:\n\noutput:\nSame shape and values as the input, in reversed order along the chosen\ndimensions. A new tensor.\n\nREADING THE DEMO:\nThe F is a 7 by 6 tensor of 0s (purple) and 1s (yellow), drawn row 0\nat the top. With flip dims 0 the F stands on its head, its bar at the\nbottom; type 1 and it faces left instead; type 0, 1 and it is turned\nhalf way round.\n\nRELATED:\nt.roll shifts with wrap-around instead of reversing. t.transpose swaps\nrows and columns (a flip across the diagonal). t.argsort with\ndescending sorts the other way. np.flip and np.rot90 are the numpy\nversions.",
+                            "value": "Reverses a tensor along one or more dimensions: the first row becomes the last, or the first column the last.\n\nUse it to mirror an image or a grid (upside down, or left to right), to\nreverse a sequence in time, or to turn an ascending order into a\ndescending one. It is also the way to reverse in PyTorch: t[] does not\naccept a negative step (::-1).\n\nSYNTAX:\nt.flip <dim: int> <dim: int> ...\nThe dimensions to reverse. Default 0. t.flip 1 mirrors left to right;\nt.flip 0 1 reverses both. They appear in the flip dims field, where they\ncan be changed.\n\nEXAMPLE:\nt.flip 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nEach tensor that arrives is flipped and sent. Only this inlet sends.\n\nflip dims (text field):\nWhich dimensions to reverse - the arguments, or 0 if there were none. 0 reverses the order of the\nROWS - the picture turns upside down. 1 reverses the COLUMNS - a mirror\nimage. Several at once, separated by commas or spaces: 0, 1 reverses\nboth, the same as a half turn. Negative counts from the end (-1 is the\nlast dimension). The next tensor uses a change.\n\nWhen there are more entries than the tensor has dimensions, or the\nfield is empty, the tensor is passed through unchanged. A dimension\nthe tensor does not have (2 on a matrix), or the same one twice (0, 0),\nraises an error in the console and nothing is sent.\n\nOUTPUTS:\n\noutput:\nSame shape and values as the input, in reversed order along the chosen\ndimensions. A new tensor.\n\nREADING THE DEMO:\nThe F is a 7 by 6 tensor of 0s (purple) and 1s (yellow), drawn row 0\nat the top. With flip dims 0 the F stands on its head, its bar at the\nbottom; type 1 and it faces left instead; type 0 1 and it is turned\nhalf way round. (The node is t.flip 0; typing t.flip 1 or t.flip 0 1\nwould start it on those.)\n\nRELATED:\nt.roll shifts with wrap-around instead of reversing. t.transpose swaps\nrows and columns (a flip across the diagonal). t.argsort with\ndescending sorts the other way. np.flip and np.rot90 are the numpy\nversions.",
                             "value_type": "str"
                         },
                         "1": {
@@ -302,7 +302,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Reverses a tensor along one or more dimensions: the first row becomes the last, or the first column the last.\n\nUse it to mirror an image or a grid (upside down, or left to right), to\nreverse a sequence in time, or to turn an ascending order into a\ndescending one. It is also the way to reverse in PyTorch: t[] does not\naccept a negative step (::-1).\n\nSYNTAX:\nt.flip\nSet the dimensions in the flip dims field. An argument does NOT set\nthem: t.flip 1 still flips dimension 0 until you type 1 into the field.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nEach tensor that arrives is flipped and sent. Only this inlet sends.\n\nflip dims (text field):\nWhich dimensions to reverse, default 0. 0 reverses the order of the\nROWS - the picture turns upside down. 1 reverses the COLUMNS - a mirror\nimage. Several at once, separated by commas or spaces: 0, 1 reverses\nboth, the same as a half turn. Negative counts from the end (-1 is the\nlast dimension). The next tensor uses a change.\n\nWhen there are more entries than the tensor has dimensions, or the\nfield is empty, the tensor is passed through unchanged. A dimension\nthe tensor does not have (2 on a matrix), or the same one twice (0, 0),\nraises an error in the console and nothing is sent.\n\nOUTPUTS:\n\noutput:\nSame shape and values as the input, in reversed order along the chosen\ndimensions. A new tensor.\n\nREADING THE DEMO:\nThe F is a 7 by 6 tensor of 0s (purple) and 1s (yellow), drawn row 0\nat the top. With flip dims 0 the F stands on its head, its bar at the\nbottom; type 1 and it faces left instead; type 0, 1 and it is turned\nhalf way round.\n\nRELATED:\nt.roll shifts with wrap-around instead of reversing. t.transpose swaps\nrows and columns (a flip across the diagonal). t.argsort with\ndescending sorts the other way. np.flip and np.rot90 are the numpy\nversions."
+                    "text": "Reverses a tensor along one or more dimensions: the first row becomes the last, or the first column the last.\n\nUse it to mirror an image or a grid (upside down, or left to right), to\nreverse a sequence in time, or to turn an ascending order into a\ndescending one. It is also the way to reverse in PyTorch: t[] does not\naccept a negative step (::-1).\n\nSYNTAX:\nt.flip <dim: int> <dim: int> ...\nThe dimensions to reverse. Default 0. t.flip 1 mirrors left to right;\nt.flip 0 1 reverses both. They appear in the flip dims field, where they\ncan be changed.\n\nEXAMPLE:\nt.flip 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array is converted to a float32 tensor).\nEach tensor that arrives is flipped and sent. Only this inlet sends.\n\nflip dims (text field):\nWhich dimensions to reverse - the arguments, or 0 if there were none. 0 reverses the order of the\nROWS - the picture turns upside down. 1 reverses the COLUMNS - a mirror\nimage. Several at once, separated by commas or spaces: 0, 1 reverses\nboth, the same as a half turn. Negative counts from the end (-1 is the\nlast dimension). The next tensor uses a change.\n\nWhen there are more entries than the tensor has dimensions, or the\nfield is empty, the tensor is passed through unchanged. A dimension\nthe tensor does not have (2 on a matrix), or the same one twice (0, 0),\nraises an error in the console and nothing is sent.\n\nOUTPUTS:\n\noutput:\nSame shape and values as the input, in reversed order along the chosen\ndimensions. A new tensor.\n\nREADING THE DEMO:\nThe F is a 7 by 6 tensor of 0s (purple) and 1s (yellow), drawn row 0\nat the top. With flip dims 0 the F stands on its head, its bar at the\nbottom; type 1 and it faces left instead; type 0 1 and it is turned\nhalf way round. (The node is t.flip 0; typing t.flip 1 or t.flip 0 1\nwould start it on those.)\n\nRELATED:\nt.roll shifts with wrap-around instead of reversing. t.transpose swaps\nrows and columns (a flip across the diagonal). t.argsort with\ndescending sorts the other way. np.flip and np.rot90 are the numpy\nversions."
                 },
                 "3": {
                     "name": "p",
@@ -412,15 +412,16 @@
                             "value": "0",
                             "value_type": "str"
                         }
-                    }
+                    },
+                    "init": "t.flip 0"
                 },
                 "7": {
-                    "init": "comment type 0, 1, or 0, 1 into flip dims",
+                    "init": "comment type 0, 1, or 0 1 into flip dims",
                     "name": "comment",
                     "id": 496,
                     "position_x": 550,
                     "position_y": 205,
-                    "width": 211,
+                    "width": 205,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -428,7 +429,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "type 0, 1, or 0, 1 into flip dims",
+                            "value": "type 0, 1, or 0 1 into flip dims",
                             "value_type": "str"
                         },
                         "1": {
@@ -437,7 +438,7 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "type 0, 1, or 0, 1 into flip dims"
+                    "comment": "type 0, 1, or 0 1 into flip dims"
                 },
                 "8": {
                     "name": "heat_map",

@@ -59,14 +59,14 @@
             "position_x": 914,
             "position_y": 45,
             "width": 788,
-            "height": 1051,
+            "height": 886,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Passes every value above a threshold unchanged and replaces every value\nat or below it with a fixed replacement value.\n\nIt is a one-sided substitution: the replacement does not have to be the\nthreshold, or anything to do with it. Threshold 0 with replacement 0 is\nexactly relu; replacement -1 marks the cut values so they can be found\nlater; a high threshold keeps only the peaks.\n\nTHE CURVE:\nFlat at the replacement up to the threshold, then the input itself. If\nthe replacement differs from the threshold the output jumps at the\nthreshold.\n\nSYNTAX:\nt.nn.Threshold <threshold> <replacement>\nDefaults 0 and 0.\nThe arguments are read as WHOLE numbers: t.nn.Threshold 0.5 -1 sets the\nthreshold to 0, not 0.5. Type fractional values into the node (or send\nthem to the inlets) instead.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nthreshold (drag float on the node, and an inlet):\nThe level. A value must be ABOVE it to pass; a value equal to it is\nreplaced.\n\nreplacement (drag float on the node, and an inlet):\nWhat every value at or below the threshold becomes.\n\nNeither triggers the node: the next tensor uses them. In the demo the\nmetro re-sends the ramp ten times a second, so the curve follows the\nsliders.\n\nA NEW t.nn.Threshold SENDS NOTHING AT FIRST:\nThe node builds its operation before its two boxes exist, so it starts\nout with no threshold at all: every tensor gets \"argument 'threshold'\nmust be Number, not NoneType\" in the console and nothing is sent. Change\nthreshold or replacement once (any value, even back again) and it works\nfrom then on. Saving the patch does not fix it if the saved values are\nthe defaults (0 and 0): the demo node is saved with threshold 1 for that\nreason.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu is Threshold 0 0. t.nn.hardshrink zeroes a band on BOTH sides\nof zero. t.clamp replaces out-of-range values with the limit itself.\nt.gt makes the mask (above or not) without replacing anything.",
+                    "value": "Passes every value above a threshold unchanged and replaces every value\nat or below it with a fixed replacement value.\n\nIt is a one-sided substitution: the replacement does not have to be the\nthreshold, or anything to do with it. Threshold 0 with replacement 0 is\nexactly relu; replacement -1 marks the cut values so they can be found\nlater; a high threshold keeps only the peaks.\n\nTHE CURVE:\nFlat at the replacement up to the threshold, then the input itself. If\nthe replacement differs from the threshold the output jumps at the\nthreshold.\n\nSYNTAX:\nt.nn.Threshold <threshold> <replacement>\nDefaults 0 and 0. Either may be fractional: the demo's t.nn.Threshold\n1.5 -1 passes everything above 1.5 and turns the rest into -1.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nthreshold (drag float on the node, and an inlet):\nThe level. A value must be ABOVE it to pass; a value equal to it is\nreplaced.\n\nreplacement (drag float on the node, and an inlet):\nWhat every value at or below the threshold becomes.\n\nNeither triggers the node: the next tensor uses them. In the demo the\nmetro re-sends the ramp ten times a second, so the curve follows the\nsliders.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu is Threshold 0 0. t.nn.hardshrink zeroes a band on BOTH sides\nof zero. t.clamp replaces out-of-range values with the limit itself.\nt.gt makes the mask (above or not) without replacing anything.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 1035,
+                    "value": 870,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Passes every value above a threshold unchanged and replaces every value\nat or below it with a fixed replacement value.\n\nIt is a one-sided substitution: the replacement does not have to be the\nthreshold, or anything to do with it. Threshold 0 with replacement 0 is\nexactly relu; replacement -1 marks the cut values so they can be found\nlater; a high threshold keeps only the peaks.\n\nTHE CURVE:\nFlat at the replacement up to the threshold, then the input itself. If\nthe replacement differs from the threshold the output jumps at the\nthreshold.\n\nSYNTAX:\nt.nn.Threshold <threshold> <replacement>\nDefaults 0 and 0.\nThe arguments are read as WHOLE numbers: t.nn.Threshold 0.5 -1 sets the\nthreshold to 0, not 0.5. Type fractional values into the node (or send\nthem to the inlets) instead.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nthreshold (drag float on the node, and an inlet):\nThe level. A value must be ABOVE it to pass; a value equal to it is\nreplaced.\n\nreplacement (drag float on the node, and an inlet):\nWhat every value at or below the threshold becomes.\n\nNeither triggers the node: the next tensor uses them. In the demo the\nmetro re-sends the ramp ten times a second, so the curve follows the\nsliders.\n\nA NEW t.nn.Threshold SENDS NOTHING AT FIRST:\nThe node builds its operation before its two boxes exist, so it starts\nout with no threshold at all: every tensor gets \"argument 'threshold'\nmust be Number, not NoneType\" in the console and nothing is sent. Change\nthreshold or replacement once (any value, even back again) and it works\nfrom then on. Saving the patch does not fix it if the saved values are\nthe defaults (0 and 0): the demo node is saved with threshold 1 for that\nreason.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu is Threshold 0 0. t.nn.hardshrink zeroes a band on BOTH sides\nof zero. t.clamp replaces out-of-range values with the limit itself.\nt.gt makes the mask (above or not) without replacing anything."
+            "text": "Passes every value above a threshold unchanged and replaces every value\nat or below it with a fixed replacement value.\n\nIt is a one-sided substitution: the replacement does not have to be the\nthreshold, or anything to do with it. Threshold 0 with replacement 0 is\nexactly relu; replacement -1 marks the cut values so they can be found\nlater; a high threshold keeps only the peaks.\n\nTHE CURVE:\nFlat at the replacement up to the threshold, then the input itself. If\nthe replacement differs from the threshold the output jumps at the\nthreshold.\n\nSYNTAX:\nt.nn.Threshold <threshold> <replacement>\nDefaults 0 and 0. Either may be fractional: the demo's t.nn.Threshold\n1.5 -1 passes everything above 1.5 and turns the rest into -1.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nthreshold (drag float on the node, and an inlet):\nThe level. A value must be ABOVE it to pass; a value equal to it is\nreplaced.\n\nreplacement (drag float on the node, and an inlet):\nWhat every value at or below the threshold becomes.\n\nNeither triggers the node: the next tensor uses them. In the demo the\nmetro re-sends the ramp ten times a second, so the curve follows the\nsliders.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu is Threshold 0 0. t.nn.hardshrink zeroes a band on BOTH sides\nof zero. t.clamp replaces out-of-range values with the limit itself.\nt.gt makes the mask (above or not) without replacing anything."
         },
         "3": {
             "name": "metro",
@@ -251,7 +251,7 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 1.0,
+                    "value": 1.5,
                     "value_type": "float"
                 },
                 "1": {
@@ -314,7 +314,7 @@
             "properties": {
                 "0": {
                     "name": "",
-                    "value": 0.0,
+                    "value": -1.0,
                     "value_type": "float"
                 },
                 "1": {
@@ -374,18 +374,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "threshold",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "replacement",
-                    "value": 0.0,
-                    "value_type": "float"
-                }
-            }
+            "properties": {},
+            "init": "t.nn.Threshold 1.5 -1"
         },
         "14": {
             "name": "t.stack",

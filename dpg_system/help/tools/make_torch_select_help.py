@@ -172,8 +172,10 @@ points, the middle of a frame.
 
 THE INDEX STRING:
 The indices field holds the part to take, one entry per dimension,
-separated by COMMAS. The first entry picks rows, the second columns, and
-so on. Each entry is one of:
+separated by commas - or, when there is no comma anywhere in it, by
+spaces: 2:5, 4:8 and 2:5 4:8 mean the same, and so do 0, 3 and 0 3. The
+first entry picks rows, the second columns, and so on. Each entry is one
+of:
 
   3        one position. Counting starts at 0; -1 is the last. That
            dimension is REMOVED - 3 on a 10 x 10 tensor gives a 1-D row of
@@ -192,18 +194,24 @@ Fewer entries than dimensions leave the rest whole, so 2 on a 10 x 10
 tensor is the same as 2,:. Square brackets around the whole string are
 optional: [2:5, 4:8] and 2:5, 4:8 mean the same.
 
-Unlike np.[], t[] does NOT take a list of positions ([0 3 7]): an entry
-that is not a number or a slice is read as : (the whole dimension). To
-pick chosen rows or columns use t.index_select.
+Unlike np.[], t[] does NOT take a list of positions: [0 3 7] is read
+as three entries, row 0, column 3, position 7 of a third dimension - on
+a 10 x 10 tensor that is one entry too many, and nothing is sent. An
+entry that is not a number or a slice is read as : (the whole
+dimension). To pick chosen rows or columns use t.index_select.
+
+When you separate entries with spaces, do not put spaces inside an
+entry: 2 : 5 would be read as three entries. With commas, spaces are
+ignored.
 
 SYNTAX:
 t[] <index string>
-Default ':', the whole tensor. The arguments are joined back together
-WITHOUT spaces, so separate entries with commas: t[] 2:5, 4:8 works, but
-t[] 0 3 becomes 03, which is position 3.
+Default ':', the whole tensor. The arguments become the index string,
+read the same way as the field: t[] 0 3 is row 0, column 3 (one value),
+and t[] 2:5 4:8 or t[] 2:5, 4:8 a 3 by 4 block.
 
 EXAMPLE:
-t[] 2:5,4:8
+t[] 2:5 4:8
 
 INPUTS and PARAMETERS:
 
@@ -234,7 +242,8 @@ tens digit is the row, the units digit the column. Pick an index string
 in the radio and the right heat_map shows exactly the cells taken, still
 numbered; t.info gives the shape of the result (3,7 is the single value
 37, with no shape at all, so t.info's list goes blank). Or type your own
-into the field on t[].
+into the field on t[] - with commas or with spaces (3 7 is the same as
+3,7).
 
 Watch :,3 against :,3:4. Both take column 3, but :,3 removes the column
 dimension, leaving a 1-D tensor of 10 - which a heat_map draws lying
@@ -251,7 +260,7 @@ demo = numbered() + [
     {'key': 'rad', 'init': 'radio : 2 -1 :,3 :,3:4 2:5,4:8 ::2,::2 1::3 ...,0 3,7',
      'pos': (490, 62), 'w': 150, 'h': 380},
     {'key': 'c1', 'comment': True, 'text': 'pick an index string', 'pos': (490, 70)},
-    {'key': 'sl', 'init': 't[] 2:5,4:8', 'pos': (490, 470), 'w': 250, 'h': 70},
+    {'key': 'sl', 'init': 't[] 2:5 4:8', 'pos': (490, 470), 'w': 250, 'h': 70},
     {'key': 'c2', 'comment': True, 'text': 'or type one into the field here',
      'pos': (490, 480)},
     {'key': 'hout', 'init': 'heat_map', 'pos': (490, 560), 'w': 428, 'h': 310,
@@ -634,7 +643,9 @@ sent until indices have arrived.
 
 dim (int box, also an inlet):
 Which dimension the positions run along: 1 positions within each row, 0
-positions within each column.
+positions within each column. Negative counts from the end (-1 is the
+last dimension, so on a matrix -1 is 1 and -2 is 0). A dimension the
+tensor does not have sends nothing.
 
 OUTPUTS:
 
@@ -702,13 +713,12 @@ the patch, which a typed slice cannot. Use it for a moving window over
 frames, a band of rows, a block of channels.
 
 SYNTAX:
-t.narrow <dim: int>
-Default dim 0. Only the dim comes from the argument: start and length
-always begin at 0 and 1, so set them in their boxes (t.narrow 0 2 3 does
-NOT set start 2, length 3).
+t.narrow <dim: int> <start: int> <length: int>
+Defaults: dim 0, start 0, length 1. t.narrow 0 2 3 takes rows 2, 3 and
+4; t.narrow 1 0 4 the first four columns.
 
 EXAMPLE:
-t.narrow 1
+t.narrow 0 2 3
 
 INPUTS and PARAMETERS:
 
@@ -722,10 +732,10 @@ the end.
 
 start (drag int, also an inlet):
 The first position kept. Negative counts from the end (-3 is three from
-the end). Default 0.
+the end). Default 0, or the second argument.
 
 length (drag int, also an inlet):
-How many positions to keep. Default 1.
+How many positions to keep. Default 1, or the third argument.
 
 Changing dim, start or length does NOT send by itself - the next tensor
 uses them; in the demo a metro inside make_numbered re-sends the source
@@ -742,7 +752,8 @@ It is a view of the input, not a copy.
 
 READING THE DEMO:
 The left heat_map is the numbered source - tens digit the row, units
-digit the column. Drag start and the band of rows slides; drag length
+digit the column. t.narrow 0 2 3 starts on rows 2, 3 and 4 (20 to 49).
+Drag start and the band of rows slides; drag length
 and it widens. Set dim to 1 and it cuts columns instead.
 
 RELATED:
@@ -751,7 +762,7 @@ position and removes the dimension. t.chunk cuts a tensor into equal
 pieces. np.crop cuts a rectangle in numpy."""
 
 demo = numbered() + [
-    {'key': 'nr', 'init': 't.narrow 0', 'pos': (490, 162), 'w': 170, 'h': 150,
+    {'key': 'nr', 'init': 't.narrow 0 2 3', 'pos': (490, 162), 'w': 170, 'h': 150,
      'props': {'dim': 0, 'start': 2, 'length': 3}},
     {'key': 'c1', 'comment': True, 'text': 'drag start and length; dim 0 rows, 1 columns',
      'pos': (490, 170)},
@@ -812,7 +823,9 @@ match the target's: a float32 target is the normal case; an integer
 target (from t.arange with int64, say) is refused with an error.
 
 dim (int box, also an inlet):
-Which dimension the indices run along.
+Which dimension the indices run along. Negative counts from the end (-1
+is the last dimension). A dimension the target does not have sends
+nothing.
 
 Nothing is sent until both indices and source have arrived.
 
@@ -898,16 +911,17 @@ How many slots. Changing it makes a new tensor of zeros - what was held
 is lost. Minimum 1.
 
 clear (button, also an inlet):
-Sets every slot back to zero. It does not send: the display shows the
-cleared tensor with the next pair that arrives.
+Sets every slot back to zero and sends the cleared tensor, so a display
+downstream clears at once.
 
 OUTPUTS:
 
 output:
 The whole held tensor (float32) after each write - not just the slots
 that changed - so anything downstream always sees the complete current
-state. It is the node's own tensor, updated in place; a node further on
-that keeps it will see later writes too.
+state. Each send is a copy: a tensor already sent is not changed by
+later writes, so a node further on that keeps one (var, a buffer) keeps
+the state at that moment.
 
 READING THE DEMO:
 The first message is sent once on load. Click either message: each
@@ -916,7 +930,8 @@ what they had. Drag the slider to write its value into the slot named by
 the int box (3 to start); pak sends the pair on every move, so that one
 slot follows the slider. Type another number in the int box to move the
 slider to another slot - the old one keeps its last value. Click clear
-on the node, then move the slider, to see it start again from zeros.
+on the node and the strip goes back to zeros at once; move the slider
+or click a message to start building it up again.
 
 RELATED:
 t.scatter writes a whole source tensor into a target at given positions,
@@ -1178,9 +1193,13 @@ descending one. It is also the way to reverse in PyTorch: t[] does not
 accept a negative step (::-1).
 
 SYNTAX:
-t.flip
-Set the dimensions in the flip dims field. An argument does NOT set
-them: t.flip 1 still flips dimension 0 until you type 1 into the field.
+t.flip <dim: int> <dim: int> ...
+The dimensions to reverse. Default 0. t.flip 1 mirrors left to right;
+t.flip 0 1 reverses both. They appear in the flip dims field, where they
+can be changed.
+
+EXAMPLE:
+t.flip 1
 
 INPUTS and PARAMETERS:
 
@@ -1189,7 +1208,7 @@ The tensor (a list or numpy array is converted to a float32 tensor).
 Each tensor that arrives is flipped and sent. Only this inlet sends.
 
 flip dims (text field):
-Which dimensions to reverse, default 0. 0 reverses the order of the
+Which dimensions to reverse - the arguments, or 0 if there were none. 0 reverses the order of the
 ROWS - the picture turns upside down. 1 reverses the COLUMNS - a mirror
 image. Several at once, separated by commas or spaces: 0, 1 reverses
 both, the same as a half turn. Negative counts from the end (-1 is the
@@ -1209,8 +1228,9 @@ dimensions. A new tensor.
 READING THE DEMO:
 The F is a 7 by 6 tensor of 0s (purple) and 1s (yellow), drawn row 0
 at the top. With flip dims 0 the F stands on its head, its bar at the
-bottom; type 1 and it faces left instead; type 0, 1 and it is turned
-half way round.
+bottom; type 1 and it faces left instead; type 0 1 and it is turned
+half way round. (The node is t.flip 0; typing t.flip 1 or t.flip 0 1
+would start it on those.)
 
 RELATED:
 t.roll shifts with wrap-around instead of reversing. t.transpose swaps
@@ -1219,9 +1239,9 @@ descending sorts the other way. np.flip and np.rot90 are the numpy
 versions."""
 
 demo = f_source() + [
-    {'key': 'fl', 'init': 't.flip', 'pos': (280, 200), 'w': 170, 'h': 70,
+    {'key': 'fl', 'init': 't.flip 0', 'pos': (280, 200), 'w': 170, 'h': 70,
      'props': {'flip dims': '0'}},
-    {'key': 'c1', 'comment': True, 'text': 'type 0, 1, or 0, 1 into flip dims',
+    {'key': 'c1', 'comment': True, 'text': 'type 0, 1, or 0 1 into flip dims',
      'pos': (280, 205)},
     {'key': 'hout', 'init': 'heat_map', 'pos': (280, 300), 'w': 200, 'h': 260,
      'props': HM(180, 210, 7, fmt='none')},
@@ -1234,7 +1254,7 @@ print(build('t.flip', 't.flip - reverse the order along a dimension', body, demo
 
 
 # ======================================================= t.repeat and t.tile
-def repeat_page(name, inlet, outlet, counts, first, extra, see):
+def repeat_page(name, inlet, outlet, counts, first, extra, see, fewer, try_more):
     rows, cols = 7 * counts[0], 6 * counts[1]
     count_text = f'{counts[0]}, {counts[1]}'
     body = first + f"""
@@ -1247,8 +1267,9 @@ end to end (0 1 2 0 1 2).
 
 SYNTAX:
 {name} <count: int> <count: int> ...
-One count per dimension. With no arguments the field is empty and the
-tensor is passed through unchanged.
+Usually one count per dimension (see the counts field below). With no
+arguments the field is empty and the tensor is passed through
+unchanged.
 
 EXAMPLE:
 {name} {counts[0]} {counts[1]}
@@ -1260,9 +1281,7 @@ The tensor (a list or numpy array is converted to a float32 tensor).
 Sends the copies on arrival. Only this inlet sends.
 
 {inlet} (text field, also an inlet):
-The counts, separated by commas or spaces. There must be AT LEAST as
-many counts as the tensor has dimensions - fewer prints an error in the
-console and nothing is sent. More counts than dimensions add new
+The counts, separated by commas or spaces. {fewer} More counts than dimensions add new
 dimensions at the front: 2, 1, 1 on a 7 x 6 tensor gives 2 x 7 x 6, two
 copies stacked along a new first dimension. A count of 1 leaves that
 dimension alone; 0 empties it. The next tensor uses a change - in the
@@ -1276,7 +1295,7 @@ The copies, as one new tensor.
 READING THE DEMO:
 The F (7 x 6, left) tiled {count_text} gives {rows} x {cols} on the right - {counts[0]} rows of
 {counts[1]} F's. Type other counts: 1, 4 is a row of four, 3, 1 a column of
-three. t.info shows the shape of the result."""
+three{try_more}. t.info shows the shape of the result."""
     demo = f_source() + [
         {'key': 'rp', 'init': f'{name} {counts[0]} {counts[1]}', 'pos': (280, 62), 'w': 220,
          'h': 70, 'props': {inlet: count_text}},
@@ -1303,18 +1322,22 @@ Use it to fill a larger grid with a pattern, to make a batch of
 identical copies, or to stretch a single row into a matrix of identical
 rows (t.repeat 4 1 on a 1 x 10 row gives 4 x 10).""",
             '',
-            ['t.tile', 't.cat', 't.roll', 'np.repeat', 'np.concatenate'])
+            ['t.tile', 't.cat', 't.roll', 'np.repeat', 'np.concatenate'],
+            """There must be AT LEAST as
+many counts as the tensor has dimensions - fewer prints an error in the
+console and nothing is sent (t.tile accepts fewer).""",
+            '')
 
 repeat_page('t.tile', 'tiling', 'tiled tensor out', (3, 2),
             """Makes copies of the whole tensor and lays them end to end, along each dimension - tiling.
 
-In this node t.tile does exactly what t.repeat does: it runs the same
-PyTorch operation. Use either to fill a larger grid with a pattern or to
-make a batch of identical copies.""",
-            """
-PyTorch's own tile accepts FEWER counts than dimensions, treating the
-missing leading ones as 1 (so tile 2 on a matrix doubles its width).
-This node does not: it calls repeat, so t.tile 2 on a matrix prints an
-error and sends nothing. Give one count per dimension (1, 2).
-""",
-            ['t.repeat', 't.cat', 't.roll', 'np.repeat', 'np.concatenate'])
+Use it to fill a larger grid with a pattern or to make a batch of
+identical copies. It is t.repeat with one difference: t.tile accepts
+fewer counts than the tensor has dimensions.""",
+            '',
+            ['t.repeat', 't.cat', 't.roll', 'np.repeat', 'np.concatenate'],
+            """Fewer counts than the tensor has
+dimensions are filled out with 1s at the FRONT, so the counts you give
+apply to the last dimensions: 2 on a 7 x 6 tensor means 1, 2 and doubles
+its width (7 x 12). (t.repeat refuses fewer counts.)""",
+            ', and a single 2 is two side by side')

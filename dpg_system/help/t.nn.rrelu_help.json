@@ -1,11 +1,11 @@
 {
-    "height": 1238,
-    "width": 1734,
+    "height": 1253,
+    "width": 1728,
     "position": [
         100,
         100
     ],
-    "id": 1088,
+    "id": 1125,
     "name": "t.nn.rrelu_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.nn.rrelu_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.nn.rrelu - leaky relu with its slope from a range",
+            "init": "comment t.nn.rrelu - leaky relu with a random slope",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 635,
+            "width": 537,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.nn.rrelu - leaky relu with its slope from a range",
+                    "value": "t.nn.rrelu - leaky relu with a random slope",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.nn.rrelu - leaky relu with its slope from a range"
+            "comment": "t.nn.rrelu - leaky relu with a random slope"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 906,
+            "position_x": 900,
             "position_y": 45,
             "width": 788,
-            "height": 886,
+            "height": 991,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Passes positive values unchanged and multiplies negative values by a\nslope taken from the range lower to upper.\n\nIn torch, \"randomised leaky relu\" draws a fresh random slope for every\nelement while a network is TRAINING, as a regulariser, and uses the\nmiddle of the range otherwise. This node never switches training on, so\nit always uses the middle: the slope is (lower plus upper) divided by 2,\nthe same for every element, and the same input always gives the same\noutput. In practice it is t.nn.leaky_relu with its slope given as a\nrange.\n\nTHE CURVE:\nTwo straight lines meeting at 0: the input itself on the right, and the\ninput times (lower plus upper)/2 on the left. With the defaults (0.125 and\n0.333) that slope is 0.229, so -4 gives -0.92.\n\nSYNTAX:\nt.nn.rrelu\nNo arguments; defaults lower 0.125, upper 0.3333.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn INTEGER tensor (t.arange with whole numbers makes one) is refused: the\nconsole reports \"not implemented for 'Long'\" and nothing is sent. Put a\nt.to float32 in front of it.\n\nlower / upper (drag floats on the node, and inlets):\nThe ends of the slope range; the slope used is their average. Defaults\n0.125 and 0.3333. lower must not be above upper: the console reports\n\"Lower bound should be less than or equal to the upper bound\" and nothing\nis sent until they are back in order. Neither triggers the node: the next\ntensor uses them. In the demo the metro re-sends the ramp ten times a second, so the curve\nfollows the sliders - and moves by the same amount whichever one you\ndrag.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.leaky_relu takes the slope directly. t.nn.relu is slope 0.",
+                    "value": "Passes positive values unchanged and multiplies each negative value by\nits own RANDOM slope, drawn evenly between lower and upper - a fresh draw\nfor every element, every time a tensor arrives.\n\nThis is \"randomised leaky relu\" as torch uses it while a network is\ntraining: the random slope is a regulariser, noise that keeps a network\nfrom leaning on exact negative values. In a patch it is a leaky rectifier\nwith a controlled amount of grain below zero: positive values come\nthrough clean, negative ones come out scaled down by a slightly different\namount each time. The same input does NOT give the same output twice. For\none fixed slope use t.nn.leaky_relu.\n\nTHE CURVE:\nOn the right, the input itself - a clean straight line. On the left, a\nragged band rather than a line: each value is somewhere between the input\ntimes lower and the input times upper, and the band redraws on every\nframe. With the defaults (0.125 and 0.333) -4 comes out anywhere from\n-0.5 to -1.33. The band is narrow near 0 and widens towards the left, and\nlower equal to upper closes it into a single leaky relu line.\n\nSYNTAX:\nt.nn.rrelu\nNo arguments; defaults lower 0.125, upper 0.3333.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn INTEGER tensor (t.arange with whole numbers makes one) is refused: the\nconsole reports \"not implemented for 'Long'\" and nothing is sent. Put a\nt.to float32 in front of it.\n\nlower / upper (drag floats on the node, and inlets):\nThe ends of the range the random slopes are drawn from. Defaults 0.125\nand 0.3333. lower must not be above upper: the console reports\n\"Lower bound should be less than or equal to the upper bound\" and nothing\nis sent until they are back in order. Neither triggers the node: the next\ntensor uses them. In the demo the metro re-sends the ramp ten times a\nsecond, so the band redraws with new slopes each time and follows the\nsliders: drag lower and upper together to close the band into one line,\napart to widen it.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.leaky_relu uses one fixed slope, the same for every element.\nt.nn.relu is slope 0. t.rand and t.dist.uniform make the kind of random\nnumbers the slopes are drawn from.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 870,
+                    "value": 975,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,7 +90,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "Passes positive values unchanged and multiplies negative values by a\nslope taken from the range lower to upper.\n\nIn torch, \"randomised leaky relu\" draws a fresh random slope for every\nelement while a network is TRAINING, as a regulariser, and uses the\nmiddle of the range otherwise. This node never switches training on, so\nit always uses the middle: the slope is (lower plus upper) divided by 2,\nthe same for every element, and the same input always gives the same\noutput. In practice it is t.nn.leaky_relu with its slope given as a\nrange.\n\nTHE CURVE:\nTwo straight lines meeting at 0: the input itself on the right, and the\ninput times (lower plus upper)/2 on the left. With the defaults (0.125 and\n0.333) that slope is 0.229, so -4 gives -0.92.\n\nSYNTAX:\nt.nn.rrelu\nNo arguments; defaults lower 0.125, upper 0.3333.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn INTEGER tensor (t.arange with whole numbers makes one) is refused: the\nconsole reports \"not implemented for 'Long'\" and nothing is sent. Put a\nt.to float32 in front of it.\n\nlower / upper (drag floats on the node, and inlets):\nThe ends of the slope range; the slope used is their average. Defaults\n0.125 and 0.3333. lower must not be above upper: the console reports\n\"Lower bound should be less than or equal to the upper bound\" and nothing\nis sent until they are back in order. Neither triggers the node: the next\ntensor uses them. In the demo the metro re-sends the ramp ten times a second, so the curve\nfollows the sliders - and moves by the same amount whichever one you\ndrag.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.leaky_relu takes the slope directly. t.nn.relu is slope 0."
+            "text": "Passes positive values unchanged and multiplies each negative value by\nits own RANDOM slope, drawn evenly between lower and upper - a fresh draw\nfor every element, every time a tensor arrives.\n\nThis is \"randomised leaky relu\" as torch uses it while a network is\ntraining: the random slope is a regulariser, noise that keeps a network\nfrom leaning on exact negative values. In a patch it is a leaky rectifier\nwith a controlled amount of grain below zero: positive values come\nthrough clean, negative ones come out scaled down by a slightly different\namount each time. The same input does NOT give the same output twice. For\none fixed slope use t.nn.leaky_relu.\n\nTHE CURVE:\nOn the right, the input itself - a clean straight line. On the left, a\nragged band rather than a line: each value is somewhere between the input\ntimes lower and the input times upper, and the band redraws on every\nframe. With the defaults (0.125 and 0.333) -4 comes out anywhere from\n-0.5 to -1.33. The band is narrow near 0 and widens towards the left, and\nlower equal to upper closes it into a single leaky relu line.\n\nSYNTAX:\nt.nn.rrelu\nNo arguments; defaults lower 0.125, upper 0.3333.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn INTEGER tensor (t.arange with whole numbers makes one) is refused: the\nconsole reports \"not implemented for 'Long'\" and nothing is sent. Put a\nt.to float32 in front of it.\n\nlower / upper (drag floats on the node, and inlets):\nThe ends of the range the random slopes are drawn from. Defaults 0.125\nand 0.3333. lower must not be above upper: the console reports\n\"Lower bound should be less than or equal to the upper bound\" and nothing\nis sent until they are back in order. Neither triggers the node: the next\ntensor uses them. In the demo the metro re-sends the ramp ten times a\nsecond, so the band redraws with new slopes each time and follows the\nsliders: drag lower and upper together to close the band into one line,\napart to widen it.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.leaky_relu uses one fixed slope, the same for every element.\nt.nn.relu is slope 0. t.rand and t.dist.uniform make the kind of random\nnumbers the slopes are drawn from."
         },
         "3": {
             "name": "metro",
@@ -477,35 +477,50 @@
             }
         },
         "17": {
-            "init": "comment the slope below zero is the average of lower and upper",
-            "name": "comment",
+            "name": "text_block",
             "id": 866,
+            "annotation": true,
             "position_x": 536,
             "position_y": 1010,
-            "width": 340,
-            "height": 30,
+            "width": 323,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text",
-                    "value": "the slope below zero is the average of lower and upper",
+                    "name": "block",
+                    "value": "below zero each value gets its own random slope\nbetween lower and upper, new every frame",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 315,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "comment": "the slope below zero is the average of lower and upper"
+            "text": "below zero each value gets its own random slope\nbetween lower and upper, new every frame"
         },
         "18": {
             "name": "help_link",
             "id": 903,
             "position_x": 30,
-            "position_y": 1060,
+            "position_y": 1075,
             "width": 109,
             "height": 44,
             "visibility": "show_all",
@@ -518,7 +533,7 @@
             "name": "help_link",
             "id": 940,
             "position_x": 189,
-            "position_y": 1060,
+            "position_y": 1075,
             "width": 72,
             "height": 44,
             "visibility": "show_all",
@@ -531,7 +546,7 @@
             "name": "help_link",
             "id": 977,
             "position_x": 302,
-            "position_y": 1060,
+            "position_y": 1075,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
@@ -541,11 +556,24 @@
             "init": "help_link t.nn.elu"
         },
         "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 407,
+            "position_y": 1075,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rand"
+        },
+        "22": {
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
-            "id": 1014,
+            "id": 1051,
             "position_x": 536,
-            "position_y": 1104,
+            "position_y": 1119,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -565,11 +593,11 @@
             },
             "comment": "SEE ALSO - click to open"
         },
-        "22": {
+        "23": {
             "name": "close",
-            "id": 1051,
+            "id": 1088,
             "position_x": 24,
-            "position_y": 1134,
+            "position_y": 1149,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

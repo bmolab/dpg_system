@@ -335,12 +335,11 @@ and want both ends.
 
 HOW THE STOP IS INCLUDED:
 PyTorch dropped its own range function, so this node asks for an
-arange whose stop is moved out by half a step. A value that lands on
-the stop is then kept, and floating-point rounding cannot lose it. The
-side effect: a value can pass stop by LESS than half a step and still
-be included. t.range 0 1 0.6 gives 0, 0.6, 1.2 - 1.2 is over the stop
-by 0.2, which is under half of 0.6. When stop is a whole number of steps
-from start, as it usually is, this never comes up.
+arange whose stop is moved out by a hair - a millionth of a step. A
+value that lands on the stop is kept even when floating-point rounding
+leaves it a whisker over, and nothing further out gets through. When
+stop is not a whole number of steps from start, the series ends at the
+last value short of it: t.range 0 1 0.6 gives 0 and 0.6, never 1.2.
 
 A negative step counts down from a larger start.
 
@@ -436,11 +435,13 @@ The small button at the top left of the node. Click it, or send it
 anything, to send the tensor. Nothing else makes the node send; each
 click sends a new tensor.
 
-shape (text):
+shape (text, also an inlet):
 The dimensions, typed as numbers separated by spaces or commas - '8 8',
-'[4, 16]' or '2 3 4' for 3-D. Unlike np.zeros, the number of dimensions
-can change here without retyping the node. Editing it does not send;
-the next click uses it.
+'[4, 16]' or '2 3 4' for 3-D. A list or tensor of numbers sent into the
+inlet works too (a message '4 16', or a shape from another node), and
+so does a single number (16 is a row of 16). Unlike np.zeros, the
+number of dimensions can change here without retyping the node. A new
+shape does not send; the next click uses it.
 
 """ + DTYPE_DEVICE_GRAD % "t.zeros 8 8 int64" + """
 OUTPUTS:
@@ -451,10 +452,12 @@ The tensor. A bool dtype gives all false.
 READING THE DEMO:
 The load_bang clicks t.zeros once when the page opens. The heat_map is
 the tensor - every cell 0, one flat colour, each printing its 0. t.info
-reports its shape, dtype and device: [8, 8], torch.float32, cpu. Type
-'4 8' into shape and click the node's button: the picture becomes 4
-rows of 8 and t.info follows. Choose int64 as dtype and click again to
-see t.info change.
+reports its shape, dtype and device: [8, 8], torch.float32, cpu. Click
+the message '4 8': 't bang list' sends the list into the shape inlet
+and THEN clicks the node, so the picture becomes 4 rows of 8 and t.info
+follows; '8 8' puts it back. Typing a shape into the node and clicking
+its button does the same. Choose int64 as dtype and click again to see
+t.info change.
 
 RELATED:
 t.ones is the same with every value 1, t.full with any value you pick.
@@ -465,6 +468,12 @@ demo = [
     {'key': 'lb', 'init': 'load_bang', 'pos': (30, 62), 'w': 88, 'h': 46},
     {'key': 'c0', 'comment': True, 'text': 'clicks t.zeros once when the page opens',
      'pos': (30, 70)},
+    {'key': 'm48', 'init': 'message', 'pos': (290, 62), 'w': 90, 'h': 42,
+     'props': {'text in': '4 8', 'font size': '24'}},
+    {'key': 'm88', 'init': 'message', 'pos': (440, 62), 'w': 90, 'h': 42,
+     'props': {'text in': '8 8', 'font size': '24'}},
+    {'key': 'cm', 'comment': True, 'text': 'click a shape', 'pos': (290, 70)},
+    {'key': 'tbl', 'init': 't bang list', 'pos': (290, 120), 'w': 110, 'h': 46},
     {'key': 'zr', 'init': 't.zeros 8 8', 'pos': (30, 125), 'w': 220, 'h': 160},
     {'key': 'c1', 'comment': True,
      'text': "type another shape, then click the node's\nown button (top left)",
@@ -476,7 +485,9 @@ demo = [
     {'key': 'inf', 'init': 't.info', 'pos': (340, 305), 'w': 160, 'h': 130},
     {'key': 'c3', 'comment': True, 'text': 'shape, dtype, device', 'pos': (340, 310)},
 ] + see_also(620, ['t.ones', 't.full', 't.zeros_like', 't.eye', 'np.zeros'])
-links = [('lb', 'out', 'zr', '###input'), ('zr', 'tensor of zeros', 'hm', 'y'),
+links = [('lb', 'out', 'zr', '###input'), ('m48', 'message out', 'tbl', ''),
+         ('m88', 'message out', 'tbl', ''), ('tbl', 'list', 'zr', 'shape'),
+         ('tbl', 'bang', 'zr', '###input'), ('zr', 'tensor of zeros', 'hm', 'y'),
          ('zr', 'tensor of zeros', 'inf', 'in')]
 print(build('t.zeros', 't.zeros - a tensor of zeros', body, demo, links,
             demo_width=520, text_width=760, text_height=720))
@@ -503,9 +514,11 @@ in (button):
 The small button at the top left of the node. Click it, or send it
 anything, to send the tensor. Nothing else makes the node send.
 
-shape (text):
+shape (text, also an inlet):
 The dimensions, typed as numbers separated by spaces or commas ('8',
-'4 4', '[2, 3, 4]'). Editing it does not send; the next click uses it.
+'4 4', '[2, 3, 4]'). A list or tensor of numbers, or a single number,
+sent into the inlet works too. A new shape does not send; the next
+click uses it.
 
 """ + DTYPE_DEVICE_GRAD % "t.ones 8 int64" + """
 OUTPUTS:
@@ -571,9 +584,10 @@ The small button at the top left of the node. Click it, or send it
 anything, for a new tensor - there is no need for a separate button
 node. Only this inlet makes the node send.
 
-shape (text):
-The dimensions, typed as numbers separated by spaces or commas. Editing
-it does not send; the next click uses it.
+shape (text, also an inlet):
+The dimensions, typed as numbers separated by spaces or commas. A list
+or tensor of numbers, or a single number, sent into the inlet works
+too. A new shape does not send; the next click uses it.
 
 min / max (drag floats, also inlets):
 The range. Setting them does NOT make a new tensor by itself - the next
@@ -585,10 +599,10 @@ dragging it gives you new noise at once.
 The dtype changes what the random numbers are:
 float32 and float16: any value from min up to, but never
 exactly, max.
-int64: whole numbers from min up to max - 1 - max itself never appears.
-Choosing int64 while max is 1 changes max to 32767.
-uint8: whole numbers. Choosing it raises max to 255 and a negative min
-to 0 - and since max is left out, the largest value is 254.
+int64: whole numbers from min to max, both included. Choosing int64
+while max is 1 changes max to 32767.
+uint8: whole numbers from min to max, both included. Choosing it raises
+max to 255 and a negative min to 0, so you get the full 0 to 255.
 bool: true or false at random; min and max are ignored.
 
 OUTPUTS:
@@ -732,9 +746,9 @@ of whatever you multiply it with element by element.
 
 SYNTAX:
 t.eye <n: int> <dtype> <device>
-Default n is 4. It is always square. Give n FIRST: a dtype typed in
-its place ('t.eye bool') is read as n = 0 and the node sends an empty
-tensor.
+Default n is 4. It is always square. n is the first number among the
+arguments, so a dtype can come with or without it: 't.eye bool' is a 4
+by 4 bool identity, 't.eye 6 bool' a 6 by 6.
 
 EXAMPLE:
 t.eye 6
@@ -795,9 +809,10 @@ def LIKE_COMMON(name, fill):
 tensor in:
 The tensor whose SHAPE to copy. Anything arriving here makes the node
 send - a stream of tensors gives a stream of outputs, each matching the
-one that came in. Only torch tensors work: a NumPy array, list or number
-is ignored and nothing is sent (turn it into a tensor first, for example
-with t.to).
+one that came in. A list, NumPy array or number has a shape too and
+works the same way: a list of 5 numbers gives 5 values, a list of
+lists a 2-D tensor, a single number a 1-element tensor. A bang sends a
+new tensor in the shape last received.
 
 """ + ("""min / max (drag floats, also inlets):
 The range of the random values, as on t.rand. They do not send by
@@ -940,8 +955,9 @@ t.rand_like
 
 The dtype changes what the numbers are, as on t.rand: float types give
 any value from min up to (not including) max; int64 and uint8 give whole
-numbers from min to max - 1 (choosing int64 while max is 1 raises max to
-32767; uint8 raises it to 255); bool gives true or false at random.
+numbers from min to max, both included (choosing int64 while max is 1
+raises max to 32767; uint8 raises it to 255, for the full 0 to 255);
+bool gives true or false at random.
 
 READING THE DEMO:
 A metro clicks t.linspace 10 times a second, and each ramp it sends

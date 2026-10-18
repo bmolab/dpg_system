@@ -173,7 +173,7 @@ def curve_demo(init, x0, x1, y0, y1, see, params=(), node_h=70, note=None, node_
 
 def curve_page(name, title, intro, curve, syntax, params_text, int_ok,
                x0, x1, y0, y1, see, related, params=(), node_h=70, note=None,
-               extra='', node_props=None):
+               extra='', node_props=None, init=None):
     body = intro.strip('\n') + '\n\n' + curve.strip('\n') + '\n\n' + \
         'SYNTAX:\n' + syntax.strip('\n') + '\n\n' + \
         'INPUTS and PARAMETERS:\n\n' + TENSOR_IN + (INT_OK if int_ok else INT_REFUSED) + \
@@ -181,7 +181,8 @@ def curve_page(name, title, intro, curve, syntax, params_text, int_ok,
         OUTPUT + '\n\n' + reading(x0, x1, y0, y1) + \
         ('\n\n' + extra.strip('\n') if extra else '') + \
         '\n\nRELATED:\n' + related.strip('\n')
-    demo, links = curve_demo(name, x0, x1, y0, y1, see, params, node_h, note, node_props)
+    demo, links = curve_demo(init or name, x0, x1, y0, y1, see, params, node_h, note,
+                             node_props)
     print(build(name, title, body, demo, links, demo_width=480, text_width=780,
                 text_height=text_h(body)))
 
@@ -486,9 +487,9 @@ the node: the next tensor uses it. In the demo the metro re-sends the
 ramp ten times a second, so the curve follows the slider.""",
     False, -4, 4, -4, 4,
     ['t.nn.relu', 't.nn.rrelu', 't.nn.elu', 't.nn.Threshold'],
-    """t.nn.relu is slope 0. t.nn.rrelu is leaky_relu with the slope set as a
-range (in this node, the middle of the range). t.nn.elu bends smoothly
-below zero instead of running straight.""",
+    """t.nn.relu is slope 0. t.nn.rrelu draws a fresh random slope for every
+element from a range instead of using one fixed slope. t.nn.elu bends
+smoothly below zero instead of running straight.""",
     params=[('negative slope', 0.01, 0.0, 1.0)], node_h=90,
     note='drag negative slope: 0 is relu, 1 is the input unchanged')
 
@@ -645,36 +646,43 @@ shape fixed at 0 and 6.""",
     note='drag the two limits: the flat stretches follow')
 
 curve_page(
-    't.nn.rrelu', 't.nn.rrelu - leaky relu with its slope from a range',
-    """Passes positive values unchanged and multiplies negative values by a
-slope taken from the range lower to upper.
+    't.nn.rrelu', 't.nn.rrelu - leaky relu with a random slope',
+    """Passes positive values unchanged and multiplies each negative value by
+its own RANDOM slope, drawn evenly between lower and upper - a fresh draw
+for every element, every time a tensor arrives.
 
-In torch, "randomised leaky relu" draws a fresh random slope for every
-element while a network is TRAINING, as a regulariser, and uses the
-middle of the range otherwise. This node never switches training on, so
-it always uses the middle: the slope is (lower plus upper) divided by 2,
-the same for every element, and the same input always gives the same
-output. In practice it is t.nn.leaky_relu with its slope given as a
-range.""",
+This is "randomised leaky relu" as torch uses it while a network is
+training: the random slope is a regulariser, noise that keeps a network
+from leaning on exact negative values. In a patch it is a leaky rectifier
+with a controlled amount of grain below zero: positive values come
+through clean, negative ones come out scaled down by a slightly different
+amount each time. The same input does NOT give the same output twice. For
+one fixed slope use t.nn.leaky_relu.""",
     """THE CURVE:
-Two straight lines meeting at 0: the input itself on the right, and the
-input times (lower plus upper)/2 on the left. With the defaults (0.125 and
-0.333) that slope is 0.229, so -4 gives -0.92.""",
+On the right, the input itself - a clean straight line. On the left, a
+ragged band rather than a line: each value is somewhere between the input
+times lower and the input times upper, and the band redraws on every
+frame. With the defaults (0.125 and 0.333) -4 comes out anywhere from
+-0.5 to -1.33. The band is narrow near 0 and widens towards the left, and
+lower equal to upper closes it into a single leaky relu line.""",
     """t.nn.rrelu
 No arguments; defaults lower 0.125, upper 0.3333.""",
     """lower / upper (drag floats on the node, and inlets):
-The ends of the slope range; the slope used is their average. Defaults
-0.125 and 0.3333. lower must not be above upper: the console reports
+The ends of the range the random slopes are drawn from. Defaults 0.125
+and 0.3333. lower must not be above upper: the console reports
 "Lower bound should be less than or equal to the upper bound" and nothing
 is sent until they are back in order. Neither triggers the node: the next
-tensor uses them. In the demo the metro re-sends the ramp ten times a second, so the curve
-follows the sliders - and moves by the same amount whichever one you
-drag.""",
+tensor uses them. In the demo the metro re-sends the ramp ten times a
+second, so the band redraws with new slopes each time and follows the
+sliders: drag lower and upper together to close the band into one line,
+apart to widen it.""",
     False, -4, 4, -4, 4,
-    ['t.nn.leaky_relu', 't.nn.relu', 't.nn.elu'],
-    """t.nn.leaky_relu takes the slope directly. t.nn.relu is slope 0.""",
+    ['t.nn.leaky_relu', 't.nn.relu', 't.nn.elu', 't.rand'],
+    """t.nn.leaky_relu uses one fixed slope, the same for every element.
+t.nn.relu is slope 0. t.rand and t.dist.uniform make the kind of random
+numbers the slopes are drawn from.""",
     params=[('lower', 0.125, 0.0, 1.0), ('upper', 0.3333, 0.0, 1.0)], node_h=110,
-    note='the slope below zero is the average of lower and upper')
+    note='below zero each value gets its own random slope\nbetween lower and upper, new every frame')
 
 curve_page(
     't.nn.softplus', 't.nn.softplus - relu with no corner',
@@ -728,10 +736,8 @@ Flat at the replacement up to the threshold, then the input itself. If
 the replacement differs from the threshold the output jumps at the
 threshold.""",
     """t.nn.Threshold <threshold> <replacement>
-Defaults 0 and 0.
-The arguments are read as WHOLE numbers: t.nn.Threshold 0.5 -1 sets the
-threshold to 0, not 0.5. Type fractional values into the node (or send
-them to the inlets) instead.""",
+Defaults 0 and 0. Either may be fractional: the demo's t.nn.Threshold
+1.5 -1 passes everything above 1.5 and turns the rest into -1.""",
     """threshold (drag float on the node, and an inlet):
 The level. A value must be ABOVE it to pass; a value equal to it is
 replaced.
@@ -741,23 +747,14 @@ What every value at or below the threshold becomes.
 
 Neither triggers the node: the next tensor uses them. In the demo the
 metro re-sends the ramp ten times a second, so the curve follows the
-sliders.
-
-A NEW t.nn.Threshold SENDS NOTHING AT FIRST:
-The node builds its operation before its two boxes exist, so it starts
-out with no threshold at all: every tensor gets "argument 'threshold'
-must be Number, not NoneType" in the console and nothing is sent. Change
-threshold or replacement once (any value, even back again) and it works
-from then on. Saving the patch does not fix it if the saved values are
-the defaults (0 and 0): the demo node is saved with threshold 1 for that
-reason.""",
+sliders.""",
     True, -4, 4, -4, 4,
     ['t.nn.relu', 't.nn.hardshrink', 't.clamp', 't.gt'],
     """t.nn.relu is Threshold 0 0. t.nn.hardshrink zeroes a band on BOTH sides
 of zero. t.clamp replaces out-of-range values with the limit itself.
 t.gt makes the mask (above or not) without replacing anything.""",
-    params=[('threshold', 1.0, -4.0, 4.0), ('replacement', 0.0, -4.0, 4.0)], node_h=110,
-    node_props={'threshold': 1.0, 'replacement': 0.0},
+    params=[('threshold', 1.5, -4.0, 4.0), ('replacement', -1.0, -4.0, 4.0)], node_h=110,
+    init='t.nn.Threshold 1.5 -1',
     note='drag threshold and replacement: below the threshold\nthe line is flat at the replacement')
 
 # =================================================================== t.nn.glu
@@ -1171,17 +1168,17 @@ On: the output is exactly one-of-N, a single 1 at the winner. Default off.
 Does not trigger.
 
 dim (box on the node, and an inlet):
-Meant to choose the axis - but in this node it has NO EFFECT: the value
-is passed to torch in the place of a retired argument (eps), so the
-choice is always made along the LAST axis, and each call prints a
-warning that "eps parameter is deprecated". For a 2-D tensor that means
-one choice per row. Use t.transpose first to choose along the other axis.
+The axis the choice is made along. Default -1, the last axis. For a 2-D
+tensor, -1 (or 1) makes one choice per ROW, each row summing to 1; 0
+makes one choice per COLUMN. The demo's scores are 1-D, so there is only
+one axis (0 and -1 are the same). An axis the tensor does not have is
+refused with a console message and nothing is sent. Does not trigger.
 
 OUTPUTS:
 
 output:
 One random draw, the same shape as the input, summing to 1 along the
-last axis.
+dim axis.
 
 READING THE DEMO:
 The same eight scores as on the softmax page, re-sent five times a

@@ -10,7 +10,7 @@ class TorchNode(Node):
         self.input = None
         self.output = None
 
-    def input_to_tensor(self):
+    def input_to_tensor(self, allow_empty=False):
         if self.input is not None:
             input_tensor = self.input()
             if input_tensor is None:
@@ -20,8 +20,8 @@ class TorchNode(Node):
             # Treat empty tensors as "no data" — most downstream nodes call
             # shape-dependent ops that don't handle 0-element inputs gracefully.
             # Callers that need to distinguish empty from missing should access
-            # self.input() directly.
-            if input_tensor is not None and input_tensor.numel() > 0:
+            # self.input() directly, or pass allow_empty.
+            if input_tensor is not None and (allow_empty or input_tensor.numel() > 0):
                 return input_tensor
         return None
 
@@ -206,7 +206,9 @@ class TorchInfoNode(TorchNode):
         self.requires_grad_output = self.add_output('grad')
 
     def execute(self):
-        in_data = self.input_to_tensor()
+        # an empty tensor is still a tensor with a shape to report; dropping
+        # it left the previous input's shape showing
+        in_data = self.input_to_tensor(allow_empty=True)
         if in_data is not None:
             rg = 'inference'
             if in_data.requires_grad:

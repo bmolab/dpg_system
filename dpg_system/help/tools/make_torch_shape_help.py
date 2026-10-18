@@ -574,8 +574,10 @@ WHERE THE NEW AXIS GOES:
 dim 0 puts the 1 in front: [12] becomes [1, 12], a single row - the usual
 way to make a "batch of one". dim 1 (for a 1-D tensor, the end) puts it
 behind: [12, 1], a column. A negative dim counts from the end: -1 always
-puts the new axis last. For a [7, 6] tensor the choices are 0, 1 and 2
-(or -3 .. -1), giving [1, 7, 6], [7, 1, 6] and [7, 6, 1].
+puts the new axis last, and the most negative one allowed puts it first.
+For a [7, 6] tensor the choices are 0, 1 and 2 (or -3, -2 and -1),
+giving [1, 7, 6], [7, 1, 6] and [7, 6, 1]. For a [12] row they are 0
+and 1, or -2 and -1.
 
 SYNTAX:
 t.unsqueeze <dim: int>
@@ -592,8 +594,8 @@ The tensor (a list or numpy array becomes a float32 tensor first).
 Receiving it makes the node send.
 
 dim (int box, also an inlet - only when an argument was given):
-Where to insert the axis. A dim outside the allowed range sends
-nothing. Changing it does NOT send by itself; in the demo the metro
+Where to insert the axis: from minus (the number of axes + 1) up to
+the number of axes. A dim outside that range sends nothing. Changing it does NOT send by itself; in the demo the metro
 re-sends the ramp, so the picture follows.
 
 OUTPUTS:
@@ -605,7 +607,8 @@ READING THE DEMO:
 The ramp arrives as [12], a row. t.unsqueeze 1 makes it [12, 1]: twelve
 rows of one value, and the heat_map draws a column. Type 0 into dim and
 it is [1, 12] - one row of twelve, which looks like the input again but
-is now 2-D (t.info shows the extra 1). -1 is the same as 1 here.
+is now 2-D (t.info shows the extra 1). -1 is the same as 1 here, and
+-2 the same as 0.
 
 RELATED:
 t.squeeze removes length-1 axes - the reverse. t.reshape can set any
@@ -619,7 +622,7 @@ demo = ramp12() + [
 ] + info_list('i', 300, 62) + [
     {'key': 'us', 'init': 't.unsqueeze 1', 'pos': (30, 440), 'w': 150, 'h': 100,
      'props': {'dim': 1}},
-    {'key': 'c1', 'comment': True, 'text': 'type 0, 1 or -1 into dim', 'pos': (30, 445)},
+    {'key': 'c1', 'comment': True, 'text': 'type 0, 1, -1 or -2 into dim', 'pos': (30, 445)},
     {'key': 'hout', 'init': 'heat_map', 'pos': (30, 570), 'w': 240, 'h': 250,
      'props': HM(220, 200, 12)},
     {'key': 'c2', 'comment': True, 'text': 'out: one more axis, of length 1',
@@ -999,7 +1002,9 @@ The joined tensor.
 
 IF A SHAPE DOES NOT FIT:
 Unlike np.concatenate, t.cat does not stop: a tensor whose shape does
-not fit is LEFT OUT, silently, and the rest are joined. With two inputs
+not fit is LEFT OUT and the rest are joined. Nothing is said unless the
+app's verbose setting is on; then the console names the input that was
+left out (tensor 2, tensor 3 ...). With two inputs
 that means tensor 1 comes out alone, unchanged - so if the output is
 the same size as tensor 1, check the other's shape. The same happens
 before anything has reached tensor 2.
@@ -1057,8 +1062,10 @@ INPUTS and PARAMETERS:
 
 """ + INPUTS_COUNT + """
 Each must have exactly the same shape as tensor 1. One that does not is
-LEFT OUT, silently, and the rest are stacked - so a stack that comes out
-with fewer layers than inputs means a shape did not match. Before
+LEFT OUT and the rest are stacked - so a stack that comes out with fewer
+layers than inputs means a shape did not match. Nothing is said unless
+the app's verbose setting is on; then the console names the input that
+was left out (tensor 2, tensor 3 ...). Before
 anything reaches tensor 2, tensor 1 is stacked alone (a new axis of
 length 1).
 
@@ -1066,8 +1073,9 @@ dim (int box, also an inlet):
 Where the new axis goes. 0 (the default) puts it first: the tensors
 become the rows (for 1-D inputs) or the layers (for 2-D inputs). The
 new axis can also go last - for two rows of 8, dim 1 gives 8 rows of 2,
-the inputs becoming the columns. -1 also means last. Changing it does
-NOT send by itself; in the demo the metro re-sends.
+the inputs becoming the columns. Negative counts from the end: -1 also
+means last, and -2 (for 1-D inputs) means first, the same as 0. Changing
+it does NOT send by itself; in the demo the metro re-sends.
 
 OUTPUTS:
 
@@ -1175,8 +1183,7 @@ t.hstack puts the ramp to the right of the F: 7 by 12 (t.info).
 
 RELATED:
 t.vstack joins one above the other; t.dstack in depth. t.column_stack
-is meant to turn rows into columns (see its page for what this node
-does). t.cat lets you choose the axis. np.concatenate is the numpy
+turns rows into columns (two rows of 8 become 8 by 2). t.cat lets you choose the axis. np.concatenate is the numpy
 version."""
 
 demo = two_pictures() + [
@@ -1304,21 +1311,26 @@ print(build('t.dstack', 't.dstack - join in depth', body,
             subpatch=[F_SUB, RAMP_SUB]))
 
 # =============================================================== t.column_stack
-body = """Meant to join rows as COLUMNS - but at present it does exactly what
-t.hstack does.
+body = """Joins tensors side by side as COLUMNS: each 1-D input becomes one
+column of the result.
 
-torch.column_stack turns each 1-D input into a column and puts the
-columns side by side: two rows of 8 should give an 8 by 2 table, one
-input per column. That is the usual way to pair up x and y lists into
-points.
+Two rows of 8 become an 8 by 2 table - the first input down the left,
+the second down the right. That is the usual way to pair up x and y
+lists into points (8 points, each an x and a y), or to gather several
+signals into one table with a column per signal.
 
-WHAT THIS NODE ACTUALLY DOES:
-The node is built on t.hstack's code and never switches to
-torch.column_stack, so it runs torch.hstack. For 2-D inputs the two
-agree (two 7 by 6 pictures become 7 by 12 either way). For 1-D inputs
-they do not: two rows of 8 come out as ONE row of 16, not 8 by 2. Until
-that is fixed, use t.stack with dim 1 to get the columns - as the demo
-does.
+HOW IT DIFFERS FROM t.hstack:
+t.hstack lays two rows of 8 end to end, as ONE row of 16. t.column_stack
+first stands each 1-D input up as a column of 8, then puts the columns
+side by side. For 2-D inputs the two agree: two 7 by 6 pictures become
+7 by 12 either way.
+
+INPUTS OF DIFFERENT WIDTHS:
+The inputs need only the same number of ROWS. A 2-D input adds all of
+its columns, so an 8 by 2 table and a row of 8 join into 8 by 3 - which
+is how to add one more column to a table you already have (the second
+half of the demo). Inputs with different numbers of rows cannot be
+joined: the console prints an error and nothing is sent.
 
 """ + STACK_SYNTAX.format(name='t.column_stack') + """
 
@@ -1327,58 +1339,76 @@ t.column_stack
 
 INPUTS:
 
-""" + stack_inputs() + """
+tensor 1:
+The first tensor - it becomes the left-hand column(s). Receiving it
+makes the node join and send. A list or numpy array becomes a float32
+tensor.
+
+tensor 2, tensor 3, ...:
+The others, in order, to the right. They are only stored, so they must
+arrive BEFORE tensor 1. Each is converted to tensor 1's dtype and
+device. Until something has reached tensor 2, tensor 1 comes out on its
+own as a single column ([8] becomes [8, 1]).
 
 OUTPUTS:
 
 stacked tensors:
-The joined tensor (as t.hstack, above).
+The table: as many rows as the inputs, and one column per 1-D input
+plus all the columns of each 2-D input.
 
 READING THE DEMO:
-tensor 1 is a ramp rising across 8 cells, tensor 2 the same falling.
-t.column_stack gives one strip of 16 - the t.hstack result. t.stack
-with dim 1 gives what column_stack is supposed to: 8 rows of 2, rising
-on the left and falling on the right.
+tensor 1 is a ramp rising across 8 values (drag stop on its
+t.linspace); tensor 2 the same ramp falling, made once when the patch
+opens. The first t.column_stack gives 8 rows of 2: rising down the left,
+falling down the right. That 8 by 2 table then goes into a second
+t.column_stack beside a row of 8 values all 0.5, and comes out 8 by 3 -
+the two columns and a third, all one middle colour.
 
 RELATED:
-t.hstack is what this node runs. t.stack (dim 1) pairs rows into
-columns. t.vstack pairs them as rows. np.stack (axis 1) is the numpy
+t.hstack joins side by side without turning rows into columns. t.stack
+with dim 1 also makes the columns from 1-D inputs, but needs every input
+the same shape. t.vstack joins as rows. np.stack (axis 1) is the numpy
 way to make the columns."""
 
 demo = [
     {'key': 'met', 'init': 'metro 100', 'pos': (30, 62), 'w': 129, 'h': 70, 'props': METRO},
     {'key': 'lsa', 'init': 't.linspace 0 1 8', 'pos': (30, 150), 'w': 220, 'h': 200,
      'props': {'start': 0.0, 'stop': 1.0, 'steps': 8}},
-    {'key': 'c0', 'comment': True, 'text': 'tensor 1: rising', 'pos': (30, 155)},
+    {'key': 'c0', 'comment': True, 'text': 'tensor 1: rising. drag stop', 'pos': (30, 155)},
     {'key': 'lb', 'init': 'load_bang', 'pos': (330, 62), 'w': 88, 'h': 46},
     {'key': 'lsb', 'init': 't.linspace 1 0 8', 'pos': (330, 150), 'w': 220, 'h': 200,
      'props': {'start': 1.0, 'stop': 0.0, 'steps': 8}},
     {'key': 'c1', 'comment': True, 'text': 'tensor 2: falling, made once', 'pos': (330, 155)},
     {'key': 'cs', 'init': 't.column_stack', 'pos': (30, 380), 'w': 180, 'h': 100},
-    {'key': 'hcs', 'init': 'heat_map', 'pos': (30, 500), 'w': 540, 'h': 90,
-     'props': HM(520, 40, 1, fmt='none')},
-    {'key': 'c2', 'comment': True, 'text': 't.column_stack: one row of 16 (the hstack result)',
-     'pos': (30, 505)},
-] + info_list('a', 300, 380) + [
-    {'key': 'st', 'init': 't.stack', 'pos': (30, 620), 'w': 180, 'h': 120,
-     'props': {'dim': 1}},
-    {'key': 'c3', 'comment': True, 'text': 't.stack, dim 1: the columns you wanted',
-     'pos': (30, 625)},
-    {'key': 'hst', 'init': 'heat_map', 'pos': (30, 760), 'w': 200, 'h': 300,
+    {'key': 'c2', 'comment': True, 'text': 'two rows of 8 in, as two columns',
+     'pos': (30, 385)},
+    {'key': 'hcs', 'init': 'heat_map', 'pos': (30, 500), 'w': 200, 'h': 300,
      'props': HM(180, 250, 8)},
-] + info_list('b', 300, 760) + see_also(1090, ['t.hstack', 't.stack', 't.vstack', 'np.stack'])
-links = [('lb', 'out', 'lsb', '###input'),
-         ('lsb', 'linspace out', 'cs', 'tensor 2'), ('lsb', 'linspace out', 'st', 'tensor 2'),
+] + info_list('a', 260, 500) + [
+    {'key': 'lsc', 'init': 't.linspace 0.5 0.5 8', 'pos': (330, 840), 'w': 220, 'h': 200,
+     'props': {'start': 0.5, 'stop': 0.5, 'steps': 8}},
+    {'key': 'c3', 'comment': True, 'text': 'tensor 2: eight values of 0.5, made once',
+     'pos': (330, 845)},
+    {'key': 'cs2', 'init': 't.column_stack', 'pos': (30, 1060), 'w': 180, 'h': 100},
+    {'key': 'c4', 'comment': True, 'text': 'the 8 x 2 table beside a row of 8: different widths',
+     'pos': (30, 1065)},
+    {'key': 'hcs2', 'init': 'heat_map', 'pos': (30, 1180), 'w': 260, 'h': 300,
+     'props': HM(240, 250, 8)},
+] + info_list('b', 320, 1180) + see_also(1510, ['t.hstack', 't.stack', 't.vstack', 'np.stack'])
+links = [('lb', 'out', 'lsb', '###input'), ('lb', 'out', 'lsc', '###input'),
+         ('lsb', 'linspace out', 'cs', 'tensor 2'),
+         ('lsc', 'linspace out', 'cs2', 'tensor 2'),
          ('met', '', 'lsa', '###input'),
-         ('lsa', 'linspace out', 'cs', 'tensor 1'), ('lsa', 'linspace out', 'st', 'tensor 1'),
-         ('cs', 'stacked tensors', 'hcs', 'y'), ('st', 'output', 'hst', 'y')] + \
-    info_links('a', 'cs', 'stacked tensors') + info_links('b', 'st', 'output')
-print(build('t.column_stack', 't.column_stack - rows as columns (currently as t.hstack)',
-            body, demo, links, demo_width=620, text_width=760, text_height=860))
+         ('lsa', 'linspace out', 'cs', 'tensor 1'),
+         ('cs', 'stacked tensors', 'hcs', 'y'), ('cs', 'stacked tensors', 'cs2', 'tensor 1'),
+         ('cs2', 'stacked tensors', 'hcs2', 'y')] + \
+    info_links('a', 'cs', 'stacked tensors') + info_links('b', 'cs2', 'stacked tensors')
+print(build('t.column_stack', 't.column_stack - rows as columns, side by side',
+            body, demo, links, demo_width=620, text_width=760, text_height=1080))
 
 
 # ------------------------------------------------- splitting
-def split_body(name, other, sizes7, how, contrast):
+def split_body(name, other, sizes7, how, contrast, sizes2='4 rows, then 3'):
     return f"""Cuts a tensor into a number of pieces along one axis, and sends each
 piece from its own outlet.
 
@@ -1388,11 +1418,15 @@ points, the first and second half of a recording.
 
 {how}
 
-THE NUMBER OF PIECES IS FIXED:
-It is the first argument, and it decides how many outlets the node has
-(tensor 0, tensor 1, ...), so it cannot change on a live node - retype
-the node to change it. The 'split' box among the node's options shows
-the count, but editing it does nothing.
+THE NUMBER OF PIECES:
+The first argument decides how many outlets the node has (tensor 0,
+tensor 1, ...) and how many pieces it cuts. The 'split' box among the
+node's options sets the number of pieces afterwards, from 1 up to the
+number of outlets - it cannot go higher, because the outlets are made
+when the node is. With fewer pieces than outlets the later outlets send
+nothing (a display on them keeps the last piece it was sent). A message
+'split 2' into tensor in sets it from the patch, as the demo's messages
+do.
 
 SYNTAX:
 {name} <pieces: int> <dim: int>
@@ -1406,7 +1440,8 @@ INPUTS and PARAMETERS:
 tensor in:
 The tensor (a list or numpy array becomes a float32 tensor first).
 Every tensor that arrives is cut and the pieces sent, tensor 0 first.
-Only this inlet makes the node send.
+Only this inlet makes the node send. A message 'split <n>' arriving
+here sets the number of pieces and cuts the last tensor again.
 
 dim (int box, also an inlet):
 The axis to cut across: 0 cuts the rows into groups (horizontal cuts),
@@ -1426,7 +1461,9 @@ READING THE DEMO:
 {name} 3 cuts the 7 by 6 F into three bands of rows: {sizes7}. t.info
 shows each piece's shape. Type 1 into dim and it cuts the 6 columns
 instead, three slices 2 columns wide: the stem, then the two halves of
-the arms.
+the arms. Click split 2 and the F is cut in two ({sizes2}), tensor 2
+going quiet - its display keeps the last piece it got; split 1 sends
+the whole F from tensor 0; split 3 brings back three.
 
 {contrast}"""
 
@@ -1440,6 +1477,14 @@ def split_demo(node):
         {'key': 'sp', 'init': node + ' 3', 'pos': (30, 350), 'w': 180, 'h': 140,
          'props': {'dim': 0}},
         {'key': 'c1', 'comment': True, 'text': 'type 0 or 1 into dim', 'pos': (30, 355)},
+        {'key': 'm3', 'init': 'message', 'pos': (200, 370), 'w': 130, 'h': 42,
+         'props': MSG('split 3')},
+        {'key': 'm2', 'init': 'message', 'pos': (350, 370), 'w': 130, 'h': 42,
+         'props': MSG('split 2')},
+        {'key': 'm1', 'init': 'message', 'pos': (500, 370), 'w': 130, 'h': 42,
+         'props': MSG('split 1')},
+        {'key': 'c5', 'comment': True, 'text': 'click: how many pieces (up to 3, the outlets)',
+         'pos': (200, 420)},
         {'key': 'h0', 'init': 'heat_map', 'pos': (30, 510), 'w': 190, 'h': 190,
          'props': HM(170, 140, 3, fmt='none')},
         {'key': 'h1', 'init': 'heat_map', 'pos': (240, 510), 'w': 190, 'h': 190,
@@ -1459,6 +1504,7 @@ def split_demo(node):
 
 def split_links():
     out = [('rs', 'F', 'hin', 'y'), ('rs', 'F', 'sp', 'tensor in')]
+    out += [(m, 'message out', 'sp', 'tensor in') for m in ('m3', 'm2', 'm1')]
     for i in range(3):
         out += [('sp', f'tensor {i}', f'h{i}', 'y'), ('sp', f'tensor {i}', f'i{i}', 'in'),
                 (f'i{i}', 'shape', f'l{i}', '')]

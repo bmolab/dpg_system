@@ -396,7 +396,7 @@
         },
         "1": {
             "height": 1582,
-            "width": 1704,
+            "width": 1698,
             "position": [
                 100,
                 100
@@ -452,17 +452,17 @@
                 "2": {
                     "name": "text_block",
                     "id": 311,
-                    "position_x": 896,
+                    "position_x": 890,
                     "position_y": 45,
                     "width": 768,
-                    "height": 1020,
+                    "height": 1036,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Splits a matrix into three pieces - turn, stretch, turn - with the\nsingular value decomposition: the input equals U x diag(S) x Vh.\n\nS, the singular values, is the part to look at first. They come out\nlargest first, and how fast they fall away says how many independent\npatterns the matrix really holds. If the first two are large and the\nrest are near zero, the data is really two patterns mixed in different\namounts, with noise on top. For a set of poses, or joint angles over\ntime, the answer is usually far fewer than the number of channels.\nU says how much of each pattern each ROW uses; the rows of Vh are the\npatterns themselves.\n\nTHE OUTLETS ARE MISLABELLED:\nThe node's outlet names do not match what they send. Read them as:\n  'S tensor out'  sends U   - one column per pattern, one row per input row\n  'V tensor out'  sends S   - the singular values, largest first\n  'D tensor out'  sends Vh  - one row per pattern, one column per input column\nThey are sent in the order Vh, S, U.\n\nSYNTAX:\nt.linalg.svd\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32\ntensor). Any shape, rows x columns; a stack of matrices is split one by\none. Receiving it decomposes and sends.\n\nfull (checkbox):\nOn (the default): U is square, rows x rows, and Vh columns x columns -\nfor a 6 x 4 input U is 6 x 6, two of its columns multiplying nothing.\nOff: the reduced form, U 6 x 4 - smaller, and what fits the rebuild\nin this demo (with full on, the rebuild prints a shape error). Changing\nit does not send by itself; the next matrix uses it.\n\nOUTPUTS:\n\nS tensor out: U.\nV tensor out: S, the singular values (1-D, never negative).\nD tensor out: Vh.\n\nREADING THE DEMO:\nmake_matrix sends a 6 x 4 matrix ten times a second: every row a blend\nof two patterns, plus a checker pattern scaled by the slider. With the\nslider at 0 the singular values read about 4.9, 2.6, 0, 0 - two\npatterns, so two values. Raise the slider and a third singular value\ngrows from 0. The fourth stays 0: there are still only three patterns.\nU and Vh are shown as pictures (blue above 0, red below). The bottom\npicture multiplies the three pieces back together - t.diag makes S\ninto a square matrix, np.matmul does the products - and it is the input\nagain.\n\nRELATED:\nt.linalg.pca_low_rank finds the leading patterns of a set of points,\ncentred first. t.linalg.eig finds the directions a square matrix only\nstretches. t.linalg.qr splits into perpendicular directions and a\ntriangle. np.linalg.matrix_rank counts the singular values that are not\nzero. np.matmul rebuilds.",
+                            "value": "Splits a matrix into three pieces - turn, stretch, turn - with the\nsingular value decomposition: the input equals U x diag(S) x Vh.\n\nS, the singular values, is the part to look at first. They come out\nlargest first, and how fast they fall away says how many independent\npatterns the matrix really holds. If the first two are large and the\nrest are near zero, the data is really two patterns mixed in different\namounts, with noise on top. For a set of poses, or joint angles over\ntime, the answer is usually far fewer than the number of channels.\nU says how much of each pattern each ROW uses; the rows of Vh are the\npatterns themselves.\n\nSYNTAX:\nt.linalg.svd\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32\ntensor). Any shape, rows x columns; a stack of matrices is split one by\none. Receiving it decomposes and sends.\n\nfull (checkbox):\nOn (the default): U is square, rows x rows, and Vh columns x columns -\nfor a 6 x 4 input U is 6 x 6, two of its columns multiplying nothing.\nOff: the reduced form, U 6 x 4 - smaller, and what fits the rebuild\nin this demo (with full on, the rebuild prints a shape error). Changing\nit does not send by itself; the next matrix uses it.\n\nOUTPUTS (sent right to left - Vh first, U last):\n\nU out:\nOne column per pattern, one row per input row: how much of each\npattern each row uses.\n\nS out:\nThe singular values, largest first (1-D, never negative): how strong\neach pattern is.\n\nVh out:\nOne row per pattern, one column per input column: the patterns\nthemselves, each of length 1.\n\nREADING THE DEMO:\nmake_matrix sends a 6 x 4 matrix ten times a second: every row a blend\nof two patterns, plus a checker pattern scaled by the slider. With the\nslider at 0 the singular values read about 4.9, 2.6, 0, 0 - two\npatterns, so two values. Raise the slider and a third singular value\ngrows from 0. The fourth stays 0: there are still only three patterns.\nU and Vh are shown as pictures (blue above 0, red below). The bottom\npicture multiplies the three pieces back together - t.diag makes S\ninto a square matrix, np.matmul does the products - and it is the input\nagain.\n\nRELATED:\nt.linalg.pca_low_rank finds the leading patterns of a set of points,\ncentred first. t.linalg.eig finds the directions a square matrix only\nstretches. t.linalg.qr splits into perpendicular directions and a\ntriangle. np.linalg.matrix_rank counts the singular values that are not\nzero. np.matmul rebuilds.",
                             "value_type": "str"
                         },
                         "1": {
@@ -477,7 +477,7 @@
                         },
                         "3": {
                             "name": "height",
-                            "value": 1004,
+                            "value": 1020,
                             "value_type": "int"
                         },
                         "4": {
@@ -486,7 +486,7 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Splits a matrix into three pieces - turn, stretch, turn - with the\nsingular value decomposition: the input equals U x diag(S) x Vh.\n\nS, the singular values, is the part to look at first. They come out\nlargest first, and how fast they fall away says how many independent\npatterns the matrix really holds. If the first two are large and the\nrest are near zero, the data is really two patterns mixed in different\namounts, with noise on top. For a set of poses, or joint angles over\ntime, the answer is usually far fewer than the number of channels.\nU says how much of each pattern each ROW uses; the rows of Vh are the\npatterns themselves.\n\nTHE OUTLETS ARE MISLABELLED:\nThe node's outlet names do not match what they send. Read them as:\n  'S tensor out'  sends U   - one column per pattern, one row per input row\n  'V tensor out'  sends S   - the singular values, largest first\n  'D tensor out'  sends Vh  - one row per pattern, one column per input column\nThey are sent in the order Vh, S, U.\n\nSYNTAX:\nt.linalg.svd\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32\ntensor). Any shape, rows x columns; a stack of matrices is split one by\none. Receiving it decomposes and sends.\n\nfull (checkbox):\nOn (the default): U is square, rows x rows, and Vh columns x columns -\nfor a 6 x 4 input U is 6 x 6, two of its columns multiplying nothing.\nOff: the reduced form, U 6 x 4 - smaller, and what fits the rebuild\nin this demo (with full on, the rebuild prints a shape error). Changing\nit does not send by itself; the next matrix uses it.\n\nOUTPUTS:\n\nS tensor out: U.\nV tensor out: S, the singular values (1-D, never negative).\nD tensor out: Vh.\n\nREADING THE DEMO:\nmake_matrix sends a 6 x 4 matrix ten times a second: every row a blend\nof two patterns, plus a checker pattern scaled by the slider. With the\nslider at 0 the singular values read about 4.9, 2.6, 0, 0 - two\npatterns, so two values. Raise the slider and a third singular value\ngrows from 0. The fourth stays 0: there are still only three patterns.\nU and Vh are shown as pictures (blue above 0, red below). The bottom\npicture multiplies the three pieces back together - t.diag makes S\ninto a square matrix, np.matmul does the products - and it is the input\nagain.\n\nRELATED:\nt.linalg.pca_low_rank finds the leading patterns of a set of points,\ncentred first. t.linalg.eig finds the directions a square matrix only\nstretches. t.linalg.qr splits into perpendicular directions and a\ntriangle. np.linalg.matrix_rank counts the singular values that are not\nzero. np.matmul rebuilds."
+                    "text": "Splits a matrix into three pieces - turn, stretch, turn - with the\nsingular value decomposition: the input equals U x diag(S) x Vh.\n\nS, the singular values, is the part to look at first. They come out\nlargest first, and how fast they fall away says how many independent\npatterns the matrix really holds. If the first two are large and the\nrest are near zero, the data is really two patterns mixed in different\namounts, with noise on top. For a set of poses, or joint angles over\ntime, the answer is usually far fewer than the number of channels.\nU says how much of each pattern each ROW uses; the rows of Vh are the\npatterns themselves.\n\nSYNTAX:\nt.linalg.svd\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list of lists or a NumPy array is turned into a float32\ntensor). Any shape, rows x columns; a stack of matrices is split one by\none. Receiving it decomposes and sends.\n\nfull (checkbox):\nOn (the default): U is square, rows x rows, and Vh columns x columns -\nfor a 6 x 4 input U is 6 x 6, two of its columns multiplying nothing.\nOff: the reduced form, U 6 x 4 - smaller, and what fits the rebuild\nin this demo (with full on, the rebuild prints a shape error). Changing\nit does not send by itself; the next matrix uses it.\n\nOUTPUTS (sent right to left - Vh first, U last):\n\nU out:\nOne column per pattern, one row per input row: how much of each\npattern each row uses.\n\nS out:\nThe singular values, largest first (1-D, never negative): how strong\neach pattern is.\n\nVh out:\nOne row per pattern, one column per input column: the patterns\nthemselves, each of length 1.\n\nREADING THE DEMO:\nmake_matrix sends a 6 x 4 matrix ten times a second: every row a blend\nof two patterns, plus a checker pattern scaled by the slider. With the\nslider at 0 the singular values read about 4.9, 2.6, 0, 0 - two\npatterns, so two values. Raise the slider and a third singular value\ngrows from 0. The fourth stays 0: there are still only three patterns.\nU and Vh are shown as pictures (blue above 0, red below). The bottom\npicture multiplies the three pieces back together - t.diag makes S\ninto a square matrix, np.matmul does the products - and it is the input\nagain.\n\nRELATED:\nt.linalg.pca_low_rank finds the leading patterns of a set of points,\ncentred first. t.linalg.eig finds the directions a square matrix only\nstretches. t.linalg.qr splits into perpendicular directions and a\ntriangle. np.linalg.matrix_rank counts the singular values that are not\nzero. np.matmul rebuilds."
                 },
                 "3": {
                     "name": "load_bang",
@@ -775,12 +775,12 @@
                     }
                 },
                 "13": {
-                    "init": "comment S (from 'V tensor out'): largest first",
+                    "init": "comment S: the singular values, largest first",
                     "name": "comment",
                     "id": 718,
                     "position_x": 624,
                     "position_y": 470,
-                    "width": 242,
+                    "width": 236,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -788,7 +788,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "S (from 'V tensor out'): largest first",
+                            "value": "S: the singular values, largest first",
                             "value_type": "str"
                         },
                         "1": {
@@ -797,7 +797,7 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "S (from 'V tensor out'): largest first"
+                    "comment": "S: the singular values, largest first"
                 },
                 "14": {
                     "name": "heat_map",
@@ -853,12 +853,12 @@
                     }
                 },
                 "15": {
-                    "init": "comment U (from 'S tensor out'): 6 x 4",
+                    "init": "comment U: 6 x 4, one column per pattern",
                     "name": "comment",
                     "id": 792,
                     "position_x": 624,
                     "position_y": 800,
-                    "width": 193,
+                    "width": 205,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -866,7 +866,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "U (from 'S tensor out'): 6 x 4",
+                            "value": "U: 6 x 4, one column per pattern",
                             "value_type": "str"
                         },
                         "1": {
@@ -875,7 +875,7 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "U (from 'S tensor out'): 6 x 4"
+                    "comment": "U: 6 x 4, one column per pattern"
                 },
                 "16": {
                     "name": "heat_map",
@@ -931,12 +931,12 @@
                     }
                 },
                 "17": {
-                    "init": "comment Vh (from 'D tensor out'): 4 x 4",
+                    "init": "comment Vh: 4 x 4, one pattern per row",
                     "name": "comment",
                     "id": 866,
                     "position_x": 624,
                     "position_y": 840,
-                    "width": 199,
+                    "width": 193,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -944,7 +944,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "Vh (from 'D tensor out'): 4 x 4",
+                            "value": "Vh: 4 x 4, one pattern per row",
                             "value_type": "str"
                         },
                         "1": {
@@ -953,7 +953,7 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "Vh (from 'D tensor out'): 4 x 4"
+                    "comment": "Vh: 4 x 4, one pattern per row"
                 },
                 "18": {
                     "name": "t.diag",
@@ -1273,7 +1273,7 @@
                     "source_node": 570,
                     "source_node_name": "",
                     "source_output_index": 0,
-                    "source_output_name": "D tensor out",
+                    "source_output_name": "Vh out",
                     "dest_node": 829,
                     "dest_node_name": "",
                     "dest_input_index": 0,
@@ -1283,7 +1283,7 @@
                     "source_node": 570,
                     "source_node_name": "",
                     "source_output_index": 0,
-                    "source_output_name": "D tensor out",
+                    "source_output_name": "Vh out",
                     "dest_node": 940,
                     "dest_node_name": "",
                     "dest_input_index": 0,
@@ -1293,7 +1293,7 @@
                     "source_node": 570,
                     "source_node_name": "",
                     "source_output_index": 0,
-                    "source_output_name": "V tensor out",
+                    "source_output_name": "S out",
                     "dest_node": 644,
                     "dest_node_name": "",
                     "dest_input_index": 0,
@@ -1303,7 +1303,7 @@
                     "source_node": 570,
                     "source_node_name": "",
                     "source_output_index": 0,
-                    "source_output_name": "V tensor out",
+                    "source_output_name": "S out",
                     "dest_node": 681,
                     "dest_node_name": "",
                     "dest_input_index": 0,
@@ -1313,7 +1313,7 @@
                     "source_node": 570,
                     "source_node_name": "",
                     "source_output_index": 0,
-                    "source_output_name": "V tensor out",
+                    "source_output_name": "S out",
                     "dest_node": 903,
                     "dest_node_name": "",
                     "dest_input_index": 0,
@@ -1343,7 +1343,7 @@
                     "source_node": 570,
                     "source_node_name": "",
                     "source_output_index": 0,
-                    "source_output_name": "S tensor out",
+                    "source_output_name": "U out",
                     "dest_node": 755,
                     "dest_node_name": "",
                     "dest_input_index": 0,
@@ -1353,7 +1353,7 @@
                     "source_node": 570,
                     "source_node_name": "",
                     "source_output_index": 0,
-                    "source_output_name": "S tensor out",
+                    "source_output_name": "U out",
                     "dest_node": 1014,
                     "dest_node_name": "",
                     "dest_input_index": 0,
