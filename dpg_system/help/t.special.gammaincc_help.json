@@ -1,0 +1,628 @@
+{
+    "height": 1082,
+    "width": 1727,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1014,
+    "name": "t.special.gammaincc_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.special.gammaincc_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.special.gammaincc - the gamma distribution's upper tail",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 709,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.special.gammaincc - the gamma distribution's upper tail",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.special.gammaincc - the gamma distribution's upper tail"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 919,
+            "position_y": 45,
+            "width": 768,
+            "height": 751,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Computes the regularised upper incomplete gamma function, element by\nelement, of a shape a (first input) and a value x (second input).\n\nIt is the upper tail of a gamma distribution with shape a: the chance of a\nvalue of x or more - how surprising a reading this large is. For whole\nnumbers it is also the Poisson distribution added up: with an average rate\nm, the chance of fewer than k events is gammaincc(k, m).\n\nTHE CURVE:\nFor each a, a falling S from 1 at x = 0 to 0 as x grows - the mirror of\ngammainc, and the two always sum to 1. With a = 1 it is e to the minus x\n(0.368 at x = 1). Larger a holds it near 1 for longer. Computed directly,\nso far-out tails stay accurate instead of being 1 minus nearly 1.\n\nSYNTAX:\nt.special.gammaincc\n\nINPUTS and PARAMETERS:\n\ntensor 1 in:\na, the shape - a tensor, or a single number applied to every x. Receiving\nit triggers the node. a should be positive: a = 0 gives a flat line (NaN\nat x = 0), and negative a gives NaN (not a number) everywhere.\n\ntensor 2 in:\nx, where to evaluate - a tensor, or a single number. It is only stored when\nit arrives, so send it BEFORE a. It is converted to a's dtype and device.\nThe two inputs are matched element by element, or broadcast when one is a\nsingle value. x must be 0 or more; negative x gives NaN.\n\nOUTPUTS:\n\ntensor out:\nThe result, between 0 and 1, in the broadcast shape of the two inputs.\n\nREADING THE DEMO:\nWhen the page opens, load_bang sends a bang to t.linspace first (200 values\nof x from 0 to 10 into the cold second input, drawn in the upper plot) and\nthen 1.0 to the float, which sends it to the first input and draws the\ncurve. Drag a and the curve redraws: small a rises early and fast, large a\nlater and more gently. To change the x range, drag start and stop on\nt.linspace, click its button, then nudge a - x alone does not trigger.\n\nRELATED:\nt.special.gammainc is the lower part; the two sum to 1.\nt.special.gammaln is the log of the complete gamma function.\nt.dist.gamma and t.dist.poisson sample from the distributions involved.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 735,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Computes the regularised upper incomplete gamma function, element by\nelement, of a shape a (first input) and a value x (second input).\n\nIt is the upper tail of a gamma distribution with shape a: the chance of a\nvalue of x or more - how surprising a reading this large is. For whole\nnumbers it is also the Poisson distribution added up: with an average rate\nm, the chance of fewer than k events is gammaincc(k, m).\n\nTHE CURVE:\nFor each a, a falling S from 1 at x = 0 to 0 as x grows - the mirror of\ngammainc, and the two always sum to 1. With a = 1 it is e to the minus x\n(0.368 at x = 1). Larger a holds it near 1 for longer. Computed directly,\nso far-out tails stay accurate instead of being 1 minus nearly 1.\n\nSYNTAX:\nt.special.gammaincc\n\nINPUTS and PARAMETERS:\n\ntensor 1 in:\na, the shape - a tensor, or a single number applied to every x. Receiving\nit triggers the node. a should be positive: a = 0 gives a flat line (NaN\nat x = 0), and negative a gives NaN (not a number) everywhere.\n\ntensor 2 in:\nx, where to evaluate - a tensor, or a single number. It is only stored when\nit arrives, so send it BEFORE a. It is converted to a's dtype and device.\nThe two inputs are matched element by element, or broadcast when one is a\nsingle value. x must be 0 or more; negative x gives NaN.\n\nOUTPUTS:\n\ntensor out:\nThe result, between 0 and 1, in the broadcast shape of the two inputs.\n\nREADING THE DEMO:\nWhen the page opens, load_bang sends a bang to t.linspace first (200 values\nof x from 0 to 10 into the cold second input, drawn in the upper plot) and\nthen 1.0 to the float, which sends it to the first input and draws the\ncurve. Drag a and the curve redraws: small a rises early and fast, large a\nlater and more gently. To change the x range, drag start and stop on\nt.linspace, click its button, then nudge a - x alone does not trigger.\n\nRELATED:\nt.special.gammainc is the lower part; the two sum to 1.\nt.special.gammaln is the log of the complete gamma function.\nt.dist.gamma and t.dist.poisson sample from the distributions involved."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "t",
+            "id": 385,
+            "position_x": 140,
+            "position_y": 62,
+            "width": 33,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1 bang"
+        },
+        "5": {
+            "init": "comment on open: the range, then a first value",
+            "name": "comment",
+            "id": 422,
+            "position_x": 584,
+            "position_y": 70,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "on open: the range, then a first value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "on open: the range, then a first value"
+        },
+        "6": {
+            "name": "t.linspace",
+            "id": 459,
+            "position_x": 250,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 0 10 200"
+        },
+        "7": {
+            "init": "comment the range: drag, then click its button",
+            "name": "comment",
+            "id": 496,
+            "position_x": 584,
+            "position_y": 160,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the range: drag, then click its button",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the range: drag, then click its button"
+        },
+        "8": {
+            "name": "float",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment drag me",
+            "name": "comment",
+            "id": 570,
+            "position_x": 584,
+            "position_y": 200,
+            "width": 52,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag me",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag me"
+        },
+        "10": {
+            "name": "plot",
+            "id": 607,
+            "position_x": 250,
+            "position_y": 340,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 10,
+                    "value_type": "int"
+                }
+            }
+        },
+        "11": {
+            "init": "comment in (second input): 0 to 10",
+            "name": "comment",
+            "id": 644,
+            "position_x": 584,
+            "position_y": 345,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in (second input): 0 to 10",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in (second input): 0 to 10"
+        },
+        "12": {
+            "name": "t.special.gammaincc",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 540,
+            "width": 125,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "name": "plot",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 650,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -0.05,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1.05,
+                    "value_type": "float"
+                }
+            }
+        },
+        "14": {
+            "name": "text_block",
+            "id": 755,
+            "annotation": true,
+            "position_x": 584,
+            "position_y": 655,
+            "width": 305,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "out: falls from 1 to 0; larger a falls later\n(plot from -0.05 to 1.05)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 297,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "out: falls from 1 to 0; larger a falls later\n(plot from -0.05 to 1.05)"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 860,
+            "width": 127,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.gammainc"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 212,
+            "position_y": 860,
+            "width": 121,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.gammaln"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 386,
+            "position_y": 860,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.gamma"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 904,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.poisson"
+        },
+        "19": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 940,
+            "position_x": 584,
+            "position_y": 904,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "20": {
+            "name": "close",
+            "id": 977,
+            "position_x": 24,
+            "position_y": 978,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "1",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2 in"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1 in"
+        },
+        "6": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

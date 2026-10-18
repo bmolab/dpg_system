@@ -1,11 +1,11 @@
 {
-    "height": 761,
-    "width": 1533,
+    "height": 1098,
+    "width": 1573,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 1088,
     "name": "t.energy_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.energy_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.energy - how much it changes",
+            "init": "comment t.energy - how much a tensor changes",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 377,
+            "width": 451,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.energy - how much it changes",
+                    "value": "t.energy - how much a tensor changes",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.energy - how much it changes"
+            "comment": "t.energy - how much a tensor changes"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 695,
+            "position_x": 765,
             "position_y": 45,
-            "width": 798,
-            "height": 656,
+            "width": 768,
+            "height": 916,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.energy adds up how much a tensor CHANGES from one value to the next.\n\nIt takes the differences between neighbouring values, makes them all \npositive, and sums them. So it measures the total distance travelled, not \nhow far from zero the values ended up. A signal that wanders a long way and \ncomes back has high energy and a small final value. For asking how much \nsomething moved over a stretch of samples, this is the measure.\n\n'n' takes the difference more than once before summing. With n = 1 you get \nthe total change; with n = 2, the total change in the change - how much the \nmovement itself speeds up and slows down, which is a measure of jerkiness \nrather than of travel.\n\nWHICH AXIS:\nWith no argument, the differences run along the LAST axis. Give an axis as \nthe argument - t.energy 0 - and a 'dim' inlet appears so it can be changed. \nEither way the result is one number, summed over everything.\n\nA tensor no longer than n along that axis has no differences to take, and \ngives 0.\n\nSYNTAX:\nt.energy <dim>\n\nEXAMPLE:\nt.energy\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nn:\nHow many times to take the difference before summing. 1 is total change; \n2 is total change in the change. Default 1.\n\ndim (only with an argument):\nThe axis to take the differences along.\n\nOUTPUTS: \n\ntensor out:\nA single number, as a one-value tensor.\n\nRELATED:\nt.diff gives the differences themselves, before summing.\nt.length is size rather than change: the demo shows both on the same values.",
+                    "value": "Adds up how much a tensor CHANGES from one value to the next: the\ndifferences between neighbours, made positive, summed into one number.\n\nIt measures the total distance travelled, not how far the values ended\nup from where they started. A signal that swings a long way and comes\nback has high energy and no overall change. Use it to ask how much\nsomething moved over a stretch of samples - a window of a joint's\npositions, a recorded gesture - or, with n 2, how jerky the movement\nwas: the total change in the change.\n\n(Despite the name, this is not the physicist's energy or the sum of\nsquares: it is the total variation, the sum of the sizes of the steps.)\n\nSYNTAX:\nt.energy <dim: int>\nWith no argument the differences run along the LAST axis and there is no\ndim inlet. Give an axis as the argument - t.energy 0 - and a dim box\nappears so it can be changed. Either way the answer is ONE number,\nsummed over everything.\n\nEXAMPLE:\nt.energy\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is measured and sent - the only inlet that makes the node send.\n\nn (int box):\nHow many times to difference before summing. 1 (the default) is total\nchange; 2 is total change in the change. 0 sums the sizes of the values\nthemselves. A tensor not longer than n along the axis gives 0. Negative n\nis refused with an error. Changing it does not send by itself - the\nmetro in the demo re-sends.\n\ndim (int box, only with an argument):\nThe axis to take the differences along.\n\nOUTPUTS:\n\ntensor out:\nA single number, as a one-value tensor.\n\nREADING THE DEMO:\nBoth messages hold values from 0 to 8, sent five times a second. The\nsteady climb 0 1 2 ... 8 moves 1 at each of its 8 steps: energy 8, the\nsame as the distance from start to finish. The zigzag 0 8 0 8 ... moves\n8 at each step: energy 64, although it ends where it began. Same range,\nsame start and end - eight times the travel.\n\nType 2 into n on both: the climb gives 0 (its speed never changes),\nthe zigzag 112 (it reverses with all its speed every step).\n\nRELATED:\nt.diff gives the differences themselves, before summing. np.diff is\nthe NumPy difference. t.length is the size of a tensor, not how much it\nchanges. t.sum adds values without differencing.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 790,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 640,
+                    "value": 900,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,51 +90,117 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.energy adds up how much a tensor CHANGES from one value to the next.\n\nIt takes the differences between neighbouring values, makes them all \npositive, and sums them. So it measures the total distance travelled, not \nhow far from zero the values ended up. A signal that wanders a long way and \ncomes back has high energy and a small final value. For asking how much \nsomething moved over a stretch of samples, this is the measure.\n\n'n' takes the difference more than once before summing. With n = 1 you get \nthe total change; with n = 2, the total change in the change - how much the \nmovement itself speeds up and slows down, which is a measure of jerkiness \nrather than of travel.\n\nWHICH AXIS:\nWith no argument, the differences run along the LAST axis. Give an axis as \nthe argument - t.energy 0 - and a 'dim' inlet appears so it can be changed. \nEither way the result is one number, summed over everything.\n\nA tensor no longer than n along that axis has no differences to take, and \ngives 0.\n\nSYNTAX:\nt.energy <dim>\n\nEXAMPLE:\nt.energy\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nn:\nHow many times to take the difference before summing. 1 is total change; \n2 is total change in the change. Default 1.\n\ndim (only with an argument):\nThe axis to take the differences along.\n\nOUTPUTS: \n\ntensor out:\nA single number, as a one-value tensor.\n\nRELATED:\nt.diff gives the differences themselves, before summing.\nt.length is size rather than change: the demo shows both on the same values."
+            "text": "Adds up how much a tensor CHANGES from one value to the next: the\ndifferences between neighbours, made positive, summed into one number.\n\nIt measures the total distance travelled, not how far the values ended\nup from where they started. A signal that swings a long way and comes\nback has high energy and no overall change. Use it to ask how much\nsomething moved over a stretch of samples - a window of a joint's\npositions, a recorded gesture - or, with n 2, how jerky the movement\nwas: the total change in the change.\n\n(Despite the name, this is not the physicist's energy or the sum of\nsquares: it is the total variation, the sum of the sizes of the steps.)\n\nSYNTAX:\nt.energy <dim: int>\nWith no argument the differences run along the LAST axis and there is no\ndim inlet. Give an axis as the argument - t.energy 0 - and a dim box\nappears so it can be changed. Either way the answer is ONE number,\nsummed over everything.\n\nEXAMPLE:\nt.energy\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or NumPy array is turned into a float32 tensor). Every\ninput is measured and sent - the only inlet that makes the node send.\n\nn (int box):\nHow many times to difference before summing. 1 (the default) is total\nchange; 2 is total change in the change. 0 sums the sizes of the values\nthemselves. A tensor not longer than n along the axis gives 0. Negative n\nis refused with an error. Changing it does not send by itself - the\nmetro in the demo re-sends.\n\ndim (int box, only with an argument):\nThe axis to take the differences along.\n\nOUTPUTS:\n\ntensor out:\nA single number, as a one-value tensor.\n\nREADING THE DEMO:\nBoth messages hold values from 0 to 8, sent five times a second. The\nsteady climb 0 1 2 ... 8 moves 1 at each of its 8 steps: energy 8, the\nsame as the distance from start to finish. The zigzag 0 8 0 8 ... moves\n8 at each step: energy 64, although it ends where it began. Same range,\nsame start and end - eight times the travel.\n\nType 2 into n on both: the climb gives 0 (its speed never changes),\nthe zigzag 112 (it reverses with all its speed every step).\n\nRELATED:\nt.diff gives the differences themselves, before summing. np.diff is\nthe NumPy difference. t.length is the size of a tensor, not how much it\nchanges. t.sum adds values without differencing."
         },
         "3": {
-            "name": "button",
+            "name": "metro",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t.rand",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 120,
-            "width": 163,
-            "height": 126,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "min",
-                    "value": -1.0,
-                    "value_type": "float"
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
                 },
                 "1": {
-                    "name": "max",
-                    "value": 1.0,
+                    "name": "period",
+                    "value": 200.0,
                     "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
                 }
             },
-            "init": "t.rand 8"
+            "init": "metro 200"
+        },
+        "4": {
+            "init": "comment re-sends both five times a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 524,
+            "position_y": 70,
+            "width": 211,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "re-sends both five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "re-sends both five times a second"
         },
         "5": {
-            "name": "heat_map",
+            "name": "message",
             "id": 422,
-            "position_x": 250,
-            "position_y": 120,
-            "width": 208,
-            "height": 150,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1 2 3 4 5 6 7 8",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "6": {
+            "init": "comment a steady climb",
+            "name": "comment",
+            "id": 459,
+            "position_x": 524,
+            "position_y": 155,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a steady climb",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a steady climb"
+        },
+        "7": {
+            "name": "heat_map",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 210,
+            "width": 468,
+            "height": 110,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -146,27 +212,27 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 200,
+                    "value": 460,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 100,
+                    "value": 60,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "sample count",
-                    "value": 8,
+                    "value": 1,
                     "value_type": "int"
                 },
                 "4": {
                     "name": "min y",
-                    "value": -1.0,
+                    "value": 0.0,
                     "value_type": "float"
                 },
                 "5": {
                     "name": "max y",
-                    "value": 1.0,
+                    "value": 8.0,
                     "value_type": "float"
                 },
                 "6": {
@@ -176,17 +242,111 @@
                 },
                 "7": {
                     "name": "number format",
-                    "value": "%.2f",
+                    "value": "%.0f",
                     "value_type": "str"
                 }
             }
         },
-        "6": {
-            "init": "comment click: eight values in a row",
+        "8": {
+            "name": "t.energy",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 99,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "n",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "9": {
+            "name": "float",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 450,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "init": "comment energy 8: 1 per step",
             "name": "comment",
-            "id": 459,
-            "position_x": 484,
-            "position_y": 310,
+            "id": 607,
+            "position_x": 524,
+            "position_y": 455,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "energy 8: 1 per step",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "energy 8: 1 per step"
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 540,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 8 0 8 0 8 0 8 0",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment a zigzag over the same range",
+            "name": "comment",
+            "id": 681,
+            "position_x": 524,
+            "position_y": 545,
             "width": 181,
             "height": 30,
             "visibility": "show_all",
@@ -195,7 +355,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "click: eight values in a row",
+                    "value": "a zigzag over the same range",
                     "value_type": "str"
                 },
                 "1": {
@@ -204,25 +364,84 @@
                     "value_type": "str"
                 }
             },
-            "comment": "click: eight values in a row"
+            "comment": "a zigzag over the same range"
         },
-        "7": {
-            "name": "t.energy",
-            "id": 496,
+        "13": {
+            "name": "heat_map",
+            "id": 718,
             "position_x": 30,
-            "position_y": 350,
+            "position_y": 600,
+            "width": 468,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 460,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 8.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "14": {
+            "name": "t.energy",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 730,
             "width": 99,
             "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "n",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
         },
-        "8": {
+        "15": {
             "name": "float",
-            "id": 533,
+            "id": 792,
             "position_x": 30,
-            "position_y": 475,
+            "position_y": 840,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -246,13 +465,13 @@
                 }
             }
         },
-        "9": {
-            "init": "comment total change along the row",
+        "16": {
+            "init": "comment energy 64: 8 per step",
             "name": "comment",
-            "id": 570,
-            "position_x": 484,
-            "position_y": 525,
-            "width": 168,
+            "id": 829,
+            "position_x": 524,
+            "position_y": 845,
+            "width": 138,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -260,7 +479,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "total change along the row",
+                    "value": "energy 64: 8 per step",
                     "value_type": "str"
                 },
                 "1": {
@@ -269,55 +488,67 @@
                     "value_type": "str"
                 }
             },
-            "comment": "total change along the row"
+            "comment": "energy 64: 8 per step"
         },
-        "10": {
-            "name": "t.length",
-            "id": 607,
-            "position_x": 250,
-            "position_y": 350,
-            "width": 64,
-            "height": 42,
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 920,
+            "width": 53,
+            "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "init": "help_link t.diff"
         },
-        "11": {
-            "name": "float",
-            "id": 644,
-            "position_x": 250,
-            "position_y": 475,
-            "width": 130,
-            "height": 42,
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 120,
+            "position_y": 920,
+            "width": 60,
+            "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
+            "properties": {},
+            "init": "help_link np.diff"
         },
-        "12": {
-            "init": "comment size, for contrast",
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 217,
+            "position_y": 920,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.length"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 322,
+            "position_y": 920,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.sum"
+        },
+        "21": {
+            "init": "comment SEE ALSO - click to open",
             "name": "comment",
-            "id": 681,
-            "position_x": 484,
-            "position_y": 565,
-            "width": 119,
+            "id": 1014,
+            "position_x": 524,
+            "position_y": 964,
+            "width": 156,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -325,7 +556,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "size, for contrast",
+                    "value": "SEE ALSO - click to open",
                     "value_type": "str"
                 },
                 "1": {
@@ -334,13 +565,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "size, for contrast"
+            "comment": "SEE ALSO - click to open"
         },
-        "13": {
+        "22": {
             "name": "close",
-            "id": 718,
+            "id": 1051,
             "position_x": 24,
-            "position_y": 547,
+            "position_y": 994,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -361,57 +592,77 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "###input"
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
             "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "2": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "tensor out",
-            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "4": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "5": {
-            "source_node": 607,
+        "1": {
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
             "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

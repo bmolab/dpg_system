@@ -1,5 +1,5 @@
 {
-    "height": 700,
+    "height": 692,
     "width": 743,
     "position": [
         100,
@@ -612,12 +612,12 @@
             "annotation": true,
             "position_x": 238,
             "position_y": 534,
-            "width": 360,
-            "height": 52,
+            "width": 452,
+            "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.dot, np.inner, np.outer, np.cross, np.matmul,\nnp.linalg.norm / euclidean_distance, np.linalg.det,\nnp.linalg.matrix_rank, np.linalg.inv, np.linalg.solve",
+                    "value": "np.dot, np.inner, np.outer, np.cross, np.matmul, np.linalg.norm,\nnp.linalg.det, np.linalg.matrix_rank, np.linalg.inv, np.linalg.solve",
                     "value_type": "str"
                 },
                 "1": {
@@ -627,12 +627,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 352,
+                    "value": 444,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 36,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -641,7 +641,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.dot, np.inner, np.outer, np.cross, np.matmul,\nnp.linalg.norm / euclidean_distance, np.linalg.det,\nnp.linalg.matrix_rank, np.linalg.inv, np.linalg.solve",
+            "text": "np.dot, np.inner, np.outer, np.cross, np.matmul, np.linalg.norm,\nnp.linalg.det, np.linalg.matrix_rank, np.linalg.inv, np.linalg.solve",
             "id": 1277,
             "visibility": "show_all",
             "draggable": true,
@@ -651,7 +651,7 @@
             "init": "help_link nodes_numpy_geometry_and_targets Geometry and targets",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 590,
+            "position_y": 582,
             "width": 200,
             "height": 44,
             "properties": {
@@ -675,7 +675,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 594,
+            "position_y": 586,
             "width": 446,
             "height": 40,
             "properties": {

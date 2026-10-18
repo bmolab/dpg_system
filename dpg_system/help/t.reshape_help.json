@@ -1,11 +1,11 @@
 {
-    "height": 901,
-    "width": 1566,
+    "height": 1041,
+    "width": 1883,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 1236,
     "name": "t.reshape_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.reshape_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t shape - the same numbers, arranged differently",
+            "init": "comment t.reshape - the same numbers in a new shape",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 598,
+            "width": 537,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t shape - the same numbers, arranged differently",
+                    "value": "t.reshape - the same numbers in a new shape",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t shape - the same numbers, arranged differently"
+            "comment": "t.reshape - the same numbers in a new shape"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 708,
+            "position_x": 1075,
             "position_y": 45,
-            "width": 818,
-            "height": 796,
+            "width": 768,
+            "height": 936,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These change a tensor's SHAPE without changing the numbers in it.\n\nTwelve numbers can be twelve in a row, three rows of four, four rows of three, \nor a 1 by 12 slab. The numbers are identical; only the arrangement differs, \nand everything downstream cares a great deal about the arrangement. \nMost \"this will not connect\" problems in tensor work are a shape mismatch.\n\nTHE NODES:\n\nt.reshape    rearrange into a shape you give\nt.view       the same, when the memory allows it\nt.flatten    collapse into one long row\nt.ravel      the same as flatten\nt.squeeze    remove axes of length 1\nt.unsqueeze  add an axis of length 1\nt.permute    reorder the axes, however many there are\nt.transpose  swap two named axes\nt.t          transpose a 2D tensor - the short form\nt.adjoint    transpose and conjugate, for complex tensors\n\nview VERSUS reshape:\nview demands that the tensor's memory is laid out in a way that allows the new \nshape to be READ from it without moving anything - so it is free, but it fails \non a tensor that has been transposed or otherwise strided. reshape falls back \nto making a copy when it has to, so it always works and is sometimes not free.\n\nUse view when you know the tensor is contiguous and want it to fail loudly if \nit is not. Use reshape when you just want the shape. If a view is raising \nerrors after a transpose, that is exactly this.\n\nWHY LENGTH-1 AXES MATTER:\nA tensor of shape (3,) and one of shape (1, 3) hold the same three numbers and \nare not interchangeable - one is a vector, the other a matrix with one row. \nunsqueeze and squeeze convert between them without touching the data. \nWhen a node insists on a 2D tensor and you have a 1D one, unsqueeze is the \nanswer; when a result carries a stray extra dimension, squeeze removes it.\n\npermute VERSUS transpose:\ntranspose swaps two axes. permute states the whole new order at once, which is \nwhat you need for anything beyond two dimensions - turning a \n(batch, time, joint) tensor into (batch, joint, time) is one permute and would \nbe several transposes.\n\nSYNTAX:\nt.reshape <dim> <dim> ...\nt.permute <axis> <axis> ...\n\nEXAMPLE:\nt.reshape 3 4\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nshape (t.reshape, t.view):\nThe new shape. The dimensions must multiply to the number of elements you have. \nA -1 means \"work this one out\", so \"6 -1\" gives six rows of whatever fits.\n\ndim (t.squeeze, t.unsqueeze):\nWhere to remove or add the length-1 axis.\n\npermute / dim 1 / dim 2:\nThe new axis order, or the two axes to swap.\n\nOUTPUTS: \n\noutput / tensor out:\nThe same numbers, differently arranged.\n\nTRANSPOSING DOES NOT MOVE ANYTHING:\ntranspose and permute change how the tensor is READ rather than reorganising \nmemory, so they are effectively free at any size. What they leave behind is a \nnon-contiguous tensor - which is why a view straight after one of them fails.",
+                    "value": "Rearranges a tensor into a new shape, keeping every number and its order.\n\nTwelve numbers can be one row of twelve, three rows of four, four rows of\nthree or a column of twelve. t.reshape changes which of these you have;\nthe numbers themselves are untouched. Reach for it when a node wants its\ndata in a particular layout - a list of 3-D points as rows of three, an\nimage as rows and columns, a 2-D result as one long row.\n\nHOW THE NUMBERS ARE PLACED:\nThe tensor is read row by row, as it would print, and the new shape is\nfilled row by row in the same order. So a ramp 0 .. 1 reshaped to 3 4\nputs the first four values in row 0, the next four in row 1 and so on -\nthe ramp still reads left to right, top to bottom.\n\nSYNTAX:\nt.reshape <dim> <dim> ...\nWith no arguments the shape is -1: everything in one row, like t.flatten.\n\nEXAMPLE:\nt.reshape 3 4\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list, a numpy array or a number is turned into a float32\ntensor on the cpu first). Receiving it is what makes the node send.\n\nshape (text box, also an inlet):\nThe new shape. Any whole numbers in the text are the dimensions, so\n3 4, [3, 4] and 3,4 all mean three rows of four. From a cord it takes a\nstring (as from the demo's string boxes), a list of numbers or a tensor\nof whole numbers. The dimensions must multiply to the number of values\nyou have: 3 4 works for twelve and fails for ten. One dimension may be\n-1, meaning \"whatever fits\": 6 -1 gives six rows of however many columns\nare needed. An empty box passes the tensor through unchanged.\nChanging the shape does NOT send by itself - the next tensor uses it. In\nthe demo the metro re-sends the ramp, so a click shows at once.\nIf the shape does not fit, a 'Shape Mismatch' message is printed and\nnothing is sent; the heat_map keeps its last picture.\n\nOUTPUTS:\n\noutput:\nThe same numbers in the new shape, same dtype and device.\n\nRESHAPE OR VIEW?\nt.reshape always works. When the tensor's memory is already in reading\norder it gives a view of the same memory; otherwise (after t.t or\nt.transpose, say) it quietly copies. t.view does only the first and\nrefuses the second - see its page.\n\nREADING THE DEMO:\nThe strip at the top is the ramp as it arrives: shape [12], one row.\nClick 3 4 and the heat_map below shows it folded into three rows of four,\nthe values still in order reading across each row. 4 3 and 2 6 fold it\ndifferently; 6 -1 lets t.reshape work out the 2; 12 1 makes a column -\ntwelve rows of one value, the ramp now running down the picture. t.info\nprints each result's shape.\n\nRELATED:\nt.view is the same refold, but only without copying. t.flatten goes\nback to one row. t.squeeze and t.unsqueeze remove or add a single axis\nof length 1 without spelling out the whole shape. t.transpose is NOT a\nreshape: it turns rows into columns, which moves the numbers.\nnp.reshape is the numpy version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 810,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 780,
+                    "value": 920,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,40 +90,98 @@
                     "value_type": "str"
                 }
             },
-            "text": "These change a tensor's SHAPE without changing the numbers in it.\n\nTwelve numbers can be twelve in a row, three rows of four, four rows of three, \nor a 1 by 12 slab. The numbers are identical; only the arrangement differs, \nand everything downstream cares a great deal about the arrangement. \nMost \"this will not connect\" problems in tensor work are a shape mismatch.\n\nTHE NODES:\n\nt.reshape    rearrange into a shape you give\nt.view       the same, when the memory allows it\nt.flatten    collapse into one long row\nt.ravel      the same as flatten\nt.squeeze    remove axes of length 1\nt.unsqueeze  add an axis of length 1\nt.permute    reorder the axes, however many there are\nt.transpose  swap two named axes\nt.t          transpose a 2D tensor - the short form\nt.adjoint    transpose and conjugate, for complex tensors\n\nview VERSUS reshape:\nview demands that the tensor's memory is laid out in a way that allows the new \nshape to be READ from it without moving anything - so it is free, but it fails \non a tensor that has been transposed or otherwise strided. reshape falls back \nto making a copy when it has to, so it always works and is sometimes not free.\n\nUse view when you know the tensor is contiguous and want it to fail loudly if \nit is not. Use reshape when you just want the shape. If a view is raising \nerrors after a transpose, that is exactly this.\n\nWHY LENGTH-1 AXES MATTER:\nA tensor of shape (3,) and one of shape (1, 3) hold the same three numbers and \nare not interchangeable - one is a vector, the other a matrix with one row. \nunsqueeze and squeeze convert between them without touching the data. \nWhen a node insists on a 2D tensor and you have a 1D one, unsqueeze is the \nanswer; when a result carries a stray extra dimension, squeeze removes it.\n\npermute VERSUS transpose:\ntranspose swaps two axes. permute states the whole new order at once, which is \nwhat you need for anything beyond two dimensions - turning a \n(batch, time, joint) tensor into (batch, joint, time) is one permute and would \nbe several transposes.\n\nSYNTAX:\nt.reshape <dim> <dim> ...\nt.permute <axis> <axis> ...\n\nEXAMPLE:\nt.reshape 3 4\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nshape (t.reshape, t.view):\nThe new shape. The dimensions must multiply to the number of elements you have. \nA -1 means \"work this one out\", so \"6 -1\" gives six rows of whatever fits.\n\ndim (t.squeeze, t.unsqueeze):\nWhere to remove or add the length-1 axis.\n\npermute / dim 1 / dim 2:\nThe new axis order, or the two axes to swap.\n\nOUTPUTS: \n\noutput / tensor out:\nThe same numbers, differently arranged.\n\nTRANSPOSING DOES NOT MOVE ANYTHING:\ntranspose and permute change how the tensor is READ rather than reorganising \nmemory, so they are effectively free at any size. What they leave behind is a \nnon-contiguous tensor - which is why a view straight after one of them fails."
+            "text": "Rearranges a tensor into a new shape, keeping every number and its order.\n\nTwelve numbers can be one row of twelve, three rows of four, four rows of\nthree or a column of twelve. t.reshape changes which of these you have;\nthe numbers themselves are untouched. Reach for it when a node wants its\ndata in a particular layout - a list of 3-D points as rows of three, an\nimage as rows and columns, a 2-D result as one long row.\n\nHOW THE NUMBERS ARE PLACED:\nThe tensor is read row by row, as it would print, and the new shape is\nfilled row by row in the same order. So a ramp 0 .. 1 reshaped to 3 4\nputs the first four values in row 0, the next four in row 1 and so on -\nthe ramp still reads left to right, top to bottom.\n\nSYNTAX:\nt.reshape <dim> <dim> ...\nWith no arguments the shape is -1: everything in one row, like t.flatten.\n\nEXAMPLE:\nt.reshape 3 4\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list, a numpy array or a number is turned into a float32\ntensor on the cpu first). Receiving it is what makes the node send.\n\nshape (text box, also an inlet):\nThe new shape. Any whole numbers in the text are the dimensions, so\n3 4, [3, 4] and 3,4 all mean three rows of four. From a cord it takes a\nstring (as from the demo's string boxes), a list of numbers or a tensor\nof whole numbers. The dimensions must multiply to the number of values\nyou have: 3 4 works for twelve and fails for ten. One dimension may be\n-1, meaning \"whatever fits\": 6 -1 gives six rows of however many columns\nare needed. An empty box passes the tensor through unchanged.\nChanging the shape does NOT send by itself - the next tensor uses it. In\nthe demo the metro re-sends the ramp, so a click shows at once.\nIf the shape does not fit, a 'Shape Mismatch' message is printed and\nnothing is sent; the heat_map keeps its last picture.\n\nOUTPUTS:\n\noutput:\nThe same numbers in the new shape, same dtype and device.\n\nRESHAPE OR VIEW?\nt.reshape always works. When the tensor's memory is already in reading\norder it gives a view of the same memory; otherwise (after t.t or\nt.transpose, say) it quietly copies. t.view does only the first and\nrefuses the second - see its page.\n\nREADING THE DEMO:\nThe strip at the top is the ramp as it arrives: shape [12], one row.\nClick 3 4 and the heat_map below shows it folded into three rows of four,\nthe values still in order reading across each row. 4 3 and 2 6 fold it\ndifferently; 6 -1 lets t.reshape work out the 2; 12 1 makes a column -\ntwelve rows of one value, the ramp now running down the picture. t.info\nprints each result's shape.\n\nRELATED:\nt.view is the same refold, but only without copying. t.flatten goes\nback to one row. t.squeeze and t.unsqueeze remove or add a single axis\nof length 1 without spelling out the whole shape. t.transpose is NOT a\nreshape: it turns rows into columns, which moves the numbers.\nnp.reshape is the numpy version."
         },
         "3": {
-            "name": "button",
+            "name": "metro",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
         },
         "4": {
-            "name": "t.rand",
+            "name": "t.linspace",
             "id": 385,
             "position_x": 30,
-            "position_y": 120,
+            "position_y": 152,
             "width": 163,
             "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.rand 3 4"
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 12,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 0 1 12"
         },
         "5": {
-            "name": "heat_map",
+            "init": "comment twelve values 0 .. 1, sent 10 times a second",
+            "name": "comment",
             "id": 422,
-            "position_x": 250,
-            "position_y": 120,
-            "width": 208,
-            "height": 150,
+            "position_x": 766,
+            "position_y": 157,
+            "width": 279,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twelve values 0 .. 1, sent 10 times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twelve values 0 .. 1, sent 10 times a second"
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 528,
+            "height": 90,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -135,17 +193,17 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 200,
+                    "value": 520,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 100,
+                    "value": 40,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "sample count",
-                    "value": 4,
+                    "value": 1,
                     "value_type": "int"
                 },
                 "4": {
@@ -170,13 +228,13 @@
                 }
             }
         },
-        "6": {
-            "init": "comment three rows of four",
+        "7": {
+            "init": "comment in: shape [12], one row",
             "name": "comment",
-            "id": 459,
-            "position_x": 484,
-            "position_y": 310,
-            "width": 119,
+            "id": 496,
+            "position_x": 766,
+            "position_y": 325,
+            "width": 150,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -184,7 +242,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "three rows of four",
+                    "value": "in: shape [12], one row",
                     "value_type": "str"
                 },
                 "1": {
@@ -193,27 +251,168 @@
                     "value_type": "str"
                 }
             },
-            "comment": "three rows of four"
+            "comment": "in: shape [12], one row"
         },
-        "7": {
-            "name": "t.t",
-            "id": 496,
+        "8": {
+            "name": "string",
+            "id": 533,
             "position_x": 30,
-            "position_y": 350,
-            "width": 70,
+            "position_y": 430,
+            "width": 130,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3 4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
         },
-        "8": {
+        "9": {
+            "name": "string",
+            "id": 570,
+            "position_x": 175,
+            "position_y": 430,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "4 3",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "string",
+            "id": 607,
+            "position_x": 320,
+            "position_y": 430,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "2 6",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "string",
+            "id": 644,
+            "position_x": 465,
+            "position_y": 430,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "6 -1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "string",
+            "id": 681,
+            "position_x": 610,
+            "position_y": 430,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "12 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment click a shape, or type one in the box",
+            "name": "comment",
+            "id": 718,
+            "position_x": 766,
+            "position_y": 435,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click a shape, or type one in the box",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click a shape, or type one in the box"
+        },
+        "14": {
+            "name": "t.reshape",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 243,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.reshape 3 4"
+        },
+        "15": {
             "name": "heat_map",
-            "id": 533,
-            "position_x": 250,
-            "position_y": 350,
-            "width": 208,
-            "height": 150,
+            "id": 792,
+            "position_x": 30,
+            "position_y": 590,
+            "width": 308,
+            "height": 230,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -225,12 +424,12 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 200,
+                    "value": 300,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 100,
+                    "value": 180,
                     "value_type": "int"
                 },
                 "3": {
@@ -260,13 +459,13 @@
                 }
             }
         },
-        "9": {
-            "init": "comment transposed: four rows of three",
+        "16": {
+            "init": "comment out: the same twelve values, refolded",
             "name": "comment",
-            "id": 570,
-            "position_x": 484,
-            "position_y": 430,
-            "width": 193,
+            "id": 829,
+            "position_x": 766,
+            "position_y": 595,
+            "width": 236,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -274,7 +473,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "transposed: four rows of three",
+                    "value": "out: the same twelve values, refolded",
                     "value_type": "str"
                 },
                 "1": {
@@ -283,118 +482,163 @@
                     "value_type": "str"
                 }
             },
-            "comment": "transposed: four rows of three"
+            "comment": "out: the same twelve values, refolded"
         },
-        "10": {
-            "name": "t.flatten",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 475,
-            "width": 70,
-            "height": 42,
+        "17": {
+            "name": "t.info",
+            "id": 866,
+            "position_x": 380,
+            "position_y": 590,
+            "width": 45,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "11": {
-            "name": "heat_map",
-            "id": 644,
-            "position_x": 250,
-            "position_y": 530,
-            "width": 208,
-            "height": 150,
+        "18": {
+            "name": "list",
+            "id": 903,
+            "position_x": 450,
+            "position_y": 590,
+            "width": 130,
+            "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "color",
-                    "value": "viridis",
+                    "name": "text in",
+                    "value": "",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
+                    "name": "font size",
+                    "value": "24",
                     "value_type": "str"
                 }
             }
         },
-        "12": {
-            "name": "text_block",
-            "id": 681,
-            "annotation": true,
-            "position_x": 484,
-            "position_y": 555,
-            "width": 194,
-            "height": 40,
+        "19": {
+            "init": "comment its shape: [rows, columns]",
+            "name": "comment",
+            "id": 940,
+            "position_x": 766,
+            "position_y": 720,
+            "width": 168,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "flattened: twelve in a row\nthe numbers never changed",
+                    "name": "text",
+                    "value": "its shape: [rows, columns]",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 186,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "flattened: twelve in a row\nthe numbers never changed"
+            "comment": "its shape: [rows, columns]"
         },
-        "13": {
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 850,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.view"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 120,
+            "position_y": 850,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.flatten"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 233,
+            "position_y": 850,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.squeeze"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 346,
+            "position_y": 850,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.unsqueeze"
+        },
+        "24": {
+            "name": "help_link",
+            "id": 1125,
+            "position_x": 474,
+            "position_y": 850,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.reshape"
+        },
+        "25": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1162,
+            "position_x": 766,
+            "position_y": 850,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "26": {
             "name": "close",
-            "id": 718,
+            "id": 1199,
             "position_x": 24,
-            "position_y": 710,
+            "position_y": 924,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -424,8 +668,8 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 422,
+            "source_output_name": "linspace out",
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
@@ -434,41 +678,91 @@
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 496,
+            "source_output_name": "linspace out",
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "3": {
-            "source_node": 496,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "tensor out",
-            "dest_node": 533,
+            "source_output_name": "string out",
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "y"
+            "dest_input_name": "shape"
         },
         "4": {
-            "source_node": 385,
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 607,
+            "source_output_name": "string out",
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "tensor in"
+            "dest_input_name": "shape"
         },
         "5": {
             "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "tensor out",
-            "dest_node": 644,
+            "source_output_name": "string out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "shape"
+        },
+        "6": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "shape"
+        },
+        "7": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "shape"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
+        },
+        "9": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "10": {
+            "source_node": 866,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
         }
     }
 }

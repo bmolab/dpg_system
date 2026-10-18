@@ -1,11 +1,11 @@
 {
-    "height": 416,
-    "width": 613,
+    "height": 520,
+    "width": 527,
     "position": [
         100,
         100
     ],
-    "id": 1018,
+    "id": 1166,
     "name": "nodes_torch_tensors_tensors",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_tensors_tensors.json",
     "nodes": {
@@ -136,21 +136,21 @@
             "presentation_state": "show_all"
         },
         "5": {
-            "init": "help_link tensor tensor / t.detach / t.to",
+            "init": "help_link tensor tensor / t.to",
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 206,
+            "width": 132,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "tensor / t.detach / t.to",
+                    "name": "tensor / t.to",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 190,
+                    "value": 116,
                     "value_type": "int"
                 },
                 "2": {
@@ -167,14 +167,14 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 244,
+            "position_x": 170,
             "position_y": 154,
-            "width": 181,
+            "width": 280,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "getting data into torch\n(t.detach, t.to, tensor)",
+                    "value": "make a torch tensor of the type you want\n(t.to, tensor)",
                     "value_type": "str"
                 },
                 "1": {
@@ -184,7 +184,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 173,
+                    "value": 272,
                     "value_type": "int"
                 },
                 "3": {
@@ -198,28 +198,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "getting data into torch\n(t.detach, t.to, tensor)",
+            "text": "make a torch tensor of the type you want\n(t.to, tensor)",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link t.info t.info / t.numel",
+            "init": "help_link t.detach t.detach",
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
-            "width": 206,
+            "width": 132,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.info / t.numel",
+                    "name": "t.detach",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 190,
+                    "value": 116,
                     "value_type": "int"
                 },
                 "2": {
@@ -236,14 +236,14 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 244,
+            "position_x": 170,
             "position_y": 206,
-            "width": 329,
-            "height": 40,
+            "width": 317,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "what a tensor actually is\n(t.contiguous, t.info, t.is_contiguous, t.numel)",
+                    "value": "the same numbers, without the gradient history",
                     "value_type": "str"
                 },
                 "1": {
@@ -253,12 +253,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 321,
+                    "value": 309,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -267,28 +267,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "what a tensor actually is\n(t.contiguous, t.info, t.is_contiguous, t.numel)",
+            "text": "the same numbers, without the gradient history",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "9": {
-            "init": "help_link t.buffer t.buffer / t.rolling_buffer",
+            "init": "help_link t.info t.info",
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
-            "width": 206,
+            "width": 132,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.buffer / t.rolling_buffer",
+                    "name": "t.info",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 190,
+                    "value": 116,
                     "value_type": "int"
                 },
                 "2": {
@@ -305,14 +305,14 @@
         "10": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 244,
+            "position_x": 170,
             "position_y": 258,
-            "width": 206,
-            "height": 40,
+            "width": 292,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "the recent past, as a tensor\n(t.buffer, t.rolling_buffer)",
+                    "value": "shape, dtype, device and gradient tracking",
                     "value_type": "str"
                 },
                 "1": {
@@ -322,12 +322,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 198,
+                    "value": 284,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 12,
                     "value_type": "int"
                 },
                 "4": {
@@ -336,28 +336,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "the recent past, as a tensor\n(t.buffer, t.rolling_buffer)",
+            "text": "shape, dtype, device and gradient tracking",
             "id": 907,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "11": {
-            "init": "help_link t.data_set t.data_set",
+            "init": "help_link t.numel t.numel",
             "name": "help_link",
             "position_x": 24,
             "position_y": 306,
-            "width": 206,
+            "width": 132,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "t.data_set",
+                    "name": "t.numel",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 190,
+                    "value": 116,
                     "value_type": "int"
                 },
                 "2": {
@@ -374,14 +374,14 @@
         "12": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 244,
+            "position_x": 170,
             "position_y": 310,
-            "width": 151,
+            "width": 218,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "a folder of tensors",
+                    "value": "how many values a tensor holds",
                     "value_type": "str"
                 },
                 "1": {
@@ -391,7 +391,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 143,
+                    "value": 210,
                     "value_type": "int"
                 },
                 "3": {
@@ -405,8 +405,146 @@
                     "value_type": "str"
                 }
             },
-            "text": "a folder of tensors",
+            "text": "how many values a tensor holds",
             "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link t.contiguous t.contiguous",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 132,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.contiguous",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 116,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 170,
+            "position_y": 362,
+            "width": 206,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "store a tensor row after row",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 198,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "store a tensor row after row",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link t.is_contiguous t.is_contiguous",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 132,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "t.is_contiguous",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 116,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 170,
+            "position_y": 414,
+            "width": 200,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "is it stored row after row?",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "is it stored row after row?",
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

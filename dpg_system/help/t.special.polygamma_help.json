@@ -1,0 +1,575 @@
+{
+    "height": 1092,
+    "width": 1613,
+    "position": [
+        100,
+        100
+    ],
+    "id": 940,
+    "name": "t.special.polygamma_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.special.polygamma_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.special.polygamma - derivatives of digamma",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 549,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.special.polygamma - derivatives of digamma",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.special.polygamma - derivatives of digamma"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 805,
+            "position_y": 45,
+            "width": 768,
+            "height": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Computes the n-th derivative of the digamma function for every element\nof a tensor.\n\nIt is used when fitting gamma, beta and Dirichlet distributions (n = 1, the\ntrigamma function, gives how certain such a fit is) and for sums of 1/(x + k)\nto a power, since polygamma(n, x) is a Hurwitz zeta value in disguise.\n\nTHE CURVE:\nn = 0 is digamma itself: a log-like rise, -0.577 at 1. n = 1 (trigamma) is\npositive and falling, pi squared over 6 (1.645) at 1. n = 2 is negative and\nrising towards 0 from -2.40. Each further n alternates in sign and grows\nroughly like n factorial near x = 1 (n = 3 gives 6.49, n = 4 gives -24.9),\nso for n of 3 or more the curve leaves the demo's plot range near the left.\n\nSYNTAX:\nt.special.polygamma\n\nThere is no argument: n starts at 0 and is set on the node.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately.\n\nn (int, also an inlet):\nWhich derivative of digamma: 0 is digamma, 1 trigamma, 2 tetragamma ...\nDefault 0, minimum 0. Changing it does not send by itself; the next tensor\nuses it.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape as the input.\n\nWHERE IT IS DEFINED:\nPositive x is the useful range. At 0 and the negative whole numbers every\norder is infinite (n = 0 gives minus infinity; higher n plus or minus).\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values from\n1 to 6, drawn in the upper plot. The lower plot is polygamma of order n of\neach, from -3 (bottom) to 3 (top). Drag n on the node to step through the\nderivatives; drag start and stop on t.linspace to look elsewhere (keep\nstart above 0).\n\nRELATED:\nt.special.digamma is order 0 on its own. t.special.gammaln is what digamma\nis the derivative of. t.special.zeta is the Hurwitz zeta function that the\nhigher orders are built from.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Computes the n-th derivative of the digamma function for every element\nof a tensor.\n\nIt is used when fitting gamma, beta and Dirichlet distributions (n = 1, the\ntrigamma function, gives how certain such a fit is) and for sums of 1/(x + k)\nto a power, since polygamma(n, x) is a Hurwitz zeta value in disguise.\n\nTHE CURVE:\nn = 0 is digamma itself: a log-like rise, -0.577 at 1. n = 1 (trigamma) is\npositive and falling, pi squared over 6 (1.645) at 1. n = 2 is negative and\nrising towards 0 from -2.40. Each further n alternates in sign and grows\nroughly like n factorial near x = 1 (n = 3 gives 6.49, n = 4 gives -24.9),\nso for n of 3 or more the curve leaves the demo's plot range near the left.\n\nSYNTAX:\nt.special.polygamma\n\nThere is no argument: n starts at 0 and is set on the node.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA tensor - or a number or a list, which is turned into one. Receiving it\ntriggers the node. Each element is worked on separately.\n\nn (int, also an inlet):\nWhich derivative of digamma: 0 is digamma, 1 trigamma, 2 tetragamma ...\nDefault 0, minimum 0. Changing it does not send by itself; the next tensor\nuses it.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element, in the same shape as the input.\n\nWHERE IT IS DEFINED:\nPositive x is the useful range. At 0 and the negative whole numbers every\norder is infinite (n = 0 gives minus infinity; higher n plus or minus).\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values from\n1 to 6, drawn in the upper plot. The lower plot is polygamma of order n of\neach, from -3 (bottom) to 3 (top). Drag n on the node to step through the\nderivatives; drag start and stop on t.linspace to look elsewhere (keep\nstart above 0).\n\nRELATED:\nt.special.digamma is order 0 on its own. t.special.gammaln is what digamma\nis the derivative of. t.special.zeta is the Hurwitz zeta function that the\nhigher orders are built from."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "init": "comment redraws ten times a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 507,
+            "position_y": 70,
+            "width": 168,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "redraws ten times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "redraws ten times a second"
+        },
+        "5": {
+            "name": "t.linspace",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 6.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 1 6 200"
+        },
+        "6": {
+            "init": "comment 200 values from start to stop - drag them",
+            "name": "comment",
+            "id": 459,
+            "position_x": 507,
+            "position_y": 160,
+            "width": 260,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "200 values from start to stop - drag them",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "200 values from start to stop - drag them"
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 6,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "init": "comment in: a ramp from 1 to 6",
+            "name": "comment",
+            "id": 533,
+            "position_x": 507,
+            "position_y": 345,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in: a ramp from 1 to 6",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in: a ramp from 1 to 6"
+        },
+        "9": {
+            "name": "t.special.polygamma",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 540,
+            "width": 125,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "n",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            }
+        },
+        "10": {
+            "init": "comment drag n: which derivative (0 = digamma)",
+            "name": "comment",
+            "id": 607,
+            "position_x": 507,
+            "position_y": 550,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag n: which derivative (0 = digamma)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag n: which derivative (0 = digamma)"
+        },
+        "11": {
+            "name": "plot",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -3,
+                    "value_type": "int"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 3,
+                    "value_type": "int"
+                }
+            }
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 507,
+            "position_y": 665,
+            "width": 268,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "out: n = 0 is digamma; try n = 1 and 2\n(plot from -3 to 3)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "out: n = 0 is digamma; try n = 1 and 2\n(plot from -3 to 3)"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 870,
+            "width": 121,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.digamma"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 204,
+            "position_y": 870,
+            "width": 121,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.gammaln"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 378,
+            "position_y": 870,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.zeta"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 914,
+            "width": 152,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.multigammaln"
+        },
+        "17": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 866,
+            "position_x": 507,
+            "position_y": 914,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "18": {
+            "name": "close",
+            "id": 903,
+            "position_x": 24,
+            "position_y": 988,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "tensor out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

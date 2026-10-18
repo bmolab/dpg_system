@@ -1,11 +1,11 @@
 {
-    "height": 372,
-    "width": 681,
+    "height": 632,
+    "width": 804,
     "position": [
         100,
         100
     ],
-    "id": 944,
+    "id": 1314,
     "name": "nodes_torch_calc",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_calc.json",
     "nodes": {
@@ -136,21 +136,21 @@
             "presentation_state": "show_all"
         },
         "5": {
-            "init": "help_link nodes_torch_calc_element_by_element Element by element",
+            "init": "help_link nodes_torch_calc_limiting_and_rounding Limiting and rounding",
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 175,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Element by element",
+                    "name": "Limiting and rounding",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 159,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -162,14 +162,14 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 213,
+            "position_x": 324,
             "position_y": 154,
-            "width": 397,
+            "width": 434,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.clamp / t.maximum / t.minimum, t rounding, t.gcd / t.lcm,\nt.copysign, t.complex / t.imag / t.real, t comparisons",
+                    "value": "t.clamp, t.maximum, t.minimum, t.round, t.floor, t.ceil, t.trunc,\nt.frac",
                     "value_type": "str"
                 },
                 "1": {
@@ -179,7 +179,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 389,
+                    "value": 426,
                     "value_type": "int"
                 },
                 "3": {
@@ -193,28 +193,28 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.clamp / t.maximum / t.minimum, t rounding, t.gcd / t.lcm,\nt.copysign, t.complex / t.imag / t.real, t comparisons",
+            "text": "t.clamp, t.maximum, t.minimum, t.round, t.floor, t.ceil, t.trunc,\nt.frac",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link nodes_torch_calc_reducing_and_analysing Reducing and analysing",
+            "init": "help_link nodes_torch_calc_comparing Comparing",
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
-            "width": 175,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Reducing and analysing",
+                    "name": "Comparing",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 159,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -226,14 +226,14 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 213,
+            "position_x": 324,
             "position_y": 206,
-            "width": 422,
-            "height": 52,
+            "width": 243,
+            "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t reductions, t.max / min / argmax, t.argsort,\nt.any / t.all / t.argwhere, t.histc / t.bincount / t.bucketize,\nt cumulative",
+                    "value": "t.eq, t.ne, t.gt, t.ge, t.lt, t.le",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,7 +243,135 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 414,
+                    "value": 235,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.eq, t.ne, t.gt, t.ge, t.lt, t.le",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link nodes_torch_calc_whole_numbers_signs_and_complex_numbers Whole numbers, signs and complex numbers",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 286,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Whole numbers, signs and complex numbers",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 270,
+                    "value_type": "int"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 324,
+            "position_y": 258,
+            "width": 348,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.gcd, t.lcm, t.copysign, t.complex, t.real, t.imag",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.gcd, t.lcm, t.copysign, t.complex, t.real, t.imag",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link nodes_torch_calc_reducing_to_an_answer Reducing to an answer",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 286,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Reducing to an answer",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 270,
+                    "value_type": "int"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 324,
+            "position_y": 310,
+            "width": 440,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.mean, t.median, t.nanmean, t.nanmedian, t.sum, t.nansum, t.prod,\nt.max, t.min, t.argmax, t.any, t.all, t.count_nonzero,\nt.argwhere / t.non_zero",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 432,
                     "value_type": "int"
                 },
                 "3": {
@@ -257,47 +385,111 @@
                     "value_type": "str"
                 }
             },
-            "text": "t reductions, t.max / min / argmax, t.argsort,\nt.any / t.all / t.argwhere, t.histc / t.bincount / t.bucketize,\nt cumulative",
-            "id": 833,
+            "text": "t.mean, t.median, t.nanmean, t.nanmedian, t.sum, t.nansum, t.prod,\nt.max, t.min, t.argmax, t.any, t.all, t.count_nonzero,\nt.argwhere / t.non_zero",
+            "id": 981,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "9": {
-            "init": "help_link nodes_torch_calc_distances_and_matrices Distances and matrices",
+        "13": {
+            "init": "help_link nodes_torch_calc_sorting_and_counting Sorting and counting",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 262,
-            "width": 175,
+            "position_y": 366,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Distances and matrices",
+                    "name": "Sorting and counting",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 159,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
-            "id": 870,
+            "id": 1018,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "10": {
+        "14": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 213,
-            "position_y": 266,
+            "position_x": 324,
+            "position_y": 370,
+            "width": 298,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.argsort, t.histc, t.bincount, t.bucketize",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.argsort, t.histc, t.bincount, t.bucketize",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link nodes_torch_calc_running_totals_and_differences Running totals and differences",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 418,
+            "width": 286,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Running totals and differences",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 270,
+                    "value_type": "int"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 324,
+            "position_y": 422,
             "width": 428,
             "height": 40,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.distance, t.normalize, t.energy, t.corrcoef, t decompositions,\nt losses",
+                    "value": "t.cumsum, t.cumprod, t.cummax, t.cummin, t.logcumsumexp, t.diff,\nt.energy",
                     "value_type": "str"
                 },
                 "1": {
@@ -321,8 +513,136 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.distance, t.normalize, t.energy, t.corrcoef, t decompositions,\nt losses",
-            "id": 907,
+            "text": "t.cumsum, t.cumprod, t.cummax, t.cummin, t.logcumsumexp, t.diff,\nt.energy",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link nodes_torch_calc_distances_and_losses Distances and losses",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 470,
+            "width": 286,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Distances and losses",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 270,
+                    "value_type": "int"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 324,
+            "position_y": 474,
+            "width": 403,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.length, t.dist, t.cdist, t.cosine_similarity, t.normalize,\nt.mse_loss, t.l1_loss, t.cross_entropy_loss",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 395,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.length, t.dist, t.cdist, t.cosine_similarity, t.normalize,\nt.mse_loss, t.l1_loss, t.cross_entropy_loss",
+            "id": 1203,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "19": {
+            "init": "help_link nodes_torch_calc_matrices Matrices",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 522,
+            "width": 286,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Matrices",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 270,
+                    "value_type": "int"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 324,
+            "position_y": 526,
+            "width": 422,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.linalg.svd, t.linalg.qr, t.linalg.eig, t.linalg.pca_low_rank,\nt.corrcoef",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 414,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.linalg.svd, t.linalg.qr, t.linalg.eig, t.linalg.pca_low_rank,\nt.corrcoef",
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

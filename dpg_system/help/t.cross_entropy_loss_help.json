@@ -1,0 +1,639 @@
+{
+    "height": 1093,
+    "width": 1778,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "t.cross_entropy_loss_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.cross_entropy_loss_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.cross_entropy_loss - how wrong a choice is",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 549,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.cross_entropy_loss - how wrong a choice is",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.cross_entropy_loss - how wrong a choice is"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 970,
+            "position_y": 45,
+            "width": 768,
+            "height": 988,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Measures how wrong a choice between categories is: given one score per\ncategory and the right answer, it is low when the right category has by\nfar the highest score and high when another one does.\n\nThe scores are raw numbers, any size, one per category (what a\nclassifier puts out before softmax). Internally they are turned into\nprobabilities with softmax, and the loss is minus the log of the\nprobability given to the right answer. With scores [2.0 0.5 0.1] the\nfirst category gets 0.73 of the probability:\n\n    right answer 0  ->  0.32     confident and right\n    right answer 1  ->  1.82\n    right answer 2  ->  2.22     confident and wrong\n\nBeing confidently wrong costs far more than being unsure, so it rewards\nwell-placed confidence, not just right guesses. 0 would need all of the\nprobability on the right answer. e to the minus the loss is the\nprobability the right answer got.\n\nSYNTAX:\nt.cross_entropy_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (a list or a NumPy array is turned into a float32 tensor):\none row of one score per category, or several rows, one per item, as\nan items x categories tensor. Receiving it computes the loss and sends.\n\ntarget:\nThe right answer. A COLD inlet: it is only stored, so set it BEFORE\nthe scores. Either one whole number per row - the index of the right\ncategory, counting from 0 - or, for an answer that is a blend, a full\nrow of probabilities the same shape as the scores. The node tells them\napart by shape. Nothing is sent until a target has arrived; an index\npast the last category prints an error.\n\nOUTPUTS:\n\nloss:\nOne plain float, never negative. For several rows it is the AVERAGE\nover the rows (unlike t.mse_loss and t.l1_loss, which add up).\n\nREADING THE DEMO:\nThe vector node holds the scores for three categories, [2.0 0.5 0.1]:\ndrag any of them. The strip shows them as softmax probabilities (the\nnode does that conversion itself; t.nn.softmax is only here to show\nit). The int box is the right answer; it goes through 't bang int' so\nthe index is stored first, then the scores are re-sent. Answer 0: 0.32.\nAnswer 2: 2.22. Raise the third score above the others and answer 2\nbecomes cheap.\n\nRELATED:\nt.nn.softmax turns scores into the probabilities used here.\nt.nn.log_softmax gives their logs: the loss is minus the log\nprobability of the right answer. t.mse_loss and t.l1_loss compare\nnumbers rather than choices. np.argmax picks the highest score.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 972,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Measures how wrong a choice between categories is: given one score per\ncategory and the right answer, it is low when the right category has by\nfar the highest score and high when another one does.\n\nThe scores are raw numbers, any size, one per category (what a\nclassifier puts out before softmax). Internally they are turned into\nprobabilities with softmax, and the loss is minus the log of the\nprobability given to the right answer. With scores [2.0 0.5 0.1] the\nfirst category gets 0.73 of the probability:\n\n    right answer 0  ->  0.32     confident and right\n    right answer 1  ->  1.82\n    right answer 2  ->  2.22     confident and wrong\n\nBeing confidently wrong costs far more than being unsure, so it rewards\nwell-placed confidence, not just right guesses. 0 would need all of the\nprobability on the right answer. e to the minus the loss is the\nprobability the right answer got.\n\nSYNTAX:\nt.cross_entropy_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores (a list or a NumPy array is turned into a float32 tensor):\none row of one score per category, or several rows, one per item, as\nan items x categories tensor. Receiving it computes the loss and sends.\n\ntarget:\nThe right answer. A COLD inlet: it is only stored, so set it BEFORE\nthe scores. Either one whole number per row - the index of the right\ncategory, counting from 0 - or, for an answer that is a blend, a full\nrow of probabilities the same shape as the scores. The node tells them\napart by shape. Nothing is sent until a target has arrived; an index\npast the last category prints an error.\n\nOUTPUTS:\n\nloss:\nOne plain float, never negative. For several rows it is the AVERAGE\nover the rows (unlike t.mse_loss and t.l1_loss, which add up).\n\nREADING THE DEMO:\nThe vector node holds the scores for three categories, [2.0 0.5 0.1]:\ndrag any of them. The strip shows them as softmax probabilities (the\nnode does that conversion itself; t.nn.softmax is only here to show\nit). The int box is the right answer; it goes through 't bang int' so\nthe index is stored first, then the scores are re-sent. Answer 0: 0.32.\nAnswer 2: 2.22. Raise the third score above the others and answer 2\nbecomes cheap.\n\nRELATED:\nt.nn.softmax turns scores into the probabilities used here.\nt.nn.log_softmax gives their logs: the loss is minus the log\nprobability of the right answer. t.mse_loss and t.l1_loss compare\nnumbers rather than choices. np.argmax picks the highest score."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "int",
+            "id": 385,
+            "position_x": 330,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "max",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "5": {
+                    "name": "",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "init": "comment the right answer: 0, 1 or 2",
+            "name": "comment",
+            "id": 422,
+            "position_x": 624,
+            "position_y": 67,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the right answer: 0, 1 or 2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the right answer: 0, 1 or 2"
+        },
+        "6": {
+            "name": "t",
+            "id": 459,
+            "position_x": 330,
+            "position_y": 130,
+            "width": 33,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t bang int"
+        },
+        "7": {
+            "init": "comment stored first, then the scores re-sent",
+            "name": "comment",
+            "id": 496,
+            "position_x": 624,
+            "position_y": 135,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "stored first, then the scores re-sent",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "stored first, then the scores re-sent"
+        },
+        "8": {
+            "name": "vector",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 130,
+            "width": 160,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "component count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "column count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "[0]",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "[1]",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "[2]",
+                    "value": 0.1,
+                    "value_type": "float"
+                }
+            },
+            "init": "vector 3"
+        },
+        "9": {
+            "init": "comment the scores: drag any",
+            "name": "comment",
+            "id": 570,
+            "position_x": 624,
+            "position_y": 315,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the scores: drag any",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the scores: drag any"
+        },
+        "10": {
+            "name": "t.nn.softmax",
+            "id": 607,
+            "position_x": 330,
+            "position_y": 210,
+            "width": 111,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            }
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 330,
+            "position_y": 320,
+            "width": 268,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 3,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment as probabilities: they add up to 1",
+            "name": "comment",
+            "id": 681,
+            "position_x": 624,
+            "position_y": 430,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "as probabilities: they add up to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "as probabilities: they add up to 1"
+        },
+        "13": {
+            "name": "t.cross_entropy_loss",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 131,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "float",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment the loss: low when the right answer scores highest",
+            "name": "comment",
+            "id": 792,
+            "position_x": 624,
+            "position_y": 550,
+            "width": 316,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the loss: low when the right answer scores highest",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the loss: low when the right answer scores highest"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 610,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.softmax"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 166,
+            "position_y": 610,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.log_softmax"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 333,
+            "position_y": 610,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.mse_loss"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 454,
+            "position_y": 610,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.l1_loss"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 654,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.argmax"
+        },
+        "21": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 624,
+            "position_y": 654,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 728,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "int out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "int",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "target"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "loss",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

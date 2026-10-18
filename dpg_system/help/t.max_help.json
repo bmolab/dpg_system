@@ -1,11 +1,11 @@
 {
-    "height": 881,
-    "width": 1561,
+    "height": 1448,
+    "width": 1834,
     "position": [
         100,
         100
     ],
-    "id": 903,
+    "id": 1421,
     "name": "t.max_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.max_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.max, t.min, t.argmax - the extremes, and where",
+            "init": "comment t.max - the largest value, and where",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 598,
+            "width": 451,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.max, t.min, t.argmax - the extremes, and where",
+                    "value": "t.max - the largest value, and where",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.max, t.min, t.argmax - the extremes, and where"
+            "comment": "t.max - the largest value, and where"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 713,
+            "position_x": 1026,
             "position_y": 45,
-            "width": 808,
-            "height": 776,
+            "width": 768,
+            "height": 1106,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These find the extremes of a tensor: how big the largest or smallest \nvalue is, and where it is.\n\nTHE NODES:\n\nt.max      the largest value - and, along an axis, where it is\nt.min      the smallest, likewise\nt.argmax   only where the largest is\n\nWITHOUT AN AXIS, ONE ANSWER:\nPlain t.max or t.min looks at the whole tensor and sends the single largest \nor smallest value. Plain t.argmax sends where the largest is, counting \nthrough the tensor as if it were one long row - for a table, read it row by \nrow.\n\nWITH AN AXIS, ONE ANSWER PER ROW OR COLUMN, AND TWO OUTLETS:\nGive an axis as the argument - t.max 0 - and a 'dim' inlet appears, and \nt.max and t.min grow a second outlet. One sends the extreme VALUE along that \naxis, the other the INDEX it was found at. Those answer different questions \n- \"how big was the peak\" and \"which joint was it\" - and getting both from \none node means they cannot disagree. The index is sent first.\n\nOn a table with dim 1 you get the extreme of each ROW; with dim 0, of each \nCOLUMN.\n\nt.argmax is the same index without the value, for when you only want to \nknow which. There is no t.argmin.\n\nWHY AN INDEX IS OFTEN THE BETTER ANSWER:\nFor a per-joint measurement, the largest value tells you the intensity and \nthe index tells you WHERE the body is working. The second is usually the more \ninformative: that something is straining hard matters less than which part \nof it is.\n\nSYNTAX:\nt.max <dim>\nt.min <dim>\nt.argmax <dim>\n\nEXAMPLE:\nt.max 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim (only with an argument):\nWhich axis to work along.\n\nOUTPUTS: \n\nmax tensor / min tensor:\nThe extreme value - one number, or one per row or column.\n\nmax indices / min indices (only with an argument):\nWhere along the axis each extreme was found.\n\nmax index (t.argmax):\nJust the position.\n\nRELATED:\nt.argsort gives the whole ranking, not just the top.\nt.take_along_dim turns indices back into values - including values from a \nDIFFERENT tensor, which is how you answer \"at the moment each joint was \nfastest, what was its angle\".",
+                    "value": "Finds the largest value in a tensor - in the whole tensor, or in\neach row or each column, together with WHERE it was found.\n\nUse it for the peak of a signal, the loudest band of a spectrum, the\nfastest joint in a frame, the brightest pixel. With a dim it also says\nwhich row or column the peak was in, so \"how big\" and \"which one\" come\nfrom one node and cannot disagree.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number\ntyped after the name (t.max 0) chooses a dim to reduce along and adds a\ndim inlet and a second outlet for the indices to the node - it is the argument that creates them,\nso a node made without one cannot be given a dim later (retype it).\nFor a table of rows and columns, dim 0 reduces DOWN each column (one\nanswer per column) and dim 1 ALONG each row (one answer per row). The\ndim named is the one that disappears: a 6 by 8 tensor gives 8 answers\non dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is\nthe last dim.\n\nNOT THE SAME AS t.maximum:\nt.max REDUCES - a tensor goes in and one value (or one per row or\ncolumn) comes out. t.maximum compares two tensors element by\nelement and keeps the larger at every position.\n\nSYNTAX:\nt.max <dim: int>\nDefault: no dim - the whole tensor, and only one outlet.\n\nEXAMPLE:\nt.max 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is searched and the answer sent - this\nis the only inlet that makes the node send. A list or a NumPy array is\nfirst turned into a float32 tensor on the cpu; a tensor is used as it\nis, on its own device, and the answer stays there. An empty tensor is\nignored: nothing is sent.\nIf the tensor holds a NaN the answer is NaN (a NaN counts as largest).\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor\nuses it. A dim the tensor does not have (2 or more for a table, or 1\nfor a 1-D tensor) is an error: the console prints \"Dimension out of\nrange\" and nothing is sent.\nThere is no keep_dims option on this node.\n\nOUTPUTS:\n\nmax tensor:\nWith no dim, one value (a 0-dimensional tensor). With a dim, a tensor of\nlargest values with that dim removed. Same dtype as the input.\n\nmax indices (only with a dim):\nFor each answer, where along the dim it was found (int64): at dim 0\nthe row of each column's largest, at dim 1 the column. When several\nshare the largest value the first is given. It is sent just before the\nvalues. For the position in the WHOLE tensor use t.argmax.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1, written in\nthe cells; click its button for new ones. The plain t.max gives the\nlargest of all 48. The slider sets the dim of the second node: it goes through\n't bang int', so the number reaches the dim inlet first and the bang\nthen makes the var re-send the held tensor - a dim change alone would\nnot send. t.info shows the shape of the answer: [8] for dim 0, [6]\nfor dim 1. At dim 0 the strip holds\neach column's largest value and the list the row it was found in;\nat dim 1, each row's and the column.\n\nRELATED:\nt.min finds the smallest. t.argmax gives only the position of the\nlargest. t.median and t.mean summarise the middle. t.maximum is the\nelement-wise version. np.amax is the NumPy reduction.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 800,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 760,
+                    "value": 1090,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,14 +90,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "These find the extremes of a tensor: how big the largest or smallest \nvalue is, and where it is.\n\nTHE NODES:\n\nt.max      the largest value - and, along an axis, where it is\nt.min      the smallest, likewise\nt.argmax   only where the largest is\n\nWITHOUT AN AXIS, ONE ANSWER:\nPlain t.max or t.min looks at the whole tensor and sends the single largest \nor smallest value. Plain t.argmax sends where the largest is, counting \nthrough the tensor as if it were one long row - for a table, read it row by \nrow.\n\nWITH AN AXIS, ONE ANSWER PER ROW OR COLUMN, AND TWO OUTLETS:\nGive an axis as the argument - t.max 0 - and a 'dim' inlet appears, and \nt.max and t.min grow a second outlet. One sends the extreme VALUE along that \naxis, the other the INDEX it was found at. Those answer different questions \n- \"how big was the peak\" and \"which joint was it\" - and getting both from \none node means they cannot disagree. The index is sent first.\n\nOn a table with dim 1 you get the extreme of each ROW; with dim 0, of each \nCOLUMN.\n\nt.argmax is the same index without the value, for when you only want to \nknow which. There is no t.argmin.\n\nWHY AN INDEX IS OFTEN THE BETTER ANSWER:\nFor a per-joint measurement, the largest value tells you the intensity and \nthe index tells you WHERE the body is working. The second is usually the more \ninformative: that something is straining hard matters less than which part \nof it is.\n\nSYNTAX:\nt.max <dim>\nt.min <dim>\nt.argmax <dim>\n\nEXAMPLE:\nt.max 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim (only with an argument):\nWhich axis to work along.\n\nOUTPUTS: \n\nmax tensor / min tensor:\nThe extreme value - one number, or one per row or column.\n\nmax indices / min indices (only with an argument):\nWhere along the axis each extreme was found.\n\nmax index (t.argmax):\nJust the position.\n\nRELATED:\nt.argsort gives the whole ranking, not just the top.\nt.take_along_dim turns indices back into values - including values from a \nDIFFERENT tensor, which is how you answer \"at the moment each joint was \nfastest, what was its angle\"."
+            "text": "Finds the largest value in a tensor - in the whole tensor, or in\neach row or each column, together with WHERE it was found.\n\nUse it for the peak of a signal, the loudest band of a spectrum, the\nfastest joint in a frame, the brightest pixel. With a dim it also says\nwhich row or column the peak was in, so \"how big\" and \"which one\" come\nfrom one node and cannot disagree.\n\nTHE dim ARGUMENT:\nWith no argument the WHOLE tensor is reduced to one value. A number\ntyped after the name (t.max 0) chooses a dim to reduce along and adds a\ndim inlet and a second outlet for the indices to the node - it is the argument that creates them,\nso a node made without one cannot be given a dim later (retype it).\nFor a table of rows and columns, dim 0 reduces DOWN each column (one\nanswer per column) and dim 1 ALONG each row (one answer per row). The\ndim named is the one that disappears: a 6 by 8 tensor gives 8 answers\non dim 0 and 6 on dim 1. Negative numbers count from the end: -1 is\nthe last dim.\n\nNOT THE SAME AS t.maximum:\nt.max REDUCES - a tensor goes in and one value (or one per row or\ncolumn) comes out. t.maximum compares two tensors element by\nelement and keeps the larger at every position.\n\nSYNTAX:\nt.max <dim: int>\nDefault: no dim - the whole tensor, and only one outlet.\n\nEXAMPLE:\nt.max 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Every one that arrives is searched and the answer sent - this\nis the only inlet that makes the node send. A list or a NumPy array is\nfirst turned into a float32 tensor on the cpu; a tensor is used as it\nis, on its own device, and the answer stays there. An empty tensor is\nignored: nothing is sent.\nIf the tensor holds a NaN the answer is NaN (a NaN counts as largest).\n\ndim (inlet, only when an argument was given):\nA whole number. Changing it does NOT send by itself; the next tensor\nuses it. A dim the tensor does not have (2 or more for a table, or 1\nfor a 1-D tensor) is an error: the console prints \"Dimension out of\nrange\" and nothing is sent.\nThere is no keep_dims option on this node.\n\nOUTPUTS:\n\nmax tensor:\nWith no dim, one value (a 0-dimensional tensor). With a dim, a tensor of\nlargest values with that dim removed. Same dtype as the input.\n\nmax indices (only with a dim):\nFor each answer, where along the dim it was found (int64): at dim 0\nthe row of each column's largest, at dim 1 the column. When several\nshare the largest value the first is given. It is sent just before the\nvalues. For the position in the WHOLE tensor use t.argmax.\n\nREADING THE DEMO:\nt.rand makes 6 rows by 8 columns of values between 0 and 1, written in\nthe cells; click its button for new ones. The plain t.max gives the\nlargest of all 48. The slider sets the dim of the second node: it goes through\n't bang int', so the number reaches the dim inlet first and the bang\nthen makes the var re-send the held tensor - a dim change alone would\nnot send. t.info shows the shape of the answer: [8] for dim 0, [6]\nfor dim 1. At dim 0 the strip holds\neach column's largest value and the list the row it was found in;\nat dim 1, each row's and the column.\n\nRELATED:\nt.min finds the smallest. t.argmax gives only the position of the\nlargest. t.median and t.mean summarise the middle. t.maximum is the\nelement-wise version. np.amax is the NumPy reduction."
         },
         "3": {
-            "name": "button",
+            "name": "load_bang",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
+            "width": 88,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -108,22 +108,112 @@
             "name": "t.rand",
             "id": 385,
             "position_x": 30,
-            "position_y": 120,
+            "position_y": 130,
             "width": 163,
             "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.rand 8"
+            "properties": {
+                "0": {
+                    "name": "shape",
+                    "value": "[6, 8]",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "str"
+                }
+            },
+            "init": "t.rand 6 8"
         },
         "5": {
-            "name": "heat_map",
+            "init": "comment click its button for new values",
+            "name": "comment",
             "id": 422,
+            "position_x": 686,
+            "position_y": 135,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "click its button for new values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "click its button for new values"
+        },
+        "6": {
+            "name": "var",
+            "id": 459,
             "position_x": 250,
-            "position_y": 120,
-            "width": 208,
-            "height": 150,
+            "position_y": 200,
+            "width": 117,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "name",
+                    "value": "t_max_help_tensor",
+                    "value_type": "str"
+                }
+            },
+            "init": "var t_max_help_tensor"
+        },
+        "7": {
+            "init": "comment holds the tensor so it can be sent again",
+            "name": "comment",
+            "id": 496,
+            "position_x": 686,
+            "position_y": 280,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "holds the tensor so it can be sent again",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "holds the tensor so it can be sent again"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 400,
+            "width": 448,
+            "height": 290,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -135,17 +225,17 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 200,
+                    "value": 440,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 100,
+                    "value": 240,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "sample count",
-                    "value": 8,
+                    "value": 6,
                     "value_type": "int"
                 },
                 "4": {
@@ -170,13 +260,13 @@
                 }
             }
         },
-        "6": {
-            "init": "comment click: eight values",
+        "9": {
+            "init": "comment the tensor: 6 rows by 8 columns, row 0 at the top",
             "name": "comment",
-            "id": 459,
-            "position_x": 484,
-            "position_y": 310,
-            "width": 125,
+            "id": 570,
+            "position_x": 686,
+            "position_y": 695,
+            "width": 310,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -184,7 +274,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "click: eight values",
+                    "value": "the tensor: 6 rows by 8 columns, row 0 at the top",
                     "value_type": "str"
                 },
                 "1": {
@@ -193,107 +283,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "click: eight values"
-        },
-        "7": {
-            "name": "t.max",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 350,
-            "width": 111,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.max 0"
-        },
-        "8": {
-            "name": "float",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 465,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "9": {
-            "name": "int",
-            "id": 570,
-            "position_x": 170,
-            "position_y": 465,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
+            "comment": "the tensor: 6 rows by 8 columns, row 0 at the top"
         },
         "10": {
-            "init": "comment t.max 0: the largest, and where",
-            "name": "comment",
+            "name": "t.max",
             "id": 607,
-            "position_x": 484,
-            "position_y": 515,
-            "width": 199,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "t.max 0: the largest, and where",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "t.max 0: the largest, and where"
-        },
-        "11": {
-            "name": "t.min",
-            "id": 644,
-            "position_x": 320,
-            "position_y": 350,
+            "position_x": 530,
+            "position_y": 400,
             "width": 70,
             "height": 42,
             "visibility": "show_all",
@@ -301,11 +297,36 @@
             "presentation_state": "show_all",
             "properties": {}
         },
+        "11": {
+            "init": "comment no argument: the whole tensor",
+            "name": "comment",
+            "id": 644,
+            "position_x": 686,
+            "position_y": 405,
+            "width": 187,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "no argument: the whole tensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "no argument: the whole tensor"
+        },
         "12": {
             "name": "float",
             "id": 681,
-            "position_x": 320,
-            "position_y": 465,
+            "position_x": 530,
+            "position_y": 490,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -330,12 +351,46 @@
             }
         },
         "13": {
-            "init": "comment plain t.min: just the value",
-            "name": "comment",
+            "name": "slider",
             "id": 718,
-            "position_x": 484,
-            "position_y": 555,
-            "width": 174,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 170,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "format",
+                    "value": "%d",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "width",
+                    "value": 140,
+                    "value_type": "int"
+                }
+            },
+            "init": "slider 1"
+        },
+        "14": {
+            "init": "comment dim: drag it between 0 and 1",
+            "name": "comment",
+            "id": 755,
+            "position_x": 686,
+            "position_y": 745,
+            "width": 181,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -343,7 +398,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "plain t.min: just the value",
+                    "value": "dim: drag it between 0 and 1",
                     "value_type": "str"
                 },
                 "1": {
@@ -352,54 +407,124 @@
                     "value_type": "str"
                 }
             },
-            "comment": "plain t.min: just the value"
+            "comment": "dim: drag it between 0 and 1"
         },
-        "14": {
-            "name": "t.argmax",
-            "id": 755,
+        "15": {
+            "name": "t",
+            "id": 792,
             "position_x": 30,
-            "position_y": 560,
-            "width": 64,
-            "height": 42,
+            "position_y": 800,
+            "width": 33,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "init": "t bang int"
         },
-        "15": {
-            "name": "int",
-            "id": 792,
+        "16": {
+            "name": "t.max",
+            "id": 829,
             "position_x": 30,
-            "position_y": 645,
-            "width": 130,
-            "height": 42,
+            "position_y": 870,
+            "width": 111,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%d",
+                    "name": "dim",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.max 0"
+        },
+        "17": {
+            "init": "comment with a dim: one answer per column (0) or row (1)",
+            "name": "comment",
+            "id": 866,
+            "position_x": 686,
+            "position_y": 875,
+            "width": 303,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "with a dim: one answer per column (0) or row (1)",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
                     "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
+            },
+            "comment": "with a dim: one answer per column (0) or row (1)"
+        },
+        "18": {
+            "name": "heat_map",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 1030,
+            "width": 448,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 440,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
             }
         },
-        "16": {
-            "init": "comment WHERE the largest is, not what",
+        "19": {
+            "init": "comment the answers, first on the left",
             "name": "comment",
-            "id": 829,
-            "position_x": 484,
-            "position_y": 695,
+            "id": 940,
+            "position_x": 686,
+            "position_y": 1145,
             "width": 193,
             "height": 30,
             "visibility": "show_all",
@@ -408,7 +533,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "WHERE the largest is, not what",
+                    "value": "the answers, first on the left",
                     "value_type": "str"
                 },
                 "1": {
@@ -417,13 +542,211 @@
                     "value_type": "str"
                 }
             },
-            "comment": "WHERE the largest is, not what"
+            "comment": "the answers, first on the left"
         },
-        "17": {
+        "20": {
+            "name": "t.info",
+            "id": 977,
+            "position_x": 530,
+            "position_y": 1030,
+            "width": 45,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "21": {
+            "name": "list",
+            "id": 1014,
+            "position_x": 530,
+            "position_y": 1170,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "22": {
+            "init": "comment shape of the answer",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 686,
+            "position_y": 1220,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shape of the answer",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shape of the answer"
+        },
+        "23": {
+            "name": "list",
+            "id": 1088,
+            "position_x": 530,
+            "position_y": 870,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "24": {
+            "init": "comment and where each was found",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 686,
+            "position_y": 920,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "and where each was found",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "and where each was found"
+        },
+        "25": {
+            "name": "help_link",
+            "id": 1162,
+            "position_x": 30,
+            "position_y": 1270,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.amax"
+        },
+        "26": {
+            "name": "help_link",
+            "id": 1199,
+            "position_x": 127,
+            "position_y": 1270,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.min"
+        },
+        "27": {
+            "name": "help_link",
+            "id": 1236,
+            "position_x": 209,
+            "position_y": 1270,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.argmax"
+        },
+        "28": {
+            "name": "help_link",
+            "id": 1273,
+            "position_x": 314,
+            "position_y": 1270,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.maximum"
+        },
+        "29": {
+            "name": "help_link",
+            "id": 1310,
+            "position_x": 427,
+            "position_y": 1270,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.median"
+        },
+        "30": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1347,
+            "position_x": 686,
+            "position_y": 1270,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "31": {
             "name": "close",
-            "id": 866,
+            "id": 1384,
             "position_x": 24,
-            "position_y": 717,
+            "position_y": 1344,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -443,7 +766,7 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
+            "source_output_name": "out",
             "dest_node": 385,
             "dest_node_name": "",
             "dest_input_index": 0,
@@ -454,77 +777,117 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 422,
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
-        "2": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
         "3": {
-            "source_node": 496,
+            "source_node": 718,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "max tensor",
-            "dest_node": 533,
+            "source_output_name": "int out",
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "4": {
-            "source_node": 496,
+            "source_node": 792,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "max indices",
-            "dest_node": 570,
+            "source_output_name": "int",
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "dim"
         },
         "5": {
-            "source_node": 385,
+            "source_node": 792,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 644,
+            "source_output_name": "bang",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "6": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "6": {
-            "source_node": 644,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "min tensor",
-            "dest_node": 681,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
         "7": {
-            "source_node": 385,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 755,
+            "source_output_name": "out",
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "8": {
-            "source_node": 755,
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "max index",
-            "dest_node": 792,
+            "source_output_name": "max tensor",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "9": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "max tensor",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "10": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "max tensor",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "11": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 1014,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "12": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "max indices",
+            "dest_node": 1088,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

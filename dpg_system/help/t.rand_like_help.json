@@ -1,0 +1,567 @@
+{
+    "height": 1041,
+    "width": 1653,
+    "position": [
+        100,
+        100
+    ],
+    "id": 977,
+    "name": "t.rand_like_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.rand_like_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.rand_like - random numbers in the shape of another tensor",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 733,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.rand_like - random numbers in the shape of another tensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.rand_like - random numbers in the shape of another tensor"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 845,
+            "position_y": 45,
+            "width": 768,
+            "height": 936,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Makes a tensor of random numbers the same shape as the tensor you send it.\n\nUse it to add noise to incoming data - the noise must be the same shape\nas the data - to jitter positions, or to test a chain with random data\nin exactly the shape real data will have. Because every tensor in\ntriggers a new one, a stream of frames gets fresh noise every frame.\n\nThe numbers are uniform between min and max, as on t.rand.\n\nSYNTAX:\nt.rand_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.rand_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node\nsend - a stream of tensors gives a stream of outputs, each matching the\none that came in. Only torch tensors work: a NumPy array, list or number\nis ignored and nothing is sent (turn it into a tensor first, for example\nwith t.to).\n\nmin / max (drag floats, also inlets):\nThe range of the random values, as on t.rand. They do not send by\nthemselves; the next tensor in uses them.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.rand_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.rand_like also copies the input's dtype and\ndevice. This node does not: the output is always the dtype and device\nset on the node (float32 on cpu unless you change them). Feed it a\nfloat16 tensor on mps and you get float32 on cpu back. Set dtype and\ndevice here to match if the two tensors will meet later.\n\nOUTPUTS:\n\nrandom tensor:\nA tensor the same shape as the input.\n\nThe dtype changes what the numbers are, as on t.rand: float types give\nany value from min up to (not including) max; int64 and uint8 give whole\nnumbers from min to max - 1 (choosing int64 while max is 1 raises max to\n32767; uint8 raises it to 255); bool gives true or false at random.\n\nREADING THE DEMO:\nA metro clicks t.linspace 10 times a second, and each ramp it sends\n(top strip) makes t.rand_like send a fresh row of noise the same length\n(bottom strip) - new numbers every time. Drag steps on t.linspace and\nthe noise follows its length; drag min and max on t.rand_like to change\nthe noise range (the strip is scaled 0 to 1).\n\nRELATED:\nt.rand makes noise in a shape you type. t.zeros_like and t.ones_like\ncopy the shape the same way with zeros or ones. np.rand is the NumPy\nversion of t.rand.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 920,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Makes a tensor of random numbers the same shape as the tensor you send it.\n\nUse it to add noise to incoming data - the noise must be the same shape\nas the data - to jitter positions, or to test a chain with random data\nin exactly the shape real data will have. Because every tensor in\ntriggers a new one, a stream of frames gets fresh noise every frame.\n\nThe numbers are uniform between min and max, as on t.rand.\n\nSYNTAX:\nt.rand_like <dtype> <device>\nNo arguments are needed.\n\nEXAMPLE:\nt.rand_like\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor whose SHAPE to copy. Anything arriving here makes the node\nsend - a stream of tensors gives a stream of outputs, each matching the\none that came in. Only torch tensors work: a NumPy array, list or number\nis ignored and nothing is sent (turn it into a tensor first, for example\nwith t.to).\n\nmin / max (drag floats, also inlets):\nThe range of the random values, as on t.rand. They do not send by\nthemselves; the next tensor in uses them.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.rand_like int64.\nNOTE - ONLY THE SHAPE IS COPIED:\nPyTorch's own torch.rand_like also copies the input's dtype and\ndevice. This node does not: the output is always the dtype and device\nset on the node (float32 on cpu unless you change them). Feed it a\nfloat16 tensor on mps and you get float32 on cpu back. Set dtype and\ndevice here to match if the two tensors will meet later.\n\nOUTPUTS:\n\nrandom tensor:\nA tensor the same shape as the input.\n\nThe dtype changes what the numbers are, as on t.rand: float types give\nany value from min up to (not including) max; int64 and uint8 give whole\nnumbers from min to max - 1 (choosing int64 while max is 1 raises max to\n32767; uint8 raises it to 255); bool gives true or false at random.\n\nREADING THE DEMO:\nA metro clicks t.linspace 10 times a second, and each ramp it sends\n(top strip) makes t.rand_like send a fresh row of noise the same length\n(bottom strip) - new numbers every time. Drag steps on t.linspace and\nthe noise follows its length; drag min and max on t.rand_like to change\nthe noise range (the strip is scaled 0 to 1).\n\nRELATED:\nt.rand makes noise in a shape you type. t.zeros_like and t.ones_like\ncopy the shape the same way with zeros or ones. np.rand is the NumPy\nversion of t.rand."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "name": "t.linspace",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 12,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 0 1 12"
+        },
+        "5": {
+            "init": "comment the input: drag steps to change its length",
+            "name": "comment",
+            "id": 422,
+            "position_x": 524,
+            "position_y": 155,
+            "width": 267,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the input: drag steps to change its length",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the input: drag steps to change its length"
+        },
+        "6": {
+            "name": "heat_map",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 380,
+            "width": 468,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 460,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment input: a ramp, 0 to 1",
+            "name": "comment",
+            "id": 496,
+            "position_x": 524,
+            "position_y": 385,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "input: a ramp, 0 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "input: a ramp, 0 to 1"
+        },
+        "8": {
+            "name": "t.rand_like",
+            "id": 533,
+            "position_x": 30,
+            "position_y": 500,
+            "width": 163,
+            "height": 112,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "9": {
+            "init": "comment drag min and max",
+            "name": "comment",
+            "id": 570,
+            "position_x": 524,
+            "position_y": 505,
+            "width": 107,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag min and max",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag min and max"
+        },
+        "10": {
+            "name": "t.info",
+            "id": 607,
+            "position_x": 290,
+            "position_y": 500,
+            "width": 45,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment shape of the output",
+            "name": "comment",
+            "id": 644,
+            "position_x": 524,
+            "position_y": 545,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shape of the output",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shape of the output"
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 468,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 460,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment output: the same length, fresh noise each time",
+            "name": "comment",
+            "id": 718,
+            "position_x": 524,
+            "position_y": 725,
+            "width": 291,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output: the same length, fresh noise each time",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "output: the same length, fresh noise each time"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 850,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rand"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 120,
+            "position_y": 850,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.zeros_like"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 256,
+            "position_y": 850,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.ones_like"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 384,
+            "position_y": 850,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.rand"
+        },
+        "18": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 903,
+            "position_x": 524,
+            "position_y": 850,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
+            "position_x": 24,
+            "position_y": 924,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "2": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        }
+    }
+}

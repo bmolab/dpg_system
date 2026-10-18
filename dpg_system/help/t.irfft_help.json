@@ -1,0 +1,1104 @@
+{
+    "name": "t.irfft_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.irfft_help.json",
+    "patches": {
+        "0": {
+            "height": 790,
+            "width": 920,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1051,
+            "name": "make_signal",
+            "parent_node_uuid": 422,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1088,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "in",
+                    "init": "in freq",
+                    "id": 1125,
+                    "position_x": 420,
+                    "position_y": 40,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "*",
+                    "init": "* 0.0245437",
+                    "id": 1162,
+                    "position_x": 420,
+                    "position_y": 140,
+                    "width": 150,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.02454369260617026,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "3": {
+                    "name": "comment",
+                    "init": "comment cycles per 256 samples -> radians per sample",
+                    "id": 1199,
+                    "position_x": 420,
+                    "position_y": 200,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "cycles per 256 samples -> radians per sample",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "cycles per 256 samples -> radians per sample"
+                },
+                "4": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "5": {
+                    "name": "comment",
+                    "init": "comment ten times a second",
+                    "id": 1273,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 220,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "ten times a second"
+                },
+                "6": {
+                    "name": "t.linspace",
+                    "init": "t.linspace 0 255 256",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 200,
+                    "height": 150,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "device",
+                            "value": "cpu",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "requires_grad",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "3": {
+                            "name": "start",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "4": {
+                            "name": "stop",
+                            "value": 255.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "steps",
+                            "value": 256,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "7": {
+                    "name": "comment",
+                    "init": "comment sample numbers 0 to 255",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 290,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "sample numbers 0 to 255",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "sample numbers 0 to 255"
+                },
+                "8": {
+                    "name": "*",
+                    "init": "* 0.2454369",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 330,
+                    "width": 150,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.2454369260617026,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "9": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 400,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "degrees",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "10": {
+                    "name": "*",
+                    "init": "* 0.9817477",
+                    "id": 1458,
+                    "position_x": 260,
+                    "position_y": 330,
+                    "width": 150,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.9817477042468103,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "11": {
+                    "name": "comment",
+                    "init": "comment 40 cycles, fixed",
+                    "id": 1495,
+                    "position_x": 420,
+                    "position_y": 340,
+                    "width": 220,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "40 cycles, fixed",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "40 cycles, fixed"
+                },
+                "12": {
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1532,
+                    "position_x": 260,
+                    "position_y": 400,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "degrees",
+                            "value": false,
+                            "value_type": "bool"
+                        }
+                    }
+                },
+                "13": {
+                    "name": "*",
+                    "init": "* 0.5",
+                    "id": 1569,
+                    "position_x": 260,
+                    "position_y": 490,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.5,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "14": {
+                    "name": "comment",
+                    "init": "comment at half the size",
+                    "id": 1606,
+                    "position_x": 400,
+                    "position_y": 500,
+                    "width": 220,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "at half the size",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "at half the size"
+                },
+                "15": {
+                    "name": "+",
+                    "init": "+ 0.0",
+                    "id": 1643,
+                    "position_x": 40,
+                    "position_y": 560,
+                    "width": 120,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "operand",
+                            "value": 0.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "16": {
+                    "name": "out",
+                    "init": "out signal",
+                    "id": 1680,
+                    "position_x": 40,
+                    "position_y": 630,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1125,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "freq",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "1": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "2": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "3": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1458,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "4": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "5": {
+                    "source_node": 1458,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1532,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "6": {
+                    "source_node": 1532,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1569,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "7": {
+                    "source_node": 1569,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1643,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "8": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "9": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1643,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "10": {
+                    "source_node": 1643,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1680,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "signal"
+                }
+            }
+        },
+        "1": {
+            "height": 1008,
+            "width": 1713,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1014,
+            "name": "t.irfft_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.irfft_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.irfft - from a half spectrum back to samples",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 574,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.irfft - from a half spectrum back to samples",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.irfft - from a half spectrum back to samples"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 905,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 886,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Takes the inverse of t.rfft: turns a half spectrum back into real samples.\n\nt.rfft keeps only the non-negative frequencies of a real signal; t.irfft\nrebuilds the samples from them, filling in the mirror half itself, so the\nresult is REAL - no t.real needed. Go there and back to work on a signal\nin frequency terms: zero the bins above a cut-off for a brick-wall low\npass, scale bins to reshape the tone, or multiply spectra to convolve.\n\nLENGTH:\nm frequency values come back as 2 x (m - 1) samples. 129 values (from 256\nsamples) give 256 again. An ODD number of samples does not survive the\ntrip: 255 samples make 128 values, which come back as 254. Keep frame\nlengths even.\n\nSYNTAX:\nt.irfft <dim: int>\nWith no argument it transforms along the last dimension.\n\nEXAMPLE:\nt.irfft\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA half spectrum, as t.rfft makes it: complex, n/2 + 1 values. Each tensor\nthat arrives is transformed and sent at once. The imaginary parts of the\nfirst value (and, for an even length, the last) cannot be represented in\na real signal and are ignored.\n\ndim (an int box, only when you give an argument):\nt.irfft 0 transforms along dimension 0 instead of the last one. With no\nargument the node has no dim box and always uses the last dimension, which\nis what you want for one signal, or for a stack of signals one per row.\n\nnorm (menu):\nWhere the 1/n scaling goes. 'backward' (the default) leaves the forward\ntransform unscaled and divides on the way back, so a sine of size 1 over\n256 samples makes a peak of 128. 'forward' divides on the way forward\n(that peak becomes 0.5 - half the sine's size, the other half sits in the\nmirror bin). 'ortho' divides both ways by the square root of n. A forward\nand an inverse node must use the same setting or the round trip comes back\nthe wrong size.\n\nOUTPUTS:\n\nfft tensor out:\nA REAL tensor of 2 x (m - 1) samples along the transformed dimension.\n\nREADING THE DEMO:\nThe top plot is the signal going in; the bottom one is what comes back\nafter t.rfft and t.irfft - the same 256 samples. Drag the slider and the\ntwo stay identical.\n\nRELATED:\nt.rfft is the forward transform. t.ifft is the inverse for the full\nspectrum t.fft makes, and returns complex samples.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 870,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Takes the inverse of t.rfft: turns a half spectrum back into real samples.\n\nt.rfft keeps only the non-negative frequencies of a real signal; t.irfft\nrebuilds the samples from them, filling in the mirror half itself, so the\nresult is REAL - no t.real needed. Go there and back to work on a signal\nin frequency terms: zero the bins above a cut-off for a brick-wall low\npass, scale bins to reshape the tone, or multiply spectra to convolve.\n\nLENGTH:\nm frequency values come back as 2 x (m - 1) samples. 129 values (from 256\nsamples) give 256 again. An ODD number of samples does not survive the\ntrip: 255 samples make 128 values, which come back as 254. Keep frame\nlengths even.\n\nSYNTAX:\nt.irfft <dim: int>\nWith no argument it transforms along the last dimension.\n\nEXAMPLE:\nt.irfft\n\nINPUTS and PARAMETERS:\n\ntensor in:\nA half spectrum, as t.rfft makes it: complex, n/2 + 1 values. Each tensor\nthat arrives is transformed and sent at once. The imaginary parts of the\nfirst value (and, for an even length, the last) cannot be represented in\na real signal and are ignored.\n\ndim (an int box, only when you give an argument):\nt.irfft 0 transforms along dimension 0 instead of the last one. With no\nargument the node has no dim box and always uses the last dimension, which\nis what you want for one signal, or for a stack of signals one per row.\n\nnorm (menu):\nWhere the 1/n scaling goes. 'backward' (the default) leaves the forward\ntransform unscaled and divides on the way back, so a sine of size 1 over\n256 samples makes a peak of 128. 'forward' divides on the way forward\n(that peak becomes 0.5 - half the sine's size, the other half sits in the\nmirror bin). 'ortho' divides both ways by the square root of n. A forward\nand an inverse node must use the same setting or the round trip comes back\nthe wrong size.\n\nOUTPUTS:\n\nfft tensor out:\nA REAL tensor of 2 x (m - 1) samples along the transformed dimension.\n\nREADING THE DEMO:\nThe top plot is the signal going in; the bottom one is what comes back\nafter t.rfft and t.irfft - the same 256 samples. Drag the slider and the\ntwo stay identical.\n\nRELATED:\nt.rfft is the forward transform. t.ifft is the inverse for the full\nspectrum t.fft makes, and returns complex samples."
+                },
+                "3": {
+                    "name": "slider",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 230,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": 10.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 60.0,
+                            "value_type": "float"
+                        },
+                        "3": {
+                            "name": "format",
+                            "value": "%.1f",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "width",
+                            "value": 200,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "init": "comment drag: the first sine, cycles per 256 samples",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 564,
+                    "position_y": 72,
+                    "width": 279,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "drag: the first sine, cycles per 256 samples",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "drag: the first sine, cycles per 256 samples"
+                },
+                "5": {
+                    "name": "p",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 142,
+                    "width": 84,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_signal",
+                    "patcher id": 1051
+                },
+                "6": {
+                    "name": "text_block",
+                    "id": 459,
+                    "annotation": true,
+                    "position_x": 564,
+                    "position_y": 147,
+                    "width": 311,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "256 samples: that sine plus a fixed one at 40\ncycles, half as loud - open it to see how",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 303,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "256 samples: that sine plus a fixed one at 40\ncycles, half as loud - open it to see how"
+                },
+                "7": {
+                    "name": "plot",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 232,
+                    "width": 508,
+                    "height": 160,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 500,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 110,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 256,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 256.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.6,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.6,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "8": {
+                    "init": "comment the signal: 256 samples, left to right",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 564,
+                    "position_y": 392,
+                    "width": 242,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the signal: 256 samples, left to right",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the signal: 256 samples, left to right"
+                },
+                "9": {
+                    "name": "t.rfft",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 440,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "norm",
+                            "value": "backward",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "10": {
+                    "init": "comment into 129 frequencies",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 564,
+                    "position_y": 450,
+                    "width": 131,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "into 129 frequencies",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "into 129 frequencies"
+                },
+                "11": {
+                    "name": "t.irfft",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 530,
+                    "width": 117,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "norm",
+                            "value": "backward",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "init": "comment and back into 256 real samples",
+                    "name": "comment",
+                    "id": 681,
+                    "position_x": 564,
+                    "position_y": 540,
+                    "width": 193,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "and back into 256 real samples",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "and back into 256 real samples"
+                },
+                "13": {
+                    "name": "plot",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 620,
+                    "width": 508,
+                    "height": 160,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 500,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 110,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "buffer holds one sample of input",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 256,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 256.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.6,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.6,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "14": {
+                    "init": "comment the round trip: the same signal as the top plot",
+                    "name": "comment",
+                    "id": 755,
+                    "position_x": 564,
+                    "position_y": 780,
+                    "width": 297,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the round trip: the same signal as the top plot",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the round trip: the same signal as the top plot"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 30,
+                    "position_y": 830,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.rfft"
+                },
+                "16": {
+                    "name": "help_link",
+                    "id": 829,
+                    "position_x": 120,
+                    "position_y": 830,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.ifft"
+                },
+                "17": {
+                    "name": "help_link",
+                    "id": 866,
+                    "position_x": 210,
+                    "position_y": 830,
+                    "width": 47,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.fft"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 292,
+                    "position_y": 830,
+                    "width": 96,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.window.hann"
+                },
+                "19": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 940,
+                    "position_x": 564,
+                    "position_y": 874,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "20": {
+                    "name": "close",
+                    "id": 977,
+                    "position_x": 24,
+                    "position_y": 904,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "freq"
+                },
+                "1": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "signal",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "2": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "signal",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "3": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "fft tensor out",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "4": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "fft tensor out",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

@@ -1,6 +1,6 @@
 {
     "height": 728,
-    "width": 613,
+    "width": 527,
     "position": [
         100,
         100
@@ -140,7 +140,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 255,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -150,7 +150,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 239,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -167,7 +167,7 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 293,
+            "position_x": 207,
             "position_y": 154,
             "width": 274,
             "height": 28,
@@ -209,7 +209,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
-            "width": 255,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -219,7 +219,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 239,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -236,7 +236,7 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 293,
+            "position_x": 207,
             "position_y": 206,
             "width": 237,
             "height": 28,
@@ -278,7 +278,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
-            "width": 255,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -288,7 +288,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 239,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -305,7 +305,7 @@
         "10": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 293,
+            "position_x": 207,
             "position_y": 258,
             "width": 237,
             "height": 28,
@@ -347,7 +347,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 306,
-            "width": 255,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -357,7 +357,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 239,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -374,7 +374,7 @@
         "12": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 293,
+            "position_x": 207,
             "position_y": 310,
             "width": 280,
             "height": 28,
@@ -416,7 +416,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 358,
-            "width": 255,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -426,7 +426,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 239,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -443,7 +443,7 @@
         "14": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 293,
+            "position_x": 207,
             "position_y": 362,
             "width": 200,
             "height": 28,
@@ -481,21 +481,21 @@
             "presentation_state": "show_all"
         },
         "15": {
-            "init": "help_link np.linalg.norm np.linalg.norm / euclidean_distance",
+            "init": "help_link np.linalg.norm np.linalg.norm",
             "name": "help_link",
             "position_x": 24,
             "position_y": 410,
-            "width": 255,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "np.linalg.norm / euclidean_distance",
+                    "name": "np.linalg.norm",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 239,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -512,7 +512,7 @@
         "16": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 293,
+            "position_x": 207,
             "position_y": 414,
             "width": 255,
             "height": 40,
@@ -554,7 +554,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 462,
-            "width": 255,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -564,7 +564,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 239,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -581,7 +581,7 @@
         "18": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 293,
+            "position_x": 207,
             "position_y": 466,
             "width": 212,
             "height": 28,
@@ -623,7 +623,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 514,
-            "width": 255,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -633,7 +633,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 239,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -650,7 +650,7 @@
         "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 293,
+            "position_x": 207,
             "position_y": 518,
             "width": 224,
             "height": 28,
@@ -692,7 +692,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 566,
-            "width": 255,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -702,7 +702,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 239,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -719,7 +719,7 @@
         "22": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 293,
+            "position_x": 207,
             "position_y": 570,
             "width": 224,
             "height": 28,
@@ -761,7 +761,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 618,
-            "width": 255,
+            "width": 169,
             "height": 44,
             "properties": {
                 "0": {
@@ -771,7 +771,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 239,
+                    "value": 153,
                     "value_type": "int"
                 },
                 "2": {
@@ -788,7 +788,7 @@
         "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 293,
+            "position_x": 207,
             "position_y": 622,
             "width": 175,
             "height": 28,

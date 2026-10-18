@@ -1,11 +1,11 @@
 {
-    "height": 781,
-    "width": 1333,
+    "height": 1152,
+    "width": 1682,
     "position": [
         100,
         100
     ],
-    "id": 718,
+    "id": 977,
     "name": "t.special.xlogy_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.special.xlogy_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 485,
+            "position_x": 874,
             "position_y": 45,
-            "width": 808,
-            "height": 676,
+            "width": 768,
+            "height": 841,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "x times a logarithm, made safe for x = 0.\n\nTHE NODES:\n\nt.special.xlogy    x times the log of y, defined as 0 when x is 0\nt.special.xlog1py  x times the log of (1 plus y), same protection\n\nxlogy IS NOT JUST A MULTIPLY:\nWritten out directly, x times log(y) gives not-a-number when x is 0 and y is 0,\nbecause log(0) is minus infinity and 0 times infinity is undefined. But the\nlimit is 0, and 0 is the answer you want. This node returns it: whenever x is 0\nthe result is 0, whatever y is (unless y is itself not-a-number).\n\nThat matters because x times log(y) is the shape of every entropy and\ncross-entropy calculation - a probability multiplied by its own log - and zero\nprobabilities are entirely normal there. Doing it by hand produces NaN that then\npoisons every subsequent sum. Using this node does not.\n\nxlog1py:\nThe same, with log(1 plus y) in place of log(y). Taking log(1 plus y) directly\nloses accuracy when y is very small, because adding 1 first throws away y's\ndigits; this computes it without that loss - the same reason log1p exists. Here\nthe protected case is y = -1, where log(1 plus y) is minus infinity.\n\nSYNTAX:\nt.special.xlogy\nt.special.xlog1py\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the multiplier. Receiving it does the work.\n\ntensor 2 or number in:\ny, the value whose logarithm is taken. Either input may be a single number\nrather than a tensor, applied everywhere. This one is only stored when it\narrives, so send it BEFORE x - the example connects it first for that reason.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element.\n\nWHEN TO SUSPECT YOU NEED THIS:\nWhen a calculation over a tensor produces NaN somewhere in the middle and you\ncannot see where, a zero going through a logarithm is the first thing to\nsuspect.\n\nRELATED:\nt.special.logits - the inverse of the sigmoid, the other log near the edges.",
+                    "value": "Computes x times the natural log of y, element by element - and gives 0\nwhenever x is 0, even where log y is minus infinity.\n\nIt is the safe way to write the terms of an entropy or cross-entropy (a\nprobability times the log of a probability), where zero probabilities are\nnormal and a hand-written x * log y would turn them into NaN that then\nspoils every sum after it.\n\nWHY IT IS NOT JUST A MULTIPLY:\nlog(0) is minus infinity, and 0 times minus infinity is undefined, so x *\nlog(y) gives NaN (not a number) at x = 0, y = 0. The limit is 0, and 0 is\nthe answer you want. This node returns it: whenever x is 0 the result is 0,\nwhatever y is - unless y is itself NaN.\n\nSYNTAX:\nt.special.xlogy\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the multiplier - a tensor, or a single number applied to every y.\nReceiving it triggers the node.\n\ntensor 2 or number in:\ny, the value whose log is taken - a tensor, or a single number. It is only\nstored when it arrives, so send it BEFORE x. It is converted to x's dtype\nand device. The two are matched element by element, or broadcast when one\nis a single value.\n\nOUTPUTS:\n\ntensor out:\nThe result, in the broadcast shape of the two inputs.\n\nWHERE IT IS DEFINED:\nWith x not 0: y = 0 gives minus infinity (for positive x) and negative y\ngives NaN, as log does.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values of p\nfrom 0 to 1. 't array array' sends them to the second input and then the\nfirst (right outlet first), so the node computes p log p. The lower plot is\nthat, from -0.4 (bottom) to 0.05 (top): a dip to -0.368 at p = 0.368\n(1/e), and exactly 0 at BOTH ends - at p = 1 because log 1 is 0, and at\np = 0 because of the protection; written by hand that first point would be\nNaN. Minus the sum of these over a distribution is its entropy. Drag start\nand stop on t.linspace to look elsewhere (negative values give NaN, which\nthe plot leaves out).\n\nRELATED:\nt.special.xlog1py is the same with log(1 + y). t.special.entr computes\nminus p log p in one step. t.special.logits is the other place a log near\n0 and 1 needs care.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 800,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 660,
+                    "value": 825,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,200 +90,44 @@
                     "value_type": "str"
                 }
             },
-            "text": "x times a logarithm, made safe for x = 0.\n\nTHE NODES:\n\nt.special.xlogy    x times the log of y, defined as 0 when x is 0\nt.special.xlog1py  x times the log of (1 plus y), same protection\n\nxlogy IS NOT JUST A MULTIPLY:\nWritten out directly, x times log(y) gives not-a-number when x is 0 and y is 0,\nbecause log(0) is minus infinity and 0 times infinity is undefined. But the\nlimit is 0, and 0 is the answer you want. This node returns it: whenever x is 0\nthe result is 0, whatever y is (unless y is itself not-a-number).\n\nThat matters because x times log(y) is the shape of every entropy and\ncross-entropy calculation - a probability multiplied by its own log - and zero\nprobabilities are entirely normal there. Doing it by hand produces NaN that then\npoisons every subsequent sum. Using this node does not.\n\nxlog1py:\nThe same, with log(1 plus y) in place of log(y). Taking log(1 plus y) directly\nloses accuracy when y is very small, because adding 1 first throws away y's\ndigits; this computes it without that loss - the same reason log1p exists. Here\nthe protected case is y = -1, where log(1 plus y) is minus infinity.\n\nSYNTAX:\nt.special.xlogy\nt.special.xlog1py\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the multiplier. Receiving it does the work.\n\ntensor 2 or number in:\ny, the value whose logarithm is taken. Either input may be a single number\nrather than a tensor, applied everywhere. This one is only stored when it\narrives, so send it BEFORE x - the example connects it first for that reason.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element.\n\nWHEN TO SUSPECT YOU NEED THIS:\nWhen a calculation over a tensor produces NaN somewhere in the middle and you\ncannot see where, a zero going through a logarithm is the first thing to\nsuspect.\n\nRELATED:\nt.special.logits - the inverse of the sigmoid, the other log near the edges."
+            "text": "Computes x times the natural log of y, element by element - and gives 0\nwhenever x is 0, even where log y is minus infinity.\n\nIt is the safe way to write the terms of an entropy or cross-entropy (a\nprobability times the log of a probability), where zero probabilities are\nnormal and a hand-written x * log y would turn them into NaN that then\nspoils every sum after it.\n\nWHY IT IS NOT JUST A MULTIPLY:\nlog(0) is minus infinity, and 0 times minus infinity is undefined, so x *\nlog(y) gives NaN (not a number) at x = 0, y = 0. The limit is 0, and 0 is\nthe answer you want. This node returns it: whenever x is 0 the result is 0,\nwhatever y is - unless y is itself NaN.\n\nSYNTAX:\nt.special.xlogy\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the multiplier - a tensor, or a single number applied to every y.\nReceiving it triggers the node.\n\ntensor 2 or number in:\ny, the value whose log is taken - a tensor, or a single number. It is only\nstored when it arrives, so send it BEFORE x. It is converted to x's dtype\nand device. The two are matched element by element, or broadcast when one\nis a single value.\n\nOUTPUTS:\n\ntensor out:\nThe result, in the broadcast shape of the two inputs.\n\nWHERE IT IS DEFINED:\nWith x not 0: y = 0 gives minus infinity (for positive x) and negative y\ngives NaN, as log does.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values of p\nfrom 0 to 1. 't array array' sends them to the second input and then the\nfirst (right outlet first), so the node computes p log p. The lower plot is\nthat, from -0.4 (bottom) to 0.05 (top): a dip to -0.368 at p = 0.368\n(1/e), and exactly 0 at BOTH ends - at p = 1 because log 1 is 0, and at\np = 0 because of the protection; written by hand that first point would be\nNaN. Minus the sum of these over a distribution is its entropy. Drag start\nand stop on t.linspace to look elsewhere (negative values give NaN, which\nthe plot leaves out).\n\nRELATED:\nt.special.xlog1py is the same with log(1 + y). t.special.entr computes\nminus p log p in one step. t.special.logits is the other place a log near\n0 and 1 needs care."
         },
         "3": {
-            "name": "button",
+            "name": "metro",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
         },
         "4": {
-            "name": "message",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 118,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "0.0 0.25 0.5 0.75",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "5": {
-            "name": "text_block",
-            "id": 422,
-            "annotation": true,
-            "position_x": 194,
-            "position_y": 168,
-            "width": 224,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "the same list goes to x and y -\nnote the zero at the start",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 216,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "the same list goes to x and y -\nnote the zero at the start"
-        },
-        "6": {
-            "name": "t.special.xlogy",
-            "id": 459,
-            "position_x": 30,
-            "position_y": 225,
-            "width": 138,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "7": {
-            "name": "list",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 330,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "8": {
-            "name": "text_block",
-            "id": 533,
-            "annotation": true,
-            "position_x": 194,
-            "position_y": 380,
-            "width": 261,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "x times log x, with 0 log 0 giving 0\ndoing it by hand would give NaN there",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "x times log x, with 0 log 0 giving 0\ndoing it by hand would give NaN there"
-        },
-        "9": {
-            "name": "t.special.xlog1py",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 450,
-            "width": 138,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "10": {
-            "name": "list",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 555,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "11": {
-            "init": "comment x times log (1 plus x)",
+            "init": "comment redraws ten times a second",
             "name": "comment",
-            "id": 644,
-            "position_x": 194,
-            "position_y": 605,
-            "width": 144,
+            "id": 385,
+            "position_x": 496,
+            "position_y": 70,
+            "width": 168,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -291,7 +135,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "x times log (1 plus x)",
+                    "value": "redraws ten times a second",
                     "value_type": "str"
                 },
                 "1": {
@@ -300,13 +144,385 @@
                     "value_type": "str"
                 }
             },
-            "comment": "x times log (1 plus x)"
+            "comment": "redraws ten times a second"
+        },
+        "5": {
+            "name": "t.linspace",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 0 1 200"
+        },
+        "6": {
+            "init": "comment p: 200 values from 0 to 1",
+            "name": "comment",
+            "id": 459,
+            "position_x": 496,
+            "position_y": 160,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "p: 200 values from 0 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "p: 200 values from 0 to 1"
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "8": {
+            "init": "comment in: p from 0 to 1",
+            "name": "comment",
+            "id": 533,
+            "position_x": 496,
+            "position_y": 345,
+            "width": 113,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in: p from 0 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in: p from 0 to 1"
+        },
+        "9": {
+            "name": "t",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 540,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t array array"
+        },
+        "10": {
+            "init": "comment p to y first (right), then to x",
+            "name": "comment",
+            "id": 607,
+            "position_x": 496,
+            "position_y": 545,
+            "width": 199,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "p to y first (right), then to x",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "p to y first (right), then to x"
+        },
+        "11": {
+            "name": "t.special.xlogy",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 610,
+            "width": 138,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
         },
         "12": {
-            "name": "close",
+            "name": "plot",
             "id": 681,
+            "position_x": 30,
+            "position_y": 720,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -0.4,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 0.05,
+                    "value_type": "float"
+                }
+            }
+        },
+        "13": {
+            "name": "text_block",
+            "id": 718,
+            "annotation": true,
+            "position_x": 496,
+            "position_y": 725,
+            "width": 348,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "out: p log p - 0 at both ends, -0.368 at its lowest\n(plot from -0.4 to 0.05)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "out: p log p - 0 at both ends, -0.368 at its lowest\n(plot from -0.4 to 0.05)"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 930,
+            "width": 121,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.xlog1py"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 204,
+            "position_y": 930,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.entr"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 355,
+            "position_y": 930,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.logits"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 974,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.log1p"
+        },
+        "18": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 903,
+            "position_x": 496,
+            "position_y": 974,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
             "position_x": 24,
-            "position_y": 627,
+            "position_y": 1048,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -327,70 +543,60 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "###input"
         },
         "1": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor 2 or number in"
-        },
-        "2": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor 1 or number in"
-        },
-        "3": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "tensor out",
+            "source_output_name": "linspace out",
             "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "y"
         },
-        "4": {
-            "source_node": 385,
+        "2": {
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "message out",
+            "source_output_name": "linspace out",
             "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "array",
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor 2 or number in"
         },
-        "5": {
-            "source_node": 385,
+        "4": {
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 570,
+            "source_output_name": "array",
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor 1 or number in"
         },
-        "6": {
-            "source_node": 570,
+        "5": {
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 607,
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "y"
         }
     }
 }

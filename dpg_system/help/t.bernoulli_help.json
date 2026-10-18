@@ -1,0 +1,983 @@
+{
+    "name": "t.bernoulli_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.bernoulli_help.json",
+    "patches": {
+        "0": {
+            "height": 740,
+            "width": 637,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1199,
+            "name": "make_ramp",
+            "parent_node_uuid": 496,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1236,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "load_bang",
+                    "init": "load_bang",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 88,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "in",
+                    "init": "in top",
+                    "id": 1310,
+                    "position_x": 200,
+                    "position_y": 40,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "3": {
+                    "name": "in",
+                    "init": "in again",
+                    "id": 1347,
+                    "position_x": 400,
+                    "position_y": 40,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "4": {
+                    "name": "t",
+                    "init": "t bang float",
+                    "id": 1384,
+                    "position_x": 200,
+                    "position_y": 150,
+                    "width": 110,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "5": {
+                    "name": "t.linspace",
+                    "init": "t.linspace 0 1 64",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 230,
+                    "width": 200,
+                    "height": 120,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "start",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "stop",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "steps",
+                            "value": 64,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment one row: 0 to 1 in 64 steps",
+                    "id": 1458,
+                    "position_x": 260,
+                    "position_y": 240,
+                    "width": 227,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one row: 0 to 1 in 64 steps",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "one row: 0 to 1 in 64 steps"
+                },
+                "7": {
+                    "name": "t.repeat",
+                    "init": "t.repeat 64 1",
+                    "id": 1495,
+                    "position_x": 40,
+                    "position_y": 380,
+                    "width": 200,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "8": {
+                    "name": "comment",
+                    "init": "comment 64 copies of the row: a 64 x 64 ramp",
+                    "id": 1532,
+                    "position_x": 260,
+                    "position_y": 390,
+                    "width": 297,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "64 copies of the row: a 64 x 64 ramp",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "64 copies of the row: a 64 x 64 ramp"
+                },
+                "9": {
+                    "name": "*",
+                    "init": "* 1.0",
+                    "id": 1569,
+                    "position_x": 40,
+                    "position_y": 480,
+                    "width": 150,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "10": {
+                    "name": "comment",
+                    "init": "comment scaled so the right edge is top",
+                    "id": 1606,
+                    "position_x": 260,
+                    "position_y": 490,
+                    "width": 258,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "scaled so the right edge is top",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "scaled so the right edge is top"
+                },
+                "11": {
+                    "name": "out",
+                    "init": "out ramp",
+                    "id": 1643,
+                    "position_x": 40,
+                    "position_y": 580,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "1": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "top",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "float",
+                    "dest_node": 1569,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "operand"
+                },
+                "3": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bang",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "4": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "again",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "5": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "6": {
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "repeated tensor out",
+                    "dest_node": 1569,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "7": {
+                    "source_node": 1569,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 1643,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "ramp"
+                }
+            }
+        },
+        "1": {
+            "height": 1078,
+            "width": 1804,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1162,
+            "name": "t.bernoulli_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.bernoulli_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.bernoulli - a coin flip per element",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 463,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.bernoulli - a coin flip per element",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.bernoulli - a coin flip per element"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 996,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 746,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Turns a tensor of PROBABILITIES into a tensor of random 0s and 1s: each\nelement comes out 1 with the probability it holds, otherwise 0.\n\nUnlike t.dist.bernoulli, which flips every coin with the same odds,\nthis node gives each element its own odds - the input IS the parameter.\nFeed it a soft mask or a picture and you get random dots whose density\nfollows it: dithering, a fading-in pattern of sparks, dropout with a\ndifferent rate per cell, a random decision per joint weighted by how\nfast it moves.\n\nSYNTAX:\nt.bernoulli\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, one per element, each from 0 (never 1) to 1 (always\n1). Every tensor that arrives is sampled and sent; this is the only\ninlet. A list or number is turned into a tensor first. If any value is\nbelow 0 or above 1 the node sends NOTHING (and says why only with the\napp's verbose setting on), so clip a signal into 0..1 first (t.clamp).\nThe tensor must be floating-point; an integer one gives an error in\nthe console.\n\nOUTPUTS:\n\ntensor out:\n0s and 1s, the same shape, dtype and device as the input - a float\ntensor of 0.0 and 1.0, not booleans. A new random draw every time a\ntensor arrives.\n\nREADING THE DEMO:\nmake_ramp sends a 64 x 64 ramp of probabilities: 0 at the left edge,\nrising evenly to top at the right (left heat_map, black 0 to white 1).\nt.bernoulli turns it into the right heat_map: no dots at all on the\nleft, sparse dots in the middle, solid at the right if top is 1. Drag\ntop and the whole ramp, and the dot density with it, scales down.\nClick 'again' for a fresh draw from the same ramp. The two floats are\nthe mean of the probabilities and the fraction of 1s that came out -\nalways very close.\n\nRELATED:\nt.dist.bernoulli flips coins with one shared probability, from a typed\nshape. t.poisson does the same per-element trick for counts. t.rand\nwith a > comparison does this by hand.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 730,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Turns a tensor of PROBABILITIES into a tensor of random 0s and 1s: each\nelement comes out 1 with the probability it holds, otherwise 0.\n\nUnlike t.dist.bernoulli, which flips every coin with the same odds,\nthis node gives each element its own odds - the input IS the parameter.\nFeed it a soft mask or a picture and you get random dots whose density\nfollows it: dithering, a fading-in pattern of sparks, dropout with a\ndifferent rate per cell, a random decision per joint weighted by how\nfast it moves.\n\nSYNTAX:\nt.bernoulli\nThe node takes no arguments.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, one per element, each from 0 (never 1) to 1 (always\n1). Every tensor that arrives is sampled and sent; this is the only\ninlet. A list or number is turned into a tensor first. If any value is\nbelow 0 or above 1 the node sends NOTHING (and says why only with the\napp's verbose setting on), so clip a signal into 0..1 first (t.clamp).\nThe tensor must be floating-point; an integer one gives an error in\nthe console.\n\nOUTPUTS:\n\ntensor out:\n0s and 1s, the same shape, dtype and device as the input - a float\ntensor of 0.0 and 1.0, not booleans. A new random draw every time a\ntensor arrives.\n\nREADING THE DEMO:\nmake_ramp sends a 64 x 64 ramp of probabilities: 0 at the left edge,\nrising evenly to top at the right (left heat_map, black 0 to white 1).\nt.bernoulli turns it into the right heat_map: no dots at all on the\nleft, sparse dots in the middle, solid at the right if top is 1. Drag\ntop and the whole ramp, and the dot density with it, scales down.\nClick 'again' for a fresh draw from the same ramp. The two floats are\nthe mean of the probabilities and the fraction of 1s that came out -\nalways very close.\n\nRELATED:\nt.dist.bernoulli flips coins with one shared probability, from a typed\nshape. t.poisson does the same per-element trick for counts. t.rand\nwith a > comparison does this by hand."
+                },
+                "3": {
+                    "name": "slider",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 230,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "min",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "max",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "3": {
+                            "name": "format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "width",
+                            "value": 200,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "init": "comment top: the probability at the right edge",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 583,
+                    "position_y": 125,
+                    "width": 242,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "top: the probability at the right edge",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "top: the probability at the right edge"
+                },
+                "5": {
+                    "name": "button",
+                    "id": 422,
+                    "position_x": 290,
+                    "position_y": 62,
+                    "width": 45,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "init": "comment again: a fresh draw",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 583,
+                    "position_y": 70,
+                    "width": 125,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "again: a fresh draw",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "again: a fresh draw"
+                },
+                "7": {
+                    "name": "p",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 170,
+                    "width": 72,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_ramp",
+                    "patcher id": 1199
+                },
+                "8": {
+                    "init": "comment a 64 x 64 ramp - open it to see how",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 583,
+                    "position_y": 180,
+                    "width": 224,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a 64 x 64 ramp - open it to see how",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a 64 x 64 ramp - open it to see how"
+                },
+                "9": {
+                    "name": "heat_map",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 270,
+                    "width": 238,
+                    "height": 280,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "hot",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 230,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 230,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 64,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "10": {
+                    "name": "t.bernoulli",
+                    "id": 607,
+                    "position_x": 310,
+                    "position_y": 270,
+                    "width": 76,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "heat_map",
+                    "id": 644,
+                    "position_x": 310,
+                    "position_y": 360,
+                    "width": 238,
+                    "height": 280,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "hot",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 230,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 230,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 64,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "init": "comment left: the probabilities; right: the 0s and 1s drawn from them",
+                    "name": "comment",
+                    "id": 681,
+                    "position_x": 583,
+                    "position_y": 640,
+                    "width": 383,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "left: the probabilities; right: the 0s and 1s drawn from them",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "left: the probabilities; right: the 0s and 1s drawn from them"
+                },
+                "13": {
+                    "name": "t.mean",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 680,
+                    "width": 64,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "14": {
+                    "name": "t.mean",
+                    "id": 755,
+                    "position_x": 310,
+                    "position_y": 680,
+                    "width": 64,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "15": {
+                    "name": "float",
+                    "id": 792,
+                    "position_x": 30,
+                    "position_y": 800,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "16": {
+                    "name": "float",
+                    "id": 829,
+                    "position_x": 310,
+                    "position_y": 800,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "comment mean probability, and the fraction of 1s",
+                    "name": "comment",
+                    "id": 866,
+                    "position_x": 583,
+                    "position_y": 850,
+                    "width": 254,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "mean probability, and the fraction of 1s",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "mean probability, and the fraction of 1s"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 900,
+                    "width": 115,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.dist.bernoulli"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 197,
+                    "position_y": 900,
+                    "width": 72,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.poisson"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 310,
+                    "position_y": 900,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.rand"
+                },
+                "21": {
+                    "name": "help_link",
+                    "id": 1014,
+                    "position_x": 400,
+                    "position_y": 900,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.clamp"
+                },
+                "22": {
+                    "name": "help_link",
+                    "id": 1051,
+                    "position_x": 497,
+                    "position_y": 900,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.rand"
+                },
+                "23": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1088,
+                    "position_x": 583,
+                    "position_y": 900,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "24": {
+                    "name": "close",
+                    "id": 1125,
+                    "position_x": 24,
+                    "position_y": 974,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "top"
+                },
+                "1": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "again"
+                },
+                "2": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "ramp",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "3": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "ramp",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "4": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "tensor out",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "5": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "ramp",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "6": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "tensor out",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "7": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 792,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "8": {
+                    "source_node": 755,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

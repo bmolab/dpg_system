@@ -1,0 +1,622 @@
+{
+    "height": 1282,
+    "width": 1715,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "t.nn.softplus_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.nn.softplus_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.nn.softplus - relu with no corner",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.nn.softplus - relu with no corner",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.nn.softplus - relu with no corner"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 887,
+            "position_y": 45,
+            "width": 788,
+            "height": 976,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "A smooth version of relu: the logarithm of (1 plus e to the x), with beta\ncontrolling how sharp the bend is.\n\nIt is never negative and never has a corner: nearly 0 for negative\ninputs, nearly the input for positive ones, and a smooth curve between.\nUse it where a value must stay positive but a hard cut at zero would put\na kink in the response - a positive-only rate, a width, a variance.\n\nTHE CURVE:\nWith beta 1: 0 gives 0.69 (log 2), -4 gives 0.018, 4 gives 4.018. The\ncurve lies a little ABOVE relu everywhere and approaches it on both sides.\nBeta sharpens it: the formula becomes log(1 plus e to the (beta times x))\ndivided by beta, so a large beta hugs relu closely (0 gives 0.69 divided\nby beta) and a small beta makes a wide, lazy bend.\n\nSYNTAX:\nt.nn.softplus\nNo arguments; defaults beta 1.0, threshold 20.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn INTEGER tensor (t.arange with whole numbers makes one) is refused: the\nconsole reports \"not implemented for 'Long'\" and nothing is sent. Put a\nt.to float32 in front of it.\n\nbeta (drag float on the node, and an inlet):\nHow sharp the bend is. Default 1.0. Larger is closer to relu.\n\nthreshold (drag float on the node, and an inlet):\nWhere the node stops computing the logarithm and passes the input\nstraight through: wherever beta times x is above threshold. Default 20,\nwhere the difference is far too small to see. It is a shortcut against\noverflow, not a shape control - set it low (say 1) and the curve gets a\nvisible step where the shortcut begins.\n\nNeither triggers the node: the next tensor uses them. In the demo the\nmetro re-sends the ramp ten times a second, so the curve follows the\nslider.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -1 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu is the sharp-cornered limit of large beta. t.nn.logsigmoid is\nsoftplus turned upside down and back to front. t.nn.sigmoid is its slope.\nt.nn.elu and t.nn.mish are other smooth relus, both dipping below 0.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 780,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 960,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "A smooth version of relu: the logarithm of (1 plus e to the x), with beta\ncontrolling how sharp the bend is.\n\nIt is never negative and never has a corner: nearly 0 for negative\ninputs, nearly the input for positive ones, and a smooth curve between.\nUse it where a value must stay positive but a hard cut at zero would put\na kink in the response - a positive-only rate, a width, a variance.\n\nTHE CURVE:\nWith beta 1: 0 gives 0.69 (log 2), -4 gives 0.018, 4 gives 4.018. The\ncurve lies a little ABOVE relu everywhere and approaches it on both sides.\nBeta sharpens it: the formula becomes log(1 plus e to the (beta times x))\ndivided by beta, so a large beta hugs relu closely (0 gives 0.69 divided\nby beta) and a small beta makes a wide, lazy bend.\n\nSYNTAX:\nt.nn.softplus\nNo arguments; defaults beta 1.0, threshold 20.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn INTEGER tensor (t.arange with whole numbers makes one) is refused: the\nconsole reports \"not implemented for 'Long'\" and nothing is sent. Put a\nt.to float32 in front of it.\n\nbeta (drag float on the node, and an inlet):\nHow sharp the bend is. Default 1.0. Larger is closer to relu.\n\nthreshold (drag float on the node, and an inlet):\nWhere the node stops computing the logarithm and passes the input\nstraight through: wherever beta times x is above threshold. Default 20,\nwhere the difference is far too small to see. It is a shortcut against\noverflow, not a shape control - set it low (say 1) and the curve gets a\nvisible step where the shortcut begins.\n\nNeither triggers the node: the next tensor uses them. In the demo the\nmetro re-sends the ramp ten times a second, so the curve follows the\nslider.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -1 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.relu is the sharp-cornered limit of large beta. t.nn.logsigmoid is\nsoftplus turned upside down and back to front. t.nn.sigmoid is its slope.\nt.nn.elu and t.nn.mish are other smooth relus, both dipping below 0."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "init": "comment re-sends the ramp ten times a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 523,
+            "position_y": 72,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "re-sends the ramp ten times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "re-sends the ramp ten times a second"
+        },
+        "5": {
+            "name": "t.linspace",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": -4.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 128,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace -4 4 128"
+        },
+        "6": {
+            "init": "comment the input: 128 values from -4 to 4",
+            "name": "comment",
+            "id": 459,
+            "position_x": 523,
+            "position_y": 165,
+            "width": 217,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the input: 128 values from -4 to 4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the input: 128 values from -4 to 4"
+        },
+        "7": {
+            "name": "t",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t array array"
+        },
+        "8": {
+            "init": "comment right first: the ramp as it is, then through the node",
+            "name": "comment",
+            "id": 533,
+            "position_x": 523,
+            "position_y": 325,
+            "width": 334,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right first: the ramp as it is, then through the node",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "right first: the ramp as it is, then through the node"
+        },
+        "9": {
+            "name": "slider",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 390,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.25,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 8.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            }
+        },
+        "10": {
+            "init": "comment beta: 0.25 to 8",
+            "name": "comment",
+            "id": 607,
+            "position_x": 523,
+            "position_y": 438,
+            "width": 101,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "beta: 0.25 to 8",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "beta: 0.25 to 8"
+        },
+        "11": {
+            "name": "t.nn.softplus",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 480,
+            "width": 148,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "12": {
+            "name": "t.stack",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 620,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "13": {
+            "init": "comment output on top of the input: two rows, one line each",
+            "name": "comment",
+            "id": 718,
+            "position_x": 523,
+            "position_y": 630,
+            "width": 322,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output on top of the input: two rows, one line each",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "output on top of the input: two rows, one line each"
+        },
+        "14": {
+            "name": "plot",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 428,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 420,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 230,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 128.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -1,
+                    "value_type": "int"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 4,
+                    "value_type": "int"
+                }
+            }
+        },
+        "15": {
+            "init": "comment drag beta: high hugs relu, low makes a wide bend",
+            "name": "comment",
+            "id": 792,
+            "position_x": 523,
+            "position_y": 1010,
+            "width": 303,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag beta: high hugs relu, low makes a wide bend",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag beta: high hugs relu, low makes a wide bend"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 1060,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.relu"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 143,
+            "position_y": 1060,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.elu"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 248,
+            "position_y": 1060,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.logsigmoid"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 407,
+            "position_y": 1060,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.sigmoid"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 1104,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.mish"
+        },
+        "21": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 523,
+            "position_y": 1104,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 1178,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 1,
+            "source_output_name": "array",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 2"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "array",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "4": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1"
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "beta"
+        }
+    }
+}

@@ -1,11 +1,11 @@
 {
-    "height": 681,
-    "width": 1442,
+    "height": 637,
+    "width": 1670,
     "position": [
         100,
         100
     ],
-    "id": 533,
+    "id": 644,
     "name": "t.data_set_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.data_set_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.data_set - a folder of tensors",
+            "init": "comment t.data_set - a folder of saved tensors, for training code",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 402,
+            "width": 709,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.data_set - a folder of tensors",
+                    "value": "t.data_set - a folder of saved tensors, for training code",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.data_set - a folder of tensors"
+            "comment": "t.data_set - a folder of saved tensors, for training code"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 614,
+            "position_x": 862,
             "position_y": 45,
-            "width": 788,
-            "height": 576,
+            "width": 768,
+            "height": 532,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Loads a directory of saved tensors as a torch dataset.\n\nTHE NODE:\n\nt.data_set <directory>   a torch Dataset over the .pt files in a folder\n\nGive it a directory and it builds a torch Dataset from what it finds, which is\nthe thing torch's training machinery expects to be handed.\n\nIT HAS NO INLETS AND NO OUTLETS:\nThat is not an omission you have missed - the node genuinely exposes nothing to\nthe patch. It loads the dataset and holds it, and nothing in a patch can ask it\nfor anything.\n\nSo it is groundwork rather than a working node: the loading part of a training\nsetup that would be driven from code. If you are looking for a way to get sample\ndata INTO a patch, this is not it - t.rand, np.load or a rolling_buffer of\nrecorded input will all be more use.\n\nA missing directory or an unreadable file does not stop the node being created;\nit prints the reason and leaves the dataset empty.\n\nSYNTAX:\nt.data_set <directory>\n\nEXAMPLE:\nt.data_set ~/datasets/poses\n\nINPUTS and PARAMETERS:\n\nThe directory, as the argument.\n\nOUTPUTS: \n\nNone.\n\nRELATED:\nt.buffer and rolling_buffer to collect data inside a patch.\nThe torch pages for what to do with tensors once you have them.",
+                    "value": "Loads every .pt file in a folder into a torch Dataset, for training\ncode - it has no inlets and no outlets.\n\nGive it a folder as its argument. Each .pt file there (a tensor saved\nwith torch.save) is loaded and kept under its file name, and the node\nholds the result as a torch Dataset: item i is a dictionary of the i-th\nrow of every file, and the length is the shortest file's length.\n\nNOTHING IN A PATCH CAN READ IT:\nThe node exposes no inlets and no outlets, so a patch cannot ask it for\nanything. It is groundwork for training code that reaches the node from\nPython, not a way to bring data into a patch. To get recorded data into\na patch use np.load (a NumPy file) or np.sequence (a recording); to make\ntest tensors, t.rand or t.linspace.\n\nSYNTAX:\nt.data_set <folder>\nWith no folder, nothing is loaded.\n\nEXAMPLE:\nt.data_set /Users/me/datasets/poses\n\nINPUTS and PARAMETERS:\nThe folder, as the argument. It is read once, when the node is made.\nA folder that does not exist prints a message in the console and leaves\nthe dataset empty; a .pt file that cannot be read is skipped with a\nmessage and the rest are kept.\n\nOUTPUTS:\nNone.\n\nRELATED:\nnp.load reads a saved NumPy array into a patch. t.buffer and\nt.rolling_buffer collect data as it arrives.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 780,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 560,
+                    "value": 516,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,15 +90,15 @@
                     "value_type": "str"
                 }
             },
-            "text": "Loads a directory of saved tensors as a torch dataset.\n\nTHE NODE:\n\nt.data_set <directory>   a torch Dataset over the .pt files in a folder\n\nGive it a directory and it builds a torch Dataset from what it finds, which is\nthe thing torch's training machinery expects to be handed.\n\nIT HAS NO INLETS AND NO OUTLETS:\nThat is not an omission you have missed - the node genuinely exposes nothing to\nthe patch. It loads the dataset and holds it, and nothing in a patch can ask it\nfor anything.\n\nSo it is groundwork rather than a working node: the loading part of a training\nsetup that would be driven from code. If you are looking for a way to get sample\ndata INTO a patch, this is not it - t.rand, np.load or a rolling_buffer of\nrecorded input will all be more use.\n\nA missing directory or an unreadable file does not stop the node being created;\nit prints the reason and leaves the dataset empty.\n\nSYNTAX:\nt.data_set <directory>\n\nEXAMPLE:\nt.data_set ~/datasets/poses\n\nINPUTS and PARAMETERS:\n\nThe directory, as the argument.\n\nOUTPUTS: \n\nNone.\n\nRELATED:\nt.buffer and rolling_buffer to collect data inside a patch.\nThe torch pages for what to do with tensors once you have them."
+            "text": "Loads every .pt file in a folder into a torch Dataset, for training\ncode - it has no inlets and no outlets.\n\nGive it a folder as its argument. Each .pt file there (a tensor saved\nwith torch.save) is loaded and kept under its file name, and the node\nholds the result as a torch Dataset: item i is a dictionary of the i-th\nrow of every file, and the length is the shortest file's length.\n\nNOTHING IN A PATCH CAN READ IT:\nThe node exposes no inlets and no outlets, so a patch cannot ask it for\nanything. It is groundwork for training code that reaches the node from\nPython, not a way to bring data into a patch. To get recorded data into\na patch use np.load (a NumPy file) or np.sequence (a recording); to make\ntest tensors, t.rand or t.linspace.\n\nSYNTAX:\nt.data_set <folder>\nWith no folder, nothing is loaded.\n\nEXAMPLE:\nt.data_set /Users/me/datasets/poses\n\nINPUTS and PARAMETERS:\nThe folder, as the argument. It is read once, when the node is made.\nA folder that does not exist prints a message in the console and leaves\nthe dataset empty; a .pt file that cannot be read is skipped with a\nmessage and the rest are kept.\n\nOUTPUTS:\nNone.\n\nRELATED:\nnp.load reads a saved NumPy array into a patch. t.buffer and\nt.rolling_buffer collect data as it arrives."
         },
         "3": {
             "name": "t.data_set",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 260,
-            "height": 80,
+            "width": 160,
+            "height": 46,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -108,17 +108,17 @@
             "name": "text_block",
             "id": 385,
             "annotation": true,
-            "position_x": 316,
-            "position_y": 155,
-            "width": 268,
-            "height": 88,
+            "position_x": 478,
+            "position_y": 130,
+            "width": 354,
+            "height": 40,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "no inlets and no outlets - the node\nloads a dataset and holds it, and\nnothing in a patch can ask it anything\ngroundwork for a training setup driven\nfrom code, not a way to get data into\na patch",
+                    "value": "no inlets, no outlets: give it a folder of .pt files\nas its argument and it loads them for training code",
                     "value_type": "str"
                 },
                 "1": {
@@ -128,12 +128,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 260,
+                    "value": 346,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 72,
+                    "value": 24,
                     "value_type": "int"
                 },
                 "4": {
@@ -142,28 +142,67 @@
                     "value_type": "str"
                 }
             },
-            "text": "no inlets and no outlets - the node\nloads a dataset and holds it, and\nnothing in a patch can ask it anything\ngroundwork for a training setup driven\nfrom code, not a way to get data into\na patch"
+            "text": "no inlets, no outlets: give it a folder of .pt files\nas its argument and it loads them for training code"
         },
         "5": {
-            "name": "rolling_buffer",
+            "name": "help_link",
             "id": 422,
             "position_x": 30,
-            "position_y": 360,
-            "width": 95,
-            "height": 56,
+            "position_y": 200,
+            "width": 60,
+            "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "rolling_buffer 256"
+            "init": "help_link np.load"
         },
         "6": {
-            "init": "comment for that, this - or t.rand, or np.load",
-            "name": "comment",
+            "name": "help_link",
             "id": 459,
-            "position_x": 316,
-            "position_y": 575,
-            "width": 242,
+            "position_x": 127,
+            "position_y": 200,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.buffer"
+        },
+        "7": {
+            "name": "help_link",
+            "id": 496,
+            "position_x": 232,
+            "position_y": 200,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rolling_buffer"
+        },
+        "8": {
+            "name": "help_link",
+            "id": 533,
+            "position_x": 399,
+            "position_y": 200,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rand"
+        },
+        "9": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 570,
+            "position_x": 478,
+            "position_y": 200,
+            "width": 156,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -171,7 +210,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "for that, this - or t.rand, or np.load",
+                    "value": "SEE ALSO - click to open",
                     "value_type": "str"
                 },
                 "1": {
@@ -180,13 +219,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "for that, this - or t.rand, or np.load"
+            "comment": "SEE ALSO - click to open"
         },
-        "7": {
+        "10": {
             "name": "close",
-            "id": 496,
+            "id": 607,
             "position_x": 24,
-            "position_y": 446,
+            "position_y": 274,
             "width": 88,
             "height": 44,
             "visibility": "show_all",

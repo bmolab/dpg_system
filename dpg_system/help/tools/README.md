@@ -9,7 +9,10 @@ careful one. Nothing here runs at patch time — `dpg_system` never imports it.
 Reads every `*.py` in `dpg_system/` with `ast` — no import, no GUI, no torch —
 and writes `iface.json`: for each registered node name, the class that builds it
 and every inlet, outlet, property and option it declares, with widget types,
-defaults and combo choices.
+defaults and combo choices. A base class is looked up first in the subclass's
+own file, then in the module it is imported from: MotionSDK.py has its own
+`class Node`, which once stood in for node.py's and hid every option the real
+Node adds (hide_title_bar).
 
     python3 extract_interface.py iface.json
 
@@ -232,6 +235,21 @@ The index is the organising document: one readable file listing every family and
 its members, rather than a `help_file_name` line scattered through 900 classes.
 Keys are help file stems, so `"trig"` means `trig_help.json`. Keys starting with
 `_` are comments and are ignored.
+
+Because `help_file_name` wins over everything, never set it on a class that
+serves several node names: when the family page is later split, every name
+keeps opening the old page (or nothing, once it is deleted). The torch split
+(2026-10-18) removed nine such lines (t.mean_help, t.special_help,
+t.distributions_help, t.dist.distributions_help, t.window_help, t.fft_help).
+
+## numpy and torch: one page per node (2026-10-17/18)
+
+Every np. and t. node has its own page; only true aliases share one (t.ravel on
+t.flatten, t.row_stack on t.vstack, t.non_zero on t.argwhere, t.to on tensor,
+t.dist.gumble on t.dist.gumbel, t.special.softmax / log_softmax on the t.nn
+pages). The torch pages come from make_torch_{make,random,tensor,shape,select,
+elementwise,reduce,stats,linalg,nn,special,signal}_help.py; the old family
+generators (make_torch_calc_a ... make_butterworth_help.py) are gone.
 
 ## adding a family
 

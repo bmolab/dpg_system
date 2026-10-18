@@ -1,11 +1,11 @@
 {
-    "height": 1033,
-    "width": 1614,
+    "height": 1093,
+    "width": 1839,
     "position": [
         100,
         100
     ],
-    "id": 940,
+    "id": 1162,
     "name": "t.mse_loss_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.mse_loss_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t losses - how wrong is this",
+            "init": "comment t.mse_loss - the squared error, added up",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 353,
+            "width": 500,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t losses - how wrong is this",
+                    "value": "t.mse_loss - the squared error, added up",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t losses - how wrong is this"
+            "comment": "t.mse_loss - the squared error, added up"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 766,
+            "position_x": 1031,
             "position_y": 45,
-            "width": 808,
-            "height": 776,
+            "width": 768,
+            "height": 988,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These measure how wrong something is: one number, from two tensors.\n\nTHE NODES:\n\nt.mse_loss             squared error - big mistakes dominate\nt.l1_loss              plain error - every mistake counts its own size\nt.cross_entropy_loss   for choosing between categories\n\nWHAT A LOSS IS FOR:\nIt compares what you got against what you wanted and reduces the difference to a\nsingle number, where zero means identical and larger means worse. That is what\ntraining minimises - but a loss is just as useful on its own, as a running\nmeasure of how far a signal has drifted from a reference, or how unlike a pose\nis from a stored one.\n\nMSE AGAINST L1 - THE DIFFERENCE IS WHAT SQUARING DOES:\nBoth add up the errors. MSE squares each one first, and that single difference\nchanges the character of the measure completely. With one element off by 4:\n\n    t.mse_loss   16.0        (4 squared)\n    t.l1_loss     4.0\n\nand with the same element off by only 0.4:\n\n    t.mse_loss    0.16\n    t.l1_loss     0.40\n\nNotice the order swaps. Squaring makes errors above 1 count for much more and\nerrors below 1 count for much less, so MSE is dominated by the worst offender\nwhile L1 treats a lot of small errors and one big one as comparable.\n\nWhich you want depends on what you are measuring. MSE if a single large\ndiscrepancy is the thing that matters and you want it to shout. L1 if the\noccasional wild value is noise you would rather not have swamp the reading -\nL1 is the robust one.\n\nBOTH ARE SUMS HERE, NOT AVERAGES:\nThese use a total rather than a mean, so the number grows with the SIZE of the\ntensor. A loss of 16 across four elements and a loss of 16 across four hundred\nare not the same thing at all.\n\nThat matters if you compare losses between differently-shaped data, or if the\nshape can change while a patch runs - the number will jump for reasons that have\nnothing to do with the data getting worse. Divide by the element count yourself\nif you want something comparable.\n\nCROSS ENTROPY IS A DIFFERENT KIND OF QUESTION:\nThe other two ask \"how far off are these numbers\". Cross entropy asks \"did you\npick the right category, and how confident were you\". The input is one row of\nscores per item - one score per category, unnormalised - and the target says\nwhich category was correct.\n\nWith scores [2.0, 0.5, 0.1], the model is leaning towards the first category:\n\n    correct answer is 0  ->  0.32     confident and right\n    correct answer is 1  ->  1.82\n    correct answer is 2  ->  2.22     confident and wrong\n\nBeing confidently wrong costs far more than being uncertain, which is the whole\npoint of it: it rewards well-calibrated confidence, not just correct guesses.\n\n'target' IS A COLD INLET ON ALL THREE:\nSetting the target does not compute anything - it is the tensor arriving at\n'tensor in' that does. So set the target first. Send them the other way round\nand the first answer is either missing or computed against the previous target,\nwhich looks like the loss lagging by one.\n\nTHE TARGET IS EITHER INDICES OR PROBABILITIES:\nSend one whole number per row - which category is right - or send a full row of\nprobabilities the same shape as the input, for when the answer is a blend rather\nthan a single choice. The node works out which you meant from the shape.\n\nSYNTAX:\nt.mse_loss\nt.l1_loss\nt.cross_entropy_loss\n\nEXAMPLE:\nt.mse_loss\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got. Receiving it computes the loss.\n\ntarget:\nWhat you wanted. It is a cold inlet - set it first, then send the input.\n\nOUTPUTS: \n\nloss:\nOne number.\n\nRELATED:\nt.dist and the distance nodes if you want the difference as a shape rather than\nas a single number.\nt.nn.softmax turns cross entropy's kind of scores into probabilities you can\nlook at.",
+                    "value": "Measures how far a tensor is from a target as one number: the sum of\nthe SQUARED differences, element by element (mean squared error, but\nadded up rather than averaged).\n\n0 means identical. Squaring makes big differences count far more than\nsmall ones: one value off by 4 costs 16, while four values off by 1\ncost only 4. So it is dominated by the worst offender - the measure to\nuse when one large discrepancy is what matters and should shout. And\nbelow a difference of 1 squaring makes things SMALLER: off by 0.4 costs\n0.16, where t.l1_loss says 0.40.\n\nReach for it as a running measure of how far a signal or a pose has\ndrifted from a reference, or as the thing a training loop minimises.\n\nA SUM, NOT AN AVERAGE:\nIt adds up rather than averaging, so the number grows with the size of\nthe tensor: 16 across 4 values and 16 across 400 are not the same at\nall. Divide by the element count yourself if you need numbers that\ncompare across sizes.\n\nSYNTAX:\nt.mse_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got (a list or a NumPy array is turned into a float32\ntensor). Receiving it computes the loss and sends it.\n\ntarget:\nWhat you wanted, converted to the type of the input. It is a COLD\ninlet: it is only stored, so set it BEFORE sending the input - send\nthem the other way round and the answer is computed against the\nprevious target, which looks like the loss lagging one step behind.\nNothing is sent until a target has arrived. Same shape as the input,\nor one that broadcasts to it: a single number measures every value\nagainst that number (torch prints a warning about the size mismatch,\nand the answer is still right).\n\nOUTPUTS:\n\nloss:\nOne plain float. 0 when input and target are equal; never negative.\n\nREADING THE DEMO:\nThe vector node is the input: eight values, equal to the target\nexcept the first, which is 0.4 too high (0.6 against 0.2) - so the\nloss reads 0.16, the difference squared. The red-blue strip is the\ndifference. Drag the first value back to 0.2 and the loss reads 0.\nDrag it 0.5 off: 0.25. Move two values 0.3 each: 0.18. Each difference\nis squared, then they are all added.\n\nRELATED:\nt.l1_loss adds the plain sizes of the differences - the robust one.\nt.cross_entropy_loss is for choosing between categories. t.dist is the\nsquare root of this loss (the straight-line distance). np.linalg.norm\nof the difference, squared, is the same number.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 800,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 760,
+                    "value": 972,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,14 +90,14 @@
                     "value_type": "str"
                 }
             },
-            "text": "These measure how wrong something is: one number, from two tensors.\n\nTHE NODES:\n\nt.mse_loss             squared error - big mistakes dominate\nt.l1_loss              plain error - every mistake counts its own size\nt.cross_entropy_loss   for choosing between categories\n\nWHAT A LOSS IS FOR:\nIt compares what you got against what you wanted and reduces the difference to a\nsingle number, where zero means identical and larger means worse. That is what\ntraining minimises - but a loss is just as useful on its own, as a running\nmeasure of how far a signal has drifted from a reference, or how unlike a pose\nis from a stored one.\n\nMSE AGAINST L1 - THE DIFFERENCE IS WHAT SQUARING DOES:\nBoth add up the errors. MSE squares each one first, and that single difference\nchanges the character of the measure completely. With one element off by 4:\n\n    t.mse_loss   16.0        (4 squared)\n    t.l1_loss     4.0\n\nand with the same element off by only 0.4:\n\n    t.mse_loss    0.16\n    t.l1_loss     0.40\n\nNotice the order swaps. Squaring makes errors above 1 count for much more and\nerrors below 1 count for much less, so MSE is dominated by the worst offender\nwhile L1 treats a lot of small errors and one big one as comparable.\n\nWhich you want depends on what you are measuring. MSE if a single large\ndiscrepancy is the thing that matters and you want it to shout. L1 if the\noccasional wild value is noise you would rather not have swamp the reading -\nL1 is the robust one.\n\nBOTH ARE SUMS HERE, NOT AVERAGES:\nThese use a total rather than a mean, so the number grows with the SIZE of the\ntensor. A loss of 16 across four elements and a loss of 16 across four hundred\nare not the same thing at all.\n\nThat matters if you compare losses between differently-shaped data, or if the\nshape can change while a patch runs - the number will jump for reasons that have\nnothing to do with the data getting worse. Divide by the element count yourself\nif you want something comparable.\n\nCROSS ENTROPY IS A DIFFERENT KIND OF QUESTION:\nThe other two ask \"how far off are these numbers\". Cross entropy asks \"did you\npick the right category, and how confident were you\". The input is one row of\nscores per item - one score per category, unnormalised - and the target says\nwhich category was correct.\n\nWith scores [2.0, 0.5, 0.1], the model is leaning towards the first category:\n\n    correct answer is 0  ->  0.32     confident and right\n    correct answer is 1  ->  1.82\n    correct answer is 2  ->  2.22     confident and wrong\n\nBeing confidently wrong costs far more than being uncertain, which is the whole\npoint of it: it rewards well-calibrated confidence, not just correct guesses.\n\n'target' IS A COLD INLET ON ALL THREE:\nSetting the target does not compute anything - it is the tensor arriving at\n'tensor in' that does. So set the target first. Send them the other way round\nand the first answer is either missing or computed against the previous target,\nwhich looks like the loss lagging by one.\n\nTHE TARGET IS EITHER INDICES OR PROBABILITIES:\nSend one whole number per row - which category is right - or send a full row of\nprobabilities the same shape as the input, for when the answer is a blend rather\nthan a single choice. The node works out which you meant from the shape.\n\nSYNTAX:\nt.mse_loss\nt.l1_loss\nt.cross_entropy_loss\n\nEXAMPLE:\nt.mse_loss\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got. Receiving it computes the loss.\n\ntarget:\nWhat you wanted. It is a cold inlet - set it first, then send the input.\n\nOUTPUTS: \n\nloss:\nOne number.\n\nRELATED:\nt.dist and the distance nodes if you want the difference as a shape rather than\nas a single number.\nt.nn.softmax turns cross entropy's kind of scores into probabilities you can\nlook at."
+            "text": "Measures how far a tensor is from a target as one number: the sum of\nthe SQUARED differences, element by element (mean squared error, but\nadded up rather than averaged).\n\n0 means identical. Squaring makes big differences count far more than\nsmall ones: one value off by 4 costs 16, while four values off by 1\ncost only 4. So it is dominated by the worst offender - the measure to\nuse when one large discrepancy is what matters and should shout. And\nbelow a difference of 1 squaring makes things SMALLER: off by 0.4 costs\n0.16, where t.l1_loss says 0.40.\n\nReach for it as a running measure of how far a signal or a pose has\ndrifted from a reference, or as the thing a training loop minimises.\n\nA SUM, NOT AN AVERAGE:\nIt adds up rather than averaging, so the number grows with the size of\nthe tensor: 16 across 4 values and 16 across 400 are not the same at\nall. Divide by the element count yourself if you need numbers that\ncompare across sizes.\n\nSYNTAX:\nt.mse_loss\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nWhat you got (a list or a NumPy array is turned into a float32\ntensor). Receiving it computes the loss and sends it.\n\ntarget:\nWhat you wanted, converted to the type of the input. It is a COLD\ninlet: it is only stored, so set it BEFORE sending the input - send\nthem the other way round and the answer is computed against the\nprevious target, which looks like the loss lagging one step behind.\nNothing is sent until a target has arrived. Same shape as the input,\nor one that broadcasts to it: a single number measures every value\nagainst that number (torch prints a warning about the size mismatch,\nand the answer is still right).\n\nOUTPUTS:\n\nloss:\nOne plain float. 0 when input and target are equal; never negative.\n\nREADING THE DEMO:\nThe vector node is the input: eight values, equal to the target\nexcept the first, which is 0.4 too high (0.6 against 0.2) - so the\nloss reads 0.16, the difference squared. The red-blue strip is the\ndifference. Drag the first value back to 0.2 and the loss reads 0.\nDrag it 0.5 off: 0.25. Move two values 0.3 each: 0.18. Each difference\nis squared, then they are all added.\n\nRELATED:\nt.l1_loss adds the plain sizes of the differences - the robust one.\nt.cross_entropy_loss is for choosing between categories. t.dist is the\nsquare root of this loss (the straight-line distance). np.linalg.norm\nof the difference, squared, is the same number."
         },
         "3": {
-            "name": "button",
+            "name": "load_bang",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
+            "width": 88,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -105,48 +105,25 @@
             "properties": {}
         },
         "4": {
-            "name": "t.rand",
+            "name": "t",
             "id": 385,
-            "position_x": 30,
-            "position_y": 120,
-            "width": 163,
-            "height": 126,
+            "position_x": 150,
+            "position_y": 62,
+            "width": 33,
+            "height": 56,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "t.rand 8"
+            "init": "t bang bang"
         },
         "5": {
-            "name": "message",
-            "id": 422,
-            "position_x": 240,
-            "position_y": 120,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "0.5",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "6": {
-            "init": "comment how far is a random tensor from 0.5?",
+            "init": "comment the target first, then the input",
             "name": "comment",
-            "id": 459,
-            "position_x": 456,
-            "position_y": 310,
-            "width": 230,
+            "id": 422,
+            "position_x": 704,
+            "position_y": 67,
+            "width": 205,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -154,7 +131,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "how far is a random tensor from 0.5?",
+                    "value": "the target first, then the input",
                     "value_type": "str"
                 },
                 "1": {
@@ -163,13 +140,386 @@
                     "value_type": "str"
                 }
             },
-            "comment": "how far is a random tensor from 0.5?"
+            "comment": "the target first, then the input"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 330,
+            "position_y": 130,
+            "width": 310,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0.2 0.5 0.8 0.6 0.3 0.1 0.4 0.7",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 280,
+                    "value_type": "int"
+                }
+            }
         },
         "7": {
-            "name": "t.mse_loss",
+            "init": "comment the target: 8 values",
+            "name": "comment",
             "id": 496,
+            "position_x": 704,
+            "position_y": 185,
+            "width": 131,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the target: 8 values",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the target: 8 values"
+        },
+        "8": {
+            "name": "vector",
+            "id": 533,
             "position_x": 30,
-            "position_y": 355,
+            "position_y": 130,
+            "width": 160,
+            "height": 182,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "output type",
+                    "value": "numpy",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "component count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "column count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "[0]",
+                    "value": 0.6,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "[1]",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "[2]",
+                    "value": 0.8,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "[3]",
+                    "value": 0.6,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "[4]",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "[5]",
+                    "value": 0.1,
+                    "value_type": "float"
+                },
+                "10": {
+                    "name": "[6]",
+                    "value": 0.4,
+                    "value_type": "float"
+                },
+                "11": {
+                    "name": "[7]",
+                    "value": 0.7,
+                    "value_type": "float"
+                }
+            },
+            "init": "vector 8"
+        },
+        "9": {
+            "init": "comment the input: drag any value",
+            "name": "comment",
+            "id": 570,
+            "position_x": 704,
+            "position_y": 500,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the input: drag any value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the input: drag any value"
+        },
+        "10": {
+            "name": "heat_map",
+            "id": 607,
+            "position_x": 330,
+            "position_y": 230,
+            "width": 348,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 330,
+            "position_y": 350,
+            "width": 348,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment target (top) and input (below)",
+            "name": "comment",
+            "id": 681,
+            "position_x": 704,
+            "position_y": 460,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "target (top) and input (below)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "target (top) and input (below)"
+        },
+        "13": {
+            "name": "-",
+            "id": 718,
+            "position_x": 330,
+            "position_y": 510,
+            "width": 88,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "heat_map",
+            "id": 755,
+            "position_x": 330,
+            "position_y": 600,
+            "width": 348,
+            "height": 100,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "red-blue",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 340,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 50,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 8,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": -1.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment input minus target: blue too high, red too low",
+            "name": "comment",
+            "id": 792,
+            "position_x": 704,
+            "position_y": 740,
+            "width": 291,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "input minus target: blue too high, red too low",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "input minus target: blue too high, red too low"
+        },
+        "16": {
+            "name": "t.mse_loss",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 520,
             "width": 70,
             "height": 56,
             "visibility": "show_all",
@@ -177,11 +527,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
+        "17": {
             "name": "float",
-            "id": 533,
+            "id": 866,
             "position_x": 30,
-            "position_y": 480,
+            "position_y": 650,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -205,13 +555,13 @@
                 }
             }
         },
-        "9": {
-            "init": "comment squared: the worst element dominates",
+        "18": {
+            "init": "comment the loss: the squared each difference, added up",
             "name": "comment",
-            "id": 570,
-            "position_x": 456,
-            "position_y": 530,
-            "width": 230,
+            "id": 903,
+            "position_x": 704,
+            "position_y": 700,
+            "width": 297,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -219,7 +569,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "squared: the worst element dominates",
+                    "value": "the loss: the squared each difference, added up",
                     "value_type": "str"
                 },
                 "1": {
@@ -228,219 +578,90 @@
                     "value_type": "str"
                 }
             },
-            "comment": "squared: the worst element dominates"
+            "comment": "the loss: the squared each difference, added up"
         },
-        "10": {
-            "name": "t.l1_loss",
-            "id": 607,
-            "position_x": 300,
-            "position_y": 355,
-            "width": 64,
-            "height": 56,
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 780,
+            "width": 72,
+            "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "init": "help_link t.l1_loss"
         },
-        "11": {
-            "name": "float",
-            "id": 644,
-            "position_x": 300,
-            "position_y": 480,
-            "width": 130,
-            "height": 42,
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 143,
+            "position_y": 780,
+            "width": 139,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.cross_entropy_loss"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 341,
+            "position_y": 780,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 431,
+            "position_y": 780,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.linalg.norm"
+        },
+        "23": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1088,
+            "position_x": 704,
+            "position_y": 824,
+            "width": 156,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%.3f",
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
                     "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "12": {
-            "name": "text_block",
-            "id": 681,
-            "annotation": true,
-            "position_x": 456,
-            "position_y": 570,
-            "width": 274,
-            "height": 52,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "plain: every element counts its size\nbelow an error of 1 the two swap over -\nsquaring makes small errors smaller",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 266,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 36,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "plain: every element counts its size\nbelow an error of 1 the two swap over -\nsquaring makes small errors smaller"
+            "comment": "SEE ALSO - click to open"
         },
-        "13": {
-            "name": "message",
-            "id": 718,
-            "position_x": 30,
-            "position_y": 650,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "0",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "14": {
-            "name": "message",
-            "id": 755,
-            "position_x": 160,
-            "position_y": 650,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "2.0 0.5 0.1",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "15": {
-            "name": "t.cross_entropy_loss",
-            "id": 792,
-            "position_x": 30,
-            "position_y": 710,
-            "width": 131,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "16": {
-            "name": "float",
-            "id": 829,
-            "position_x": 30,
-            "position_y": 835,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "17": {
-            "name": "text_block",
-            "id": 866,
-            "annotation": true,
-            "position_x": 456,
-            "position_y": 885,
-            "width": 280,
-            "height": 88,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "CLICK THE TARGET FIRST, then the scores:\ntarget is a cold inlet, and it is the\nscores arriving that does the work\nchange the 0 to a 2 and click again:\n0.32 becomes 2.22 - confidently wrong\ncosts far more than being unsure",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 272,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 72,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "CLICK THE TARGET FIRST, then the scores:\ntarget is a cold inlet, and it is the\nscores arriving that does the work\nchange the 0 to a 2 and click again:\n0.32 becomes 2.22 - confidently wrong\ncosts far more than being unsure"
-        },
-        "18": {
+        "24": {
             "name": "close",
-            "id": 903,
+            "id": 1125,
             "position_x": 24,
-            "position_y": 907,
+            "position_y": 854,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -460,98 +681,108 @@
             "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
+            "source_output_name": "out",
             "dest_node": 385,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "###input"
+            "dest_input_name": ""
         },
         "1": {
-            "source_node": 422,
+            "source_node": 385,
             "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 496,
+            "source_output_index": 1,
+            "source_output_name": "bang",
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "target"
+            "dest_input_name": ""
         },
         "2": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "target"
-        },
-        "3": {
             "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "4": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "loss",
+            "source_output_name": "bang",
             "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "in"
         },
-        "5": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "6": {
-            "source_node": 607,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "loss",
-            "dest_node": 644,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "7": {
-            "source_node": 718,
+        "3": {
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 792,
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "target"
         },
-        "8": {
-            "source_node": 755,
+        "5": {
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 792,
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###operand"
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "8": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 829,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "9": {
-            "source_node": 792,
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "10": {
+            "source_node": 829,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "loss",
-            "dest_node": 829,
+            "dest_node": 866,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

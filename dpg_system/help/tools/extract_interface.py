@@ -54,6 +54,7 @@ class FileInfo:
         self.bases = {}          # name -> [base names]
         self.registrations = []  # (label, factory_class, data, line, enclosing def)
         self.called = set()      # every function name this file calls
+        self.imports = []        # (module stem, [names] or ['*']) from 'from x import ...'
         # the def each register_node call sits in (innermost, as ast.walk
         # reaches nested defs after their parents)
         encl = {}
@@ -65,6 +66,8 @@ class FileInfo:
             if isinstance(n, ast.Call):
                 f = n.func
                 self.called.add(f.id if isinstance(f, ast.Name) else getattr(f, 'attr', None))
+            if isinstance(n, ast.ImportFrom) and n.module:
+                self.imports.append((n.module.split('.')[-1], [a.name for a in n.names]))
             if isinstance(n, ast.ClassDef):
                 self.classes[n.name] = n
                 self.bases[n.name] = [b.id for b in n.bases
@@ -270,7 +273,12 @@ def collect(cls_name, files, seen=None, depth=0, prefer=None, name=None, skip=fr
     # search the module that registered the label before falling back to any.
     ordered = list(files.values())
     if prefer is not None:
-        ordered.sort(key=lambda f: 0 if f.path == prefer else 1)
+        # then the module the preferred file imports the name from: MotionSDK
+        # has its own class Node, and it must not stand in for node.py's
+        src = [m for m, names in files[prefer].imports
+               if cls_name in names or '*' in names] if prefer in files else []
+        ordered.sort(key=lambda f: 0 if f.path == prefer else
+                     1 if os.path.basename(f.path)[:-3] in src else 2)
     for fi in ordered:
         if cls_name not in fi.classes:
             continue

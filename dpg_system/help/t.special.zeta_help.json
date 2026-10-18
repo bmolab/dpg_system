@@ -1,11 +1,11 @@
 {
-    "height": 681,
-    "width": 1582,
+    "height": 1038,
+    "width": 1702,
     "position": [
         100,
         100
     ],
-    "id": 644,
+    "id": 1051,
     "name": "t.special.zeta_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.special.zeta_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 734,
+            "position_x": 894,
             "position_y": 45,
-            "width": 808,
-            "height": 576,
+            "width": 768,
+            "height": 856,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The Hurwitz zeta function.\n\nWHAT IT COMPUTES:\nzeta(x, q) is the sum, over k = 0, 1, 2, ..., of 1 divided by (k plus q) raised\nto the power x. With q = 1 it is the ordinary Riemann zeta function: zeta(2, 1)\nis pi squared over 6, about 1.645.\n\nThe sum only settles to a finite value when x is greater than 1. At x = 1 the\nresult is infinity, and below 1 it is not-a-number. q should be positive.\n\nWHERE IT TURNS UP:\nIt is the normalising constant of discrete power laws - Zipf-like\ndistributions, where the k-th most common thing occurs in proportion to 1 over\nk to the x - and it appears in the derivatives of the gamma function\n(t.special.polygamma is built from it).\n\nSYNTAX:\nt.special.zeta\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the power. Receiving it does the work.\n\ntensor 2 or number in:\nq, the offset. Either input may be a single number rather than a tensor,\napplied everywhere. This one is only stored when it arrives, so send it\nBEFORE x.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element.",
+                    "value": "Computes the Hurwitz zeta function, element by element, of a power x\n(first input) and an offset q (second input).\n\nIt is the normalising constant of discrete power laws - Zipf-like\ndistributions, where the k-th most common thing turns up in proportion to 1\nover k to the x - and with q = 1 it is the Riemann zeta function.\n\nWHAT IT COMPUTES:\nzeta(x, q) is the sum, over k = 0, 1, 2 ..., of 1 / (k + q) to the power x.\nWith q = 1 that is 1 + 1/2 to the x + 1/3 to the x + ...: zeta(2, 1) is pi\nsquared over 6 (1.645), zeta(3, 1) = 1.202.\n\nTHE CURVE:\nOver x, for a fixed q: very large just above x = 1, falling quickly and\nlevelling off at 1 / q to the x - the first term - since the others vanish\nas x grows. So with q = 1 it settles towards 1, with q = 2 towards 0, and\nwith q below 1 it climbs instead (q = 0.5 gives 2 to the x).\n\nSYNTAX:\nt.special.zeta\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the power - a tensor, or a single number. Receiving it triggers the node.\n\ntensor 2 or number in:\nq, the offset - a tensor, or a single number applied everywhere. It is only\nstored when it arrives, so send it BEFORE x. It is converted to x's dtype\nand device. The two are matched element by element, or broadcast when one\nis a single value.\n\nOUTPUTS:\n\ntensor out:\nThe result, in the broadcast shape of the two inputs.\n\nWHERE IT IS DEFINED:\nThe sum only settles when x is greater than 1. x = 1 gives infinity, and x\nbelow 1 gives NaN (not a number). q should be positive: q = 0 and negative\nwhole numbers give infinity.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values of x\nfrom 1.5 to 8, drawn in the upper plot, and sends them to the first input.\nThe float holds q in the second input; load_bang sets it to 1 when the\npage opens (the Riemann zeta). The\nlower plot is zeta of each x, from 0 (bottom) to 3 (top): 2.61 at x = 1.5,\nsettling towards 1. Drag q to 2 and it settles towards 0; below 1 it climbs\noff the top. Drag start and stop to move the range (keep start above 1).\n\nRELATED:\nt.special.polygamma of order n is built from zeta(n + 1, x).\nt.special.digamma and t.special.gammaln are its gamma-function relatives.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 800,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 560,
+                    "value": 840,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,50 +90,44 @@
                     "value_type": "str"
                 }
             },
-            "text": "The Hurwitz zeta function.\n\nWHAT IT COMPUTES:\nzeta(x, q) is the sum, over k = 0, 1, 2, ..., of 1 divided by (k plus q) raised\nto the power x. With q = 1 it is the ordinary Riemann zeta function: zeta(2, 1)\nis pi squared over 6, about 1.645.\n\nThe sum only settles to a finite value when x is greater than 1. At x = 1 the\nresult is infinity, and below 1 it is not-a-number. q should be positive.\n\nWHERE IT TURNS UP:\nIt is the normalising constant of discrete power laws - Zipf-like\ndistributions, where the k-th most common thing occurs in proportion to 1 over\nk to the x - and it appears in the derivatives of the gamma function\n(t.special.polygamma is built from it).\n\nSYNTAX:\nt.special.zeta\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the power. Receiving it does the work.\n\ntensor 2 or number in:\nq, the offset. Either input may be a single number rather than a tensor,\napplied everywhere. This one is only stored when it arrives, so send it\nBEFORE x.\n\nOUTPUTS:\n\ntensor out:\nThe result, element by element."
+            "text": "Computes the Hurwitz zeta function, element by element, of a power x\n(first input) and an offset q (second input).\n\nIt is the normalising constant of discrete power laws - Zipf-like\ndistributions, where the k-th most common thing turns up in proportion to 1\nover k to the x - and with q = 1 it is the Riemann zeta function.\n\nWHAT IT COMPUTES:\nzeta(x, q) is the sum, over k = 0, 1, 2 ..., of 1 / (k + q) to the power x.\nWith q = 1 that is 1 + 1/2 to the x + 1/3 to the x + ...: zeta(2, 1) is pi\nsquared over 6 (1.645), zeta(3, 1) = 1.202.\n\nTHE CURVE:\nOver x, for a fixed q: very large just above x = 1, falling quickly and\nlevelling off at 1 / q to the x - the first term - since the others vanish\nas x grows. So with q = 1 it settles towards 1, with q = 2 towards 0, and\nwith q below 1 it climbs instead (q = 0.5 gives 2 to the x).\n\nSYNTAX:\nt.special.zeta\n\nINPUTS and PARAMETERS:\n\ntensor 1 or number in:\nx, the power - a tensor, or a single number. Receiving it triggers the node.\n\ntensor 2 or number in:\nq, the offset - a tensor, or a single number applied everywhere. It is only\nstored when it arrives, so send it BEFORE x. It is converted to x's dtype\nand device. The two are matched element by element, or broadcast when one\nis a single value.\n\nOUTPUTS:\n\ntensor out:\nThe result, in the broadcast shape of the two inputs.\n\nWHERE IT IS DEFINED:\nThe sum only settles when x is greater than 1. x = 1 gives infinity, and x\nbelow 1 gives NaN (not a number). q should be positive: q = 0 and negative\nwhole numbers give infinity.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200 values of x\nfrom 1.5 to 8, drawn in the upper plot, and sends them to the first input.\nThe float holds q in the second input; load_bang sets it to 1 when the\npage opens (the Riemann zeta). The\nlower plot is zeta of each x, from 0 (bottom) to 3 (top): 2.61 at x = 1.5,\nsettling towards 1. Drag q to 2 and it settles towards 0; below 1 it climbs\noff the top. Drag start and stop to move the range (keep start above 1).\n\nRELATED:\nt.special.polygamma of order n is built from zeta(n + 1, x).\nt.special.digamma and t.special.gammaln are its gamma-function relatives."
         },
         "3": {
-            "name": "button",
+            "name": "metro",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "message",
-            "id": 385,
-            "position_x": 300,
-            "position_y": 118,
-            "width": 130,
-            "height": 42,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text in",
-                    "value": "1.0",
-                    "value_type": "str"
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "24",
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
                     "value_type": "str"
                 }
-            }
+            },
+            "init": "metro 100"
         },
-        "5": {
-            "init": "comment q = 1: the Riemann zeta",
+        "4": {
+            "init": "comment redraws ten times a second",
             "name": "comment",
-            "id": 422,
-            "position_x": 456,
-            "position_y": 168,
-            "width": 150,
+            "id": 385,
+            "position_x": 541,
+            "position_y": 70,
+            "width": 168,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -141,7 +135,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "q = 1: the Riemann zeta",
+                    "value": "redraws ten times a second",
                     "value_type": "str"
                 },
                 "1": {
@@ -150,22 +144,52 @@
                     "value_type": "str"
                 }
             },
-            "comment": "q = 1: the Riemann zeta"
+            "comment": "redraws ten times a second"
         },
-        "6": {
-            "name": "message",
-            "id": 459,
+        "5": {
+            "name": "t.linspace",
+            "id": 422,
             "position_x": 30,
-            "position_y": 118,
-            "width": 130,
-            "height": 42,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text in",
-                    "value": "2.0 3.0 4.0",
+                    "name": "start",
+                    "value": 1.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 8.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 1.5 8 200"
+        },
+        "6": {
+            "init": "comment x: 200 values from start to stop",
+            "name": "comment",
+            "id": 459,
+            "position_x": 541,
+            "position_y": 160,
+            "width": 205,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "x: 200 values from start to stop",
                     "value_type": "str"
                 },
                 "1": {
@@ -173,13 +197,210 @@
                     "value": "24",
                     "value_type": "str"
                 }
-            }
+            },
+            "comment": "x: 200 values from start to stop"
         },
         "7": {
-            "name": "t.special.zeta",
+            "name": "load_bang",
             "id": 496,
+            "position_x": 360,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "name": "t",
+            "id": 533,
+            "position_x": 470,
+            "position_y": 62,
+            "width": 22,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t 1"
+        },
+        "9": {
+            "init": "comment q = 1 on open",
+            "name": "comment",
+            "id": 570,
+            "position_x": 541,
+            "position_y": 110,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "q = 1 on open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "q = 1 on open"
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 360,
+            "position_y": 470,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment q - drag me",
+            "name": "comment",
+            "id": 644,
+            "position_x": 541,
+            "position_y": 475,
+            "width": 76,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "q - drag me",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "q - drag me"
+        },
+        "12": {
+            "name": "plot",
+            "id": 681,
             "position_x": 30,
-            "position_y": 225,
+            "position_y": 340,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 1.5,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 8,
+                    "value_type": "int"
+                }
+            }
+        },
+        "13": {
+            "init": "comment in: x from 1.5 to 8",
+            "name": "comment",
+            "id": 718,
+            "position_x": 541,
+            "position_y": 345,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in: x from 1.5 to 8",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in: x from 1.5 to 8"
+        },
+        "14": {
+            "name": "t.special.zeta",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 540,
             "width": 138,
             "height": 56,
             "visibility": "show_all",
@@ -187,36 +408,155 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
-            "name": "list",
-            "id": 533,
+        "15": {
+            "name": "plot",
+            "id": 792,
             "position_x": 30,
-            "position_y": 330,
-            "width": 130,
-            "height": 42,
+            "position_y": 650,
+            "width": 308,
+            "height": 178,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "text in",
-                    "value": "",
+                    "name": "color",
+                    "value": "none",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "24",
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
                     "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 3,
+                    "value_type": "int"
                 }
             }
         },
-        "9": {
-            "init": "comment 1.645 (pi squared over 6), 1.202, 1.082",
+        "16": {
+            "name": "text_block",
+            "id": 829,
+            "annotation": true,
+            "position_x": 541,
+            "position_y": 655,
+            "width": 323,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "out: zeta(x, q) - with q = 1, 2.61 falling to 1\n(plot from 0 to 3)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 315,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "out: zeta(x, q) - with q = 1, 2.61 falling to 1\n(plot from 0 to 3)"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 860,
+            "width": 133,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.polygamma"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 220,
+            "position_y": 860,
+            "width": 121,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.digamma"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 394,
+            "position_y": 860,
+            "width": 121,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.gammaln"
+        },
+        "20": {
+            "init": "comment SEE ALSO - click to open",
             "name": "comment",
-            "id": 570,
-            "position_x": 456,
-            "position_y": 380,
-            "width": 248,
+            "id": 977,
+            "position_x": 541,
+            "position_y": 904,
+            "width": 156,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -224,7 +564,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "1.645 (pi squared over 6), 1.202, 1.082",
+                    "value": "SEE ALSO - click to open",
                     "value_type": "str"
                 },
                 "1": {
@@ -233,13 +573,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "1.645 (pi squared over 6), 1.202, 1.082"
+            "comment": "SEE ALSO - click to open"
         },
-        "10": {
+        "21": {
             "name": "close",
-            "id": 607,
+            "id": 1014,
             "position_x": 24,
-            "position_y": 402,
+            "position_y": 934,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -260,50 +600,70 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "###input"
         },
         "1": {
-            "source_node": 348,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 459,
+            "source_output_name": "out",
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "2": {
-            "source_node": 385,
+            "source_node": 533,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 496,
+            "source_output_name": "1",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor 2 or number in"
         },
-        "3": {
-            "source_node": 459,
+        "5": {
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 496,
+            "source_output_name": "linspace out",
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor 1 or number in"
         },
-        "4": {
-            "source_node": 496,
+        "6": {
+            "source_node": 755,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 533,
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "y"
         }
     }
 }

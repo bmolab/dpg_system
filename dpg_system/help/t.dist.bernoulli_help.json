@@ -1,0 +1,687 @@
+{
+    "height": 1448,
+    "width": 1847,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1125,
+    "name": "t.dist.bernoulli_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.dist.bernoulli_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.dist.bernoulli - random coin flips",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 451,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.dist.bernoulli - random coin flips",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.dist.bernoulli - random coin flips"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1039,
+            "position_y": 45,
+            "width": 768,
+            "height": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Makes a tensor of random 0s and 1s: each element is 1 with the probability\nyou set, otherwise 0.\n\nEach element is an independent biased coin flip. Use it for random\nmasks (which cells to keep, which to drop), random triggers, sparse\npatterns of dots, or a yes/no decision whose odds you control.\n\nSYNTAX:\nt.dist.bernoulli <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.bernoulli 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.bernoulli 64 64); with none it is [1], a single sample.\nA list sent into the inlet works too. A new shape does not send by\nitself - the next click uses it.\n\nprobability (drag float, also an inlet):\nThe chance that each element is 1, from 0 (all zeros) to 1 (all ones).\nOutside 0..1 is refused (an error in the console) and the node keeps\nits last value. Default 0.5.\n\nTHE logits FORM:\nt.dist.bernoulli logits (any word after the name other than probs)\nreplaces the probability with a 'logits' parameter, default 1: the\nprobability is then 1 / (1 + e to the power -logits), so 0 means even\nodds, large positive values nearly always 1, large negative nearly\nalways 0. Useful when the odds come out of a neural network.\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A value the distribution cannot\ntake (see each parameter) is refused with an error in the console, and\nthe node goes on sampling with the last value that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. The heat_map shows the coin flips: 1 white, 0 black. At 0.5 it is\nsalt and pepper; drag probability towards 0 and the white dots thin\nout, towards 1 the black ones do. The histogram has just two bars - the\ncount of 0s on the left, of 1s on the right - and t.mean of the samples\nis the fraction that came up 1, close to the probability you set.\n\nRELATED:\nt.bernoulli makes a 0/1 flip for every element of a tensor of\nprobabilities - a different probability for each element.\nt.dist.continuous_bernoulli is a smooth 0..1 cousin. t.rand compared\nwith a threshold does the same job by hand.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1150,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Makes a tensor of random 0s and 1s: each element is 1 with the probability\nyou set, otherwise 0.\n\nEach element is an independent biased coin flip. Use it for random\nmasks (which cells to keep, which to drop), random triggers, sparse\npatterns of dots, or a yes/no decision whose odds you control.\n\nSYNTAX:\nt.dist.bernoulli <dim 0: int> <dim 1: int> ...\nWhole numbers give the shape of each batch of samples; with none\nthe node sends one sample at a time.\n\nEXAMPLE:\nt.dist.bernoulli 64 64\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a fresh tensor of samples. Only this inlet makes the node\nsend.\n\nshape (text, also an inlet):\nThe size of the tensor of samples, as whole numbers: [64, 64] is a 64\nby 64 grid, [1000] a row of a thousand. Numbers typed after the node\nname set it (t.dist.bernoulli 64 64); with none it is [1], a single sample.\nA list sent into the inlet works too. A new shape does not send by\nitself - the next click uses it.\n\nprobability (drag float, also an inlet):\nThe chance that each element is 1, from 0 (all zeros) to 1 (all ones).\nOutside 0..1 is refused (an error in the console) and the node keeps\nits last value. Default 0.5.\n\nTHE logits FORM:\nt.dist.bernoulli logits (any word after the name other than probs)\nreplaces the probability with a 'logits' parameter, default 1: the\nprobability is then 1 / (1 + e to the power -logits), so 0 means even\nodds, large positive values nearly always 1, large negative nearly\nalways 0. Useful when the odds come out of a neural network.\n\nEach parameter is a drag float on the node and also an inlet. Setting\none rebuilds the distribution but does NOT send; the next click samples\nfrom it. In the demo each slider goes through 't bang float', which\npasses the number to the parameter first and THEN clicks the node, so\ndragging a slider re-samples at once. A value the distribution cannot\ntake (see each parameter) is refused with an error in the console, and\nthe node goes on sampling with the last value that worked.\n\nOUTPUTS:\n\nrandom tensor:\nA float32 tensor on the cpu, in the shape set, filled with fresh\nindependent samples on every click.\n\nTHE HISTOGRAM:\nt.histc divides the range from its min to its max into equal bins and\ncounts how many of the 4096 samples land in each; the bar plot draws\nthe counts, the first bin at the left. Its shape is the shape of the\ndistribution. Samples outside min..max are not counted at all.\n\nREADING THE DEMO:\nload_bang draws the first 4096 samples when the page opens; click the\nnode's own button for more. The heat_map shows the coin flips: 1 white, 0 black. At 0.5 it is\nsalt and pepper; drag probability towards 0 and the white dots thin\nout, towards 1 the black ones do. The histogram has just two bars - the\ncount of 0s on the left, of 1s on the right - and t.mean of the samples\nis the fraction that came up 1, close to the probability you set.\n\nRELATED:\nt.bernoulli makes a 0/1 flip for every element of a tensor of\nprobabilities - a different probability for each element.\nt.dist.continuous_bernoulli is a smooth 0..1 cousin. t.rand compared\nwith a threshold does the same job by hand."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "slider",
+            "id": 385,
+            "position_x": 150,
+            "position_y": 62,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 0.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            }
+        },
+        "5": {
+            "init": "comment probability: the chance of a 1",
+            "name": "comment",
+            "id": 422,
+            "position_x": 736,
+            "position_y": 125,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "probability: the chance of a 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "probability: the chance of a 1"
+        },
+        "6": {
+            "name": "t",
+            "id": 459,
+            "position_x": 150,
+            "position_y": 160,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t bang float"
+        },
+        "7": {
+            "name": "t.dist.bernoulli",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 240,
+            "width": 160,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "probability",
+                    "value": 0.5,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.dist.bernoulli 64 64"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 300,
+            "position_y": 240,
+            "width": 238,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "hot",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 230,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 230,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 64,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the flips: 1 white, 0 black",
+            "name": "comment",
+            "id": 570,
+            "position_x": 736,
+            "position_y": 520,
+            "width": 174,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the flips: 1 white, 0 black",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the flips: 1 white, 0 black"
+        },
+        "10": {
+            "name": "t.histc",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 570,
+            "width": 148,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "bin count",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "11": {
+            "init": "comment counts the 4096 samples in 2 equal bins",
+            "name": "comment",
+            "id": 644,
+            "position_x": 736,
+            "position_y": 580,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "counts the 4096 samples in 2 equal bins",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "counts the 4096 samples in 2 equal bins"
+        },
+        "12": {
+            "name": "plot",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 528,
+            "height": 280,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 230,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "bar",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 2,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 2.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 4096.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "13": {
+            "init": "comment two bars: how many 0s (left) and 1s (right)",
+            "name": "comment",
+            "id": 718,
+            "position_x": 736,
+            "position_y": 1025,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "two bars: how many 0s (left) and 1s (right)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "two bars: how many 0s (left) and 1s (right)"
+        },
+        "14": {
+            "name": "t.mean",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 1070,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "name": "float",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 1190,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "16": {
+            "init": "comment the fraction of 1s",
+            "name": "comment",
+            "id": 829,
+            "position_x": 736,
+            "position_y": 1195,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the fraction of 1s",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the fraction of 1s"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 1270,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.bernoulli"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 158,
+            "position_y": 1270,
+            "width": 182,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.continuous_bernoulli"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 409,
+            "position_y": 1270,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.poisson"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 560,
+            "position_y": 1270,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rand"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 650,
+            "position_y": 1270,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.rand"
+        },
+        "22": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 736,
+            "position_y": 1270,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
+            "position_x": 24,
+            "position_y": 1344,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "probability"
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "3": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "histogram tensor out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "7": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

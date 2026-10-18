@@ -1,11 +1,11 @@
 {
-    "height": 901,
-    "width": 1643,
+    "height": 1276,
+    "width": 1610,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 1236,
     "name": "t.nn.softmax_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.nn.softmax_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.nn.softmax - scores into shares",
+            "init": "comment t.nn.softmax - scores into shares that sum to 1",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 414,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.nn.softmax - scores into shares",
+                    "value": "t.nn.softmax - scores into shares that sum to 1",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.nn.softmax - scores into shares"
+            "comment": "t.nn.softmax - scores into shares that sum to 1"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 775,
+            "position_x": 782,
             "position_y": 45,
-            "width": 828,
-            "height": 796,
+            "width": 788,
+            "height": 1171,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These turn a tensor of arbitrary numbers into something that behaves like a set \nof probabilities.\n\nEvery value comes out positive, and they all add up to 1. That makes the result \na distribution over the elements: not \"how big is each one\" but \"what SHARE of \nthe whole does each one have\". Feeding it the same numbers scaled up or down \ngives a different answer, because what matters is how far apart they are, \nnot how large.\n\nTHE NODES:\n\nt.nn.softmax          the shares, positive and summing to 1\nt.nn.softmin          the same, but small values get the large shares\nt.nn.log_softmax      the logarithm of softmax, computed stably\nt.special.softmax     the same as t.nn.softmax\nt.special.log_softmax the same as t.nn.log_softmax\nt.nn.gumbel_softmax   softmax with randomness added, so it can be used to \n                      SAMPLE a choice rather than describe one\n\nsoftmax IS A SOFT argmax:\nThe name is the clue. argmax tells you which element is largest, as a single \nindex. softmax tells you the same thing spread out - the largest element gets \nthe biggest share, and how much bigger depends on how far ahead it is. \nValues close together give a flat, undecided distribution; one value well ahead \ngives a spiky one that is nearly a choice.\n\nThat is why it is useful for weighting rather than deciding. Given a set of \nscores - how well each candidate matches, how active each joint is - softmax \nturns them into weights you can blend with, and the blend is smooth as the \nscores change where an argmax would jump.\n\nWHY log_softmax EXISTS SEPARATELY:\nTaking the softmax and then the logarithm loses precision badly, because the \nsmall shares underflow before the log can rescue them. log_softmax does both in \none step, staying accurate. If you want log probabilities, always use this \nrather than composing the two.\n\ngumbel_softmax SAMPLES:\nAdding a particular kind of noise before the softmax makes drawing from it \nequivalent to sampling from the distribution the scores describe. 'tau' \ncontrols how spiky the result is - low values approach a hard one-of-N choice, \nhigh values stay blended. 'hard' snaps the output to exactly one-of-N while \nkeeping it differentiable.\n\nSYNTAX:\nt.nn.softmax <dim>\n\nEXAMPLE:\nt.nn.softmax -1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim:\nWHICH AXIS the shares are taken across, and this is the setting that matters. \nThe values along that axis sum to 1; every other axis is treated as a separate \nset. For a (frames, joints) tensor, dim over joints gives each frame's \ndistribution across joints; dim over frames gives each joint's distribution \nover time. Those are entirely different questions, and getting it wrong is \nthe usual softmax bug.\n\ntau / hard (t.nn.gumbel_softmax):\nHow spiky, and whether to snap to a single choice.\n\nOUTPUTS: \n\noutput:\nThe distribution, in the same shape as the input.\n\nA NOTE ON SCALE:\nBecause only the differences matter, multiplying the input by a constant \nsharpens or flattens the result - a large multiplier makes it nearly a hard \nchoice, a small one makes it nearly uniform. That multiplier is the \n\"temperature\" you see referred to elsewhere, and if a softmax is too decisive \nor too vague, scaling its input is the adjustment.",
+                    "value": "Turns a tensor of arbitrary numbers into shares of a whole: every value\ncomes out positive, and they add up to 1.\n\nEach value becomes e to that value, divided by the sum of e to all the\nvalues. The result is a distribution over the elements: the largest score\ngets the biggest share, and how much bigger depends on how far ahead it\nis. Use it to turn a set of scores - how well each candidate matches, how\nactive each joint is - into weights you can blend with. The blend changes\nsmoothly as the scores change, where picking the largest (argmax) would\njump from one to another.\n\nSOFTMAX IS A SOFT ARGMAX:\nargmax answers \"which one is largest\" with a single index. softmax answers\nthe same question spread out. Scores close together give a flat,\nundecided distribution; one score well ahead gives a spiky one that is\nnearly a choice.\n\nSYNTAX:\nt.nn.softmax <dim: int>\nDefault dim 0.\n\nEXAMPLE:\nt.nn.softmax 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy\narray is turned into a float32 tensor first. An integer tensor is refused\n(the console reports \"not implemented for 'Long'\"): convert it with t.to\nfloat32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument.\nThe values along that axis sum to 1; every other axis is a separate set.\nFor a (frames, joints) tensor, dim 1 gives each frame's distribution\nacross the joints; dim 0 gives each joint's distribution over time.\nThose are entirely different questions, and getting dim wrong is the\nusual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the\nonly axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe shares, the same shape as the input, each between 0 and 1, summing\nto 1 along dim.\n\nREADING THE DEMO:\nThe eight scores are 1, 2, 0.5, 3, 1.5, 0, 2.5, 1. The top strip shows\nthem; the bottom strip shows the softmax. At scale 1 the 3 gets 0.38, the\n2.5 gets 0.23, and the 0 only 0.02 - the order is kept, the gaps are\nexaggerated. The float shows the sum: 1.00 always.\n\nTHE SCALE SLIDER IS THE TEMPERATURE:\nOnly the DIFFERENCES between the scores matter - adding the same amount to\nevery score changes nothing. Multiplying them all by a number does: a\nlarge multiplier stretches the differences, so the largest score takes\nnearly everything and the result is almost a hard choice; a multiplier\nnear 0 shrinks them, so every element gets nearly the same share (1/8 =\n0.125 here). Dividing by a \"temperature\" before a softmax is the same\nadjustment; the slider multiplies by 1 over the temperature.\n\nALSO DOCUMENTED HERE: t.special.softmax\nt.special.softmax is the same operation (torch.special.softmax is torch's softmax\nunder another name) with the same default, dim 0. Two differences in the\nnode: it has NO dim inlet unless you type a dim as its argument\n(t.special.softmax 1 shows one), and its outlet is called 'tensor out' rather\nthan 'output'.\n\nRELATED:\nt.nn.softmin is the same with the smallest score winning. t.nn.log_softmax\ngives the logarithm of the shares, accurately. t.nn.gumbel_softmax draws a\nrandom choice weighted by them. t.argmax gives only the winner's index.\nt.nn.sigmoid is the two-choice case: sigmoid of x is the softmax of\n[x, 0].",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 820,
+                    "value": 780,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 780,
+                    "value": 1155,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,93 +90,97 @@
                     "value_type": "str"
                 }
             },
-            "text": "These turn a tensor of arbitrary numbers into something that behaves like a set \nof probabilities.\n\nEvery value comes out positive, and they all add up to 1. That makes the result \na distribution over the elements: not \"how big is each one\" but \"what SHARE of \nthe whole does each one have\". Feeding it the same numbers scaled up or down \ngives a different answer, because what matters is how far apart they are, \nnot how large.\n\nTHE NODES:\n\nt.nn.softmax          the shares, positive and summing to 1\nt.nn.softmin          the same, but small values get the large shares\nt.nn.log_softmax      the logarithm of softmax, computed stably\nt.special.softmax     the same as t.nn.softmax\nt.special.log_softmax the same as t.nn.log_softmax\nt.nn.gumbel_softmax   softmax with randomness added, so it can be used to \n                      SAMPLE a choice rather than describe one\n\nsoftmax IS A SOFT argmax:\nThe name is the clue. argmax tells you which element is largest, as a single \nindex. softmax tells you the same thing spread out - the largest element gets \nthe biggest share, and how much bigger depends on how far ahead it is. \nValues close together give a flat, undecided distribution; one value well ahead \ngives a spiky one that is nearly a choice.\n\nThat is why it is useful for weighting rather than deciding. Given a set of \nscores - how well each candidate matches, how active each joint is - softmax \nturns them into weights you can blend with, and the blend is smooth as the \nscores change where an argmax would jump.\n\nWHY log_softmax EXISTS SEPARATELY:\nTaking the softmax and then the logarithm loses precision badly, because the \nsmall shares underflow before the log can rescue them. log_softmax does both in \none step, staying accurate. If you want log probabilities, always use this \nrather than composing the two.\n\ngumbel_softmax SAMPLES:\nAdding a particular kind of noise before the softmax makes drawing from it \nequivalent to sampling from the distribution the scores describe. 'tau' \ncontrols how spiky the result is - low values approach a hard one-of-N choice, \nhigh values stay blended. 'hard' snaps the output to exactly one-of-N while \nkeeping it differentiable.\n\nSYNTAX:\nt.nn.softmax <dim>\n\nEXAMPLE:\nt.nn.softmax -1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\ndim:\nWHICH AXIS the shares are taken across, and this is the setting that matters. \nThe values along that axis sum to 1; every other axis is treated as a separate \nset. For a (frames, joints) tensor, dim over joints gives each frame's \ndistribution across joints; dim over frames gives each joint's distribution \nover time. Those are entirely different questions, and getting it wrong is \nthe usual softmax bug.\n\ntau / hard (t.nn.gumbel_softmax):\nHow spiky, and whether to snap to a single choice.\n\nOUTPUTS: \n\noutput:\nThe distribution, in the same shape as the input.\n\nA NOTE ON SCALE:\nBecause only the differences matter, multiplying the input by a constant \nsharpens or flattens the result - a large multiplier makes it nearly a hard \nchoice, a small one makes it nearly uniform. That multiplier is the \n\"temperature\" you see referred to elsewhere, and if a softmax is too decisive \nor too vague, scaling its input is the adjustment."
+            "text": "Turns a tensor of arbitrary numbers into shares of a whole: every value\ncomes out positive, and they add up to 1.\n\nEach value becomes e to that value, divided by the sum of e to all the\nvalues. The result is a distribution over the elements: the largest score\ngets the biggest share, and how much bigger depends on how far ahead it\nis. Use it to turn a set of scores - how well each candidate matches, how\nactive each joint is - into weights you can blend with. The blend changes\nsmoothly as the scores change, where picking the largest (argmax) would\njump from one to another.\n\nSOFTMAX IS A SOFT ARGMAX:\nargmax answers \"which one is largest\" with a single index. softmax answers\nthe same question spread out. Scores close together give a flat,\nundecided distribution; one score well ahead gives a spiky one that is\nnearly a choice.\n\nSYNTAX:\nt.nn.softmax <dim: int>\nDefault dim 0.\n\nEXAMPLE:\nt.nn.softmax 1\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe scores. Receiving them triggers the node. A list, number or numpy\narray is turned into a float32 tensor first. An integer tensor is refused\n(the console reports \"not implemented for 'Long'\"): convert it with t.to\nfloat32.\n\ndim (an inlet, with a box on the node):\nWHICH AXIS the shares are taken across. Default 0, or the first argument.\nThe values along that axis sum to 1; every other axis is a separate set.\nFor a (frames, joints) tensor, dim 1 gives each frame's distribution\nacross the joints; dim 0 gives each joint's distribution over time.\nThose are entirely different questions, and getting dim wrong is the\nusual softmax mistake. For a 1-D tensor, as in the demo, 0 (or -1) is the\nonly axis. Changing dim does not trigger the node.\n\nOUTPUTS:\n\noutput:\nThe shares, the same shape as the input, each between 0 and 1, summing\nto 1 along dim.\n\nREADING THE DEMO:\nThe eight scores are 1, 2, 0.5, 3, 1.5, 0, 2.5, 1. The top strip shows\nthem; the bottom strip shows the softmax. At scale 1 the 3 gets 0.38, the\n2.5 gets 0.23, and the 0 only 0.02 - the order is kept, the gaps are\nexaggerated. The float shows the sum: 1.00 always.\n\nTHE SCALE SLIDER IS THE TEMPERATURE:\nOnly the DIFFERENCES between the scores matter - adding the same amount to\nevery score changes nothing. Multiplying them all by a number does: a\nlarge multiplier stretches the differences, so the largest score takes\nnearly everything and the result is almost a hard choice; a multiplier\nnear 0 shrinks them, so every element gets nearly the same share (1/8 =\n0.125 here). Dividing by a \"temperature\" before a softmax is the same\nadjustment; the slider multiplies by 1 over the temperature.\n\nALSO DOCUMENTED HERE: t.special.softmax\nt.special.softmax is the same operation (torch.special.softmax is torch's softmax\nunder another name) with the same default, dim 0. Two differences in the\nnode: it has NO dim inlet unless you type a dim as its argument\n(t.special.softmax 1 shows one), and its outlet is called 'tensor out' rather\nthan 'output'.\n\nRELATED:\nt.nn.softmin is the same with the smallest score winning. t.nn.log_softmax\ngives the logarithm of the shares, accurately. t.nn.gumbel_softmax draws a\nrandom choice weighted by them. t.argmax gives only the winner's index.\nt.nn.sigmoid is the two-choice case: sigmoid of x is the softmax of\n[x, 0]."
         },
         "3": {
-            "name": "button",
+            "name": "metro",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "4": {
+            "init": "comment re-sends the scores five times a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 504,
+            "position_y": 72,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "re-sends the scores five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "re-sends the scores five times a second"
+        },
+        "5": {
+            "name": "message",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 340,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
-        },
-        "4": {
-            "name": "t.rand",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 120,
-            "width": 163,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.rand 8"
-        },
-        "5": {
-            "name": "heat_map",
-            "id": 422,
-            "position_x": 250,
-            "position_y": 120,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "color",
-                    "value": "viridis",
+                    "name": "text in",
+                    "value": "1.0 2.0 0.5 3.0 1.5 0.0 2.5 1.0",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
                 },
                 "2": {
-                    "name": "height",
-                    "value": 100,
+                    "name": "width",
+                    "value": 310,
                     "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 8,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
                 }
             }
         },
         "6": {
-            "init": "comment eight arbitrary scores",
+            "init": "comment eight scores - edit them",
             "name": "comment",
             "id": 459,
-            "position_x": 484,
-            "position_y": 310,
-            "width": 144,
+            "position_x": 504,
+            "position_y": 200,
+            "width": 156,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -184,7 +188,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "eight arbitrary scores",
+                    "value": "eight scores - edit them",
                     "value_type": "str"
                 },
                 "1": {
@@ -193,27 +197,15 @@
                     "value_type": "str"
                 }
             },
-            "comment": "eight arbitrary scores"
+            "comment": "eight scores - edit them"
         },
         "7": {
-            "name": "t.nn.softmax",
+            "name": "heat_map",
             "id": 496,
             "position_x": 30,
-            "position_y": 350,
-            "width": 111,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "8": {
-            "name": "heat_map",
-            "id": 533,
-            "position_x": 250,
-            "position_y": 350,
-            "width": 208,
-            "height": 150,
+            "position_y": 240,
+            "width": 448,
+            "height": 110,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -225,17 +217,17 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 200,
+                    "value": 440,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 100,
+                    "value": 60,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "sample count",
-                    "value": 8,
+                    "value": 1,
                     "value_type": "int"
                 },
                 "4": {
@@ -245,7 +237,7 @@
                 },
                 "5": {
                     "name": "max y",
-                    "value": 0.4,
+                    "value": 3.0,
                     "value_type": "float"
                 },
                 "6": {
@@ -260,13 +252,13 @@
                 }
             }
         },
-        "9": {
-            "init": "comment shares of the whole: they sum to 1",
+        "8": {
+            "init": "comment the scores: dark 0, bright 3",
             "name": "comment",
-            "id": 570,
-            "position_x": 484,
-            "position_y": 465,
-            "width": 217,
+            "id": 533,
+            "position_x": 504,
+            "position_y": 330,
+            "width": 181,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -274,7 +266,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "shares of the whole: they sum to 1",
+                    "value": "the scores: dark 0, bright 3",
                     "value_type": "str"
                 },
                 "1": {
@@ -283,13 +275,76 @@
                     "value_type": "str"
                 }
             },
-            "comment": "shares of the whole: they sum to 1"
+            "comment": "the scores: dark 0, bright 3"
+        },
+        "9": {
+            "name": "slider",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 370,
+            "width": 230,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 5.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "width",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            }
         },
         "10": {
-            "name": "*",
+            "init": "comment scale: 0 to 5",
+            "name": "comment",
             "id": 607,
+            "position_x": 504,
+            "position_y": 375,
+            "width": 88,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scale: 0 to 5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scale: 0 to 5"
+        },
+        "11": {
+            "name": "*",
+            "id": 644,
             "position_x": 30,
-            "position_y": 510,
+            "position_y": 430,
             "width": 88,
             "height": 56,
             "visibility": "show_all",
@@ -298,17 +353,42 @@
             "properties": {
                 "0": {
                     "name": "operand",
-                    "value": 8.0,
+                    "value": 1.0,
                     "value_type": "float"
                 }
             },
-            "init": "* 8.0"
+            "init": "* 1.0"
         },
-        "11": {
+        "12": {
+            "init": "comment the scores times scale",
+            "name": "comment",
+            "id": 681,
+            "position_x": 504,
+            "position_y": 435,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the scores times scale",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the scores times scale"
+        },
+        "13": {
             "name": "t.nn.softmax",
-            "id": 644,
+            "id": 718,
             "position_x": 30,
-            "position_y": 595,
+            "position_y": 500,
             "width": 111,
             "height": 56,
             "visibility": "show_all",
@@ -316,13 +396,13 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "12": {
+        "14": {
             "name": "heat_map",
-            "id": 681,
-            "position_x": 250,
-            "position_y": 595,
-            "width": 208,
-            "height": 150,
+            "id": 755,
+            "position_x": 30,
+            "position_y": 610,
+            "width": 448,
+            "height": 110,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -334,17 +414,17 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 200,
+                    "value": 440,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 100,
+                    "value": 60,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "sample count",
-                    "value": 8,
+                    "value": 1,
                     "value_type": "int"
                 },
                 "4": {
@@ -369,51 +449,204 @@
                 }
             }
         },
-        "13": {
-            "name": "text_block",
-            "id": 718,
-            "annotation": true,
-            "position_x": 484,
-            "position_y": 710,
-            "width": 261,
-            "height": 40,
+        "15": {
+            "init": "comment the output: positive, and summing to 1",
+            "name": "comment",
+            "id": 792,
+            "position_x": 504,
+            "position_y": 700,
+            "width": 242,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "scaled up first: nearly a hard choice\nthat multiplier is the temperature",
+                    "name": "text",
+                    "value": "the output: positive, and summing to 1",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 253,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "scaled up first: nearly a hard choice\nthat multiplier is the temperature"
+            "comment": "the output: positive, and summing to 1"
         },
-        "14": {
+        "16": {
+            "name": "t.sum",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 740,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "float",
+            "id": 866,
+            "position_x": 230,
+            "position_y": 760,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment their sum, whatever the scores",
+            "name": "comment",
+            "id": 903,
+            "position_x": 504,
+            "position_y": 810,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "their sum, whatever the scores",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "their sum, whatever the scores"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 860,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.softmin"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 166,
+            "position_y": 860,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.log_softmax"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 333,
+            "position_y": 860,
+            "width": 133,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.gumbel_softmax"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 30,
+            "position_y": 904,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.argmax"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 135,
+            "position_y": 904,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.sigmoid"
+        },
+        "24": {
+            "name": "help_link",
+            "id": 1125,
+            "position_x": 271,
+            "position_y": 904,
+            "width": 121,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.softmax"
+        },
+        "25": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1162,
+            "position_x": 504,
+            "position_y": 948,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "26": {
             "name": "close",
-            "id": 755,
+            "id": 1199,
             "position_x": 24,
-            "position_y": 775,
+            "position_y": 978,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -434,70 +667,80 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "###input"
+            "dest_input_name": ""
         },
         "1": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 422,
+            "source_output_name": "message out",
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "2": {
-            "source_node": 385,
+            "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "3": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "4": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 607,
+            "source_output_name": "message out",
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
-        "5": {
-            "source_node": 607,
+        "3": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "operand"
+        },
+        "4": {
+            "source_node": 644,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "result",
-            "dest_node": 644,
+            "dest_node": 718,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "6": {
-            "source_node": 644,
+        "5": {
+            "source_node": 718,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",
-            "dest_node": 681,
+            "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
         }
     }
 }

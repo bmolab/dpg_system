@@ -1,11 +1,11 @@
 {
-    "height": 921,
-    "width": 1704,
+    "height": 1152,
+    "width": 1717,
     "position": [
         100,
         100
     ],
-    "id": 792,
+    "id": 1051,
     "name": "t.nn.relu_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.nn.relu_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.nn activations - one fixed curve, every element",
+            "init": "comment t.nn.relu - zero below zero, unchanged above",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 611,
+            "width": 549,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.nn activations - one fixed curve, every element",
+                    "value": "t.nn.relu - zero below zero, unchanged above",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.nn activations - one fixed curve, every element"
+            "comment": "t.nn.relu - zero below zero, unchanged above"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 836,
+            "position_x": 889,
             "position_y": 45,
-            "width": 828,
-            "height": 816,
+            "width": 788,
+            "height": 751,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These apply one fixed curve to every element of a tensor.\n\nThey come from neural networks, where a layer that was only ever multiplication \nand addition can represent nothing more than a straight line however many \nlayers you stack. Bending the signal between layers is what lets a network \nlearn something curved - and that bend is all these nodes are.\n\nOutside a network they are simply a library of well-behaved shapes, and they \nare useful as such: a response curve for a control, a soft limit that does not \nhave a corner in it, a way to fold negative values away.\n\nTHE NODES:\n\nt.nn.relu        zero below zero, unchanged above. The plainest bend there is\nt.nn.relu6       the same, but also flat at 6 - clipped at both ends\nt.nn.sigmoid     an S from 0 to 1, smooth everywhere\nt.nn.tanh        an S from -1 to 1\nt.nn.logsigmoid  the logarithm of the sigmoid\nt.nn.softsign    a gentler S than tanh, approaching its limits more slowly\nt.nn.gelu        relu's shape with the corner rounded off, weighted by how far \n                 from zero the value is\nt.nn.silu        the input times its own sigmoid - relu-like, but smooth, and \n                 dipping slightly below zero before it rises\nt.nn.mish        similar in spirit, smoother still\nt.nn.selu        scaled so that a signal passing through many of them keeps \n                 roughly the same mean and spread\nt.nn.hardsigmoid a straight-line approximation of the sigmoid\nt.nn.hardswish   a straight-line approximation of silu\nt.nn.tanhshrink  the input minus its tanh - almost nothing near zero, and \n                 nearly linear far out. The opposite emphasis to the others\nt.nn.glu         gated linear unit: splits the tensor in half and uses one half \n                 to gate the other, so it HALVES the size\n\nWHY SO MANY:\nMost of them differ only in how they behave near zero and how sharp the corner \nis. What that costs or buys inside a network is a matter for training. \nAs shapes in a patch, the ones worth knowing are relu (fold negatives away), \ntanh (soft symmetric limiting with no corner), and sigmoid (anything into 0 \nto 1).\n\nThe \"hard\" versions are straight-line approximations - cheaper, and slightly \nangular. If you are drawing the result, you will see the corners.\n\nSYNTAX:\nt.nn.relu\n\nEXAMPLE:\nt.nn.tanh\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node. The curve is applied to every \nelement independently - shape is untouched, except by glu.\n\nOUTPUTS: \n\noutput:\nThe bent tensor, in the same shape.\n\nRELATED:\nshaper~ applies a curve you DRAW rather than one from this list, at audio rate. \nWhen none of these is the shape you want, that is the node.\n\nA NOTE ON RANGE:\nSeveral of these are bounded and several are not. sigmoid and tanh cannot leave \ntheir limits whatever you feed them, which makes them safe in front of \nsomething that needs a range. relu, gelu, silu and mish are unbounded above - \na large input gives a large output, and nothing stops it.",
+                    "value": "Passes every positive value unchanged and replaces every negative value\nwith zero.\n\nIt is the plainest bend there is, and the most used activation in neural\nnetworks: a straight line with one corner, at zero. In a patch it folds\nnegatives away - half-wave rectifying a signal, keeping only the increases\nof a difference, making sure a level never goes below zero while leaving\neverything above zero exactly as it was.\n\nTHE CURVE:\nFlat along zero for every negative input, then the input itself from zero\nup. There is no upper limit: a large input comes out just as large. The\ncorner at zero is sharp - if that matters, gelu, silu and softplus are\nrounded versions of the same shape.\n\nSYNTAX:\nt.nn.relu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.leaky_relu keeps a small slope below zero instead of flat zero.\nt.nn.relu6 also caps the top at 6. t.nn.elu and t.nn.gelu are smooth\nversions of the corner; t.nn.softplus is relu with no corner at all.\nt.clamp with a minimum of 0 does the same job and lets you choose the\nfloor.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 820,
+                    "value": 780,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 800,
+                    "value": 735,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,13 +90,13 @@
                     "value_type": "str"
                 }
             },
-            "text": "These apply one fixed curve to every element of a tensor.\n\nThey come from neural networks, where a layer that was only ever multiplication \nand addition can represent nothing more than a straight line however many \nlayers you stack. Bending the signal between layers is what lets a network \nlearn something curved - and that bend is all these nodes are.\n\nOutside a network they are simply a library of well-behaved shapes, and they \nare useful as such: a response curve for a control, a soft limit that does not \nhave a corner in it, a way to fold negative values away.\n\nTHE NODES:\n\nt.nn.relu        zero below zero, unchanged above. The plainest bend there is\nt.nn.relu6       the same, but also flat at 6 - clipped at both ends\nt.nn.sigmoid     an S from 0 to 1, smooth everywhere\nt.nn.tanh        an S from -1 to 1\nt.nn.logsigmoid  the logarithm of the sigmoid\nt.nn.softsign    a gentler S than tanh, approaching its limits more slowly\nt.nn.gelu        relu's shape with the corner rounded off, weighted by how far \n                 from zero the value is\nt.nn.silu        the input times its own sigmoid - relu-like, but smooth, and \n                 dipping slightly below zero before it rises\nt.nn.mish        similar in spirit, smoother still\nt.nn.selu        scaled so that a signal passing through many of them keeps \n                 roughly the same mean and spread\nt.nn.hardsigmoid a straight-line approximation of the sigmoid\nt.nn.hardswish   a straight-line approximation of silu\nt.nn.tanhshrink  the input minus its tanh - almost nothing near zero, and \n                 nearly linear far out. The opposite emphasis to the others\nt.nn.glu         gated linear unit: splits the tensor in half and uses one half \n                 to gate the other, so it HALVES the size\n\nWHY SO MANY:\nMost of them differ only in how they behave near zero and how sharp the corner \nis. What that costs or buys inside a network is a matter for training. \nAs shapes in a patch, the ones worth knowing are relu (fold negatives away), \ntanh (soft symmetric limiting with no corner), and sigmoid (anything into 0 \nto 1).\n\nThe \"hard\" versions are straight-line approximations - cheaper, and slightly \nangular. If you are drawing the result, you will see the corners.\n\nSYNTAX:\nt.nn.relu\n\nEXAMPLE:\nt.nn.tanh\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node. The curve is applied to every \nelement independently - shape is untouched, except by glu.\n\nOUTPUTS: \n\noutput:\nThe bent tensor, in the same shape.\n\nRELATED:\nshaper~ applies a curve you DRAW rather than one from this list, at audio rate. \nWhen none of these is the shape you want, that is the node.\n\nA NOTE ON RANGE:\nSeveral of these are bounded and several are not. sigmoid and tanh cannot leave \ntheir limits whatever you feed them, which makes them safe in front of \nsomething that needs a range. relu, gelu, silu and mish are unbounded above - \na large input gives a large output, and nothing stops it."
+            "text": "Passes every positive value unchanged and replaces every negative value\nwith zero.\n\nIt is the plainest bend there is, and the most used activation in neural\nnetworks: a straight line with one corner, at zero. In a patch it folds\nnegatives away - half-wave rectifying a signal, keeping only the increases\nof a difference, making sure a level never goes below zero while leaving\neverything above zero exactly as it was.\n\nTHE CURVE:\nFlat along zero for every negative input, then the input itself from zero\nup. There is no upper limit: a large input comes out just as large. The\ncorner at zero is sharp - if that matters, gelu, silu and softplus are\nrounded versions of the same shape.\n\nSYNTAX:\nt.nn.relu\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to bend. Receiving it triggers the node. A list, number or numpy\narray is turned into a float32 tensor on the cpu first; a tensor arriving as\na tensor keeps its own dtype and device. The curve is applied to every\nelement on its own, so the output has the same shape as the input.\nAn integer tensor is accepted.\n\nOUTPUTS:\n\noutput:\nThe bent tensor, the same shape as the input.\n\nREADING THE DEMO:\nt.linspace makes 128 values running evenly from -4 (left edge of the\nplot) to 4 (right edge); the middle of the plot is 0. The plot\ndraws two lines over each other: the straight diagonal is the input itself,\nand the other is the node's output for the same values. Where the two lines\ncoincide the node passes the value unchanged; where they part, that is the\nbend. The plot's height runs from -4 to 4; the input\nline runs off the top and bottom where it leaves that range.\n\nRELATED:\nt.nn.leaky_relu keeps a small slope below zero instead of flat zero.\nt.nn.relu6 also caps the top at 6. t.nn.elu and t.nn.gelu are smooth\nversions of the corner; t.nn.softplus is relu with no corner at all.\nt.clamp with a minimum of 0 does the same job and lets you choose the\nfloor."
         },
         "3": {
-            "name": "signal",
-            "id": 422,
+            "name": "metro",
+            "id": 348,
             "position_x": 30,
-            "position_y": 52,
+            "position_y": 62,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -110,202 +110,78 @@
                 },
                 "1": {
                     "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "init": "comment re-sends the ramp ten times a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 513,
+            "position_y": 72,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "re-sends the ramp ten times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "re-sends the ramp ten times a second"
+        },
+        "5": {
+            "name": "t.linspace",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": -4.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
                     "value": 4.0,
                     "value_type": "float"
                 },
                 "2": {
-                    "name": "shape",
-                    "value": "saw",
-                    "value_type": "str"
-                },
-                "3": {
-                    "name": "range",
-                    "value": 3.0,
-                    "value_type": "float"
-                },
-                "4": {
-                    "name": "bipolar",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "5": {
-                    "name": "vector size",
-                    "value": 1,
-                    "value_type": "int"
-                }
-            },
-            "init": "signal 4.0 saw"
-        },
-        "4": {
-            "init": "comment a ramp from -3 to 3",
-            "name": "comment",
-            "id": 459,
-            "position_x": 514,
-            "position_y": 135,
-            "width": 125,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "a ramp from -3 to 3",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "a ramp from -3 to 3"
-        },
-        "5": {
-            "name": "plot",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 175,
-            "width": 208,
-            "height": 178,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "none",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
+                    "name": "steps",
                     "value": 128,
                     "value_type": "int"
-                },
-                "3": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "str"
-                },
-                "4": {
-                    "name": "update style",
-                    "value": "input is stream of samples",
-                    "value_type": "str"
-                },
-                "5": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": -3.2,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 3.2,
-                    "value_type": "float"
                 }
-            }
+            },
+            "init": "t.linspace -4 4 128"
         },
         "6": {
-            "name": "t.nn.relu",
-            "id": 533,
-            "position_x": 280,
-            "position_y": 175,
-            "width": 64,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "7": {
-            "name": "plot",
-            "id": 570,
-            "position_x": 280,
-            "position_y": 260,
-            "width": 208,
-            "height": 178,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "none",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "str"
-                },
-                "4": {
-                    "name": "update style",
-                    "value": "input is stream of samples",
-                    "value_type": "str"
-                },
-                "5": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "7": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": -3.2,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 3.2,
-                    "value_type": "float"
-                }
-            }
-        },
-        "8": {
-            "init": "comment relu: negatives folded to zero",
+            "init": "comment the input: 128 values from -4 to 4",
             "name": "comment",
-            "id": 607,
-            "position_x": 514,
-            "position_y": 445,
-            "width": 193,
+            "id": 459,
+            "position_x": 513,
+            "position_y": 165,
+            "width": 217,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -313,7 +189,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "relu: negatives folded to zero",
+                    "value": "the input: 128 values from -4 to 4",
                     "value_type": "str"
                 },
                 "1": {
@@ -322,13 +198,51 @@
                     "value_type": "str"
                 }
             },
-            "comment": "relu: negatives folded to zero"
+            "comment": "the input: 128 values from -4 to 4"
+        },
+        "7": {
+            "name": "t",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t array array"
+        },
+        "8": {
+            "init": "comment right first: the ramp as it is, then through the node",
+            "name": "comment",
+            "id": 533,
+            "position_x": 513,
+            "position_y": 325,
+            "width": 334,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right first: the ramp as it is, then through the node",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "right first: the ramp as it is, then through the node"
         },
         "9": {
-            "name": "t.nn.tanh",
-            "id": 644,
+            "name": "t.nn.relu",
+            "id": 570,
             "position_x": 30,
-            "position_y": 375,
+            "position_y": 390,
             "width": 64,
             "height": 42,
             "visibility": "show_all",
@@ -337,12 +251,49 @@
             "properties": {}
         },
         "10": {
+            "name": "t.stack",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 490,
+            "width": 111,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "11": {
+            "init": "comment output on top of the input: two rows, one line each",
+            "name": "comment",
+            "id": 644,
+            "position_x": 513,
+            "position_y": 500,
+            "width": 322,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "output on top of the input: two rows, one line each",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "output on top of the input: two rows, one line each"
+        },
+        "12": {
             "name": "plot",
             "id": 681,
             "position_x": 30,
-            "position_y": 460,
-            "width": 208,
-            "height": 178,
+            "position_y": 610,
+            "width": 428,
+            "height": 280,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -354,12 +305,12 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 200,
+                    "value": 420,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 128,
+                    "value": 230,
                     "value_type": "int"
                 },
                 "3": {
@@ -369,12 +320,12 @@
                 },
                 "4": {
                     "name": "update style",
-                    "value": "input is stream of samples",
+                    "value": "input is multi-channel sample",
                     "value_type": "str"
                 },
                 "5": {
                     "name": "sample count",
-                    "value": 200,
+                    "value": 128,
                     "value_type": "int"
                 },
                 "6": {
@@ -384,66 +335,154 @@
                 },
                 "7": {
                     "name": "max x",
-                    "value": 200.0,
+                    "value": 128.0,
                     "value_type": "float"
                 },
                 "8": {
                     "name": "min y",
-                    "value": -1.2,
-                    "value_type": "float"
+                    "value": -4,
+                    "value_type": "int"
                 },
                 "9": {
                     "name": "max y",
-                    "value": 1.2,
-                    "value_type": "float"
+                    "value": 4,
+                    "value_type": "int"
                 }
             }
         },
-        "11": {
-            "name": "text_block",
+        "13": {
+            "init": "comment the diagonal is the input; the other line is the output",
+            "name": "comment",
             "id": 718,
-            "annotation": true,
-            "position_x": 514,
-            "position_y": 645,
-            "width": 292,
-            "height": 40,
+            "position_x": 513,
+            "position_y": 880,
+            "width": 346,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "block",
-                    "value": "tanh: soft limiting, no corner\nswap in any of the others to see its shape",
+                    "name": "text",
+                    "value": "the diagonal is the input; the other line is the output",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 284,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
+                    "name": "font size",
                     "value": "24",
                     "value_type": "str"
                 }
             },
-            "text": "tanh: soft limiting, no corner\nswap in any of the others to see its shape"
+            "comment": "the diagonal is the input; the other line is the output"
         },
-        "12": {
-            "name": "close",
+        "14": {
+            "name": "help_link",
             "id": 755,
+            "position_x": 30,
+            "position_y": 930,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.leaky_relu"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 189,
+            "position_y": 930,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.relu6"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 310,
+            "position_y": 930,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.elu"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 415,
+            "position_y": 930,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.gelu"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 974,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.softplus"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 174,
+            "position_y": 974,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.clamp"
+        },
+        "20": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 977,
+            "position_x": 513,
+            "position_y": 974,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "21": {
+            "name": "close",
+            "id": 1014,
             "position_x": 24,
-            "position_y": 668,
+            "position_y": 1048,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -460,47 +499,57 @@
     },
     "links": {
         "0": {
-            "source_node": 422,
+            "source_node": 348,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 496,
+            "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "y"
+            "dest_input_name": "###input"
         },
         "1": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 533,
+            "source_output_name": "linspace out",
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "tensor in"
+            "dest_input_name": ""
         },
         "2": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 570,
+            "source_output_index": 1,
+            "source_output_name": "array",
+            "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "y"
+            "dest_input_name": "tensor 2"
         },
         "3": {
-            "source_node": 422,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 644,
+            "source_output_name": "array",
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
         "4": {
-            "source_node": 644,
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor 1"
+        },
+        "5": {
+            "source_node": 607,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "output",

@@ -1,0 +1,850 @@
+{
+    "height": 1138,
+    "width": 1863,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1347,
+    "name": "t.squeeze_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.squeeze_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.squeeze - remove axes of length 1",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.squeeze - remove axes of length 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.squeeze - remove axes of length 1"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 1055,
+            "position_y": 45,
+            "width": 768,
+            "height": 896,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Removes axes of length 1 from a tensor's shape, leaving the numbers\nalone.\n\nA column of twelve values has shape [12, 1]; a row that came out of a\nbatch has shape [1, 12]. Both hold the same twelve numbers as a plain\n[12], but many nodes treat them differently - a [12, 1] is a 2-D table\nwith one column, not a list. t.squeeze drops those stray 1s.\n\nWHICH AXES:\nWith no argument, EVERY axis of length 1 goes: [1, 12, 1] becomes [12].\nWith an argument (t.squeeze 0), only that axis is considered, and only\nif its length really is 1 - otherwise the tensor passes through\nunchanged. Naming the axis is safer in a patch whose sizes can change: a\nbatch of one squeezes away as you want, but so would a list that happens\nto hold one value.\n\nSYNTAX:\nt.squeeze\nt.squeeze <dim: int>\n\nEXAMPLE:\nt.squeeze 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first).\nReceiving it makes the node send.\n\ndim (int box, also an inlet - only when an argument was given):\nThe one axis to remove. Negative counts from the end (-1 is the last).\nAn axis the tensor does not have sends nothing. Changing it does NOT\nsend by itself; the next tensor uses it. A bare t.squeeze has no dim\nbox: retype it with an argument to get one.\n\nOUTPUTS:\n\noutput:\nThe same numbers, with the length-1 axes gone.\n\nREADING THE DEMO:\nThe ramp of twelve is folded by t.reshape into a column, [12, 1] -\ntwelve rows of one value. t.squeeze removes the 1: the shape is [12] and\nthe heat_map draws it as a row. t.squeeze 0 only looks at axis 0, which\nhas length 12, so it changes nothing ([12, 1] still). Click 1 12: now\nboth remove a 1 (axis 0 is the length-1 one). Click 3 4: nothing to\nremove, both pass it through.\n\nRELATED:\nt.unsqueeze adds a length-1 axis - the reverse. t.reshape can set any\nshape. t.flatten collapses every axis, not just the length-1 ones.\nnp.squeeze is the numpy version.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 880,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Removes axes of length 1 from a tensor's shape, leaving the numbers\nalone.\n\nA column of twelve values has shape [12, 1]; a row that came out of a\nbatch has shape [1, 12]. Both hold the same twelve numbers as a plain\n[12], but many nodes treat them differently - a [12, 1] is a 2-D table\nwith one column, not a list. t.squeeze drops those stray 1s.\n\nWHICH AXES:\nWith no argument, EVERY axis of length 1 goes: [1, 12, 1] becomes [12].\nWith an argument (t.squeeze 0), only that axis is considered, and only\nif its length really is 1 - otherwise the tensor passes through\nunchanged. Naming the axis is safer in a patch whose sizes can change: a\nbatch of one squeezes away as you want, but so would a list that happens\nto hold one value.\n\nSYNTAX:\nt.squeeze\nt.squeeze <dim: int>\n\nEXAMPLE:\nt.squeeze 0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor (a list or numpy array becomes a float32 tensor first).\nReceiving it makes the node send.\n\ndim (int box, also an inlet - only when an argument was given):\nThe one axis to remove. Negative counts from the end (-1 is the last).\nAn axis the tensor does not have sends nothing. Changing it does NOT\nsend by itself; the next tensor uses it. A bare t.squeeze has no dim\nbox: retype it with an argument to get one.\n\nOUTPUTS:\n\noutput:\nThe same numbers, with the length-1 axes gone.\n\nREADING THE DEMO:\nThe ramp of twelve is folded by t.reshape into a column, [12, 1] -\ntwelve rows of one value. t.squeeze removes the 1: the shape is [12] and\nthe heat_map draws it as a row. t.squeeze 0 only looks at axis 0, which\nhas length 12, so it changes nothing ([12, 1] still). Click 1 12: now\nboth remove a 1 (axis 0 is the length-1 one). Click 3 4: nothing to\nremove, both pass it through.\n\nRELATED:\nt.unsqueeze adds a length-1 axis - the reverse. t.reshape can set any\nshape. t.flatten collapses every axis, not just the length-1 ones.\nnp.squeeze is the numpy version."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "name": "t.linspace",
+            "id": 385,
+            "position_x": 30,
+            "position_y": 152,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 12,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 0 1 12"
+        },
+        "5": {
+            "init": "comment twelve values 0 .. 1, sent 10 times a second",
+            "name": "comment",
+            "id": 422,
+            "position_x": 746,
+            "position_y": 157,
+            "width": 279,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twelve values 0 .. 1, sent 10 times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twelve values 0 .. 1, sent 10 times a second"
+        },
+        "6": {
+            "name": "string",
+            "id": 459,
+            "position_x": 300,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "12 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "name": "string",
+            "id": 496,
+            "position_x": 445,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 12",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "8": {
+            "name": "string",
+            "id": 533,
+            "position_x": 590,
+            "position_y": 62,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3 4",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment choose the input shape",
+            "name": "comment",
+            "id": 570,
+            "position_x": 746,
+            "position_y": 67,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "choose the input shape",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "choose the input shape"
+        },
+        "10": {
+            "name": "t.reshape",
+            "id": 607,
+            "position_x": 300,
+            "position_y": 150,
+            "width": 243,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t.reshape 12 1"
+        },
+        "11": {
+            "name": "heat_map",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 228,
+            "height": 250,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "init": "comment in: a column, [12, 1]",
+            "name": "comment",
+            "id": 681,
+            "position_x": 746,
+            "position_y": 325,
+            "width": 138,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in: a column, [12, 1]",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in: a column, [12, 1]"
+        },
+        "13": {
+            "name": "t.info",
+            "id": 718,
+            "position_x": 300,
+            "position_y": 320,
+            "width": 45,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "14": {
+            "name": "list",
+            "id": 755,
+            "position_x": 370,
+            "position_y": 320,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "name": "t.squeeze",
+            "id": 792,
+            "position_x": 30,
+            "position_y": 600,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "16": {
+            "name": "heat_map",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 690,
+            "width": 528,
+            "height": 90,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 520,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 40,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment t.squeeze: every length-1 axis removed",
+            "name": "comment",
+            "id": 866,
+            "position_x": 746,
+            "position_y": 695,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.squeeze: every length-1 axis removed",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.squeeze: every length-1 axis removed"
+        },
+        "18": {
+            "name": "t.info",
+            "id": 903,
+            "position_x": 300,
+            "position_y": 600,
+            "width": 45,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "19": {
+            "name": "list",
+            "id": 940,
+            "position_x": 370,
+            "position_y": 600,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "20": {
+            "name": "t.squeeze",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 810,
+            "width": 111,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "dim",
+                    "value": 0,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.squeeze 0"
+        },
+        "21": {
+            "init": "comment t.squeeze 0: only axis 0, only if it is 1",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 746,
+            "position_y": 815,
+            "width": 260,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.squeeze 0: only axis 0, only if it is 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.squeeze 0: only axis 0, only if it is 1"
+        },
+        "22": {
+            "name": "t.info",
+            "id": 1051,
+            "position_x": 300,
+            "position_y": 810,
+            "width": 45,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "23": {
+            "name": "list",
+            "id": 1088,
+            "position_x": 370,
+            "position_y": 810,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "24": {
+            "name": "help_link",
+            "id": 1125,
+            "position_x": 30,
+            "position_y": 960,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.unsqueeze"
+        },
+        "25": {
+            "name": "help_link",
+            "id": 1162,
+            "position_x": 158,
+            "position_y": 960,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.reshape"
+        },
+        "26": {
+            "name": "help_link",
+            "id": 1199,
+            "position_x": 271,
+            "position_y": 960,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.flatten"
+        },
+        "27": {
+            "name": "help_link",
+            "id": 1236,
+            "position_x": 384,
+            "position_y": 960,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.squeeze"
+        },
+        "28": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1273,
+            "position_x": 746,
+            "position_y": 960,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "29": {
+            "name": "close",
+            "id": 1310,
+            "position_x": 24,
+            "position_y": 1034,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "shape"
+        },
+        "2": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "shape"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "string out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "shape"
+        },
+        "4": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "9": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "10": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "12": {
+            "source_node": 903,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "13": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 1051,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "14": {
+            "source_node": 1051,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "shape",
+            "dest_node": 1088,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

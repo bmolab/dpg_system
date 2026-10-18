@@ -98,7 +98,6 @@ class TorchDistributionNode(TorchNode):
         self.input = self.add_input('trigger', triggers_execution=True)
         self.probability = self.add_input('probability', widget_type='drag_float', min=0.0, max=1.0, default_value=0.5, callback=self.prob_changed)
         self.output = self.add_output('tensor out')
-        self.help_file_name = 't.distributions_help'
 
     def prob_changed(self):
         self.distribution = torch.distributions.bernoulli.Bernoulli(probs=self.probability())
@@ -123,7 +122,6 @@ class TorchDistributionTensorNode(TorchNode):
 
         self.input = self.add_input('tensor in', triggers_execution=True)
         self.output = self.add_output('tensor out')
-        self.help_file_name = 't.distributions_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -184,7 +182,6 @@ class TorchDistributionTensorOneParamNode(TorchNode):
             kwargs['max'] = param_max
         self.param_1 = self.add_input(param_1_name, **kwargs)
         self.output = self.add_output('tensor out')
-        self.help_file_name = 't.distributions_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -223,7 +220,6 @@ class TorchDistributionTensorTwoParamNode(TorchNode):
         self.param_1 = self.add_input(param_1_name, widget_type='drag_float', default_value=param_1)
         self.param_2 = self.add_input(param_2_name, widget_type='drag_float', default_value=param_2)
         self.output = self.add_output('tensor out')
-        self.help_file_name = 't.distributions_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()
@@ -536,7 +532,6 @@ class TorchMeanMedianNode(TorchWithDimNode):
         self.output = self.add_output('output')
         if self.label in ['t.median', 't.nanmedian'] and self.dim_specified:
             self.index_out = self.add_output("index output")
-        self.help_file_name = 't.mean_help'
 
     def execute(self):
         input_tensor = self.input_to_tensor()

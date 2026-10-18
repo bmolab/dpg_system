@@ -1,0 +1,902 @@
+{
+    "name": "t.linalg.pca_low_rank_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linalg.pca_low_rank_help.json",
+    "patches": {
+        "0": {
+            "height": 490,
+            "width": 696,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1162,
+            "name": "make_points",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1199,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment re-sends it ten times a second",
+                    "id": 1273,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends it ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends it ten times a second"
+                },
+                "3": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 420,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "-1.88 2.32  -1.69 2.58  -1.29 2.26  -1.18 2.73  -0.9 2.73  -0.55 2.57  -0.46 3.08  -0.09 2.86  0.16 2.94  0.29 3.36  0.7 3.03  0.86 3.36  1.07 3.56  1.46 3.27  1.57 3.76  1.87 3.7",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 400,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 32 numbers: 16 points along a line at 20 degrees",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 185,
+                    "width": 576,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "32 numbers: 16 points along a line at 20 degrees",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "32 numbers: 16 points along a line at 20 degrees"
+                },
+                "5": {
+                    "name": "np.reshape",
+                    "init": "np.reshape 16 2",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 230,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment folded into 16 rows of 2",
+                    "id": 1421,
+                    "position_x": 290,
+                    "position_y": 245,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "folded into 16 rows of 2",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "folded into 16 rows of 2"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out points",
+                    "id": 1458,
+                    "position_x": 40,
+                    "position_y": 330,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1458,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "points"
+                }
+            }
+        },
+        "1": {
+            "height": 1301,
+            "width": 1679,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1125,
+            "name": "t.linalg.pca_low_rank_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.linalg.pca_low_rank_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.linalg.pca_low_rank - the directions a cloud spreads along",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 746,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.linalg.pca_low_rank - the directions a cloud spreads along",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.linalg.pca_low_rank - the directions a cloud spreads along"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 871,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 1196,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Finds the principal components of a set of points: the directions along\nwhich they spread out most, and how much they spread along each.\n\nGive it N points (one per row, any number of columns) and it answers\n\"along which few directions does this data really vary?\". For 16 points\nlying roughly along a line, the first direction is the line and the\nsecond carries almost nothing. For poses or joint angles, a handful of\ndirections usually carries most of the movement - those directions are\nthe coordinated patterns, and the rest is noise. It finds only the\nleading few, quickly and approximately, which matters on big data.\n\nCENTRE FIRST - THE 'center' CHECKBOX:\nPrincipal components describe spread AROUND THE MIDDLE of the points,\nso the mean must be taken off first. Here 'center' is OFF by default\n(unlike torch's own default) - and then the first direction points from\nzero towards where the cloud sits, not along the way it spreads. Turn\nit on for principal component analysis proper.\n\nSYNTAX:\nt.linalg.pca_low_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe points, one per row (a list of lists or a NumPy array is turned\ninto a float32 tensor). Receiving it calculates and sends. It keeps up\nto 6 components, or fewer if there are fewer rows or columns.\n\ncenter (checkbox):\nTake off the mean of each column first. Default off.\n\nfull (number box):\nMislabelled: this is the number of refinement passes of the\napproximate method, default 2. More passes, more accurate on big data;\nsmall data like the demo's is exact anyway.\n\nChanging either does not send by itself; the next points use it (here\nthey are re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nU tensor out:\nFor each point, where it lies along each direction (divided by the\nspread). One row per point. Sent last.\n\nS tensor out:\nHow much the points spread along each direction, largest first.\n\nV tensor out:\nThe directions, one per COLUMN, each of length 1. Sent first.\nA direction and its opposite are the same axis, so signs may come out\neither way.\n\nREADING THE DEMO:\nmake_points sends 16 points in 2-D, lying along a line at 20 degrees\nwhose middle sits at [0 3]. The top picture shows them as two rows\n(x on top, y below) for the 16 points. With center ON the first column\nof V is about [-0.94 -0.34] - the 20 degree line (sign flipped) - and S\nreads about 4.9 and 0.7: nearly all the spread is along the line. The\nbottom picture is U x S, each point's position along the two\ndirections: the first row sweeps across, the second barely moves.\nTurn center OFF and the first direction swings round to about\n[-0.06 -1], pointing at the middle of the cloud, and S jumps to 12.2 -\nit is measuring distance from zero, not spread.\n\nRELATED:\nt.linalg.svd is the full decomposition this approximates (pca with\ncenter on is the svd of the centred points). t.linalg.eig of the\npoints' covariance gives the same directions. np.mean takes the mean\noff by hand.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1180,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Finds the principal components of a set of points: the directions along\nwhich they spread out most, and how much they spread along each.\n\nGive it N points (one per row, any number of columns) and it answers\n\"along which few directions does this data really vary?\". For 16 points\nlying roughly along a line, the first direction is the line and the\nsecond carries almost nothing. For poses or joint angles, a handful of\ndirections usually carries most of the movement - those directions are\nthe coordinated patterns, and the rest is noise. It finds only the\nleading few, quickly and approximately, which matters on big data.\n\nCENTRE FIRST - THE 'center' CHECKBOX:\nPrincipal components describe spread AROUND THE MIDDLE of the points,\nso the mean must be taken off first. Here 'center' is OFF by default\n(unlike torch's own default) - and then the first direction points from\nzero towards where the cloud sits, not along the way it spreads. Turn\nit on for principal component analysis proper.\n\nSYNTAX:\nt.linalg.pca_low_rank\n(no arguments)\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe points, one per row (a list of lists or a NumPy array is turned\ninto a float32 tensor). Receiving it calculates and sends. It keeps up\nto 6 components, or fewer if there are fewer rows or columns.\n\ncenter (checkbox):\nTake off the mean of each column first. Default off.\n\nfull (number box):\nMislabelled: this is the number of refinement passes of the\napproximate method, default 2. More passes, more accurate on big data;\nsmall data like the demo's is exact anyway.\n\nChanging either does not send by itself; the next points use it (here\nthey are re-sent ten times a second, so a change shows at once).\n\nOUTPUTS:\n\nU tensor out:\nFor each point, where it lies along each direction (divided by the\nspread). One row per point. Sent last.\n\nS tensor out:\nHow much the points spread along each direction, largest first.\n\nV tensor out:\nThe directions, one per COLUMN, each of length 1. Sent first.\nA direction and its opposite are the same axis, so signs may come out\neither way.\n\nREADING THE DEMO:\nmake_points sends 16 points in 2-D, lying along a line at 20 degrees\nwhose middle sits at [0 3]. The top picture shows them as two rows\n(x on top, y below) for the 16 points. With center ON the first column\nof V is about [-0.94 -0.34] - the 20 degree line (sign flipped) - and S\nreads about 4.9 and 0.7: nearly all the spread is along the line. The\nbottom picture is U x S, each point's position along the two\ndirections: the first row sweeps across, the second barely moves.\nTurn center OFF and the first direction swings round to about\n[-0.06 -1], pointing at the middle of the cloud, and S jumps to 12.2 -\nit is measuring distance from zero, not spread.\n\nRELATED:\nt.linalg.svd is the full decomposition this approximates (pca with\ncenter on is the svd of the centred points). t.linalg.eig of the\npoints' covariance gives the same directions. np.mean takes the mean\noff by hand."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 84,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_points",
+                    "patcher id": 1162
+                },
+                "4": {
+                    "name": "t.t",
+                    "id": 385,
+                    "position_x": 30,
+                    "position_y": 150,
+                    "width": 70,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "5": {
+                    "name": "heat_map",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 240,
+                    "width": 488,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 480,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 60,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 2,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -4.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "6": {
+                    "init": "comment the 16 points: x on top, y below (blue above 0)",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 544,
+                    "position_y": 360,
+                    "width": 297,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the 16 points: x on top, y below (blue above 0)",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the 16 points: x on top, y below (blue above 0)"
+                },
+                "7": {
+                    "name": "t.linalg.pca_low_rank",
+                    "id": 496,
+                    "position_x": 330,
+                    "position_y": 62,
+                    "width": 138,
+                    "height": 98,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "center",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "full",
+                            "value": 2,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "8": {
+                    "init": "comment try center off",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 544,
+                    "position_y": 75,
+                    "width": 95,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "try center off",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "try center off"
+                },
+                "9": {
+                    "name": "heat_map",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 410,
+                    "width": 208,
+                    "height": 210,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 200,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 160,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 2,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.2f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "10": {
+                    "init": "comment V: the directions, one per column",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 544,
+                    "position_y": 630,
+                    "width": 211,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "V: the directions, one per column",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "V: the directions, one per column"
+                },
+                "11": {
+                    "name": "list",
+                    "id": 644,
+                    "position_x": 330,
+                    "position_y": 410,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "init": "comment S: the spread along each",
+                    "name": "comment",
+                    "id": 681,
+                    "position_x": 544,
+                    "position_y": 465,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "S: the spread along each",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "S: the spread along each"
+                },
+                "13": {
+                    "name": "*",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 680,
+                    "width": 88,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "14": {
+                    "init": "comment U x S: each point along each direction",
+                    "name": "comment",
+                    "id": 755,
+                    "position_x": 544,
+                    "position_y": 695,
+                    "width": 242,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "U x S: each point along each direction",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "U x S: each point along each direction"
+                },
+                "15": {
+                    "name": "t.t",
+                    "id": 792,
+                    "position_x": 30,
+                    "position_y": 770,
+                    "width": 70,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "16": {
+                    "name": "heat_map",
+                    "id": 829,
+                    "position_x": 30,
+                    "position_y": 860,
+                    "width": 488,
+                    "height": 110,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "red-blue",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 480,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 60,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 2,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": -4.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 4.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "comment first direction on top: it carries the spread",
+                    "name": "comment",
+                    "id": 866,
+                    "position_x": 544,
+                    "position_y": 980,
+                    "width": 285,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "first direction on top: it carries the spread",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "first direction on top: it carries the spread"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 1030,
+                    "width": 90,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.linalg.svd"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 166,
+                    "position_y": 1030,
+                    "width": 90,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.linalg.eig"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 302,
+                    "position_y": 1030,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.mean"
+                },
+                "21": {
+                    "name": "help_link",
+                    "id": 1014,
+                    "position_x": 399,
+                    "position_y": 1030,
+                    "width": 84,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.normalize"
+                },
+                "22": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1051,
+                    "position_x": 544,
+                    "position_y": 1074,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "23": {
+                    "name": "close",
+                    "id": 1088,
+                    "position_x": 24,
+                    "position_y": 1104,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "points",
+                    "dest_node": 385,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "1": {
+                    "source_node": 385,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "tensor out",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "2": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "points",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "3": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "V tensor out",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "4": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "S tensor out",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "5": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "S tensor out",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###operand"
+                },
+                "6": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "U tensor out",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "7": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "result",
+                    "dest_node": 792,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "8": {
+                    "source_node": 792,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "tensor out",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

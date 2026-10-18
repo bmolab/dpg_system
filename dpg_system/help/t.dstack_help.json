@@ -1,0 +1,1137 @@
+{
+    "name": "t.dstack_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.dstack_help.json",
+    "patches": {
+        "0": {
+            "height": 490,
+            "width": 730,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1199,
+            "name": "make_F",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1236,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1273,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment re-sends the F ten times a second",
+                    "id": 1310,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends the F ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends the F ten times a second"
+                },
+                "3": {
+                    "name": "message",
+                    "init": "message",
+                    "id": 1347,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 290,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "1 1 1 1 1 1  1 1 0 0 0 0  1 1 0 0 0 0  1 1 1 1 0 0  1 1 0 0 0 0  1 1 0 0 0 0  1 1 0 0 0 0",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 260,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment the letter F as 42 numbers, 1 = letter, 0 = background",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 185,
+                    "width": 480,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the letter F as 42 numbers, 1 = letter, 0 = background",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the letter F as 42 numbers, 1 = letter, 0 = background"
+                },
+                "5": {
+                    "name": "t.reshape",
+                    "init": "t.reshape 7 6",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 230,
+                    "width": 260,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment folded into a tensor of 7 rows of 6",
+                    "id": 1458,
+                    "position_x": 320,
+                    "position_y": 245,
+                    "width": 330,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "folded into a tensor of 7 rows of 6",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "folded into a tensor of 7 rows of 6"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out F",
+                    "id": 1495,
+                    "position_x": 40,
+                    "position_y": 330,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1273,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1347,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "1": {
+                    "source_node": 1347,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "F"
+                }
+            }
+        },
+        "1": {
+            "height": 590,
+            "width": 840,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1532,
+            "name": "make_ramp",
+            "parent_node_uuid": 422,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 1569,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "load_bang",
+                    "init": "load_bang",
+                    "id": 1606,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 88,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment once, when the patch opens",
+                    "id": 1643,
+                    "position_x": 150,
+                    "position_y": 50,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "once, when the patch opens",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "once, when the patch opens"
+                },
+                "3": {
+                    "name": "t.linspace",
+                    "init": "t.linspace 0 1 42",
+                    "id": 1680,
+                    "position_x": 40,
+                    "position_y": 110,
+                    "width": 220,
+                    "height": 200,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "start",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "stop",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "steps",
+                            "value": 42,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 42 values from 0 to 1",
+                    "id": 1717,
+                    "position_x": 280,
+                    "position_y": 125,
+                    "width": 240,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "42 values from 0 to 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "42 values from 0 to 1"
+                },
+                "5": {
+                    "name": "t.reshape",
+                    "init": "t.reshape 7 6",
+                    "id": 1754,
+                    "position_x": 40,
+                    "position_y": 330,
+                    "width": 260,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment folded into 7 rows of 6, the same shape as the F",
+                    "id": 1791,
+                    "position_x": 320,
+                    "position_y": 345,
+                    "width": 440,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "folded into 7 rows of 6, the same shape as the F",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "folded into 7 rows of 6, the same shape as the F"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out ramp",
+                    "id": 1828,
+                    "position_x": 40,
+                    "position_y": 430,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 1606,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1680,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "1": {
+                    "source_node": 1680,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1754,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1754,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1828,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "ramp"
+                }
+            }
+        },
+        "2": {
+            "height": 1268,
+            "width": 1680,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1162,
+            "name": "t.dstack_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.dstack_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.dstack - join in depth",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 303,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.dstack - join in depth",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.dstack - join in depth"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 872,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 876,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Joins tensors in DEPTH: along a third axis, so every cell holds one\nvalue from each input.\n\nTwo 7 by 6 pictures become one 7 by 6 by 2 tensor: the same rows and\ncolumns, with two values in each cell - like an image with two colour\nchannels. Three greyscale pictures dstacked are an RGB image of shape\n[height, width, 3]. Rows (1-D) and 2-D tables are first given the extra\naxes they need, so two rows of 8 become [1, 8, 2].\n\nSYNTAX:\nt.dstack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.dstack 3\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it goes first. Receiving it makes the node join and\nsend. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE\ntensor 1. Each is converted to tensor 1's dtype and device. Until\nsomething has reached tensor 2, tensor 1 is joined with nothing and\ncomes out on its own.\n\nALL THE SAME SHAPE:\nThis node insists that every tensor has exactly the same shape as\ntensor 1 (torch itself is looser). If one does not, nothing is sent at\nall; with the app's verbose setting on, a message says so.\n\nOUTPUTS:\n\nstacked tensors:\nThe joined tensor, with the inputs along the third axis (axis 2).\n\nREADING THE DEMO:\ntensor 1 is the F, tensor 2 a ramp, both 7 by 6. t.dstack makes\n[7, 6, 2] (t.info) - one picture with two values per cell, which a\nheat_map cannot draw directly. The two lower heat_maps take it apart\nagain with t[] (:, :, 0 is the first value of every cell, :, :, 1 the\nsecond): the F and the ramp, each intact - dstack keeps the pictures\napart cell by cell, it does not mix them.\n\nRELATED:\nt.hstack and t.vstack join side by side and one above the other.\nt.stack with dim 2 does the same for 2-D tensors, and lets you choose\nthe axis. t.permute moves that channel axis to the front if a node\nwants channels first. np.stack is the numpy version.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 860,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Joins tensors in DEPTH: along a third axis, so every cell holds one\nvalue from each input.\n\nTwo 7 by 6 pictures become one 7 by 6 by 2 tensor: the same rows and\ncolumns, with two values in each cell - like an image with two colour\nchannels. Three greyscale pictures dstacked are an RGB image of shape\n[height, width, 3]. Rows (1-D) and 2-D tables are first given the extra\naxes they need, so two rows of 8 become [1, 8, 2].\n\nSYNTAX:\nt.dstack <number of inputs: int>\nDefault 2. The argument is how many tensor inlets the node has; there\nis no dim to set - the name chooses the axis.\n\nEXAMPLE:\nt.dstack 3\n\nINPUTS:\n\ntensor 1:\nThe first tensor - it goes first. Receiving it makes the node join and\nsend. A list or numpy array becomes a float32 tensor.\n\ntensor 2, tensor 3, ...:\nThe others, in order. They are only stored, so they must arrive BEFORE\ntensor 1. Each is converted to tensor 1's dtype and device. Until\nsomething has reached tensor 2, tensor 1 is joined with nothing and\ncomes out on its own.\n\nALL THE SAME SHAPE:\nThis node insists that every tensor has exactly the same shape as\ntensor 1 (torch itself is looser). If one does not, nothing is sent at\nall; with the app's verbose setting on, a message says so.\n\nOUTPUTS:\n\nstacked tensors:\nThe joined tensor, with the inputs along the third axis (axis 2).\n\nREADING THE DEMO:\ntensor 1 is the F, tensor 2 a ramp, both 7 by 6. t.dstack makes\n[7, 6, 2] (t.info) - one picture with two values per cell, which a\nheat_map cannot draw directly. The two lower heat_maps take it apart\nagain with t[] (:, :, 0 is the first value of every cell, :, :, 1 the\nsecond): the F and the ramp, each intact - dstack keeps the pictures\napart cell by cell, it does not mix them.\n\nRELATED:\nt.hstack and t.vstack join side by side and one above the other.\nt.stack with dim 2 does the same for 2-D tensors, and lets you choose\nthe axis. t.permute moves that channel axis to the front if a node\nwants channels first. np.stack is the numpy version."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 53,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_F",
+                    "patcher id": 1199
+                },
+                "4": {
+                    "init": "comment tensor 1: the F, 7 x 6",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 612,
+                    "position_y": 160,
+                    "width": 144,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "tensor 1: the F, 7 x 6",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "tensor 1: the F, 7 x 6"
+                },
+                "5": {
+                    "name": "p",
+                    "id": 422,
+                    "position_x": 330,
+                    "position_y": 62,
+                    "width": 72,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_ramp",
+                    "patcher id": 1532
+                },
+                "6": {
+                    "init": "comment tensor 2: a ramp, 7 x 6, made once",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 612,
+                    "position_y": 200,
+                    "width": 217,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "tensor 2: a ramp, 7 x 6, made once",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "tensor 2: a ramp, 7 x 6, made once"
+                },
+                "7": {
+                    "name": "heat_map",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 200,
+                    "width": 188,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 7,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "8": {
+                    "name": "heat_map",
+                    "id": 533,
+                    "position_x": 330,
+                    "position_y": 200,
+                    "width": 188,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 7,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "name": "t.dstack",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 490,
+                    "width": 101,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "10": {
+                    "name": "t.info",
+                    "id": 607,
+                    "position_x": 300,
+                    "position_y": 490,
+                    "width": 45,
+                    "height": 84,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "list",
+                    "id": 644,
+                    "position_x": 370,
+                    "position_y": 490,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "init": "comment one picture, two values per cell",
+                    "name": "comment",
+                    "id": 681,
+                    "position_x": 612,
+                    "position_y": 620,
+                    "width": 205,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one picture, two values per cell",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "one picture, two values per cell"
+                },
+                "13": {
+                    "name": "t[]",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 670,
+                    "width": 256,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "indices",
+                            "value": ":, :, 0",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "t[] :, :, 0"
+                },
+                "14": {
+                    "name": "t[]",
+                    "id": 755,
+                    "position_x": 330,
+                    "position_y": 670,
+                    "width": 256,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "indices",
+                            "value": ":, :, 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "t[] :, :, 1"
+                },
+                "15": {
+                    "name": "heat_map",
+                    "id": 792,
+                    "position_x": 30,
+                    "position_y": 760,
+                    "width": 188,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 7,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "16": {
+                    "name": "heat_map",
+                    "id": 829,
+                    "position_x": 330,
+                    "position_y": 760,
+                    "width": 188,
+                    "height": 260,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 210,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 7,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "comment depth 0 and depth 1, taken out again",
+                    "name": "comment",
+                    "id": 866,
+                    "position_x": 612,
+                    "position_y": 1040,
+                    "width": 230,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "depth 0 and depth 1, taken out again",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "depth 0 and depth 1, taken out again"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 1090,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.hstack"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 135,
+                    "position_y": 1090,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.vstack"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 240,
+                    "position_y": 1090,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.stack"
+                },
+                "21": {
+                    "name": "help_link",
+                    "id": 1014,
+                    "position_x": 337,
+                    "position_y": 1090,
+                    "width": 72,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.permute"
+                },
+                "22": {
+                    "name": "help_link",
+                    "id": 1051,
+                    "position_x": 450,
+                    "position_y": 1090,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.stack"
+                },
+                "23": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1088,
+                    "position_x": 612,
+                    "position_y": 1090,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "24": {
+                    "name": "close",
+                    "id": 1125,
+                    "position_x": 24,
+                    "position_y": 1164,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "ramp",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "1": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "ramp",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor 2"
+                },
+                "2": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "F",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "3": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "F",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor 1"
+                },
+                "4": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "stacked tensors",
+                    "dest_node": 718,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "5": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "stacked tensors",
+                    "dest_node": 755,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "6": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 792,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "7": {
+                    "source_node": 755,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "8": {
+                    "source_node": 570,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "stacked tensors",
+                    "dest_node": 607,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "9": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "shape",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
+        }
+    }
+}

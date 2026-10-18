@@ -1,307 +1,695 @@
 {
-    "height": 745,
-    "width": 1363,
-    "position": [
-        100,
-        100
-    ],
-    "id": 607,
     "name": "t.clamp_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.clamp_help.json",
-    "nodes": {
+    "patches": {
         "0": {
-            "name": "",
-            "id": 237,
-            "position_x": 0,
-            "position_y": 0,
-            "width": 9,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "protected": true,
-            "presentation_state": "hidden",
-            "properties": {
+            "height": 560,
+            "width": 630,
+            "position": [
+                160,
+                160
+            ],
+            "id": 940,
+            "name": "make_sine",
+            "parent_node_uuid": 348,
+            "nodes": {
                 "0": {
                     "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "1": {
-            "init": "comment t.clamp - hold a tensor inside limits",
-            "name": "comment",
-            "id": 274,
-            "position_x": 24,
-            "position_y": -4,
-            "width": 463,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "t.clamp - hold a tensor inside limits",
-                    "value_type": "str"
+                    "id": 977,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "48",
-                    "value_type": "str"
-                }
-            },
-            "comment": "t.clamp - hold a tensor inside limits"
-        },
-        "2": {
-            "name": "text_block",
-            "id": 311,
-            "position_x": 525,
-            "position_y": 45,
-            "width": 798,
-            "height": 636,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "These hold a tensor's values inside limits.\n\nTHE NODES:\n\nt.clamp     limit at both ends\nt.maximum   element by element, the larger of two tensors\nt.minimum   element by element, the smaller\n\nt.clamp takes a single min and max and applies them everywhere. \nt.maximum and t.minimum compare against another TENSOR, so the limit can differ \nat every position - a per-element floor or ceiling rather than one number. \nThat is the difference, and it is why both exist.\n\nUsed with a single number, t.maximum is a lower bound and t.minimum an upper \none - which reads backwards until you see where the names come from. \nt.maximum means \"the maximum of the data and this\", and that is exactly a floor.\n\nWHY YOU WANT THIS BEFORE A DIVISION:\nClamping a denominator away from zero is the usual way to keep a division from \nproducing infinity, and doing it with t.maximum against a very small number is \ncheaper and better behaved than testing for zero and branching.\n\nSYNTAX:\nt.clamp <min> <max>\n\nEXAMPLE:\nt.clamp 0.0 1.0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nmin / max (t.clamp):\nThe limits.\n\ntensor b in (t.maximum, t.minimum):\nThe tensor to compare against - or a single number applied everywhere.\n\nOUTPUTS: \n\noutput:\nThe limited tensor, in the same shape.\n\nRELATED:\nnp.clip does the same for NumPy arrays, and clamp for ordinary numbers.\n\nA NOTE ON GRADIENTS:\nWhere a value is being held at a limit, the gradient through it is zero - the \noutput stops responding to the input entirely. If you are training something \nand it has stopped learning, a clamp saturating is worth checking for.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 1014,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
                 },
                 "2": {
-                    "name": "width",
-                    "value": 790,
-                    "value_type": "int"
+                    "name": "comment",
+                    "init": "comment re-sends the wave ten times a second",
+                    "id": 1051,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 320,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends the wave ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends the wave ten times a second"
                 },
                 "3": {
-                    "name": "height",
-                    "value": 620,
-                    "value_type": "int"
+                    "name": "t.linspace",
+                    "init": "t.linspace 0 720 128",
+                    "id": 1088,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 190,
+                    "height": 150,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "start",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "stop",
+                            "value": 720.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "steps",
+                            "value": 128,
+                            "value_type": "int"
+                        }
+                    }
                 },
                 "4": {
-                    "name": "text_size",
-                    "value": "30",
-                    "value_type": "str"
-                }
-            },
-            "text": "These hold a tensor's values inside limits.\n\nTHE NODES:\n\nt.clamp     limit at both ends\nt.maximum   element by element, the larger of two tensors\nt.minimum   element by element, the smaller\n\nt.clamp takes a single min and max and applies them everywhere. \nt.maximum and t.minimum compare against another TENSOR, so the limit can differ \nat every position - a per-element floor or ceiling rather than one number. \nThat is the difference, and it is why both exist.\n\nUsed with a single number, t.maximum is a lower bound and t.minimum an upper \none - which reads backwards until you see where the names come from. \nt.maximum means \"the maximum of the data and this\", and that is exactly a floor.\n\nWHY YOU WANT THIS BEFORE A DIVISION:\nClamping a denominator away from zero is the usual way to keep a division from \nproducing infinity, and doing it with t.maximum against a very small number is \ncheaper and better behaved than testing for zero and branching.\n\nSYNTAX:\nt.clamp <min> <max>\n\nEXAMPLE:\nt.clamp 0.0 1.0\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. Receiving it triggers the node.\n\nmin / max (t.clamp):\nThe limits.\n\ntensor b in (t.maximum, t.minimum):\nThe tensor to compare against - or a single number applied everywhere.\n\nOUTPUTS: \n\noutput:\nThe limited tensor, in the same shape.\n\nRELATED:\nnp.clip does the same for NumPy arrays, and clamp for ordinary numbers.\n\nA NOTE ON GRADIENTS:\nWhere a value is being held at a limit, the gradient through it is zero - the \noutput stops responding to the input entirely. If you are training something \nand it has stopped learning, a clamp saturating is worth checking for."
-        },
-        "3": {
-            "name": "signal",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 52,
-            "width": 129,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "on",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "1": {
-                    "name": "period",
-                    "value": 3.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "shape",
-                    "value": "sin",
-                    "value_type": "str"
-                },
-                "3": {
-                    "name": "range",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "4": {
-                    "name": "bipolar",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "comment",
+                    "init": "comment 128 angles from 0 to 720 degrees",
+                    "id": 1125,
+                    "position_x": 250,
+                    "position_y": 145,
+                    "width": 300,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "128 angles from 0 to 720 degrees",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "128 angles from 0 to 720 degrees"
                 },
                 "5": {
-                    "name": "vector size",
-                    "value": 1,
-                    "value_type": "int"
-                }
-            },
-            "init": "signal 3.0 sin"
-        },
-        "4": {
-            "name": "t.clamp",
-            "id": 459,
-            "position_x": 30,
-            "position_y": 170,
-            "width": 111,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "min",
-                    "value": -0.4,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "max",
-                    "value": 0.4,
-                    "value_type": "float"
-                }
-            },
-            "init": "t.clamp -0.4 0.4"
-        },
-        "5": {
-            "name": "plot",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 300,
-            "width": 208,
-            "height": 178,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "none",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 128,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "style",
-                    "value": "line",
-                    "value_type": "str"
-                },
-                "4": {
-                    "name": "update style",
-                    "value": "input is stream of samples",
-                    "value_type": "str"
-                },
-                "5": {
-                    "name": "sample count",
-                    "value": 200,
-                    "value_type": "int"
+                    "name": "sin",
+                    "init": "sin",
+                    "id": 1162,
+                    "position_x": 40,
+                    "position_y": 300,
+                    "width": 120,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "degrees",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
                 },
                 "6": {
-                    "name": "min x",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "name": "comment",
+                    "init": "comment their sines: two cycles, from -1 to 1",
+                    "id": 1199,
+                    "position_x": 180,
+                    "position_y": 315,
+                    "width": 340,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "their sines: two cycles, from -1 to 1",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "their sines: two cycles, from -1 to 1"
                 },
                 "7": {
-                    "name": "max x",
-                    "value": 200.0,
-                    "value_type": "float"
-                },
-                "8": {
-                    "name": "min y",
-                    "value": -1.2,
-                    "value_type": "float"
-                },
-                "9": {
-                    "name": "max y",
-                    "value": 1.2,
-                    "value_type": "float"
-                }
-            }
-        },
-        "6": {
-            "name": "text_block",
-            "id": 533,
-            "annotation": true,
-            "position_x": 264,
-            "position_y": 565,
-            "width": 231,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "the peaks are held at the limits\ndrag min and max to move them",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 223,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
+                    "name": "out",
+                    "init": "out sine",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 400,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
                 }
             },
-            "text": "the peaks are held at the limits\ndrag min and max to move them"
-        },
-        "7": {
-            "name": "close",
-            "id": 570,
-            "position_x": 24,
-            "position_y": 508,
-            "width": 88,
-            "height": 44,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
+            "links": {
                 "0": {
-                    "name": "close patch",
-                    "value": null,
-                    "value_type": "NoneType"
+                    "source_node": 1014,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1088,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "1": {
+                    "source_node": 1088,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "linspace out",
+                    "dest_node": 1162,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in"
+                },
+                "2": {
+                    "source_node": 1162,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 1236,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "sine"
                 }
             }
-        }
-    },
-    "links": {
-        "0": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
         },
         "1": {
-            "source_node": 459,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
+            "height": 946,
+            "width": 1719,
+            "position": [
+                100,
+                100
+            ],
+            "id": 903,
+            "name": "t.clamp_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.clamp_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.clamp - hold a tensor between two limits",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 525,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.clamp - hold a tensor between two limits",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.clamp - hold a tensor between two limits"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 911,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 841,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Holds every value of a tensor inside two limits: anything below min\ncomes out as min, anything above max comes out as max, and everything in\nbetween passes untouched.\n\nUse it to keep values in range before they drive something that would\nmisbehave outside it - colours inside 0 to 1, a gain that must never go\nnegative, a denominator kept away from zero. It works on every element\nseparately, so the output has the same shape as the input.\n\nSYNTAX:\nt.clamp <min: float> <max: float>\nDefaults: min 0.0, max 1.0. Give BOTH numbers: with only one argument,\nboth limits keep their defaults.\n\nEXAMPLE:\nt.clamp -0.5 0.7\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to limit. A list, a NumPy array or a single number is turned\ninto a float32 tensor first (a single number becomes a one-value tensor).\nEvery input is clamped and sent - this is the only inlet that makes the\nnode send. An empty tensor sends nothing.\n\nmin / max (drag floats, also inlets):\nThe lower and upper limits, applied to every element. Because they are\ninlets they can be driven from the patch. Changing one does NOT send by\nitself - the next tensor uses it. In the demo make_sine re-sends the wave\nten times a second, so the plot follows your drags. If min is above max,\nevery value comes out as max.\n\nOUTPUTS:\n\noutput:\nThe clamped tensor, the same shape as the input. An integer tensor comes\nout as float, because the limits are floats.\n\nREADING THE DEMO:\nThe plot draws the wave and the clamped copy over each other. Inside the\nlimits the two lines are one; past them the wave carries on to 1 or -1\nwhile the copy runs flat along the limit - the top cut at 0.7, the bottom\nat -0.5. Drag max down towards min and the wave is squeezed into a band.\n\nA NOTE ON GRADIENTS:\nWhere a value is held at a limit the gradient through it is zero - the\noutput stops responding to the input. If something you are training has\nstopped learning, a saturated clamp is worth checking for.\n\nRELATED:\nt.maximum and t.minimum limit one side only, and against another tensor,\nso the limit can differ at every position. np.clip is the NumPy version;\nclamp does the same for single numbers and lists.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 825,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Holds every value of a tensor inside two limits: anything below min\ncomes out as min, anything above max comes out as max, and everything in\nbetween passes untouched.\n\nUse it to keep values in range before they drive something that would\nmisbehave outside it - colours inside 0 to 1, a gain that must never go\nnegative, a denominator kept away from zero. It works on every element\nseparately, so the output has the same shape as the input.\n\nSYNTAX:\nt.clamp <min: float> <max: float>\nDefaults: min 0.0, max 1.0. Give BOTH numbers: with only one argument,\nboth limits keep their defaults.\n\nEXAMPLE:\nt.clamp -0.5 0.7\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor to limit. A list, a NumPy array or a single number is turned\ninto a float32 tensor first (a single number becomes a one-value tensor).\nEvery input is clamped and sent - this is the only inlet that makes the\nnode send. An empty tensor sends nothing.\n\nmin / max (drag floats, also inlets):\nThe lower and upper limits, applied to every element. Because they are\ninlets they can be driven from the patch. Changing one does NOT send by\nitself - the next tensor uses it. In the demo make_sine re-sends the wave\nten times a second, so the plot follows your drags. If min is above max,\nevery value comes out as max.\n\nOUTPUTS:\n\noutput:\nThe clamped tensor, the same shape as the input. An integer tensor comes\nout as float, because the limits are floats.\n\nREADING THE DEMO:\nThe plot draws the wave and the clamped copy over each other. Inside the\nlimits the two lines are one; past them the wave carries on to 1 or -1\nwhile the copy runs flat along the limit - the top cut at 0.7, the bottom\nat -0.5. Drag max down towards min and the wave is squeezed into a band.\n\nA NOTE ON GRADIENTS:\nWhere a value is held at a limit the gradient through it is zero - the\noutput stops responding to the input. If something you are training has\nstopped learning, a saturated clamp is worth checking for.\n\nRELATED:\nt.maximum and t.minimum limit one side only, and against another tensor,\nso the limit can differ at every position. np.clip is the NumPy version;\nclamp does the same for single numbers and lists."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 72,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_sine",
+                    "patcher id": 940
+                },
+                "4": {
+                    "init": "comment a sine as a tensor of 128 values, sent 10 times a second",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 521,
+                    "position_y": 150,
+                    "width": 353,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a sine as a tensor of 128 values, sent 10 times a second",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a sine as a tensor of 128 values, sent 10 times a second"
+                },
+                "5": {
+                    "name": "t.clamp",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 200,
+                    "width": 111,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": -0.5,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 0.7,
+                            "value_type": "float"
+                        }
+                    },
+                    "init": "t.clamp -0.5 0.7"
+                },
+                "6": {
+                    "init": "comment drag min and max on the node",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 521,
+                    "position_y": 220,
+                    "width": 181,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "drag min and max on the node",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "drag min and max on the node"
+                },
+                "7": {
+                    "name": "pack",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 340,
+                    "width": 33,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "pack 2"
+                },
+                "8": {
+                    "init": "comment the clamped copy (in 1) and the wave (in 2)",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 521,
+                    "position_y": 360,
+                    "width": 273,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the clamped copy (in 1) and the wave (in 2)",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the clamped copy (in 1) and the wave (in 2)"
+                },
+                "9": {
+                    "name": "plot",
+                    "id": 570,
+                    "position_x": 30,
+                    "position_y": 460,
+                    "width": 308,
+                    "height": 178,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "none",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 300,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 128,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "style",
+                            "value": "line",
+                            "value_type": "str"
+                        },
+                        "4": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "5": {
+                            "name": "sample count",
+                            "value": 128,
+                            "value_type": "int"
+                        },
+                        "6": {
+                            "name": "min x",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "7": {
+                            "name": "max x",
+                            "value": 128.0,
+                            "value_type": "float"
+                        },
+                        "8": {
+                            "name": "min y",
+                            "value": -1.2,
+                            "value_type": "float"
+                        },
+                        "9": {
+                            "name": "max y",
+                            "value": 1.2,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "10": {
+                    "name": "text_block",
+                    "id": 607,
+                    "annotation": true,
+                    "position_x": 521,
+                    "position_y": 650,
+                    "width": 360,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "the wave and its clamped copy, drawn over each other:\nwhere they part, the copy runs flat at the limit",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 352,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "the wave and its clamped copy, drawn over each other:\nwhere they part, the copy runs flat at the limit"
+                },
+                "11": {
+                    "name": "help_link",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 740,
+                    "width": 72,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.maximum"
+                },
+                "12": {
+                    "name": "help_link",
+                    "id": 681,
+                    "position_x": 143,
+                    "position_y": 740,
+                    "width": 72,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.minimum"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 256,
+                    "position_y": 740,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.clip"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 353,
+                    "position_y": 740,
+                    "width": 47,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link clamp"
+                },
+                "15": {
+                    "name": "help_link",
+                    "id": 792,
+                    "position_x": 435,
+                    "position_y": 740,
+                    "width": 60,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.round"
+                },
+                "16": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 829,
+                    "position_x": 521,
+                    "position_y": 784,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "17": {
+                    "name": "close",
+                    "id": 866,
+                    "position_x": 24,
+                    "position_y": 814,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "sine",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 2"
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "sine",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 422,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "in 1"
+                },
+                "3": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
         }
     }
 }

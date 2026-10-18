@@ -1,11 +1,11 @@
 {
-    "height": 1011,
-    "width": 1521,
+    "height": 875,
+    "width": 1818,
     "position": [
         100,
         100
     ],
-    "id": 940,
+    "id": 1125,
     "name": "t.info_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.info_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.info - what a tensor actually is",
+            "init": "comment t.info - shape, dtype, device and gradient tracking",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 426,
+            "width": 635,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.info - what a tensor actually is",
+                    "value": "t.info - shape, dtype, device and gradient tracking",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.info - what a tensor actually is"
+            "comment": "t.info - shape, dtype, device and gradient tracking"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 673,
+            "position_x": 1010,
             "position_y": 45,
-            "width": 808,
-            "height": 756,
+            "width": 768,
+            "height": 770,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These tell you what a tensor actually is, which is how most torch problems \nget diagnosed.\n\nTHE NODES:\n\nt.info           shape, dtype, device and gradient tracking, on four outlets\nt.numel          how many elements it holds in total\nt.is_contiguous  whether its memory is laid out straight\nt.contiguous     make it so\n\nt.info IS THE FIRST THING TO REACH FOR:\nWhen an operation refuses a tensor, the reason is almost always one of the four\nthings this reports. The shape is wrong, the dtype is wrong, it is on the wrong\ndevice, or it is carrying gradient history it should not be.\n\nPatch it in beside whatever is failing. It costs nothing and it answers the\nquestion directly, where guessing from the error message often does not.\n\nCONTIGUITY, AND WHY t.view FAILS:\nA tensor's numbers live in a flat block of memory, and its shape is a way of\nreading that block. Transposing or permuting changes the reading without moving\nanything - which is why those operations are free at any size - but it leaves a\ntensor whose memory is no longer in the order its shape implies.\n\nThat is non-contiguous. Most operations do not care. t.view does: it requires\nthat the new shape can be read from the existing memory without moving anything,\nand after a transpose it cannot, so it fails.\n\nt.contiguous makes a copy laid out straight, after which view works. t.reshape\ndoes this for you when it has to, which is why reshape always works and view\nsometimes does not - see the t.reshape help patch.\n\nt.is_contiguous answers the question without changing anything, which is worth\nusing before inserting a t.contiguous that may be copying a large tensor for no\nreason.\n\nt.numel:\nThe total element count - the product of the shape. Useful for checking that a\nreshape is possible before attempting it, since the dimensions must multiply to\nthis.\n\nSYNTAX:\nt.info\nt.contiguous\n\nEXAMPLE:\nt.info\n\nINPUTS and PARAMETERS:\n\nin / tensor in:\nThe tensor. Receiving it triggers the node.\n\nOUTPUTS: \n\nshape / dtype / device / grad (t.info):\nThe four things worth knowing, separately so each can be tested or displayed.\n\nnumel out:\nThe total element count.\n\nresult (t.is_contiguous):\nTrue or false.\n\ntensor out (t.contiguous):\nA contiguous copy - or the same tensor unchanged, if it already was.",
+                    "value": "Reports what a tensor is: its shape, its dtype, the device it lives\non, and whether it is tracking gradients - each on its own outlet.\n\nIt is the first thing to patch in when a torch node refuses a tensor or\ngives a surprising result. The cause is nearly always one of these four:\nthe shape is not what you thought, the type is wrong (integers where\nfloats were expected), it is on a different device from the tensor it\nmeets, or it is carrying gradient history. The outlet labels change to\nshow the values, so the node itself is a display.\n\nSYNTAX:\nt.info\n\nEXAMPLE:\nt.info\n\nINPUTS and PARAMETERS:\n\nin:\nThe tensor. Every tensor that arrives is reported. A list or NumPy array\nis turned into a float32 cpu tensor first and that is what is reported -\nso t.info on a NumPy array always says float32, whatever the array's own\ntype. An empty tensor is ignored.\n\nOUTPUTS (sent right to left - grad first, shape last):\n\nshape:\nThe size of each dimension, as a list: [3, 4] is 3 rows of 4.\n\ndtype:\nThe type, as text: torch.float32, torch.int64 ...\n\ndevice:\nWhere it lives, as text: cpu, or mps:0, cuda:0 for a GPU.\n\ngrad:\nTrue if the tensor tracks gradients, False if not. The outlet's label\nreads \"grad\" or \"inference\" to match.\n\nREADING THE DEMO:\nA metro makes a fresh t.rand tensor three times a second; pick a shape\nfrom the menu to change it (2x3x4 has three dimensions). The tensor then\npasses through t.to, whose dtype and device menus you can change, and\nwhose requires_grad box you can tick. Each change appears in the four\ndisplays and in the outlet labels.\n\nRELATED:\nt.numel gives the total number of values. t.is_contiguous tells you how\nthe values are laid out in memory. tensor (t.to) changes the dtype,\ndevice and requires_grad that this reports. np.shape is the NumPy\nversion of the shape outlet.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 800,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 740,
+                    "value": 754,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,249 +90,123 @@
                     "value_type": "str"
                 }
             },
-            "text": "These tell you what a tensor actually is, which is how most torch problems \nget diagnosed.\n\nTHE NODES:\n\nt.info           shape, dtype, device and gradient tracking, on four outlets\nt.numel          how many elements it holds in total\nt.is_contiguous  whether its memory is laid out straight\nt.contiguous     make it so\n\nt.info IS THE FIRST THING TO REACH FOR:\nWhen an operation refuses a tensor, the reason is almost always one of the four\nthings this reports. The shape is wrong, the dtype is wrong, it is on the wrong\ndevice, or it is carrying gradient history it should not be.\n\nPatch it in beside whatever is failing. It costs nothing and it answers the\nquestion directly, where guessing from the error message often does not.\n\nCONTIGUITY, AND WHY t.view FAILS:\nA tensor's numbers live in a flat block of memory, and its shape is a way of\nreading that block. Transposing or permuting changes the reading without moving\nanything - which is why those operations are free at any size - but it leaves a\ntensor whose memory is no longer in the order its shape implies.\n\nThat is non-contiguous. Most operations do not care. t.view does: it requires\nthat the new shape can be read from the existing memory without moving anything,\nand after a transpose it cannot, so it fails.\n\nt.contiguous makes a copy laid out straight, after which view works. t.reshape\ndoes this for you when it has to, which is why reshape always works and view\nsometimes does not - see the t.reshape help patch.\n\nt.is_contiguous answers the question without changing anything, which is worth\nusing before inserting a t.contiguous that may be copying a large tensor for no\nreason.\n\nt.numel:\nThe total element count - the product of the shape. Useful for checking that a\nreshape is possible before attempting it, since the dimensions must multiply to\nthis.\n\nSYNTAX:\nt.info\nt.contiguous\n\nEXAMPLE:\nt.info\n\nINPUTS and PARAMETERS:\n\nin / tensor in:\nThe tensor. Receiving it triggers the node.\n\nOUTPUTS: \n\nshape / dtype / device / grad (t.info):\nThe four things worth knowing, separately so each can be tested or displayed.\n\nnumel out:\nThe total element count.\n\nresult (t.is_contiguous):\nTrue or false.\n\ntensor out (t.contiguous):\nA contiguous copy - or the same tensor unchanged, if it already was."
+            "text": "Reports what a tensor is: its shape, its dtype, the device it lives\non, and whether it is tracking gradients - each on its own outlet.\n\nIt is the first thing to patch in when a torch node refuses a tensor or\ngives a surprising result. The cause is nearly always one of these four:\nthe shape is not what you thought, the type is wrong (integers where\nfloats were expected), it is on a different device from the tensor it\nmeets, or it is carrying gradient history. The outlet labels change to\nshow the values, so the node itself is a display.\n\nSYNTAX:\nt.info\n\nEXAMPLE:\nt.info\n\nINPUTS and PARAMETERS:\n\nin:\nThe tensor. Every tensor that arrives is reported. A list or NumPy array\nis turned into a float32 cpu tensor first and that is what is reported -\nso t.info on a NumPy array always says float32, whatever the array's own\ntype. An empty tensor is ignored.\n\nOUTPUTS (sent right to left - grad first, shape last):\n\nshape:\nThe size of each dimension, as a list: [3, 4] is 3 rows of 4.\n\ndtype:\nThe type, as text: torch.float32, torch.int64 ...\n\ndevice:\nWhere it lives, as text: cpu, or mps:0, cuda:0 for a GPU.\n\ngrad:\nTrue if the tensor tracks gradients, False if not. The outlet's label\nreads \"grad\" or \"inference\" to match.\n\nREADING THE DEMO:\nA metro makes a fresh t.rand tensor three times a second; pick a shape\nfrom the menu to change it (2x3x4 has three dimensions). The tensor then\npasses through t.to, whose dtype and device menus you can change, and\nwhose requires_grad box you can tick. Each change appears in the four\ndisplays and in the outlet labels.\n\nRELATED:\nt.numel gives the total number of values. t.is_contiguous tells you how\nthe values are laid out in memory. tensor (t.to) changes the dtype,\ndevice and requires_grad that this reports. np.shape is the NumPy\nversion of the shape outlet."
         },
         "3": {
-            "name": "button",
+            "name": "menu",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
+            "width": 63,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "init": "menu 3x4 6x8 1x16 2x3x4"
         },
         "4": {
-            "name": "t.rand",
+            "init": "comment pick a shape for t.rand",
+            "name": "comment",
             "id": 385,
+            "position_x": 726,
+            "position_y": 70,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "pick a shape for t.rand",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "pick a shape for t.rand"
+        },
+        "5": {
+            "name": "metro",
+            "id": 422,
             "position_x": 30,
-            "position_y": 120,
+            "position_y": 122,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 300.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 300"
+        },
+        "6": {
+            "name": "t.rand",
+            "id": 459,
+            "position_x": 30,
+            "position_y": 212,
             "width": 163,
             "height": 126,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
+            "properties": {
+                "0": {
+                    "name": "shape",
+                    "value": "[3, 4]",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
             "init": "t.rand 3 4"
         },
-        "5": {
-            "name": "t.is_contiguous",
-            "id": 422,
-            "position_x": 250,
-            "position_y": 120,
-            "width": 101,
-            "height": 42,
+        "7": {
+            "name": "t.to",
+            "id": 496,
+            "position_x": 290,
+            "position_y": 212,
+            "width": 163,
+            "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
-        },
-        "6": {
-            "name": "int",
-            "id": 459,
-            "position_x": 250,
-            "position_y": 225,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "7": {
-            "init": "comment fresh from t.rand: contiguous",
-            "name": "comment",
-            "id": 496,
-            "position_x": 406,
-            "position_y": 280,
-            "width": 187,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "fresh from t.rand: contiguous",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "fresh from t.rand: contiguous"
         },
         "8": {
-            "name": "t.t",
-            "id": 533,
-            "position_x": 30,
-            "position_y": 320,
-            "width": 70,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "name": "t.is_contiguous",
-            "id": 570,
-            "position_x": 250,
-            "position_y": 320,
-            "width": 101,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "10": {
-            "name": "int",
-            "id": 607,
-            "position_x": 250,
-            "position_y": 425,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "11": {
-            "name": "text_block",
-            "id": 644,
-            "annotation": true,
-            "position_x": 406,
-            "position_y": 480,
-            "width": 237,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "after a transpose: not contiguous\nthis is why t.view fails there",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 229,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "after a transpose: not contiguous\nthis is why t.view fails there"
-        },
-        "12": {
-            "name": "t.contiguous",
-            "id": 681,
-            "position_x": 30,
-            "position_y": 550,
-            "width": 82,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "13": {
-            "name": "t.is_contiguous",
-            "id": 718,
-            "position_x": 250,
-            "position_y": 550,
-            "width": 101,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "14": {
-            "name": "int",
-            "id": 755,
-            "position_x": 250,
-            "position_y": 655,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%d",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "15": {
-            "init": "comment and contiguous again after a copy",
+            "init": "comment change dtype, device, requires_grad here",
             "name": "comment",
-            "id": 792,
-            "position_x": 406,
-            "position_y": 710,
-            "width": 211,
+            "id": 533,
+            "position_x": 726,
+            "position_y": 372,
+            "width": 254,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -340,7 +214,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "and contiguous again after a copy",
+                    "value": "change dtype, device, requires_grad here",
                     "value_type": "str"
                 },
                 "1": {
@@ -349,13 +223,13 @@
                     "value_type": "str"
                 }
             },
-            "comment": "and contiguous again after a copy"
+            "comment": "change dtype, device, requires_grad here"
         },
-        "16": {
+        "9": {
             "name": "t.info",
-            "id": 829,
+            "id": 570,
             "position_x": 30,
-            "position_y": 680,
+            "position_y": 410,
             "width": 45,
             "height": 84,
             "visibility": "show_all",
@@ -363,11 +237,11 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "17": {
-            "name": "string",
-            "id": 866,
+        "10": {
+            "name": "list",
+            "id": 607,
             "position_x": 30,
-            "position_y": 835,
+            "position_y": 570,
             "width": 130,
             "height": 42,
             "visibility": "show_all",
@@ -386,11 +260,257 @@
                 }
             }
         },
+        "11": {
+            "init": "comment shape",
+            "name": "comment",
+            "id": 644,
+            "position_x": 726,
+            "position_y": 620,
+            "width": 39,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "shape",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "shape"
+        },
+        "12": {
+            "name": "string",
+            "id": 681,
+            "position_x": 190,
+            "position_y": 570,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment dtype",
+            "name": "comment",
+            "id": 718,
+            "position_x": 726,
+            "position_y": 660,
+            "width": 39,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "dtype",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "dtype"
+        },
+        "14": {
+            "name": "string",
+            "id": 755,
+            "position_x": 410,
+            "position_y": 570,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "15": {
+            "init": "comment device",
+            "name": "comment",
+            "id": 792,
+            "position_x": 726,
+            "position_y": 700,
+            "width": 45,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "device",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "device"
+        },
+        "16": {
+            "name": "string",
+            "id": 829,
+            "position_x": 570,
+            "position_y": 570,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment grad",
+            "name": "comment",
+            "id": 866,
+            "position_x": 726,
+            "position_y": 740,
+            "width": 33,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "grad",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "grad"
+        },
         "18": {
-            "name": "close",
+            "name": "help_link",
             "id": 903,
+            "position_x": 30,
+            "position_y": 670,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.numel"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 127,
+            "position_y": 670,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link tensor"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 217,
+            "position_y": 670,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.is_contiguous"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 376,
+            "position_y": 670,
+            "width": 66,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.shape"
+        },
+        "22": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1051,
+            "position_x": 726,
+            "position_y": 780,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "23": {
+            "name": "close",
+            "id": 1088,
             "position_x": 24,
-            "position_y": 907,
+            "position_y": 744,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -411,107 +531,77 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "shape"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "###input"
         },
-        "1": {
-            "source_node": 385,
+        "2": {
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "random tensor",
-            "dest_node": 422,
+            "dest_node": 496,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "2": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "result",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "in"
         },
         "3": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "4": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "tensor out",
             "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "tensor in"
+            "dest_input_name": "in"
         },
-        "5": {
+        "4": {
             "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "result",
+            "source_output_name": "shape",
             "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "6": {
-            "source_node": 533,
+        "5": {
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "tensor out",
+            "source_output_name": "dtype",
             "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "tensor in"
+            "dest_input_name": ""
         },
-        "7": {
-            "source_node": 681,
+        "6": {
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "tensor out",
-            "dest_node": 718,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "8": {
-            "source_node": 718,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "result",
+            "source_output_name": "device",
             "dest_node": 755,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
-        "9": {
-            "source_node": 681,
+        "7": {
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "tensor out",
+            "source_output_name": "grad",
             "dest_node": 829,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "10": {
-            "source_node": 829,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "shape",
-            "dest_node": 866,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""

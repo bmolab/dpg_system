@@ -1,440 +1,990 @@
 {
-    "height": 896,
-    "width": 1710,
-    "position": [
-        100,
-        100
-    ],
-    "id": 792,
     "name": "t.buffer_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.buffer_help.json",
-    "nodes": {
+    "patches": {
         "0": {
-            "name": "",
-            "id": 237,
-            "position_x": 0,
-            "position_y": 0,
-            "width": 9,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "protected": true,
-            "presentation_state": "hidden",
-            "properties": {
+            "height": 680,
+            "width": 804,
+            "position": [
+                160,
+                160
+            ],
+            "id": 1162,
+            "name": "make_bump",
+            "parent_node_uuid": 348,
+            "nodes": {
                 "0": {
                     "name": "",
-                    "value": null,
-                    "value_type": "NoneType"
-                }
-            }
-        },
-        "1": {
-            "init": "comment t.rolling_buffer - the recent past, as a tensor",
-            "name": "comment",
-            "id": 274,
-            "position_x": 24,
-            "position_y": -4,
-            "width": 586,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "t.rolling_buffer - the recent past, as a tensor",
-                    "value_type": "str"
+                    "id": 1199,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
                 },
                 "1": {
-                    "name": "font size",
-                    "value": "48",
-                    "value_type": "str"
-                }
-            },
-            "comment": "t.rolling_buffer - the recent past, as a tensor"
-        },
-        "2": {
-            "name": "text_block",
-            "id": 311,
-            "position_x": 862,
-            "position_y": 45,
-            "width": 808,
-            "height": 736,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "These collect a stream of tensors over time into one tensor.\n\nA stream gives you one value per frame, and most of what you want to ask needs\nseveral - an average, a spectrum, a trend, a picture of the recent past.\nThese hold that history.\n\nTHE NODES:\n\nt.buffer          collect samples in one of several ways\nt.rolling_buffer  keep the last N, always\n\nt.rolling_buffer IS THE ONE YOU USUALLY WANT:\nFeed it a value or a small tensor each frame and it hands back the last N of\nthem stacked together. That is what turns a stream into something the\nstatistics, filter and analysis nodes can work on - almost anything you want to\nknow about \"the recent past\" starts here.\n\nIt only reports what it has actually collected, so a freshly reset buffer is\nshort until it fills. That is deliberate: it avoids handing you a stretch of\nzeros that never happened. It does mean the buffer's length changes for the\nfirst N frames, and anything assuming a fixed size will complain during that\nwindow.\n\nt.buffer HAS SEVERAL FILL MODES:\n'update style' decides how incoming data lands - replacing the buffer wholesale,\nor filling it circularly one sample at a time. The circular mode is the rolling\nbehaviour; the replace mode is for when each message is already a complete\nbuffer and you just want to hold it.\n\n'sample to output' lets you read one position rather than the whole thing.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 frames a second, a count of 60 is one second of history, 600 is ten. Think\nin seconds rather than samples and the setting stops being arbitrary - it is\n\"how much of the past should this measurement be about\".\n\nLonger is steadier and slower to react. That is the same trade every filter\nmakes, in a different form.\n\nSYNTAX:\nt.rolling_buffer <count>\nt.buffer <count>\n\nEXAMPLE:\nt.rolling_buffer 60\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value or tensor arriving each frame.\n\nsample count:\nHow many to keep. See above - this is a time window.\n\nupdate style:\nHow incoming data fills the buffer.\n\nsample to output (t.buffer):\nRead one position instead of the whole buffer.\n\nreset:\nEmpty it and start collecting again.\n\nOUTPUTS: \n\noutput:\nThe collected tensor.\n\nRELATED:\nnp.rolling_buffer does the same for NumPy arrays.\ncapture~ fills a buffer from the audio graph at audio rate, which is the right\nnode when the stream is a signal rather than control data.",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
+                    "name": "metro",
+                    "init": "metro 60",
+                    "id": 1236,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 60.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
                 },
                 "2": {
-                    "name": "width",
-                    "value": 800,
-                    "value_type": "int"
+                    "name": "comment",
+                    "init": "comment one step every 60 ms",
+                    "id": 1273,
+                    "position_x": 200,
+                    "position_y": 50,
+                    "width": 174,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one step every 60 ms",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "one step every 60 ms"
                 },
                 "3": {
-                    "name": "height",
-                    "value": 720,
-                    "value_type": "int"
+                    "name": "counter",
+                    "init": "counter 16 1",
+                    "id": 1310,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 160,
+                    "height": 90,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "count",
+                            "value": 16,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "step",
+                            "value": 1,
+                            "value_type": "int"
+                        }
+                    }
                 },
                 "4": {
-                    "name": "text_size",
-                    "value": "30",
-                    "value_type": "str"
-                }
-            },
-            "text": "These collect a stream of tensors over time into one tensor.\n\nA stream gives you one value per frame, and most of what you want to ask needs\nseveral - an average, a spectrum, a trend, a picture of the recent past.\nThese hold that history.\n\nTHE NODES:\n\nt.buffer          collect samples in one of several ways\nt.rolling_buffer  keep the last N, always\n\nt.rolling_buffer IS THE ONE YOU USUALLY WANT:\nFeed it a value or a small tensor each frame and it hands back the last N of\nthem stacked together. That is what turns a stream into something the\nstatistics, filter and analysis nodes can work on - almost anything you want to\nknow about \"the recent past\" starts here.\n\nIt only reports what it has actually collected, so a freshly reset buffer is\nshort until it fills. That is deliberate: it avoids handing you a stretch of\nzeros that never happened. It does mean the buffer's length changes for the\nfirst N frames, and anything assuming a fixed size will complain during that\nwindow.\n\nt.buffer HAS SEVERAL FILL MODES:\n'update style' decides how incoming data lands - replacing the buffer wholesale,\nor filling it circularly one sample at a time. The circular mode is the rolling\nbehaviour; the replace mode is for when each message is already a complete\nbuffer and you just want to hold it.\n\n'sample to output' lets you read one position rather than the whole thing.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 frames a second, a count of 60 is one second of history, 600 is ten. Think\nin seconds rather than samples and the setting stops being arbitrary - it is\n\"how much of the past should this measurement be about\".\n\nLonger is steadier and slower to react. That is the same trade every filter\nmakes, in a different form.\n\nSYNTAX:\nt.rolling_buffer <count>\nt.buffer <count>\n\nEXAMPLE:\nt.rolling_buffer 60\n\nINPUTS and PARAMETERS:\n\ninput:\nThe value or tensor arriving each frame.\n\nsample count:\nHow many to keep. See above - this is a time window.\n\nupdate style:\nHow incoming data fills the buffer.\n\nsample to output (t.buffer):\nRead one position instead of the whole buffer.\n\nreset:\nEmpty it and start collecting again.\n\nOUTPUTS: \n\noutput:\nThe collected tensor.\n\nRELATED:\nnp.rolling_buffer does the same for NumPy arrays.\ncapture~ fills a buffer from the audio graph at audio rate, which is the right\nnode when the stream is a signal rather than control data."
-        },
-        "3": {
-            "name": "metro",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 52,
-            "width": 129,
-            "height": 70,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "on",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "1": {
-                    "name": "period",
-                    "value": 30.0,
-                    "value_type": "float"
-                },
-                "2": {
-                    "name": "units",
-                    "value": "milliseconds",
-                    "value_type": "str"
-                }
-            },
-            "init": "metro 30"
-        },
-        "4": {
-            "name": "random",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 132,
-            "width": 123,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "range",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "1": {
-                    "name": "bipolar",
-                    "value": false,
-                    "value_type": "bool"
-                }
-            },
-            "init": "random 1.0"
-        },
-        "5": {
-            "init": "comment one value per frame",
-            "name": "comment",
-            "id": 459,
-            "position_x": 564,
-            "position_y": 220,
-            "width": 125,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "one value per frame",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "one value per frame"
-        },
-        "6": {
-            "name": "t.rolling_buffer",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 260,
-            "width": 163,
-            "height": 98,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.rolling_buffer 64"
-        },
-        "7": {
-            "name": "text_block",
-            "id": 533,
-            "annotation": true,
-            "position_x": 564,
-            "position_y": 475,
-            "width": 268,
-            "height": 40,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "at 30ms a frame, 64 is about 2 seconds\nthink in seconds, not samples",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 260,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 24,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "at 30ms a frame, 64 is about 2 seconds\nthink in seconds, not samples"
-        },
-        "8": {
-            "name": "t.mean",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 545,
-            "width": 64,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "name": "float",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 660,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "10": {
-            "init": "comment now the stream can be averaged",
-            "name": "comment",
-            "id": 644,
-            "position_x": 564,
-            "position_y": 745,
-            "width": 193,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "now the stream can be averaged",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "now the stream can be averaged"
-        },
-        "11": {
-            "name": "heat_map",
-            "id": 681,
-            "position_x": 330,
-            "position_y": 545,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 64,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
+                    "name": "comment",
+                    "init": "comment counts 0 to 15 and round again",
+                    "id": 1347,
+                    "position_x": 230,
+                    "position_y": 140,
+                    "width": 251,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "counts 0 to 15 and round again",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "counts 0 to 15 and round again"
                 },
                 "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
+                    "name": "t",
+                    "init": "t bang int",
+                    "id": 1384,
+                    "position_x": 40,
+                    "position_y": 240,
+                    "width": 130,
+                    "height": 46,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
                 },
                 "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
+                    "name": "t.window.gaussian",
+                    "init": "t.window.gaussian",
+                    "id": 1421,
+                    "position_x": 40,
+                    "position_y": 310,
+                    "width": 230,
+                    "height": 200,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "m",
+                            "value": 16,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "std",
+                            "value": 1.5,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "sym",
+                            "value": true,
+                            "value_type": "bool"
+                        }
+                    }
                 },
                 "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "12": {
-            "init": "comment the recent past, as one tensor",
-            "name": "comment",
-            "id": 718,
-            "position_x": 564,
-            "position_y": 705,
-            "width": 193,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "the recent past, as one tensor",
-                    "value_type": "str"
+                    "name": "comment",
+                    "init": "comment a bump 16 values wide",
+                    "id": 1458,
+                    "position_x": 300,
+                    "position_y": 320,
+                    "width": 181,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a bump 16 values wide",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a bump 16 values wide"
                 },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
+                "8": {
+                    "name": "t.roll",
+                    "init": "t.roll",
+                    "id": 1495,
+                    "position_x": 300,
+                    "position_y": 380,
+                    "width": 200,
+                    "height": 100,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "shifts",
+                            "value": "0",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "dims",
+                            "value": "0",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "name": "comment",
+                    "init": "comment moved along by the count",
+                    "id": 1532,
+                    "position_x": 520,
+                    "position_y": 390,
+                    "width": 204,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "moved along by the count",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "moved along by the count"
+                },
+                "10": {
+                    "name": "out",
+                    "init": "out bump",
+                    "id": 1569,
+                    "position_x": 300,
+                    "position_y": 520,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
                 }
             },
-            "comment": "the recent past, as one tensor"
-        },
-        "13": {
-            "name": "close",
-            "id": 755,
-            "position_x": 24,
-            "position_y": 732,
-            "width": 88,
-            "height": 44,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
+            "links": {
                 "0": {
-                    "name": "close patch",
-                    "value": null,
-                    "value_type": "NoneType"
+                    "source_node": 1236,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1310,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "1": {
+                    "source_node": 1310,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "count out",
+                    "dest_node": 1384,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "2": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 1,
+                    "source_output_name": "",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "shifts"
+                },
+                "3": {
+                    "source_node": 1384,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1421,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "4": {
+                    "source_node": 1421,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "window tensor out",
+                    "dest_node": 1495,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "5": {
+                    "source_node": 1495,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "rolled tensor",
+                    "dest_node": 1569,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "bump"
                 }
             }
-        }
-    },
-    "links": {
-        "0": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 422,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "trigger"
         },
         "1": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "out",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "input"
-        },
-        "2": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "3": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 607,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "4": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "output",
-            "dest_node": 681,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
+            "height": 1528,
+            "width": 1826,
+            "position": [
+                100,
+                100
+            ],
+            "id": 1125,
+            "name": "t.buffer_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.buffer_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.buffer - store samples, send them all or one at a time",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 697,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.buffer - store samples, send them all or one at a time",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.buffer - store samples, send them all or one at a time"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 998,
+                    "position_y": 45,
+                    "width": 788,
+                    "height": 1316,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Stores what arrives in a tensor of fixed length, and either sends\nthe whole store each time something arrives or hands back one stored\nposition when asked.\n\nIt has three ways of filling and two ways of answering, which makes it\ntwo nodes in one. As a recorder of the recent past (\"input is\nmulti-channel sample\" or \"input is stream of samples\" with \"output\nbuffer on every input\") it keeps the last sample count arrivals and\nsends them oldest first - the demo at the top. As a store you read from\n(the default: \"output samples on demand by index\") it holds values and\nsends the one at the position you ask for - the demo at the bottom. For\nthe recorder job alone, t.rolling_buffer is simpler and has a reset.\n\nSYNTAX:\nt.buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nData to store. Every arrival is stored, and in \"output buffer on every\ninput\" mode the buffer is then sent.\n\nsample to output:\nA position (an int, 0 = the first slot). The value stored there is sent\n- a single number, or a list for a multi-channel buffer. A position\noutside 0 to sample count - 1 is ignored. In the two stream modes this\nis a position in the store, not in time: the slots are written round and\nround, so slot 0 is not necessarily the oldest.\n\nsample count (option):\nHow many samples are kept. At one sample per frame (60 a second) 60 is\none second of history. Changed, it takes effect at the next input in\nthe stream mode (the buffer is cleared); in multi-channel mode see the\nnote below.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number that arrives is\none sample, written into the next slot, wrapping round at the end. A\nlist of several numbers writes them all in order, so a list exactly\nsample count long fills the store in one go.\n\"input is multi-channel sample\" - each arrival (a list or 1-D tensor of\nN values) is ONE sample of N channels, stored as one row: the buffer is\nsample count rows by N columns. A different N starts a new, empty\nbuffer.\n\"buffer holds one sample of input\" - each arrival simply replaces the\nwhole buffer (a copy of it, whatever its length).\n\noutput style (option):\n\"output samples on demand by index\" (the default) - nothing is sent when\ndata arrives; send a position into \"sample to output\".\n\"output buffer on every input\" - after each arrival the whole buffer is\nsent, rotated so that the oldest sample is first and the newest last.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it.\nfloat32 (the default), float16, int64, uint8, bool, complex64 and\ncomplex128. The menu also lists the same types under their torch names\n(torch.float32, float, torch.float ...). There is no float64 here: a\nfloat64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nThe buffer (rows = samples, oldest first), or the value at one position.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along\nevery 60 ms. t.buffer 32, set to multi-channel and to output on every\ninput, keeps the last 32 of them: the heat_map has one row per sample,\noldest at the top, newest at the bottom, so the moving bump draws a\ndiagonal stripe that scrolls up as new rows arrive.\nBottom: a t.buffer 8 with the default settings. The message stores 8\nnumbers when the page opens (one list of 8 fills the 8 slots exactly);\ndrag the slider to read any slot back. Click the message after editing\nit to store new numbers.\n\nNOTE:\nIn multi-channel mode a sample count changed after data has arrived is\nnot applied to the stored buffer. Lowering it does nothing; raising it\nmakes the node print an error each time it reaches the old end. Set the\ncount with the node's argument (t.buffer 64) instead.\n\nRELATED:\nt.rolling_buffer is the always-sends recorder with a reset. np.sequence\nand np.rolling_buffer do these jobs for NumPy arrays. capture~ records\nthe audio graph.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 780,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 1300,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Stores what arrives in a tensor of fixed length, and either sends\nthe whole store each time something arrives or hands back one stored\nposition when asked.\n\nIt has three ways of filling and two ways of answering, which makes it\ntwo nodes in one. As a recorder of the recent past (\"input is\nmulti-channel sample\" or \"input is stream of samples\" with \"output\nbuffer on every input\") it keeps the last sample count arrivals and\nsends them oldest first - the demo at the top. As a store you read from\n(the default: \"output samples on demand by index\") it holds values and\nsends the one at the position you ask for - the demo at the bottom. For\nthe recorder job alone, t.rolling_buffer is simpler and has a reset.\n\nSYNTAX:\nt.buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nData to store. Every arrival is stored, and in \"output buffer on every\ninput\" mode the buffer is then sent.\n\nsample to output:\nA position (an int, 0 = the first slot). The value stored there is sent\n- a single number, or a list for a multi-channel buffer. A position\noutside 0 to sample count - 1 is ignored. In the two stream modes this\nis a position in the store, not in time: the slots are written round and\nround, so slot 0 is not necessarily the oldest.\n\nsample count (option):\nHow many samples are kept. At one sample per frame (60 a second) 60 is\none second of history. Changed, it takes effect at the next input in\nthe stream mode (the buffer is cleared); in multi-channel mode see the\nnote below.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number that arrives is\none sample, written into the next slot, wrapping round at the end. A\nlist of several numbers writes them all in order, so a list exactly\nsample count long fills the store in one go.\n\"input is multi-channel sample\" - each arrival (a list or 1-D tensor of\nN values) is ONE sample of N channels, stored as one row: the buffer is\nsample count rows by N columns. A different N starts a new, empty\nbuffer.\n\"buffer holds one sample of input\" - each arrival simply replaces the\nwhole buffer (a copy of it, whatever its length).\n\noutput style (option):\n\"output samples on demand by index\" (the default) - nothing is sent when\ndata arrives; send a position into \"sample to output\".\n\"output buffer on every input\" - after each arrival the whole buffer is\nsent, rotated so that the oldest sample is first and the newest last.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it.\nfloat32 (the default), float16, int64, uint8, bool, complex64 and\ncomplex128. The menu also lists the same types under their torch names\n(torch.float32, float, torch.float ...). There is no float64 here: a\nfloat64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nThe buffer (rows = samples, oldest first), or the value at one position.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along\nevery 60 ms. t.buffer 32, set to multi-channel and to output on every\ninput, keeps the last 32 of them: the heat_map has one row per sample,\noldest at the top, newest at the bottom, so the moving bump draws a\ndiagonal stripe that scrolls up as new rows arrive.\nBottom: a t.buffer 8 with the default settings. The message stores 8\nnumbers when the page opens (one list of 8 fills the 8 slots exactly);\ndrag the slider to read any slot back. Click the message after editing\nit to store new numbers.\n\nNOTE:\nIn multi-channel mode a sample count changed after data has arrived is\nnot applied to the stored buffer. Lowering it does nothing; raising it\nmakes the node print an error each time it reaches the old end. Set the\ncount with the node's argument (t.buffer 64) instead.\n\nRELATED:\nt.rolling_buffer is the always-sends recorder with a reset. np.sequence\nand np.rolling_buffer do these jobs for NumPy arrays. capture~ records\nthe audio graph."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 72,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_bump",
+                    "patcher id": 1162
+                },
+                "4": {
+                    "init": "comment a bump of 16 values, moving along",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 591,
+                    "position_y": 72,
+                    "width": 211,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "a bump of 16 values, moving along",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "a bump of 16 values, moving along"
+                },
+                "5": {
+                    "name": "heat_map",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 150,
+                    "width": 328,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 320,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 30,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 1,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "6": {
+                    "init": "comment one sample: the latest bump",
+                    "name": "comment",
+                    "id": 459,
+                    "position_x": 591,
+                    "position_y": 160,
+                    "width": 174,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "one sample: the latest bump",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "one sample: the latest bump"
+                },
+                "7": {
+                    "name": "t.buffer",
+                    "id": 496,
+                    "position_x": 30,
+                    "position_y": 230,
+                    "width": 163,
+                    "height": 98,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "sample count",
+                            "value": 32,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "update style",
+                            "value": "input is multi-channel sample",
+                            "value_type": "str"
+                        },
+                        "2": {
+                            "name": "output style",
+                            "value": "output buffer on every input",
+                            "value_type": "str"
+                        }
+                    },
+                    "init": "t.buffer 32"
+                },
+                "8": {
+                    "name": "heat_map",
+                    "id": 533,
+                    "position_x": 30,
+                    "position_y": 480,
+                    "width": 328,
+                    "height": 370,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 320,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 320,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 32,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "none",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "9": {
+                    "init": "comment the last 32 samples: oldest at the top, newest at the bottom",
+                    "name": "comment",
+                    "id": 570,
+                    "position_x": 591,
+                    "position_y": 490,
+                    "width": 377,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the last 32 samples: oldest at the top, newest at the bottom",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the last 32 samples: oldest at the top, newest at the bottom"
+                },
+                "10": {
+                    "name": "load_bang",
+                    "id": 607,
+                    "position_x": 30,
+                    "position_y": 850,
+                    "width": 88,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "11": {
+                    "name": "message",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 910,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text in",
+                            "value": "0.1 0.5 0.9 0.3 0.7 0.0 1.0 0.4",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "12": {
+                    "init": "comment 8 numbers, stored when the page opens",
+                    "name": "comment",
+                    "id": 681,
+                    "position_x": 591,
+                    "position_y": 918,
+                    "width": 236,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "8 numbers, stored when the page opens",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "8 numbers, stored when the page opens"
+                },
+                "13": {
+                    "name": "slider",
+                    "id": 718,
+                    "position_x": 30,
+                    "position_y": 970,
+                    "width": 210,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "min",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "1": {
+                            "name": "max",
+                            "value": 7,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "format",
+                            "value": "%d",
+                            "value_type": "str"
+                        },
+                        "3": {
+                            "name": "width",
+                            "value": 180,
+                            "value_type": "int"
+                        }
+                    },
+                    "init": "slider 7"
+                },
+                "14": {
+                    "init": "comment drag: which slot to read",
+                    "name": "comment",
+                    "id": 755,
+                    "position_x": 591,
+                    "position_y": 978,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "drag: which slot to read",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "drag: which slot to read"
+                },
+                "15": {
+                    "name": "t.buffer",
+                    "id": 792,
+                    "position_x": 30,
+                    "position_y": 1030,
+                    "width": 163,
+                    "height": 98,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "sample count",
+                            "value": 8,
+                            "value_type": "int"
+                        }
+                    },
+                    "init": "t.buffer 8"
+                },
+                "16": {
+                    "name": "float",
+                    "id": 829,
+                    "position_x": 30,
+                    "position_y": 1280,
+                    "width": 130,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "format",
+                            "value": "%.3f",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 100,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "comment the value in that slot",
+                    "name": "comment",
+                    "id": 866,
+                    "position_x": 591,
+                    "position_y": 1288,
+                    "width": 144,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the value in that slot",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the value in that slot"
+                },
+                "18": {
+                    "name": "help_link",
+                    "id": 903,
+                    "position_x": 30,
+                    "position_y": 1350,
+                    "width": 115,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.rolling_buffer"
+                },
+                "19": {
+                    "name": "help_link",
+                    "id": 940,
+                    "position_x": 197,
+                    "position_y": 1350,
+                    "width": 84,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.sequence"
+                },
+                "20": {
+                    "name": "help_link",
+                    "id": 977,
+                    "position_x": 325,
+                    "position_y": 1350,
+                    "width": 121,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.rolling_buffer"
+                },
+                "21": {
+                    "name": "help_link",
+                    "id": 1014,
+                    "position_x": 499,
+                    "position_y": 1350,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link capture~"
+                },
+                "22": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 1051,
+                    "position_x": 591,
+                    "position_y": 1350,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "23": {
+                    "name": "close",
+                    "id": 1088,
+                    "position_x": 24,
+                    "position_y": 1424,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bump",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "bump",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "2": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 533,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "3": {
+                    "source_node": 607,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "out",
+                    "dest_node": 644,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                },
+                "4": {
+                    "source_node": 644,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "message out",
+                    "dest_node": 792,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "input"
+                },
+                "5": {
+                    "source_node": 718,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "int out",
+                    "dest_node": 792,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "sample to output"
+                },
+                "6": {
+                    "source_node": 792,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 829,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": ""
+                }
+            }
         }
     }
 }

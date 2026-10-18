@@ -1,0 +1,697 @@
+{
+    "height": 1278,
+    "width": 1630,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1199,
+    "name": "t.floor_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.floor_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.floor - round down",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 254,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.floor - round down",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.floor - round down"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 822,
+            "position_y": 45,
+            "width": 768,
+            "height": 676,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Rounds every value of a tensor DOWN to the whole number at or below\nit - down the number line, so 2.7 becomes 2 and -2.3 becomes -3.\n\nUse it to find which whole-numbered cell, bin or step a value falls in:\nfloor of a position divided by a cell size is the cell's index, and that\nstays right for negative positions too. Each element is rounded on its\nown, so the output has the shape of the input.\n\nFLOOR, CEIL AND TRUNC DIFFER FOR NEGATIVES:\nFor positive values floor and trunc agree. For negative values floor\nstill goes DOWN (-2.3 becomes -3) while trunc goes towards zero (-2.3\nbecomes -2). If a value on the negative side lands one step lower than\nyou expected, that is floor doing its job - use t.trunc if you meant\n\"drop the fraction\".\n\nSYNTAX:\nt.floor\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a\nfloat32 tensor first. Every input is processed and sent - this is the\nonly inlet that makes the node send. An empty tensor sends nothing.\n\nOUTPUTS:\n\noutput:\nThe floored tensor, the same shape and type as the input - still floats,\njust with whole-number values. An integer tensor comes back unchanged.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.floor turns it into a\nstaircase that always sits ON or UNDER the ramp: each step starts where\nthe ramp crosses a whole number and stays flat until the next one. The\nmessage shows values either side of zero going down.\n\nRELATED:\nt.ceil goes up instead, t.trunc towards zero, t.round to the nearest.\nt.frac keeps the fractional part. floor does the same for numbers and\nNumPy arrays (np.floor shares its page).",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 660,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Rounds every value of a tensor DOWN to the whole number at or below\nit - down the number line, so 2.7 becomes 2 and -2.3 becomes -3.\n\nUse it to find which whole-numbered cell, bin or step a value falls in:\nfloor of a position divided by a cell size is the cell's index, and that\nstays right for negative positions too. Each element is rounded on its\nown, so the output has the shape of the input.\n\nFLOOR, CEIL AND TRUNC DIFFER FOR NEGATIVES:\nFor positive values floor and trunc agree. For negative values floor\nstill goes DOWN (-2.3 becomes -3) while trunc goes towards zero (-2.3\nbecomes -2). If a value on the negative side lands one step lower than\nyou expected, that is floor doing its job - use t.trunc if you meant\n\"drop the fraction\".\n\nSYNTAX:\nt.floor\nIt takes no arguments and has no parameters.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe tensor. A list, a NumPy array or a single number is turned into a\nfloat32 tensor first. Every input is processed and sent - this is the\nonly inlet that makes the node send. An empty tensor sends nothing.\n\nOUTPUTS:\n\noutput:\nThe floored tensor, the same shape and type as the input - still floats,\njust with whole-number values. An integer tensor comes back unchanged.\n\nREADING THE DEMO:\nThe ramp climbs straight from -2.5 to 2.5; t.floor turns it into a\nstaircase that always sits ON or UNDER the ramp: each step starts where\nthe ramp crosses a whole number and stays flat until the next one. The\nmessage shows values either side of zero going down.\n\nRELATED:\nt.ceil goes up instead, t.trunc towards zero, t.round to the nearest.\nt.frac keeps the fractional part. floor does the same for numbers and\nNumPy arrays (np.floor shares its page)."
+        },
+        "3": {
+            "name": "metro",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
+        },
+        "4": {
+            "init": "comment re-sends the ramp ten times a second",
+            "name": "comment",
+            "id": 385,
+            "position_x": 494,
+            "position_y": 72,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "re-sends the ramp ten times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "re-sends the ramp ten times a second"
+        },
+        "5": {
+            "name": "t.linspace",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": -2.5,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 2.5,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 128,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace -2.5 2.5 128"
+        },
+        "6": {
+            "name": "text_block",
+            "id": 459,
+            "annotation": true,
+            "position_x": 494,
+            "position_y": 165,
+            "width": 298,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "128 values climbing evenly from -2.5 to 2.5\ndrag start and stop to move the ramp",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 290,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "128 values climbing evenly from -2.5 to 2.5\ndrag start and stop to move the ramp"
+        },
+        "7": {
+            "name": "t.floor",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 320,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "8": {
+            "init": "comment every value, down to the whole number below",
+            "name": "comment",
+            "id": 533,
+            "position_x": 494,
+            "position_y": 335,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every value, down to the whole number below",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every value, down to the whole number below"
+        },
+        "9": {
+            "name": "pack",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 420,
+            "width": 33,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "pack 2"
+        },
+        "10": {
+            "init": "comment the result (in 1) and the ramp (in 2)",
+            "name": "comment",
+            "id": 607,
+            "position_x": 494,
+            "position_y": 440,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the result (in 1) and the ramp (in 2)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the result (in 1) and the ramp (in 2)"
+        },
+        "11": {
+            "name": "plot",
+            "id": 644,
+            "position_x": 30,
+            "position_y": 540,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "input is multi-channel sample",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 128.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -3.0,
+                    "value_type": "float"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 3.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "12": {
+            "init": "comment the ramp, and the result drawn over it",
+            "name": "comment",
+            "id": 681,
+            "position_x": 494,
+            "position_y": 730,
+            "width": 242,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the ramp, and the result drawn over it",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the ramp, and the result drawn over it"
+        },
+        "13": {
+            "name": "message",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 790,
+            "width": 330,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "2.7 2.3 -2.3 -2.7 -0.5",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                }
+            }
+        },
+        "14": {
+            "name": "load_bang",
+            "id": 755,
+            "position_x": 380,
+            "position_y": 740,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "init": "comment sent on opening; click to send again",
+            "name": "comment",
+            "id": 792,
+            "position_x": 494,
+            "position_y": 795,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "sent on opening; click to send again",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "sent on opening; click to send again"
+        },
+        "16": {
+            "name": "t.floor",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 860,
+            "width": 64,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "17": {
+            "name": "list",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 970,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment always down: 2 2 -3 -3 -1",
+            "name": "comment",
+            "id": 903,
+            "position_x": 494,
+            "position_y": 1025,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "always down: 2 2 -3 -3 -1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "always down: 2 2 -3 -3 -1"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 1100,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.ceil"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 120,
+            "position_y": 1100,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.trunc"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 217,
+            "position_y": 1100,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.round"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 314,
+            "position_y": 1100,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.frac"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 404,
+            "position_y": 1100,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link floor"
+        },
+        "24": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 494,
+            "position_y": 1144,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "25": {
+            "name": "close",
+            "id": 1162,
+            "position_x": 24,
+            "position_y": 1174,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 422,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 2"
+        },
+        "2": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in 1"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "5": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "6": {
+            "source_node": 718,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "7": {
+            "source_node": 829,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

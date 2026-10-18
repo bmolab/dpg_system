@@ -1,11 +1,11 @@
 {
-    "height": 834,
-    "width": 1583,
+    "height": 1378,
+    "width": 1608,
     "position": [
         100,
         100
     ],
-    "id": 755,
+    "id": 1495,
     "name": "t.complex_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.complex_help.json",
     "nodes": {
@@ -29,12 +29,12 @@
             }
         },
         "1": {
-            "init": "comment t.complex - two numbers travelling as one",
+            "init": "comment t.complex - a complex tensor from two real ones",
             "name": "comment",
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 512,
+            "width": 586,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -42,7 +42,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "t.complex - two numbers travelling as one",
+                    "value": "t.complex - a complex tensor from two real ones",
                     "value_type": "str"
                 },
                 "1": {
@@ -51,22 +51,22 @@
                     "value_type": "str"
                 }
             },
-            "comment": "t.complex - two numbers travelling as one"
+            "comment": "t.complex - a complex tensor from two real ones"
         },
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 745,
+            "position_x": 800,
             "position_y": 45,
-            "width": 798,
-            "height": 656,
+            "width": 768,
+            "height": 811,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "These three take complex tensors apart and put them back together.\n\nA complex number is two numbers travelling as one - a real part and an \nimaginary part, or equivalently a magnitude and an angle. You meet them \nwherever something has both a size and a phase, which in practice means \nanywhere a Fourier transform has been.\n\nTHE NODES:\n\nt.complex   build a complex tensor from a real part and an imaginary part\nt.real      take the real part out\nt.imag      take the imaginary part out\n\nWHERE THIS COMES UP:\nt.fft returns complex output, and most of what you want to do next needs it \nsplit. The magnitude - how much of each frequency is present - is the usual \nanswer, and the phase is where the timing lives. Splitting with these, working \non the parts, and rebuilding with t.complex is how you modify a spectrum and \ntransform it back.\n\nMAGNITUDE IS NOT t.real:\nThe real part of a complex number is not its size. A component can have a large \nmagnitude and a real part near zero, if its phase happens to sit near a quarter \nturn. If what you want is \"how much of this frequency is there\", that is the \nmagnitude - the length of the two parts taken together - not the real part \nalone. Taking t.real and calling it the spectrum is a common and quiet mistake.\n\nSYNTAX:\nt.complex\nt.real\nt.imag\n\nEXAMPLE:\nt.real\n\nINPUTS and PARAMETERS:\n\nreal tensor in / imag tensor in (t.complex):\nThe two parts. They must be the same shape.\n\ntensor in (t.real, t.imag):\nThe complex tensor to split.\n\nOUTPUTS: \n\ncomplex tensor out:\nThe assembled complex tensor.\n\nout:\nThe chosen part, as an ordinary real tensor.\n\nRELATED:\nSee the t.fft help patch for where complex tensors come from.",
+                    "value": "Builds a complex tensor from two real tensors: one holding the real\nparts, one the imaginary parts.\n\nA complex number is two numbers travelling as one - a real part and an\nimaginary part, which you can also read as a point on a plane, or as a\nsize and an angle. You meet them wherever something has both an amount\nand a phase, which in practice means anywhere near a Fourier transform:\nt.fft and t.rfft send complex tensors, and t.ifft and t.irfft take them\nback. Splitting a spectrum with t.real and t.imag, working on the parts,\nand rebuilding it here is how you edit one.\n\nSYNTAX:\nt.complex\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\nreal tensor in:\nThe real parts (a list or number is turned into a float32 tensor). It\nmust be a float tensor - float16, float32 or float64.\n\nimag tensor in:\nThe imaginary parts. It is converted to the real tensor's type.\n\nBOTH inlets make the node send, so when both change it sends twice -\nonce with the old other half. Send the imaginary part first and the\nsecond send is the right one. It sends nothing until both have arrived,\nand nothing at all if the two shapes differ: there is no broadcasting,\nso a single number cannot stand for every imaginary part.\n\nOUTPUTS:\n\ncomplex tensor out:\nThe complex tensor, the same shape as the inputs: complex64 from\nfloat32 parts, complex128 from float64.\n\nREADING THE DEMO:\nTop: cos and sin of one turning angle go in as the real and imaginary\nparts, so the complex number goes round a circle once every 4 seconds.\nThe trigger sends the angle to sin first, so the imaginary part is\nalready stored when the real part arrives. The list shows the number as\nreal+imaginary j; abs gives its size, which stays 1.0 however it turns.\n\nBottom: click the button for four numbers at once. The imaginary parts\ngo first. 3 and 4 make 3+4j, whose size is 5 - the long side of a 3, 4,\n5 triangle.\n\nRELATED:\nt.real and t.imag take the two parts out again. abs gives the size of\neach complex value. t.fft and t.rfft are where complex tensors usually\ncome from.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 790,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 640,
+                    "value": 795,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,53 +90,59 @@
                     "value_type": "str"
                 }
             },
-            "text": "These three take complex tensors apart and put them back together.\n\nA complex number is two numbers travelling as one - a real part and an \nimaginary part, or equivalently a magnitude and an angle. You meet them \nwherever something has both a size and a phase, which in practice means \nanywhere a Fourier transform has been.\n\nTHE NODES:\n\nt.complex   build a complex tensor from a real part and an imaginary part\nt.real      take the real part out\nt.imag      take the imaginary part out\n\nWHERE THIS COMES UP:\nt.fft returns complex output, and most of what you want to do next needs it \nsplit. The magnitude - how much of each frequency is present - is the usual \nanswer, and the phase is where the timing lives. Splitting with these, working \non the parts, and rebuilding with t.complex is how you modify a spectrum and \ntransform it back.\n\nMAGNITUDE IS NOT t.real:\nThe real part of a complex number is not its size. A component can have a large \nmagnitude and a real part near zero, if its phase happens to sit near a quarter \nturn. If what you want is \"how much of this frequency is there\", that is the \nmagnitude - the length of the two parts taken together - not the real part \nalone. Taking t.real and calling it the spectrum is a common and quiet mistake.\n\nSYNTAX:\nt.complex\nt.real\nt.imag\n\nEXAMPLE:\nt.real\n\nINPUTS and PARAMETERS:\n\nreal tensor in / imag tensor in (t.complex):\nThe two parts. They must be the same shape.\n\ntensor in (t.real, t.imag):\nThe complex tensor to split.\n\nOUTPUTS: \n\ncomplex tensor out:\nThe assembled complex tensor.\n\nout:\nThe chosen part, as an ordinary real tensor.\n\nRELATED:\nSee the t.fft help patch for where complex tensors come from."
+            "text": "Builds a complex tensor from two real tensors: one holding the real\nparts, one the imaginary parts.\n\nA complex number is two numbers travelling as one - a real part and an\nimaginary part, which you can also read as a point on a plane, or as a\nsize and an angle. You meet them wherever something has both an amount\nand a phase, which in practice means anywhere near a Fourier transform:\nt.fft and t.rfft send complex tensors, and t.ifft and t.irfft take them\nback. Splitting a spectrum with t.real and t.imag, working on the parts,\nand rebuilding it here is how you edit one.\n\nSYNTAX:\nt.complex\nIt takes no arguments.\n\nINPUTS and PARAMETERS:\n\nreal tensor in:\nThe real parts (a list or number is turned into a float32 tensor). It\nmust be a float tensor - float16, float32 or float64.\n\nimag tensor in:\nThe imaginary parts. It is converted to the real tensor's type.\n\nBOTH inlets make the node send, so when both change it sends twice -\nonce with the old other half. Send the imaginary part first and the\nsecond send is the right one. It sends nothing until both have arrived,\nand nothing at all if the two shapes differ: there is no broadcasting,\nso a single number cannot stand for every imaginary part.\n\nOUTPUTS:\n\ncomplex tensor out:\nThe complex tensor, the same shape as the inputs: complex64 from\nfloat32 parts, complex128 from float64.\n\nREADING THE DEMO:\nTop: cos and sin of one turning angle go in as the real and imaginary\nparts, so the complex number goes round a circle once every 4 seconds.\nThe trigger sends the angle to sin first, so the imaginary part is\nalready stored when the real part arrives. The list shows the number as\nreal+imaginary j; abs gives its size, which stays 1.0 however it turns.\n\nBottom: click the button for four numbers at once. The imaginary parts\ngo first. 3 and 4 make 3+4j, whose size is 5 - the long side of a 3, 4,\n5 triangle.\n\nRELATED:\nt.real and t.imag take the two parts out again. abs gives the size of\neach complex value. t.fft and t.rfft are where complex tensors usually\ncome from."
         },
         "3": {
-            "name": "button",
+            "name": "signal",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 4.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "shape",
+                    "value": "saw",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "range",
+                    "value": 360.0,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "bipolar",
+                    "value": false,
+                    "value_type": "bool"
+                },
+                "5": {
+                    "name": "vector size",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            },
+            "init": "signal 4.0 saw"
         },
         "4": {
-            "name": "t.rand",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 120,
-            "width": 163,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.rand 8"
-        },
-        "5": {
-            "name": "t.rand",
-            "id": 422,
-            "position_x": 250,
-            "position_y": 120,
-            "width": 163,
-            "height": 126,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {},
-            "init": "t.rand 8"
-        },
-        "6": {
-            "init": "comment a real part and an imaginary part",
+            "init": "comment an angle, 0 to 360 degrees every 4 s",
             "name": "comment",
-            "id": 459,
-            "position_x": 504,
-            "position_y": 310,
-            "width": 211,
+            "id": 385,
+            "position_x": 491,
+            "position_y": 72,
+            "width": 230,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -144,7 +150,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "a real part and an imaginary part",
+                    "value": "an angle, 0 to 360 degrees every 4 s",
                     "value_type": "str"
                 },
                 "1": {
@@ -153,13 +159,168 @@
                     "value_type": "str"
                 }
             },
-            "comment": "a real part and an imaginary part"
+            "comment": "an angle, 0 to 360 degrees every 4 s"
+        },
+        "5": {
+            "name": "t",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 160,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t float float"
+        },
+        "6": {
+            "init": "comment right first: the imaginary part goes first",
+            "name": "comment",
+            "id": 459,
+            "position_x": 491,
+            "position_y": 165,
+            "width": 267,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "right first: the imaginary part goes first",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "right first: the imaginary part goes first"
         },
         "7": {
-            "name": "t.complex",
+            "name": "cos",
             "id": 496,
             "position_x": 30,
-            "position_y": 350,
+            "position_y": 225,
+            "width": 68,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "8": {
+            "name": "sin",
+            "id": 533,
+            "position_x": 220,
+            "position_y": 225,
+            "width": 68,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": true,
+                    "value_type": "bool"
+                }
+            }
+        },
+        "9": {
+            "name": "float",
+            "id": 570,
+            "position_x": 30,
+            "position_y": 310,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "10": {
+            "name": "float",
+            "id": 607,
+            "position_x": 220,
+            "position_y": 310,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment real part (cos) and imaginary part (sin)",
+            "name": "comment",
+            "id": 644,
+            "position_x": 491,
+            "position_y": 362,
+            "width": 254,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "real part (cos) and imaginary part (sin)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "real part (cos) and imaginary part (sin)"
+        },
+        "12": {
+            "name": "t.complex",
+            "id": 681,
+            "position_x": 30,
+            "position_y": 400,
             "width": 119,
             "height": 56,
             "visibility": "show_all",
@@ -167,143 +328,36 @@
             "presentation_state": "show_all",
             "properties": {}
         },
-        "8": {
-            "name": "t.real",
-            "id": 533,
+        "13": {
+            "name": "list",
+            "id": 718,
             "position_x": 30,
-            "position_y": 460,
-            "width": 76,
+            "position_y": 510,
+            "width": 130,
             "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "9": {
-            "name": "t.imag",
-            "id": 570,
-            "position_x": 250,
-            "position_y": 460,
-            "width": 107,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "10": {
-            "name": "heat_map",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 550,
-            "width": 208,
-            "height": 150,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "color",
-                    "value": "viridis",
+                    "name": "text in",
+                    "value": "",
                     "value_type": "str"
                 },
                 "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 8,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
+                    "name": "font size",
+                    "value": "24",
                     "value_type": "str"
                 }
             }
         },
-        "11": {
-            "name": "heat_map",
-            "id": 644,
-            "position_x": 270,
-            "position_y": 550,
-            "width": 208,
-            "height": 150,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 200,
-                    "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 100,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 8,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 1.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.2f",
-                    "value_type": "str"
-                }
-            }
-        },
-        "12": {
-            "init": "comment split apart again, unchanged",
+        "14": {
+            "init": "comment the complex number, going round",
             "name": "comment",
-            "id": 681,
-            "position_x": 504,
-            "position_y": 710,
-            "width": 181,
+            "id": 755,
+            "position_x": 491,
+            "position_y": 562,
+            "width": 199,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -311,7 +365,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "split apart again, unchanged",
+                    "value": "the complex number, going round",
                     "value_type": "str"
                 },
                 "1": {
@@ -320,13 +374,341 @@
                     "value_type": "str"
                 }
             },
-            "comment": "split apart again, unchanged"
+            "comment": "the complex number, going round"
         },
-        "13": {
+        "15": {
+            "name": "abs",
+            "id": 792,
+            "position_x": 330,
+            "position_y": 510,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "16": {
+            "name": "list",
+            "id": 829,
+            "position_x": 330,
+            "position_y": 600,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment its size: always 1",
+            "name": "comment",
+            "id": 866,
+            "position_x": 491,
+            "position_y": 652,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "its size: always 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "its size: always 1"
+        },
+        "18": {
+            "name": "button",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 710,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "19": {
+            "name": "message",
+            "id": 940,
+            "position_x": 330,
+            "position_y": 770,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "4 1 0 -2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "20": {
+            "name": "message",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 770,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "3 0 -1 2",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "21": {
+            "init": "comment real parts, and imaginary parts (sent first)",
+            "name": "comment",
+            "id": 1014,
+            "position_x": 491,
+            "position_y": 822,
+            "width": 279,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "real parts, and imaginary parts (sent first)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "real parts, and imaginary parts (sent first)"
+        },
+        "22": {
+            "name": "t.complex",
+            "id": 1051,
+            "position_x": 30,
+            "position_y": 860,
+            "width": 119,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "23": {
+            "name": "list",
+            "id": 1088,
+            "position_x": 30,
+            "position_y": 970,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "24": {
+            "name": "abs",
+            "id": 1125,
+            "position_x": 420,
+            "position_y": 970,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "25": {
+            "name": "list",
+            "id": 1162,
+            "position_x": 330,
+            "position_y": 1060,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "26": {
+            "init": "comment 3+4j 1j -1 2-2j, and their sizes: 5 1 1 2.83",
+            "name": "comment",
+            "id": 1199,
+            "position_x": 491,
+            "position_y": 1120,
+            "width": 279,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "3+4j 1j -1 2-2j, and their sizes: 5 1 1 2.83",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "3+4j 1j -1 2-2j, and their sizes: 5 1 1 2.83"
+        },
+        "27": {
+            "name": "help_link",
+            "id": 1236,
+            "position_x": 30,
+            "position_y": 1200,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.real"
+        },
+        "28": {
+            "name": "help_link",
+            "id": 1273,
+            "position_x": 120,
+            "position_y": 1200,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.imag"
+        },
+        "29": {
+            "name": "help_link",
+            "id": 1310,
+            "position_x": 210,
+            "position_y": 1200,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.fft"
+        },
+        "30": {
+            "name": "help_link",
+            "id": 1347,
+            "position_x": 292,
+            "position_y": 1200,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rfft"
+        },
+        "31": {
+            "name": "help_link",
+            "id": 1384,
+            "position_x": 382,
+            "position_y": 1200,
+            "width": 35,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link abs"
+        },
+        "32": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1421,
+            "position_x": 491,
+            "position_y": 1244,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "33": {
             "name": "close",
-            "id": 718,
+            "id": 1458,
             "position_x": 24,
-            "position_y": 730,
+            "position_y": 1274,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -347,80 +729,170 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "###input"
-        },
-        "1": {
-            "source_node": 348,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
             "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "###input"
+            "dest_input_name": ""
         },
-        "2": {
-            "source_node": 385,
+        "1": {
+            "source_node": 422,
             "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random tensor",
-            "dest_node": 496,
+            "source_output_index": 1,
+            "source_output_name": "float",
+            "dest_node": 533,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "real tensor in"
+            "dest_input_name": "in"
         },
-        "3": {
+        "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "random tensor",
+            "source_output_name": "float",
             "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "imag tensor in"
         },
-        "4": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "complex tensor out",
-            "dest_node": 533,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
-        "5": {
-            "source_node": 496,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "complex tensor out",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "tensor in"
-        },
         "6": {
-            "source_node": 533,
+            "source_node": 496,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 607,
+            "source_output_name": "out",
+            "dest_node": 681,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "y"
+            "dest_input_name": "real tensor in"
         },
         "7": {
-            "source_node": 570,
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "complex tensor out",
+            "dest_node": 718,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "complex tensor out",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "9": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "10": {
+            "source_node": 903,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 644,
+            "dest_node": 940,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "y"
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 903,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 977,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "12": {
+            "source_node": 940,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 1051,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "imag tensor in"
+        },
+        "13": {
+            "source_node": 977,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 1051,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "real tensor in"
+        },
+        "14": {
+            "source_node": 1051,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "complex tensor out",
+            "dest_node": 1088,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "15": {
+            "source_node": 1051,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "complex tensor out",
+            "dest_node": 1125,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "16": {
+            "source_node": 1125,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 1162,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
         }
     }
 }

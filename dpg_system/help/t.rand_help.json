@@ -1,0 +1,727 @@
+{
+    "height": 1021,
+    "width": 1803,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1199,
+    "name": "t.rand_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.rand_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.rand - a tensor of random numbers",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 439,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.rand - a tensor of random numbers",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.rand - a tensor of random numbers"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 995,
+            "position_y": 45,
+            "width": 768,
+            "height": 916,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Makes a tensor of random numbers, spread evenly between min and max.\n\nEach click gives fresh numbers. Use it to test a chain with data that\nchanges, as noise to mix into a signal, for random positions or colours,\nor wherever a starting point should be different every time.\n\nThe numbers are UNIFORM: every value between min and max is equally\nlikely, so the picture has no structure at all. For randomness with a\nshape (a bell curve, say) see the t.dist nodes, such as t.dist.normal.\n\nSYNTAX:\nt.rand <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension. t.rand 12 12 is a 12 by 12 tensor;\nt.rand 100 a row of 100. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.rand 12 12\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a new tensor - there is no need for a separate button\nnode. Only this inlet makes the node send.\n\nshape (text):\nThe dimensions, typed as numbers separated by spaces or commas. Editing\nit does not send; the next click uses it.\n\nmin / max (drag floats, also inlets):\nThe range. Setting them does NOT make a new tensor by itself - the next\nclick uses them. In the demo each float goes through 't bang float',\nwhich passes the number to the inlet first and THEN clicks the node, so\ndragging it gives you new noise at once.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.rand 12 12 int64.\nThe dtype changes what the random numbers are:\nfloat32 and float16: any value from min up to, but never\nexactly, max.\nint64: whole numbers from min up to max - 1 - max itself never appears.\nChoosing int64 while max is 1 changes max to 32767.\nuint8: whole numbers. Choosing it raises max to 255 and a negative min\nto 0 - and since max is left out, the largest value is 254.\nbool: true or false at random; min and max are ignored.\n\nOUTPUTS:\n\nrandom tensor:\nThe new tensor, in the shape given.\n\nREADING THE DEMO:\nload_bang makes the first tensor when the page opens; click the button\non t.rand itself for another. The heat_map colours 0 dark purple and 1\nyellow. Drag min and max towards each other and the noise flattens to a\nsingle colour; push max past 1 and cells saturate yellow. t.min and\nt.max report the smallest and largest value in each new tensor - always\ninside min and max.\n\nRELATED:\nnp.rand is the NumPy version. t.rand_like takes its shape from another\ntensor. t.dist.uniform does the same job as a distribution node, and\nt.dist.normal gives a bell curve instead. t.zeros makes a tensor of one\nfixed value.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 900,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Makes a tensor of random numbers, spread evenly between min and max.\n\nEach click gives fresh numbers. Use it to test a chain with data that\nchanges, as noise to mix into a signal, for random positions or colours,\nor wherever a starting point should be different every time.\n\nThe numbers are UNIFORM: every value between min and max is equally\nlikely, so the picture has no structure at all. For randomness with a\nshape (a bell curve, say) see the t.dist nodes, such as t.dist.normal.\n\nSYNTAX:\nt.rand <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension. t.rand 12 12 is a 12 by 12 tensor;\nt.rand 100 a row of 100. With no numbers you get a 1-element tensor.\n\nEXAMPLE:\nt.rand 12 12\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, for a new tensor - there is no need for a separate button\nnode. Only this inlet makes the node send.\n\nshape (text):\nThe dimensions, typed as numbers separated by spaces or commas. Editing\nit does not send; the next click uses it.\n\nmin / max (drag floats, also inlets):\nThe range. Setting them does NOT make a new tensor by itself - the next\nclick uses them. In the demo each float goes through 't bang float',\nwhich passes the number to the inlet first and THEN clicks the node, so\ndragging it gives you new noise at once.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.rand 12 12 int64.\nThe dtype changes what the random numbers are:\nfloat32 and float16: any value from min up to, but never\nexactly, max.\nint64: whole numbers from min up to max - 1 - max itself never appears.\nChoosing int64 while max is 1 changes max to 32767.\nuint8: whole numbers. Choosing it raises max to 255 and a negative min\nto 0 - and since max is left out, the largest value is 254.\nbool: true or false at random; min and max are ignored.\n\nOUTPUTS:\n\nrandom tensor:\nThe new tensor, in the shape given.\n\nREADING THE DEMO:\nload_bang makes the first tensor when the page opens; click the button\non t.rand itself for another. The heat_map colours 0 dark purple and 1\nyellow. Drag min and max towards each other and the noise flattens to a\nsingle colour; push max past 1 and cells saturate yellow. t.min and\nt.max report the smallest and largest value in each new tensor - always\ninside min and max.\n\nRELATED:\nnp.rand is the NumPy version. t.rand_like takes its shape from another\ntensor. t.dist.uniform does the same job as a distribution node, and\nt.dist.normal gives a bell curve instead. t.zeros makes a tensor of one\nfixed value."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "init": "comment fills the heat_map once when the page opens",
+            "name": "comment",
+            "id": 385,
+            "position_x": 636,
+            "position_y": 70,
+            "width": 273,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fills the heat_map once when the page opens",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fills the heat_map once when the page opens"
+        },
+        "5": {
+            "name": "float",
+            "id": 422,
+            "position_x": 270,
+            "position_y": 62,
+            "width": 110,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 80,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "",
+                    "value": 0.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "6": {
+            "name": "float",
+            "id": 459,
+            "position_x": 400,
+            "position_y": 62,
+            "width": 110,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 80,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "7": {
+            "name": "t",
+            "id": 496,
+            "position_x": 270,
+            "position_y": 120,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t bang float"
+        },
+        "8": {
+            "name": "t",
+            "id": 533,
+            "position_x": 400,
+            "position_y": 120,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t bang float"
+        },
+        "9": {
+            "init": "comment drag min and max: new noise as you drag",
+            "name": "comment",
+            "id": 570,
+            "position_x": 636,
+            "position_y": 125,
+            "width": 248,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag min and max: new noise as you drag",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag min and max: new noise as you drag"
+        },
+        "10": {
+            "name": "t.rand",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 190,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            },
+            "init": "t.rand 12 12"
+        },
+        "11": {
+            "name": "text_block",
+            "id": 644,
+            "annotation": true,
+            "position_x": 636,
+            "position_y": 195,
+            "width": 329,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "click t.rand's own button (top left of the node)\nfor a fresh tensor",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 321,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "click t.rand's own button (top left of the node)\nfor a fresh tensor"
+        },
+        "12": {
+            "name": "heat_map",
+            "id": 681,
+            "position_x": 270,
+            "position_y": 190,
+            "width": 248,
+            "height": 290,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 240,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "none",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment a 12 x 12 tensor: 0 purple, 1 yellow",
+            "name": "comment",
+            "id": 718,
+            "position_x": 636,
+            "position_y": 245,
+            "width": 230,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "a 12 x 12 tensor: 0 purple, 1 yellow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "a 12 x 12 tensor: 0 purple, 1 yellow"
+        },
+        "14": {
+            "name": "t.min",
+            "id": 755,
+            "position_x": 30,
+            "position_y": 490,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "15": {
+            "name": "t.max",
+            "id": 792,
+            "position_x": 270,
+            "position_y": 490,
+            "width": 70,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "16": {
+            "name": "float",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 580,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "name": "float",
+            "id": 866,
+            "position_x": 270,
+            "position_y": 580,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 100,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "18": {
+            "init": "comment smallest and largest: inside min..max",
+            "name": "comment",
+            "id": 903,
+            "position_x": 636,
+            "position_y": 585,
+            "width": 236,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "smallest and largest: inside min..max",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "smallest and largest: inside min..max"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.rand"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 127,
+            "position_y": 660,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.rand_like"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 255,
+            "position_y": 660,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.uniform"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 406,
+            "position_y": 660,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.dist.normal"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 550,
+            "position_y": 660,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.zeros"
+        },
+        "24": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 1125,
+            "position_x": 636,
+            "position_y": 660,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "25": {
+            "name": "close",
+            "id": 1162,
+            "position_x": 24,
+            "position_y": 734,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "3": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "min"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "5": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "max"
+        },
+        "6": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "7": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "8": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "9": {
+            "source_node": 607,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random tensor",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "10": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "min tensor",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "11": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "max tensor",
+            "dest_node": 866,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

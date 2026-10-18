@@ -1,11 +1,11 @@
 {
-    "height": 312,
-    "width": 650,
+    "height": 624,
+    "width": 737,
     "position": [
         100,
         100
     ],
-    "id": 870,
+    "id": 1240,
     "name": "nodes_torch_activation",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_torch_activation.json",
     "nodes": {
@@ -136,21 +136,21 @@
             "presentation_state": "show_all"
         },
         "5": {
-            "init": "help_link nodes_torch_activation_activations Activations",
+            "init": "help_link nodes_torch_activation_fixed_curves Fixed curves",
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 144,
+            "width": 200,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Activations",
+                    "name": "Fixed curves",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 128,
+                    "value": 184,
                     "value_type": "int"
                 }
             },
@@ -162,78 +162,14 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 182,
+            "position_x": 238,
             "position_y": 154,
-            "width": 342,
-            "height": 28,
-            "properties": {
-                "0": {
-                    "name": "block",
-                    "value": "fixed activations, adjustable activations, softmax",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "lock",
-                    "value": true,
-                    "value_type": "bool"
-                },
-                "2": {
-                    "name": "width",
-                    "value": 334,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "height",
-                    "value": 12,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "text_size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "text": "fixed activations, adjustable activations, softmax",
-            "id": 759,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "7": {
-            "init": "help_link nodes_torch_activation_special_functions Special functions",
-            "name": "help_link",
-            "position_x": 24,
-            "position_y": 202,
-            "width": 144,
-            "height": 44,
-            "properties": {
-                "0": {
-                    "name": "Special functions",
-                    "value": null,
-                    "value_type": "NoneType"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 128,
-                    "value_type": "int"
-                }
-            },
-            "id": 796,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all"
-        },
-        "8": {
-            "name": "text_block",
-            "annotation": true,
-            "position_x": 182,
-            "position_y": 206,
             "width": 428,
-            "height": 40,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.special functions, t.special gamma, t.special xlogy / xlog1py,\nt.special.logits, t.special.zeta",
+                    "value": "t.nn.relu, t.nn.relu6, t.nn.sigmoid, t.nn.tanh, t.nn.logsigmoid,\nt.nn.softsign, t.nn.gelu, t.nn.silu, t.nn.mish, t.nn.selu,\nt.nn.hardsigmoid, t.nn.hardswish, t.nn.tanhshrink, t.nn.glu",
                     "value_type": "str"
                 },
                 "1": {
@@ -248,6 +184,134 @@
                 },
                 "3": {
                     "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.nn.relu, t.nn.relu6, t.nn.sigmoid, t.nn.tanh, t.nn.logsigmoid,\nt.nn.softsign, t.nn.gelu, t.nn.silu, t.nn.mish, t.nn.selu,\nt.nn.hardsigmoid, t.nn.hardswish, t.nn.tanhshrink, t.nn.glu",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link nodes_torch_activation_adjustable_curves Adjustable curves",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 210,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Adjustable curves",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 214,
+            "width": 391,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.nn.leaky_relu, t.nn.elu, t.nn.celu, t.nn.hardshrink,\nt.nn.softshrink, t.nn.hardtanh, t.nn.rrelu, t.nn.softplus,\nt.nn.Threshold",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 383,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.nn.leaky_relu, t.nn.elu, t.nn.celu, t.nn.hardshrink,\nt.nn.softshrink, t.nn.hardtanh, t.nn.rrelu, t.nn.softplus,\nt.nn.Threshold",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link nodes_torch_activation_softmax Softmax",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 270,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Softmax",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 274,
+            "width": 434,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.nn.softmax / t.special.softmax, t.nn.softmin, t.nn.log_softmax,\nt.nn.gumbel_softmax",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 426,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
                     "value": 24,
                     "value_type": "int"
                 },
@@ -257,8 +321,264 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.special functions, t.special gamma, t.special xlogy / xlog1py,\nt.special.logits, t.special.zeta",
-            "id": 833,
+            "text": "t.nn.softmax / t.special.softmax, t.nn.softmin, t.nn.log_softmax,\nt.nn.gumbel_softmax",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link nodes_torch_activation_error_and_normal_functions Error and normal functions",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 322,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Error and normal functions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 326,
+            "width": 434,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.special.erf, t.special.erfc, t.special.erfcx, t.special.erfinv,\nt.special.ndtr, t.special.ndtri, t.special.logndtr",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 426,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.special.erf, t.special.erfc, t.special.erfcx, t.special.erfinv,\nt.special.ndtr, t.special.ndtri, t.special.logndtr",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link nodes_torch_activation_gamma_and_zeta_functions Gamma and zeta functions",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 374,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Gamma and zeta functions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 378,
+            "width": 428,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.special.gammaln, t.special.digamma, t.special.polygamma,\nt.special.multigammaln, t.special.gammainc, t.special.gammaincc,\nt.special.zeta",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 420,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.special.gammaln, t.special.digamma, t.special.polygamma,\nt.special.multigammaln, t.special.gammainc, t.special.gammaincc,\nt.special.zeta",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link nodes_torch_activation_bessel_and_airy_functions Bessel and Airy functions",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 434,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Bessel and Airy functions",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 438,
+            "width": 397,
+            "height": 64,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.special.bessel_j0, t.special.bessel_j1,\nt.special.spherical_bessel_j0, t.special.i0, t.special.i0e,\nt.special.i1, t.special.i1e, scaled_modified_bessel_k0,\nt.special.airy_ai",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 389,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 48,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.special.bessel_j0, t.special.bessel_j1,\nt.special.spherical_bessel_j0, t.special.i0, t.special.i0e,\nt.special.i1, t.special.i1e, scaled_modified_bessel_k0,\nt.special.airy_ai",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link nodes_torch_activation_logs_and_exponentials Logs and exponentials",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 506,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Logs and exponentials",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 510,
+            "width": 459,
+            "height": 52,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "t.special.exp2, t.special.expm1, t.special.log1p, t.special.expit,\nt.special.logits, t.special.xlogy, t.special.xlog1py, t.special.entr,\nt.special.sinc",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 451,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 36,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "t.special.exp2, t.special.expm1, t.special.log1p, t.special.expit,\nt.special.logits, t.special.xlogy, t.special.xlog1py, t.special.entr,\nt.special.sinc",
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

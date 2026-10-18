@@ -3,21 +3,21 @@
     "width": 1593,
     "position": [
         100,
-        100
+        67
     ],
-    "id": 755,
+    "id": 2749,
     "name": "np.rolling_buffer_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.rolling_buffer_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 237,
+            "id": 2777,
+            "sid": 1,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
+            "visibility": "hidden",
+            "draggable": false,
             "protected": true,
             "presentation_state": "hidden",
             "properties": {
@@ -31,7 +31,8 @@
         "1": {
             "init": "comment np.rolling_buffer - the recent past, as an array",
             "name": "comment",
-            "id": 274,
+            "id": 2795,
+            "sid": 2,
             "position_x": 24,
             "position_y": -4,
             "width": 598,
@@ -43,19 +44,20 @@
                 "0": {
                     "name": "text",
                     "value": "np.rolling_buffer - the recent past, as an array",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "48",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "np.rolling_buffer - the recent past, as an array"
         },
         "2": {
             "name": "text_block",
-            "id": 311,
+            "id": 2806,
+            "sid": 3,
             "position_x": 755,
             "position_y": 45,
             "width": 798,
@@ -67,7 +69,7 @@
                 "0": {
                     "name": "block",
                     "value": "np.rolling_buffer keeps the last N things that arrived, as one array.\n\nIt works across TIME rather than within an array. Feed it a value or a small \narray on every frame and it hands back the most recent N of them stacked \ntogether - which is how a stream becomes something you can take a mean of, \nplot as a history, or run a filter across. Almost anything you want to know \nabout \"the recent past\" starts here.\n\nNEWEST FIRST:\nRow 0 of the output is the sample that just arrived; the last row is the \noldest still kept. A plot of it scrolls from left to right, with now at the \nleft edge.\n\nTHE SHAPE:\nThe arguments are the buffer's shape. The first is how many samples to keep; \nany after it are the shape of each sample. np.rolling_buffer 60 keeps 60 \nsingle numbers; np.rolling_buffer 60 3 keeps 60 three-value samples, as a 60 \nby 3 array. With no arguments it keeps 16 single numbers.\n\nA sample of the wrong shape is ignored without complaint - if nothing comes \nout, check what is going in. A sample with one extra leading axis of size 1 \n(a 1 by 3 array into a buffer of threes) is accepted.\n\nSYNTAX:\nnp.rolling_buffer <length> <sample shape...>\n\nEXAMPLE:\nnp.rolling_buffer 60 3\n\nINPUTS and PARAMETERS:\n\ninput:\nThe latest sample. Receiving it adds it to the buffer and sends the buffer.\n\nreset:\nEmpties the buffer and sends the empty array, so displays clear at once.\n\nOUTPUTS: \n\nout:\nThe buffer's contents, newest first. Each send is a fresh array, so \nanything downstream that keeps one sees it stay as it was.\n\nIT GROWS BEFORE IT ROLLS:\nA rolling buffer only reports what it has actually collected, so a freshly \nreset one is short until it fills: 1 row, then 2, up to N. That is \ndeliberate - it avoids feeding you a stretch of zeros that never happened - \nbut it does mean the output's length changes for the first N samples.\n\nRELATED:\nnp.cumsum and np.diff run along the buffer once you have one.",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "lock",
@@ -87,14 +89,16 @@
                 "4": {
                     "name": "text_size",
                     "value": "30",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "text": "np.rolling_buffer keeps the last N things that arrived, as one array.\n\nIt works across TIME rather than within an array. Feed it a value or a small \narray on every frame and it hands back the most recent N of them stacked \ntogether - which is how a stream becomes something you can take a mean of, \nplot as a history, or run a filter across. Almost anything you want to know \nabout \"the recent past\" starts here.\n\nNEWEST FIRST:\nRow 0 of the output is the sample that just arrived; the last row is the \noldest still kept. A plot of it scrolls from left to right, with now at the \nleft edge.\n\nTHE SHAPE:\nThe arguments are the buffer's shape. The first is how many samples to keep; \nany after it are the shape of each sample. np.rolling_buffer 60 keeps 60 \nsingle numbers; np.rolling_buffer 60 3 keeps 60 three-value samples, as a 60 \nby 3 array. With no arguments it keeps 16 single numbers.\n\nA sample of the wrong shape is ignored without complaint - if nothing comes \nout, check what is going in. A sample with one extra leading axis of size 1 \n(a 1 by 3 array into a buffer of threes) is accepted.\n\nSYNTAX:\nnp.rolling_buffer <length> <sample shape...>\n\nEXAMPLE:\nnp.rolling_buffer 60 3\n\nINPUTS and PARAMETERS:\n\ninput:\nThe latest sample. Receiving it adds it to the buffer and sends the buffer.\n\nreset:\nEmpties the buffer and sends the empty array, so displays clear at once.\n\nOUTPUTS: \n\nout:\nThe buffer's contents, newest first. Each send is a fresh array, so \nanything downstream that keeps one sees it stay as it was.\n\nIT GROWS BEFORE IT ROLLS:\nA rolling buffer only reports what it has actually collected, so a freshly \nreset one is short until it fills: 1 row, then 2, up to N. That is \ndeliberate - it avoids feeding you a stretch of zeros that never happened - \nbut it does mean the output's length changes for the first N samples.\n\nRELATED:\nnp.cumsum and np.diff run along the buffer once you have one."
         },
         "3": {
+            "init": "metro 30",
             "name": "metro",
-            "id": 348,
+            "id": 2823,
+            "sid": 4,
             "position_x": 30,
             "position_y": 62,
             "width": 129,
@@ -116,14 +120,15 @@
                 "2": {
                     "name": "units",
                     "value": "milliseconds",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
-            },
-            "init": "metro 30"
+            }
         },
         "4": {
+            "init": "random 1.0",
             "name": "random",
-            "id": 385,
+            "id": 2836,
+            "sid": 5,
             "position_x": 30,
             "position_y": 142,
             "width": 123,
@@ -142,13 +147,13 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            },
-            "init": "random 1.0"
+            }
         },
         "5": {
             "init": "comment a stream of single values",
             "name": "comment",
-            "id": 422,
+            "id": 2849,
+            "sid": 6,
             "position_x": 514,
             "position_y": 230,
             "width": 162,
@@ -160,19 +165,21 @@
                 "0": {
                     "name": "text",
                     "value": "a stream of single values",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "a stream of single values"
         },
         "6": {
+            "init": "np.rolling_buffer 60",
             "name": "np.rolling_buffer",
-            "id": 459,
+            "id": 2860,
+            "sid": 7,
             "position_x": 30,
             "position_y": 270,
             "width": 113,
@@ -180,13 +187,19 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "np.rolling_buffer 60"
+            "properties": {
+                "0": {
+                    "name": "reset",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
         },
         "7": {
             "init": "comment the last 60 of them, as one array",
             "name": "comment",
-            "id": 496,
+            "id": 2870,
+            "sid": 8,
             "position_x": 514,
             "position_y": 360,
             "width": 211,
@@ -198,19 +211,20 @@
                 "0": {
                     "name": "text",
                     "value": "the last 60 of them, as one array",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "the last 60 of them, as one array"
         },
         "8": {
             "name": "np.mean",
-            "id": 533,
+            "id": 2881,
+            "sid": 9,
             "position_x": 30,
             "position_y": 400,
             "width": 117,
@@ -218,11 +232,18 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": "None",
+                    "value_type": "string"
+                }
+            }
         },
         "9": {
             "name": "float",
-            "id": 570,
+            "id": 2891,
+            "sid": 10,
             "position_x": 30,
             "position_y": 485,
             "width": 130,
@@ -232,26 +253,57 @@
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "format",
-                    "value": "%.3f",
-                    "value_type": "str"
+                    "name": "",
+                    "value": 0.4807118773460388,
+                    "value_type": "float"
                 },
                 "1": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "max",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "3": {
+                    "name": "speed_property",
+                    "value": 0.009999999776482582,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "string"
+                },
+                "5": {
+                    "name": "bind to",
+                    "value": "",
+                    "value_type": "string"
+                },
+                "6": {
                     "name": "width",
                     "value": 100,
                     "value_type": "int"
                 },
-                "2": {
+                "7": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
+                },
+                "8": {
+                    "name": "hide_title_bar",
+                    "value": false,
+                    "value_type": "bool"
                 }
             }
         },
         "10": {
             "init": "comment now the stream can be averaged",
             "name": "comment",
-            "id": 607,
+            "id": 2924,
+            "sid": 11,
             "position_x": 514,
             "position_y": 535,
             "width": 193,
@@ -263,21 +315,22 @@
                 "0": {
                     "name": "text",
                     "value": "now the stream can be averaged",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "now the stream can be averaged"
         },
         "11": {
             "name": "plot",
-            "id": 644,
-            "position_x": 280,
-            "position_y": 400,
+            "id": 2935,
+            "sid": 12,
+            "position_x": 269,
+            "position_y": 348,
             "width": 208,
             "height": 178,
             "visibility": "show_all",
@@ -287,7 +340,7 @@
                 "0": {
                     "name": "color",
                     "value": "none",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "width",
@@ -302,12 +355,12 @@
                 "3": {
                     "name": "style",
                     "value": "line",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "4": {
                     "name": "update style",
-                    "value": "input is multi-channel sample",
-                    "value_type": "str"
+                    "value": "buffer holds one sample of input",
+                    "value_type": "string"
                 },
                 "5": {
                     "name": "sample count",
@@ -339,7 +392,8 @@
         "12": {
             "init": "comment the history: newest at the left",
             "name": "comment",
-            "id": 681,
+            "id": 2981,
+            "sid": 13,
             "position_x": 514,
             "position_y": 585,
             "width": 199,
@@ -351,19 +405,20 @@
                 "0": {
                     "name": "text",
                     "value": "the history: newest at the left",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "the history: newest at the left"
         },
         "13": {
             "name": "close",
-            "id": 718,
+            "id": 2992,
+            "sid": 14,
             "position_x": 24,
             "position_y": 608,
             "width": 88,
@@ -382,54 +437,54 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
+            "source_node": 2823,
+            "source_node_name": "metro",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
+            "dest_node": 2836,
+            "dest_node_name": "random",
             "dest_input_index": 0,
             "dest_input_name": "trigger"
         },
         "1": {
-            "source_node": 385,
-            "source_node_name": "",
+            "source_node": 2836,
+            "source_node_name": "random",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 459,
-            "dest_node_name": "",
+            "dest_node": 2860,
+            "dest_node_name": "np.rolling_buffer",
             "dest_input_index": 0,
             "dest_input_name": "input"
         },
         "2": {
-            "source_node": 459,
-            "source_node_name": "",
+            "source_node": 2860,
+            "source_node_name": "np.rolling_buffer",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 533,
-            "dest_node_name": "",
+            "dest_node": 2881,
+            "dest_node_name": "np.mean",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "3": {
-            "source_node": 533,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "4": {
-            "source_node": 459,
-            "source_node_name": "",
+            "source_node": 2860,
+            "source_node_name": "np.rolling_buffer",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 644,
-            "dest_node_name": "",
+            "dest_node": 2935,
+            "dest_node_name": "plot",
             "dest_input_index": 0,
             "dest_input_name": "y"
+        },
+        "4": {
+            "source_node": 2881,
+            "source_node_name": "np.mean",
+            "source_output_index": 0,
+            "source_output_name": "mean",
+            "dest_node": 2891,
+            "dest_node_name": "float",
+            "dest_input_index": 0,
+            "dest_input_name": ""
         }
     }
 }

@@ -1,0 +1,690 @@
+{
+    "name": "t.tril_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.tril_help.json",
+    "patches": {
+        "0": {
+            "height": 560,
+            "width": 650,
+            "position": [
+                160,
+                160
+            ],
+            "id": 903,
+            "name": "make_numbered",
+            "parent_node_uuid": 348,
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 940,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "name": "metro",
+                    "init": "metro 100",
+                    "id": 977,
+                    "position_x": 40,
+                    "position_y": 40,
+                    "width": 129,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "on",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "1": {
+                            "name": "period",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "units",
+                            "value": "milliseconds",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "2": {
+                    "name": "comment",
+                    "init": "comment re-sends the tensor ten times a second",
+                    "id": 1014,
+                    "position_x": 190,
+                    "position_y": 50,
+                    "width": 330,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "re-sends the tensor ten times a second",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "re-sends the tensor ten times a second"
+                },
+                "3": {
+                    "name": "t.arange",
+                    "init": "t.arange 0 100 1",
+                    "id": 1051,
+                    "position_x": 40,
+                    "position_y": 130,
+                    "width": 190,
+                    "height": 150,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "start",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "1": {
+                            "name": "stop",
+                            "value": 100.0,
+                            "value_type": "float"
+                        },
+                        "2": {
+                            "name": "step",
+                            "value": 1.0,
+                            "value_type": "float"
+                        }
+                    }
+                },
+                "4": {
+                    "name": "comment",
+                    "init": "comment 0, 1, 2 ... 99",
+                    "id": 1088,
+                    "position_x": 250,
+                    "position_y": 140,
+                    "width": 200,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "0, 1, 2 ... 99",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "0, 1, 2 ... 99"
+                },
+                "5": {
+                    "name": "t.reshape",
+                    "init": "t.reshape 10 10",
+                    "id": 1125,
+                    "position_x": 40,
+                    "position_y": 300,
+                    "width": 230,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                },
+                "6": {
+                    "name": "comment",
+                    "init": "comment folded into 10 rows of 10",
+                    "id": 1162,
+                    "position_x": 290,
+                    "position_y": 315,
+                    "width": 280,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "folded into 10 rows of 10",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "folded into 10 rows of 10"
+                },
+                "7": {
+                    "name": "out",
+                    "init": "out numbered",
+                    "id": 1199,
+                    "position_x": 40,
+                    "position_y": 400,
+                    "width": 150,
+                    "height": 80,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {}
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 977,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "",
+                    "dest_node": 1051,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "###input"
+                },
+                "1": {
+                    "source_node": 1051,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "arange out",
+                    "dest_node": 1125,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 1125,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 1199,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "numbered"
+                }
+            }
+        },
+        "1": {
+            "height": 1041,
+            "width": 2036,
+            "position": [
+                100,
+                100
+            ],
+            "id": 866,
+            "name": "t.tril_help",
+            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.tril_help.json",
+            "nodes": {
+                "0": {
+                    "name": "",
+                    "id": 237,
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 9,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "protected": true,
+                    "presentation_state": "hidden",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                },
+                "1": {
+                    "init": "comment t.tril - keep the lower triangle of a matrix",
+                    "name": "comment",
+                    "id": 274,
+                    "position_x": 24,
+                    "position_y": -4,
+                    "width": 549,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "t.tril - keep the lower triangle of a matrix",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "48",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "t.tril - keep the lower triangle of a matrix"
+                },
+                "2": {
+                    "name": "text_block",
+                    "id": 311,
+                    "position_x": 1228,
+                    "position_y": 45,
+                    "width": 768,
+                    "height": 936,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "Keeps the lower triangle of a matrix - the diagonal and everything below it - and sets the rest to zero.\n\nThe shape stays the same; only the values above the diagonal become\n0. A matrix of relationships between things - a covariance, a distance\nmatrix, a similarity - is symmetric: the entry for A against B equals\nthe one for B against A. Half of it is repeated, and keeping one\ntriangle is how you count each pair once. With which diag set so the\ndiagonal itself goes too, the entries comparing each thing with itself\nare removed as well - almost always what you want when asking about\npairs.\n\nSYNTAX:\nt.tril\nIt takes no arguments; set which diag in its box.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list or numpy array is converted to a float32 tensor).\nSends on arrival. A tensor of more than two dimensions is treated as a\nstack of matrices, each cut the same way; a 1-D tensor is refused by\nPyTorch with an error in the console.\n\nwhich diag (int box):\nWhere the cut is. 0 cuts along the main diagonal (top left to bottom\nright) and keeps it. 1 moves the cut one step up and to the right, -1\none step down and to the left. So t.tril with which diag -1 keeps only what is strictly below\nthe diagonal, and which diag 1 keeps one extra diagonal above it. Changing it does not send;\nthe next matrix uses it - in the demo a metro inside make_numbered\nre-sends the source ten times a second.\n\nOUTPUTS:\n\noutput:\nThe matrix, same shape, with the values above the cut set to 0.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source (tens digit the row, units\ndigit the column; the diagonal is 0 11 22 ... 99). The right one is\nt.tril's result: the lower triangle keeps its numbers and the rest is\ndark zero. Step which diag and watch the edge of the triangle slide.\n\nRELATED:\nt.triu keeps the opposite triangle. t.diag reads one diagonal out as a\nvector. t.eye makes the identity matrix. In numpy, np.where with a\ncomparison of row and column numbers does the same job.",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 760,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 920,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "30",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "Keeps the lower triangle of a matrix - the diagonal and everything below it - and sets the rest to zero.\n\nThe shape stays the same; only the values above the diagonal become\n0. A matrix of relationships between things - a covariance, a distance\nmatrix, a similarity - is symmetric: the entry for A against B equals\nthe one for B against A. Half of it is repeated, and keeping one\ntriangle is how you count each pair once. With which diag set so the\ndiagonal itself goes too, the entries comparing each thing with itself\nare removed as well - almost always what you want when asking about\npairs.\n\nSYNTAX:\nt.tril\nIt takes no arguments; set which diag in its box.\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe matrix (a list or numpy array is converted to a float32 tensor).\nSends on arrival. A tensor of more than two dimensions is treated as a\nstack of matrices, each cut the same way; a 1-D tensor is refused by\nPyTorch with an error in the console.\n\nwhich diag (int box):\nWhere the cut is. 0 cuts along the main diagonal (top left to bottom\nright) and keeps it. 1 moves the cut one step up and to the right, -1\none step down and to the left. So t.tril with which diag -1 keeps only what is strictly below\nthe diagonal, and which diag 1 keeps one extra diagonal above it. Changing it does not send;\nthe next matrix uses it - in the demo a metro inside make_numbered\nre-sends the source ten times a second.\n\nOUTPUTS:\n\noutput:\nThe matrix, same shape, with the values above the cut set to 0.\n\nREADING THE DEMO:\nThe left heat_map is the numbered source (tens digit the row, units\ndigit the column; the diagonal is 0 11 22 ... 99). The right one is\nt.tril's result: the lower triangle keeps its numbers and the rest is\ndark zero. Step which diag and watch the edge of the triangle slide.\n\nRELATED:\nt.triu keeps the opposite triangle. t.diag reads one diagonal out as a\nvector. t.eye makes the identity matrix. In numpy, np.where with a\ncomparison of row and column numbers does the same job."
+                },
+                "3": {
+                    "name": "p",
+                    "id": 348,
+                    "position_x": 30,
+                    "position_y": 62,
+                    "width": 96,
+                    "height": 42,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_numbered",
+                    "patcher id": 903
+                },
+                "4": {
+                    "init": "comment open make_numbered to see how it is made",
+                    "name": "comment",
+                    "id": 385,
+                    "position_x": 924,
+                    "position_y": 67,
+                    "width": 254,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "open make_numbered to see how it is made",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "open make_numbered to see how it is made"
+                },
+                "5": {
+                    "name": "heat_map",
+                    "id": 422,
+                    "position_x": 30,
+                    "position_y": 162,
+                    "width": 408,
+                    "height": 310,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 400,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 260,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 10,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 99.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "text_block",
+                    "id": 459,
+                    "annotation": true,
+                    "position_x": 924,
+                    "position_y": 210,
+                    "width": 274,
+                    "height": 40,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "block",
+                            "value": "the source: 10 x 10, each cell numbered\nrow then column - 37 is row 3, column 7",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "lock",
+                            "value": true,
+                            "value_type": "bool"
+                        },
+                        "2": {
+                            "name": "width",
+                            "value": 266,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "height",
+                            "value": 24,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "text_size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "text": "the source: 10 x 10, each cell numbered\nrow then column - 37 is row 3, column 7"
+                },
+                "7": {
+                    "name": "t.tril",
+                    "id": 496,
+                    "position_x": 490,
+                    "position_y": 162,
+                    "width": 154,
+                    "height": 56,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "which diag",
+                            "value": 0,
+                            "value_type": "int"
+                        }
+                    }
+                },
+                "8": {
+                    "init": "comment which diag: 0 main, 1 up a step, -1 down",
+                    "name": "comment",
+                    "id": 533,
+                    "position_x": 924,
+                    "position_y": 170,
+                    "width": 254,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "which diag: 0 main, 1 up a step, -1 down",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "which diag: 0 main, 1 up a step, -1 down"
+                },
+                "9": {
+                    "name": "heat_map",
+                    "id": 570,
+                    "position_x": 490,
+                    "position_y": 280,
+                    "width": 408,
+                    "height": 310,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "color",
+                            "value": "viridis",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 400,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "height",
+                            "value": 260,
+                            "value_type": "int"
+                        },
+                        "3": {
+                            "name": "sample count",
+                            "value": 10,
+                            "value_type": "int"
+                        },
+                        "4": {
+                            "name": "min y",
+                            "value": 0.0,
+                            "value_type": "float"
+                        },
+                        "5": {
+                            "name": "max y",
+                            "value": 99.0,
+                            "value_type": "float"
+                        },
+                        "6": {
+                            "name": "update_mode",
+                            "value": "heat_map",
+                            "value_type": "str"
+                        },
+                        "7": {
+                            "name": "number format",
+                            "value": "%.0f",
+                            "value_type": "str"
+                        }
+                    }
+                },
+                "10": {
+                    "init": "comment the lower triangle kept, the rest zero",
+                    "name": "comment",
+                    "id": 607,
+                    "position_x": 924,
+                    "position_y": 290,
+                    "width": 242,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the lower triangle kept, the rest zero",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the lower triangle kept, the rest zero"
+                },
+                "11": {
+                    "name": "help_link",
+                    "id": 644,
+                    "position_x": 30,
+                    "position_y": 640,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.triu"
+                },
+                "12": {
+                    "name": "help_link",
+                    "id": 681,
+                    "position_x": 120,
+                    "position_y": 640,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.diag"
+                },
+                "13": {
+                    "name": "help_link",
+                    "id": 718,
+                    "position_x": 210,
+                    "position_y": 640,
+                    "width": 47,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link t.eye"
+                },
+                "14": {
+                    "name": "help_link",
+                    "id": 755,
+                    "position_x": 292,
+                    "position_y": 640,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "help_link np.where"
+                },
+                "15": {
+                    "init": "comment SEE ALSO - click to open",
+                    "name": "comment",
+                    "id": 792,
+                    "position_x": 924,
+                    "position_y": 640,
+                    "width": 156,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "SEE ALSO - click to open",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "SEE ALSO - click to open"
+                },
+                "16": {
+                    "name": "close",
+                    "id": 829,
+                    "position_x": 24,
+                    "position_y": 714,
+                    "width": 88,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "close patch",
+                            "value": null,
+                            "value_type": "NoneType"
+                        }
+                    }
+                }
+            },
+            "links": {
+                "0": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "numbered",
+                    "dest_node": 422,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                },
+                "1": {
+                    "source_node": 348,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "numbered",
+                    "dest_node": 496,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "tensor in"
+                },
+                "2": {
+                    "source_node": 496,
+                    "source_node_name": "",
+                    "source_output_index": 0,
+                    "source_output_name": "output",
+                    "dest_node": 570,
+                    "dest_node_name": "",
+                    "dest_input_index": 0,
+                    "dest_input_name": "y"
+                }
+            }
+        }
+    }
+}

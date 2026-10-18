@@ -1,0 +1,443 @@
+{
+    "height": 821,
+    "width": 1647,
+    "position": [
+        100,
+        100
+    ],
+    "id": 829,
+    "name": "t.full_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.full_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment t.full - a tensor of one value",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 377,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "t.full - a tensor of one value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "t.full - a tensor of one value"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 839,
+            "position_y": 45,
+            "width": 768,
+            "height": 716,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Makes a tensor in which every element is the same value, which you choose.\n\nA constant of any shape: a level to compare against, a bias to add, a\nstarting value other than zero or one. It is the one-step version of\nt.ones times a number.\n\nSYNTAX:\nt.full <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension - t.full 4 4 is 4 by 4. The VALUE is not\nan argument: set it on the node. With no numbers you get a 1-element\ntensor. The number of dimensions is fixed when the node is made (one\ndim property per number typed); retype the node to change it.\n\nEXAMPLE:\nt.full 4 4\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send.\n\nvalue (drag float, also an inlet):\nWhat to fill with. Default 1.0. Setting it does not send by itself - in\nthe demo 't bang float' sets the value and then clicks the node.\n\ndim 0, dim 1, ... (whole numbers):\nThe size of each dimension, used on the next click.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.full 4 4 int64.\nAn integer dtype cuts the value down to a whole number (2.7 fills with\n2); a value that does not fit (300 as uint8) is an error and nothing is\nsent.\n\nOUTPUTS:\n\nfilled tensor:\nThe tensor.\n\nREADING THE DEMO:\nDrag the float from 0 to 1: the whole 4 by 4 heat_map changes colour\ntogether, every cell printing the same number, because every element is\nthat value.\n\nRELATED:\nt.ones and t.zeros are the two commonest fills. t.eye puts ones only on\nthe diagonal. np.ones (times a number) is the NumPy route to the same\nthing.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 700,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Makes a tensor in which every element is the same value, which you choose.\n\nA constant of any shape: a level to compare against, a bias to add, a\nstarting value other than zero or one. It is the one-step version of\nt.ones times a number.\n\nSYNTAX:\nt.full <dim 0: int> <dim 1: int> ... <dtype> <device>\nOne whole number per dimension - t.full 4 4 is 4 by 4. The VALUE is not\nan argument: set it on the node. With no numbers you get a 1-element\ntensor. The number of dimensions is fixed when the node is made (one\ndim property per number typed); retype the node to change it.\n\nEXAMPLE:\nt.full 4 4\n\nINPUTS and PARAMETERS:\n\nin (button):\nThe small button at the top left of the node. Click it, or send it\nanything, to send the tensor. Nothing else makes the node send.\n\nvalue (drag float, also an inlet):\nWhat to fill with. Default 1.0. Setting it does not send by itself - in\nthe demo 't bang float' sets the value and then clicks the node.\n\ndim 0, dim 1, ... (whole numbers):\nThe size of each dimension, used on the next click.\n\ndtype (menu):\nThe number type. float32 is the default and what most torch operations\nwant. The menu also offers float16, int64, uint8, bool, complex64 and\ncomplex128; 'float' is the same as float32, and each name appears a\nsecond time with a 'torch.' prefix, which means the same thing. There\nis no 64-bit float here.\n\ndevice (menu):\nWhere the tensor is made: cpu (the default), and mps or cuda when the\nmachine has them. Tensors on different devices cannot be combined, so\nkeep a chain on one device.\n\nrequires_grad (checkbox):\nRecords operations for automatic differentiation. Leave it off unless\nyou are training something. Only float and complex tensors can carry it:\nticked with an integer or bool dtype, the node raises an error and sends\nnothing.\n\nA dtype or device name can also be typed as an argument, after the\nnumbers - for example t.full 4 4 int64.\nAn integer dtype cuts the value down to a whole number (2.7 fills with\n2); a value that does not fit (300 as uint8) is an error and nothing is\nsent.\n\nOUTPUTS:\n\nfilled tensor:\nThe tensor.\n\nREADING THE DEMO:\nDrag the float from 0 to 1: the whole 4 by 4 heat_map changes colour\ntogether, every cell printing the same number, because every element is\nthat value.\n\nRELATED:\nt.ones and t.zeros are the two commonest fills. t.eye puts ones only on\nthe diagonal. np.ones (times a number) is the NumPy route to the same\nthing."
+        },
+        "3": {
+            "name": "load_bang",
+            "id": 348,
+            "position_x": 30,
+            "position_y": 62,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "4": {
+            "name": "float",
+            "id": 385,
+            "position_x": 160,
+            "position_y": 62,
+            "width": 110,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "format",
+                    "value": "%.3f",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 80,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                },
+                "3": {
+                    "name": "",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "4": {
+                    "name": "min",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max",
+                    "value": 1.0,
+                    "value_type": "float"
+                }
+            }
+        },
+        "5": {
+            "init": "comment drag the float between 0 and 1",
+            "name": "comment",
+            "id": 422,
+            "position_x": 524,
+            "position_y": 70,
+            "width": 193,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "drag the float between 0 and 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "drag the float between 0 and 1"
+        },
+        "6": {
+            "name": "t",
+            "id": 459,
+            "position_x": 160,
+            "position_y": 120,
+            "width": 39,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "t bang float"
+        },
+        "7": {
+            "name": "t.full",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 185,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "value",
+                    "value": 0.3,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "dim 0",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "dim 1",
+                    "value": 4,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.full 4 4"
+        },
+        "8": {
+            "name": "heat_map",
+            "id": 533,
+            "position_x": 270,
+            "position_y": 185,
+            "width": 228,
+            "height": 270,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 220,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 4,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.2f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "init": "comment every cell the same value: 0 purple, 1 yellow",
+            "name": "comment",
+            "id": 570,
+            "position_x": 524,
+            "position_y": 190,
+            "width": 285,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "every cell the same value: 0 purple, 1 yellow",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "every cell the same value: 0 purple, 1 yellow"
+        },
+        "10": {
+            "name": "help_link",
+            "id": 607,
+            "position_x": 30,
+            "position_y": 470,
+            "width": 53,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.ones"
+        },
+        "11": {
+            "name": "help_link",
+            "id": 644,
+            "position_x": 120,
+            "position_y": 470,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.zeros"
+        },
+        "12": {
+            "name": "help_link",
+            "id": 681,
+            "position_x": 217,
+            "position_y": 470,
+            "width": 47,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.eye"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 299,
+            "position_y": 470,
+            "width": 60,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.ones"
+        },
+        "14": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 755,
+            "position_x": 524,
+            "position_y": 470,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "15": {
+            "name": "close",
+            "id": 792,
+            "position_x": 24,
+            "position_y": 544,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 348,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 385,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float out",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "float",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "value"
+        },
+        "3": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "bang",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "###input"
+        },
+        "4": {
+            "source_node": 496,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "filled tensor",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        }
+    }
+}

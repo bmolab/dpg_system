@@ -1,11 +1,11 @@
 {
-    "height": 781,
-    "width": 1374,
+    "height": 1092,
+    "width": 1633,
     "position": [
         100,
         100
     ],
-    "id": 681,
+    "id": 977,
     "name": "t.special.logits_help",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/t.special.logits_help.json",
     "nodes": {
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 526,
+            "position_x": 825,
             "position_y": 45,
-            "width": 808,
-            "height": 676,
+            "width": 768,
+            "height": 751,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "The inverse of the sigmoid: turns a probability back into a score.\n\nWHAT IT GIVES YOU:\nGiven a probability between 0 and 1, it returns the unbounded score that a\nsigmoid would have turned into that probability - the log of p over (1 minus p).\n0.5 becomes 0, values above 0.5 become positive, values below become negative,\nand the ends stretch out without limit.\n\nThat is useful whenever you want to add, average or smooth probabilities: do it\non the logits, where 0.99 and 0.999 are properly far apart, then put the result\nback through a sigmoid.\n\nTHE ENDS ARE INFINITE - eps IS THE SAFETY MARGIN:\nAt exactly 0 the answer is minus infinity, and at exactly 1 it is plus infinity.\n'eps' clamps the input to between eps and 1 minus eps first, so the ends come\nout as large finite numbers instead.\n\neps starts at 0.000001, which holds 0 and 1 to about -13.8 and +13.8. A larger\neps pulls the ends in further (0.001 gives about -6.9 and +6.9); the example\nshows both.\n\nDo not set it much smaller. Tensors here are ordinary 32-bit floats, and in\nthose 1 minus anything below about 0.0000001 rounds back to exactly 1 - so the\ntop end is no longer protected and a probability of 1 comes out as infinity\nagain, even though the bottom end still looks fine.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1. Receiving them does the work. Values outside 0..1\nare clamped by eps too, so they come out at the ends rather than as errors.\n\neps:\nHow far from 0 and 1 to hold the input. Default 0.000001.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability.",
+                    "value": "The inverse of the sigmoid: turns probabilities between 0 and 1 back into\nunbounded scores, the log of p / (1 - p), for every element of a tensor.\n\nUse it whenever you want to add, average or smooth probabilities: do it on\nthe logits, where 0.99 and 0.999 are properly far apart, then turn the result\nback with t.special.expit.\n\nTHE CURVE:\n0.5 becomes 0, values above 0.5 become positive and values below negative.\nThe middle is nearly straight (0.25 gives -1.10, 0.75 gives 1.10) and the\nends shoot off towards plus and minus infinity - held back by eps.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1 - a tensor, or a number or list, which is turned\ninto one. Receiving it triggers the node. Values outside 0..1 are clamped\nby eps too, so they come out at the ends rather than as errors.\n\neps (float, also an inlet):\nThe input is clamped to between eps and 1 - eps before the log is taken,\nso 0 and 1 give large finite numbers instead of infinities. Default\n0.000001, which holds the ends at -13.8 and 13.8; 0.001 gives -6.9 and 6.9.\nAt 0 there is no protection and 0 and 1 give minus and plus infinity.\nDo not set it below about 0.0000001: in 32-bit floats 1 minus anything\nsmaller rounds back to exactly 1, so the top end is unprotected again (1\ngives infinity) while the bottom end still looks fine. Changing eps does\nnot send by itself; the next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element, in the same shape as the input.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200\nprobabilities from 0 to 1, drawn in the upper plot. The lower plot is the\nlogit of each, from -15 (bottom) to 15 (top): a slow climb through 0 in the\nmiddle and the two ends flicking out to the eps limit. Drag eps on the node\nto move those limits.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability.\nt.special.ndtri is the same idea for the normal distribution's S curve.",
                     "value_type": "str"
                 },
                 "1": {
@@ -76,12 +76,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 800,
+                    "value": 760,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 660,
+                    "value": 735,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,85 +90,44 @@
                     "value_type": "str"
                 }
             },
-            "text": "The inverse of the sigmoid: turns a probability back into a score.\n\nWHAT IT GIVES YOU:\nGiven a probability between 0 and 1, it returns the unbounded score that a\nsigmoid would have turned into that probability - the log of p over (1 minus p).\n0.5 becomes 0, values above 0.5 become positive, values below become negative,\nand the ends stretch out without limit.\n\nThat is useful whenever you want to add, average or smooth probabilities: do it\non the logits, where 0.99 and 0.999 are properly far apart, then put the result\nback through a sigmoid.\n\nTHE ENDS ARE INFINITE - eps IS THE SAFETY MARGIN:\nAt exactly 0 the answer is minus infinity, and at exactly 1 it is plus infinity.\n'eps' clamps the input to between eps and 1 minus eps first, so the ends come\nout as large finite numbers instead.\n\neps starts at 0.000001, which holds 0 and 1 to about -13.8 and +13.8. A larger\neps pulls the ends in further (0.001 gives about -6.9 and +6.9); the example\nshows both.\n\nDo not set it much smaller. Tensors here are ordinary 32-bit floats, and in\nthose 1 minus anything below about 0.0000001 rounds back to exactly 1 - so the\ntop end is no longer protected and a probability of 1 comes out as infinity\nagain, even though the bottom end still looks fine.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1. Receiving them does the work. Values outside 0..1\nare clamped by eps too, so they come out at the ends rather than as errors.\n\neps:\nHow far from 0 and 1 to hold the input. Default 0.000001.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability."
+            "text": "The inverse of the sigmoid: turns probabilities between 0 and 1 back into\nunbounded scores, the log of p / (1 - p), for every element of a tensor.\n\nUse it whenever you want to add, average or smooth probabilities: do it on\nthe logits, where 0.99 and 0.999 are properly far apart, then turn the result\nback with t.special.expit.\n\nTHE CURVE:\n0.5 becomes 0, values above 0.5 become positive and values below negative.\nThe middle is nearly straight (0.25 gives -1.10, 0.75 gives 1.10) and the\nends shoot off towards plus and minus infinity - held back by eps.\n\nSYNTAX:\nt.special.logits\n\nINPUTS and PARAMETERS:\n\ntensor in:\nThe probabilities, 0 to 1 - a tensor, or a number or list, which is turned\ninto one. Receiving it triggers the node. Values outside 0..1 are clamped\nby eps too, so they come out at the ends rather than as errors.\n\neps (float, also an inlet):\nThe input is clamped to between eps and 1 - eps before the log is taken,\nso 0 and 1 give large finite numbers instead of infinities. Default\n0.000001, which holds the ends at -13.8 and 13.8; 0.001 gives -6.9 and 6.9.\nAt 0 there is no protection and 0 and 1 give minus and plus infinity.\nDo not set it below about 0.0000001: in 32-bit floats 1 minus anything\nsmaller rounds back to exactly 1, so the top end is unprotected again (1\ngives infinity) while the bottom end still looks fine. Changing eps does\nnot send by itself; the next tensor uses it.\n\nOUTPUTS:\n\ntensor out:\nThe scores, element by element, in the same shape as the input.\n\nREADING THE DEMO:\nThe metro re-clicks t.linspace ten times a second; it makes 200\nprobabilities from 0 to 1, drawn in the upper plot. The lower plot is the\nlogit of each, from -15 (bottom) to 15 (top): a slow climb through 0 in the\nmiddle and the two ends flicking out to the eps limit. Drag eps on the node\nto move those limits.\n\nRELATED:\nt.special.expit (and t.nn.sigmoid) go the other way, score to probability.\nt.special.ndtri is the same idea for the normal distribution's S curve."
         },
         "3": {
-            "name": "button",
+            "name": "metro",
             "id": 348,
             "position_x": 30,
             "position_y": 62,
-            "width": 45,
-            "height": 42,
+            "width": 129,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 100.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 100"
         },
         "4": {
-            "name": "message",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 118,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "0.0 0.25 0.5 0.75 1.0",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "5": {
-            "name": "t.special.logits",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 205,
-            "width": 111,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
-        },
-        "6": {
-            "name": "list",
-            "id": 459,
-            "position_x": 30,
-            "position_y": 310,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "7": {
-            "init": "comment default eps 0.000001: 0 and 1 give -13.8 and 13.8",
+            "init": "comment redraws ten times a second",
             "name": "comment",
-            "id": 496,
-            "position_x": 186,
-            "position_y": 360,
-            "width": 310,
+            "id": 385,
+            "position_x": 460,
+            "position_y": 70,
+            "width": 168,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -176,7 +135,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "default eps 0.000001: 0 and 1 give -13.8 and 13.8",
+                    "value": "redraws ten times a second",
                     "value_type": "str"
                 },
                 "1": {
@@ -185,13 +144,155 @@
                     "value_type": "str"
                 }
             },
-            "comment": "default eps 0.000001: 0 and 1 give -13.8 and 13.8"
+            "comment": "redraws ten times a second"
+        },
+        "5": {
+            "name": "t.linspace",
+            "id": 422,
+            "position_x": 30,
+            "position_y": 150,
+            "width": 163,
+            "height": 126,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "start",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "1": {
+                    "name": "stop",
+                    "value": 1.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "steps",
+                    "value": 200,
+                    "value_type": "int"
+                }
+            },
+            "init": "t.linspace 0 1 200"
+        },
+        "6": {
+            "init": "comment 200 values from start to stop - drag them",
+            "name": "comment",
+            "id": 459,
+            "position_x": 460,
+            "position_y": 160,
+            "width": 260,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "200 values from start to stop - drag them",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "200 values from start to stop - drag them"
+        },
+        "7": {
+            "name": "plot",
+            "id": 496,
+            "position_x": 30,
+            "position_y": 340,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 1,
+                    "value_type": "int"
+                }
+            }
         },
         "8": {
-            "name": "t.special.logits",
+            "init": "comment in: a ramp from 0 to 1",
+            "name": "comment",
             "id": 533,
+            "position_x": 460,
+            "position_y": 345,
+            "width": 144,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "in: a ramp from 0 to 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "in: a ramp from 0 to 1"
+        },
+        "9": {
+            "name": "t.special.logits",
+            "id": 570,
             "position_x": 30,
-            "position_y": 420,
+            "position_y": 540,
             "width": 111,
             "height": 56,
             "visibility": "show_all",
@@ -200,41 +301,18 @@
             "properties": {
                 "0": {
                     "name": "eps",
-                    "value": 0.001,
+                    "value": 1e-06,
                     "value_type": "float"
                 }
             }
         },
-        "9": {
-            "name": "list",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 525,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
         "10": {
-            "init": "comment eps 0.001: the ends pulled in to -6.9 and 6.9",
+            "init": "comment drag eps: try 0.001 and the ends come in to 6.9",
             "name": "comment",
             "id": 607,
-            "position_x": 186,
-            "position_y": 575,
-            "width": 285,
+            "position_x": 460,
+            "position_y": 550,
+            "width": 297,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -242,7 +320,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "eps 0.001: the ends pulled in to -6.9 and 6.9",
+                    "value": "drag eps: try 0.001 and the ends come in to 6.9",
                     "value_type": "str"
                 },
                 "1": {
@@ -251,13 +329,206 @@
                     "value_type": "str"
                 }
             },
-            "comment": "eps 0.001: the ends pulled in to -6.9 and 6.9"
+            "comment": "drag eps: try 0.001 and the ends come in to 6.9"
         },
         "11": {
-            "name": "close",
+            "name": "plot",
             "id": 644,
+            "position_x": 30,
+            "position_y": 660,
+            "width": 308,
+            "height": 178,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "none",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 300,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "style",
+                    "value": "line",
+                    "value_type": "str"
+                },
+                "4": {
+                    "name": "update style",
+                    "value": "buffer holds one sample of input",
+                    "value_type": "str"
+                },
+                "5": {
+                    "name": "sample count",
+                    "value": 200,
+                    "value_type": "int"
+                },
+                "6": {
+                    "name": "min x",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "7": {
+                    "name": "max x",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "8": {
+                    "name": "min y",
+                    "value": -15,
+                    "value_type": "int"
+                },
+                "9": {
+                    "name": "max y",
+                    "value": 15,
+                    "value_type": "int"
+                }
+            }
+        },
+        "12": {
+            "name": "text_block",
+            "id": 681,
+            "annotation": true,
+            "position_x": 460,
+            "position_y": 665,
+            "width": 335,
+            "height": 40,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "out: 0 at 0.5, ends held at -13.8 and 13.8 by eps\n(plot from -15 to 15)",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 327,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "out: 0 at 0.5, ends held at -13.8 and 13.8 by eps\n(plot from -15 to 15)"
+        },
+        "13": {
+            "name": "help_link",
+            "id": 718,
+            "position_x": 30,
+            "position_y": 870,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.expit"
+        },
+        "14": {
+            "name": "help_link",
+            "id": 755,
+            "position_x": 189,
+            "position_y": 870,
+            "width": 90,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.nn.sigmoid"
+        },
+        "15": {
+            "name": "help_link",
+            "id": 792,
+            "position_x": 325,
+            "position_y": 870,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.ndtri"
+        },
+        "16": {
+            "name": "help_link",
+            "id": 829,
+            "position_x": 30,
+            "position_y": 914,
+            "width": 103,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.entr"
+        },
+        "17": {
+            "name": "help_link",
+            "id": 866,
+            "position_x": 181,
+            "position_y": 914,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link t.special.xlogy"
+        },
+        "18": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 903,
+            "position_x": 460,
+            "position_y": 914,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "19": {
+            "name": "close",
+            "id": 940,
             "position_x": 24,
-            "position_y": 597,
+            "position_y": 988,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -278,50 +549,40 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "1": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "message out",
             "dest_node": 422,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": "tensor in"
+            "dest_input_name": "###input"
+        },
+        "1": {
+            "source_node": 422,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "linspace out",
+            "dest_node": 496,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
         },
         "2": {
             "source_node": 422,
             "source_node_name": "",
             "source_output_index": 0,
-            "source_output_name": "tensor out",
-            "dest_node": 459,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "3": {
-            "source_node": 385,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "message out",
-            "dest_node": 533,
+            "source_output_name": "linspace out",
+            "dest_node": 570,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "tensor in"
         },
-        "4": {
-            "source_node": 533,
+        "3": {
+            "source_node": 570,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 570,
+            "dest_node": 644,
             "dest_node_name": "",
             "dest_input_index": 0,
-            "dest_input_name": ""
+            "dest_input_name": "y"
         }
     }
 }
