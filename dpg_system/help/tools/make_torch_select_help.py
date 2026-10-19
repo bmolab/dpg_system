@@ -9,7 +9,8 @@ These were four family pages (t.index_select, t.scatter, t.diag, t.roll in
 make_torch_manip_b_help.py). Each node now has its own page whose demo shows
 the tensor before and after as heat_maps, with a SEE ALSO row under it.
 The demo data (a numbered 10 x 10 tensor, the letter F, a disc) is made in
-subpatchers so each page shows the node itself.
+subpatchers so each page shows the node itself. The t.take_along_dim page is
+hand-made now (see tools/README.md), so this script no longer builds it.
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -604,105 +605,7 @@ links = [('lb', 'out', 'm1', ''),
 print(build('t.take', 't.take - values by flat position', body, demo, links,
             demo_width=940, text_width=760, text_height=900, subpatch=NUM_SUB))
 
-# ========================================================= t.take_along_dim
-body = """Takes a DIFFERENT position from each row (or column), using a tensor of positions shaped like the input.
-
-The other selectors take the same positions from every row. This one
-reads its indices row by row: row 0 of the result is taken from row 0 of
-the input at the positions in row 0 of the indices, and so on. It is the
-partner of the nodes that MAKE such positions - t.argsort, t.argmax:
-
-  t.argsort 1, then t.take_along_dim 1 with the same tensor, sorts each
-  row (that is the demo).
-  Feed the indices from one tensor and the values from ANOTHER, and you
-  reorder the second by the first - "sort the angles by the speeds", or
-  "the angle of each joint at the moment it was fastest".
-
-SYNTAX:
-t.take_along_dim <dim: int>
-Default dim 0. The dim box is always shown.
-
-EXAMPLE:
-t.take_along_dim 1
-
-INPUTS and PARAMETERS:
-
-tensor in:
-The values (a list or numpy array is converted to a float32 tensor).
-Sends on arrival. This is the only inlet that sends.
-
-indices in:
-The positions, as whole numbers, with the SAME NUMBER OF DIMENSIONS as
-the input. Along dim they may be any length (that is how many values
-each row gives); along every other dimension they must match the input
-or be 1 (a single row of indices then applies to every row). t.argmax 1
-removes the dimension it worked along - put it back with t.unsqueeze 1
-before using it here. Wrong shapes print an error in the console and
-nothing is sent. This inlet is cold: send the indices FIRST. Nothing is
-sent until indices have arrived.
-
-dim (int box, also an inlet):
-Which dimension the positions run along: 1 positions within each row, 0
-positions within each column. Negative counts from the end (-1 is the
-last dimension, so on a matrix -1 is 1 and -2 is 0). A dimension the
-tensor does not have sends nothing.
-
-OUTPUTS:
-
-output:
-The values taken, shaped like the indices.
-
-READING THE DEMO:
-Click t.rand for a fresh 6 x 8 tensor; var holds it and the metro
-re-sends it ten times a second. t.argsort 1 gives, for each row, the
-column of its smallest value, then the next smallest, and so on - the
-middle heat_map, numbered 0 to 7, different in every row. t.take_along_dim
-1 reads each row at its own positions, so every row of the result runs
-dark to bright. Tick descending on t.argsort and the rows run bright to
-dark instead.
-
-RELATED:
-t.take uses flat positions. t.index_select takes the same positions from
-every row. t.argsort and t.argmax make the positions. np.argsort is the
-numpy argsort; numpy's np.[] cannot take a different position per row."""
-
-demo = [
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 20), 'w': 88, 'h': 46},
-    {'key': 'rnd', 'init': 't.rand 6 8', 'pos': (30, 80), 'w': 180, 'h': 180,
-     'props': {'shape': '[6, 8]', 'min': 0.0, 'max': 1.0}},
-    {'key': 'c0', 'comment': True, 'text': 'click t.rand for fresh values', 'pos': (30, 90)},
-    {'key': 'met', 'init': 'metro 100', 'pos': (290, 62), 'w': 129, 'h': 70, 'props': METRO},
-    {'key': 'var', 'init': 'var t_take_along_dim_help', 'pos': (290, 160), 'w': 250, 'h': 70,
-     'props': {'name': 't_take_along_dim_help'}},
-    {'key': 'c1', 'comment': True, 'text': 'holds the tensor; the metro re-sends it',
-     'pos': (290, 165)},
-    {'key': 'tr', 'init': 't array array', 'pos': (30, 285), 'w': 140, 'h': 46},
-    {'key': 'ct', 'comment': True, 'text': 'right to left: the indices arrive first',
-     'pos': (30, 290)},
-    {'key': 'as', 'init': 't.argsort 1', 'pos': (400, 340), 'w': 170, 'h': 150,
-     'props': {'dim': 1, 'descending': False, 'stable': False}},
-    {'key': 'hin', 'init': 'heat_map', 'pos': (30, 520), 'w': 348, 'h': 240,
-     'props': HM(320, 180, 6, 0.0, 1.0, fmt='%.1f')},
-    {'key': 'hidx', 'init': 'heat_map', 'pos': (400, 520), 'w': 348, 'h': 240,
-     'props': HM(320, 180, 6, 0.0, 7.0, fmt='%.0f')},
-    {'key': 'c2', 'comment': True, 'text': 'left: the values. right: each row\'s positions, smallest first',
-     'pos': (30, 530)},
-    {'key': 'tad', 'init': 't.take_along_dim 1', 'pos': (30, 790), 'w': 220, 'h': 110,
-     'props': {'dim': 1}},
-    {'key': 'hout', 'init': 'heat_map', 'pos': (30, 920), 'w': 348, 'h': 240,
-     'props': HM(320, 180, 6, 0.0, 1.0, fmt='%.1f')},
-    {'key': 'c3', 'comment': True, 'text': 'each row read at its own positions: sorted',
-     'pos': (30, 930)},
-] + see_also(1190, ['t.take', 't.index_select', 't.argsort', 't.argmax', 'np.argsort'])
-links = [('lb', 'out', 'rnd', '###input'),
-         ('rnd', 'random tensor', 'var', 'in'), ('met', '', 'var', 'in'),
-         ('var', 'out', 'tr', ''),
-         ('tr', 'array', 'as', 'tensor in', 1),
-         ('as', 'output', 'hidx', 'y'), ('as', 'output', 'tad', 'indices in'),
-         ('tr', 'array', 'hin', 'y', 0), ('tr', 'array', 'tad', 'tensor in', 0),
-         ('tad', 'output', 'hout', 'y')]
-print(build('t.take_along_dim', 't.take_along_dim - a different position in each row',
-            body, demo, links, demo_width=780, text_width=760, text_height=1080))
+# t.take_along_dim: its page is hand-made now (see tools/README.md).
 
 # ================================================================= t.narrow
 body = """Takes a run of consecutive positions along one dimension: start here, take this many.

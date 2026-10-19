@@ -337,7 +337,8 @@ nodes. `np.std_help.json` is laid out the same way (spread and shift
 sliders into make_noise, and a make_jitter table whose np.std 0 strip sits
 under its columns), and `np.robust_mean_help.json` is David's rework.
 `np.var_help.json` is David's rework too, so `make_numpy_average_help.py`
-builds no pages at all now. Use `relayout.py --minimal`
+builds no pages at all now. `t.take_along_dim_help.json` is David's rework,
+so `make_torch_select_help.py` no longer builds it. Use `relayout.py --minimal`
 on these, never plain relayout.
 
 To hand-edit any generated page: open it, rework it, save over the same file
