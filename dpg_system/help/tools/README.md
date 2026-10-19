@@ -322,6 +322,10 @@ np.min row-and-plot layout (make_ones holds the metro and np.ones) with the
 factorials in a row under the plot, and `np.diff_help.json` is in two chunks
 like np.cumsum (the differences with their heat maps, the inverse with its
 lists); `make_numpy_calc_help.py` no longer builds them either.
+`np.distance_from_target_help.json` has the same row-and-plot layout
+(make_point, the node and the number in one row, the plot under it), so
+`make_numpy_calc_help.py` builds only proximity_trigger and
+np.proximity_to_target now.
 `np.mean_help.json` follows
 the same layout (a toggled glitch of 30 shows the mean jump and the median
 hold); `np.median_help.json` and `np.nanmean_help.json` are David's own

@@ -5,19 +5,14 @@ page; their pages are hand-made now (see tools/README.md), so this script no
 longer builds them. np.cumsum, np.cumprod, np.diff were np_cumulative, and
 are hand-made now too. np.distance_from_target, np.proximity_to_target,
 proximity_trigger were np_target. Each now has its own page whose demo shows
-the input and the output, with a SEE ALSO row under it.
+the input and the output, with a SEE ALSO row under it; the
+np.distance_from_target page is hand-made now, so this script builds only
+proximity_trigger and np.proximity_to_target.
 """
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
-from help_common import SIG, PLOT, INT, FLT
-
-
-def HM(width, height, count, miny=0.0, maxy=1.0, fmt='%.2f', color='viridis'):
-    """Property block for a heat_map that draws a whole array as one picture."""
-    return {'color': color, 'width': width, 'height': height, 'sample count': count,
-            'min y': miny, 'max y': maxy, 'update_mode': 'heat_map',
-            'number format': fmt}
+from help_common import SIG, PLOT, INT
 
 
 LIST = {'text in': '', 'font size': '24'}
@@ -46,15 +41,6 @@ def MULTI_PLOT(miny=-1.0, maxy=1.0, count=200, width=300):
     """A plot that draws each element of a list (or each row) as its own line."""
     return dict(PLOT(miny, maxy, count),
                 **{'width': width, 'update style': 'input is multi-channel sample'})
-
-
-def ARRAY_PLOT(miny, maxy, count, width=300):
-    """A plot that draws one whole 1-D array as a curve, first value on the left."""
-    return dict(PLOT(miny, maxy, count),
-                **{'width': width, 'update style': 'buffer holds one sample of input'})
-
-
-METRO = lambda ms: {'on': True, 'period': float(ms), 'units': 'milliseconds'}
 
 
 def text_h(body):
@@ -107,85 +93,7 @@ TARGETS = [[0.5, 0.7], [-0.5, -0.7], [0.0, 0.0]]
 
 # np.cumsum, np.cumprod, np.diff: their pages are hand-made now (see tools/README.md).
 
-# ------------------------------------------------------- np.distance_from_target
-body = """Measures how far its input is from a stored target position, and
-sends that distance every time an input arrives.
-
-The target is captured rather than typed: put the thing where you want
-the target to be, click "set target", and from then on every input is
-measured against that spot. Use it to know how far a tracked hand is from
-a place in the room, how far a pose has moved from a reference pose, or
-how near a moving point is to where it started.
-
-The distance is the straight-line one: the square root of the sum of the
-squared differences (np.linalg.norm of input minus target), in the same
-units as the input. It is 0 at the target and never negative.
-
-SYNTAX:
-np.distance_from_target
-
-INPUTS and PARAMETERS:
-
-input:
-The current position, as a list or array of any length (x y, x y z, a
-whole pose...). Every input is measured and sent. Nothing is sent until a
-target has been set. An input whose shape does not fit the target sends
-nothing.
-
-set target (button):
-Captures whatever was last received at input as the target, and sends
-the distance at once (0). If nothing has arrived yet, it does nothing.
-The target is saved with the patch - this page opens with 0.5 0.7.
-
-axis (menu, also an inlet):
-Only matters when the input holds several positions, one per row.
-None (the default) measures the whole difference as ONE distance. 1
-gives one distance per row. A captured set of rows is measured row
-against row; a single captured position is measured against every row.
-The menu offers as many axes as the input has.
-
-OUTPUTS:
-
-norm:
-The distance: one number, or one per row with axis 1.
-
-READING THE DEMO:
-make_point moves an x y point around the square from -1 to 1 (open it
-to see how). The plot and the number show its distance from the target,
-0.5 0.7: the curve dips to near 0 each time the point passes the target,
-and peaks when it is in the far corner. Click "set target" and wherever
-the point is at that moment becomes the target - the curve starts again
-from 0.
-
-RELATED:
-proximity_trigger uses the same distance to fire an event on arrival.
-np.proximity_to_target turns distance from several targets into 0 to 1
-levels for driving sounds. np.linalg.norm measures the length of an
-array (its distance from zero). t.dist is the PyTorch version, between
-two tensors."""
-
-demo = [
-    {'key': 'mp', 'init': 'p make_point', 'pos': (30, 62), 'w': 170, 'h': 70},
-    {'key': 'c0', 'comment': True, 'text': 'an x y point wandering from -1 to 1',
-     'pos': (30, 150)},
-    {'key': 'dt', 'init': 'np.distance_from_target', 'pos': (30, 190), 'w': 240, 'h': 120,
-     'props': {'axis': 'None'}},
-    {'key': 'c1', 'comment': True, 'text': 'click set target to capture the point',
-     'pos': (30, 195)},
-    {'key': 'f1', 'init': 'float', 'pos': (30, 330), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'c2', 'comment': True, 'text': 'the distance now', 'pos': (30, 335)},
-    {'key': 'pl', 'init': 'plot', 'pos': (30, 400), 'w': 308, 'h': 178,
-     'props': dict(PLOT(0.0, 2.5), width=300)},
-    {'key': 'c3', 'comment': True,
-     'text': 'distance from 0.5 0.7 over the last few seconds:\nnear 0 each time the point passes the target',
-     'pos': (30, 590)},
-] + see_also(670, ['proximity_trigger', 'np.proximity_to_target', 'np.linalg.norm', 't.dist'])
-links = [('mp', 'point', 'dt', 'input'), ('dt', 'norm', 'f1', ''), ('dt', 'norm', 'pl', 'y')]
-p = build('np.distance_from_target', 'np.distance_from_target - how far from a stored spot',
-          body, demo, links, demo_width=600, text_width=760, text_height=text_h(body),
-          subpatch=POINT_SUB)
-set_state(p, 'np.distance_from_target', {'target': TARGET})
-print(p)
+# np.distance_from_target: its page is hand-made now (see tools/README.md).
 
 # ------------------------------------------------------------- proximity_trigger
 body = """Fires an event when its input arrives near a stored target, and

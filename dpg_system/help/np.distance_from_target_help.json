@@ -1,6 +1,6 @@
 {
     "name": "np.distance_from_target_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.distance_from_target_help.json",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/dist/out/np.distance_from_target_help.json",
     "patches": {
         "0": {
             "height": 470,
@@ -11,7 +11,7 @@
             ],
             "id": 903,
             "name": "make_point",
-            "parent_node_uuid": 348,
+            "parent_node_uuid": 385,
             "nodes": {
                 "0": {
                     "name": "",
@@ -221,15 +221,15 @@
             }
         },
         "1": {
-            "height": 1010,
-            "width": 1713,
+            "height": 1044,
+            "width": 1682,
             "position": [
                 100,
                 100
             ],
             "id": 866,
             "name": "np.distance_from_target_help",
-            "path": "/Users/drokeby/dpg_system/dpg_system/help/np.distance_from_target_help.json",
+            "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/dist/out/np.distance_from_target_help.json",
             "nodes": {
                 "0": {
                     "name": "",
@@ -256,7 +256,7 @@
                     "id": 274,
                     "position_x": 24,
                     "position_y": -4,
-                    "width": 647,
+                    "width": 624,
                     "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
@@ -278,10 +278,10 @@
                 "2": {
                     "name": "text_block",
                     "id": 311,
-                    "position_x": 905,
-                    "position_y": 45,
+                    "position_x": 882,
+                    "position_y": 26,
                     "width": 768,
-                    "height": 871,
+                    "height": 916,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -303,7 +303,7 @@
                         },
                         "3": {
                             "name": "height",
-                            "value": 855,
+                            "value": 900,
                             "value_type": "int"
                         },
                         "4": {
@@ -315,26 +315,12 @@
                     "text": "Measures how far its input is from a stored target position, and sends that distance every time an input arrives.\n\nThe target is captured rather than typed: put the thing where you want the target to be, click \"set target\", and from then on every input is measured against that spot. Use it to know how far a tracked hand is from a place in the room, how far a pose has moved from a reference pose, or how near a moving point is to where it started.\n\nThe distance is the straight-line one: the square root of the sum of the squared differences (np.linalg.norm of input minus target), in the same units as the input. It is 0 at the target and never negative.\n\nSYNTAX:\nnp.distance_from_target\n\nINPUTS and PARAMETERS:\n\ninput:\nThe current position, as a list or array of any length (x y, x y z, a whole pose...). Every input is measured and sent. Nothing is sent until a target has been set. An input whose shape does not fit the target sends nothing.\n\nset target (button):\nCaptures whatever was last received at input as the target, and sends the distance at once (0). If nothing has arrived yet, it does nothing. The target is saved with the patch - this page opens with 0.5 0.7.\n\naxis (menu, also an inlet):\nOnly matters when the input holds several positions, one per row. None (the default) measures the whole difference as ONE distance. 1 gives one distance per row. A captured set of rows is measured row against row; a single captured position is measured against every row. The menu offers as many axes as the input has.\n\nOUTPUTS:\n\nnorm:\nThe distance: one number, or one per row with axis 1.\n\nREADING THE DEMO:\nmake_point moves an x y point around the square from -1 to 1 (open it to see how). The plot and the number show its distance from the target, 0.5 0.7: the curve dips to near 0 each time the point passes the target, and peaks when it is in the far corner. Click \"set target\" and wherever the point is at that moment becomes the target - the curve starts again from 0.\n\nRELATED:\nproximity_trigger uses the same distance to fire an event on arrival. np.proximity_to_target turns distance from several targets into 0 to 1 levels for driving sounds. np.linalg.norm measures the length of an array (its distance from zero). t.dist is the PyTorch version, between two tensors."
                 },
                 "3": {
-                    "name": "p",
-                    "id": 348,
-                    "position_x": 30,
-                    "position_y": 62,
-                    "width": 78,
-                    "height": 42,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "p make_point",
-                    "patcher id": 903
-                },
-                "4": {
-                    "init": "comment an x y point wandering from -1 to 1",
+                    "init": "comment an x y point, wandering",
                     "name": "comment",
-                    "id": 385,
-                    "position_x": 546,
-                    "position_y": 150,
-                    "width": 224,
+                    "id": 348,
+                    "position_x": 28,
+                    "position_y": 53,
+                    "width": 161,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -342,7 +328,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "an x y point wandering from -1 to 1",
+                            "value": "an x y point, wandering",
                             "value_type": "str"
                         },
                         "1": {
@@ -351,15 +337,54 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "an x y point wandering from -1 to 1"
+                    "comment": "an x y point, wandering"
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 110,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_point",
+                    "patcher id": 903
                 },
                 "5": {
-                    "name": "np.distance_from_target",
+                    "init": "comment click set target: capture the point",
+                    "name": "comment",
                     "id": 422,
-                    "position_x": 30,
-                    "position_y": 190,
-                    "width": 150,
-                    "height": 70,
+                    "position_x": 240,
+                    "position_y": 53,
+                    "width": 245,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "click set target: capture the point",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "click set target: capture the point"
+                },
+                "6": {
+                    "name": "np.distance_from_target",
+                    "id": 459,
+                    "position_x": 240,
+                    "position_y": 92,
+                    "width": 240,
+                    "height": 120,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -375,13 +400,13 @@
                         0.7
                     ]
                 },
-                "6": {
-                    "init": "comment click set target to capture the point",
+                "7": {
+                    "init": "comment the distance now",
                     "name": "comment",
-                    "id": 459,
-                    "position_x": 546,
-                    "position_y": 195,
-                    "width": 236,
+                    "id": 496,
+                    "position_x": 560,
+                    "position_y": 53,
+                    "width": 112,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -389,7 +414,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "click set target to capture the point",
+                            "value": "the distance now",
                             "value_type": "str"
                         },
                         "1": {
@@ -398,13 +423,13 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "click set target to capture the point"
+                    "comment": "the distance now"
                 },
-                "7": {
+                "8": {
                     "name": "float",
-                    "id": 496,
-                    "position_x": 30,
-                    "position_y": 330,
+                    "id": 533,
+                    "position_x": 560,
+                    "position_y": 100,
                     "width": 130,
                     "height": 42,
                     "visibility": "show_all",
@@ -428,13 +453,13 @@
                         }
                     }
                 },
-                "8": {
-                    "init": "comment the distance now",
+                "9": {
+                    "init": "comment distance from 0.5 0.7 over the last few seconds: near 0 each time the point passes the target",
                     "name": "comment",
-                    "id": 533,
-                    "position_x": 546,
-                    "position_y": 335,
-                    "width": 107,
+                    "id": 570,
+                    "position_x": 28,
+                    "position_y": 245,
+                    "width": 651,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -442,7 +467,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "the distance now",
+                            "value": "distance from 0.5 0.7 over the last few seconds: near 0 each time the point passes the target",
                             "value_type": "str"
                         },
                         "1": {
@@ -451,15 +476,15 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "the distance now"
+                    "comment": "distance from 0.5 0.7 over the last few seconds: near 0 each time the point passes the target"
                 },
-                "9": {
+                "10": {
                     "name": "plot",
-                    "id": 570,
-                    "position_x": 30,
-                    "position_y": 400,
-                    "width": 308,
-                    "height": 178,
+                    "id": 607,
+                    "position_x": 28,
+                    "position_y": 280,
+                    "width": 800,
+                    "height": 300,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -471,12 +496,12 @@
                         },
                         "1": {
                             "name": "width",
-                            "value": 300,
+                            "value": 780,
                             "value_type": "int"
                         },
                         "2": {
                             "name": "height",
-                            "value": 128,
+                            "value": 240,
                             "value_type": "int"
                         },
                         "3": {
@@ -516,53 +541,13 @@
                         }
                     }
                 },
-                "10": {
-                    "name": "text_block",
-                    "id": 607,
-                    "annotation": true,
-                    "position_x": 546,
-                    "position_y": 590,
-                    "width": 329,
-                    "height": 40,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "block",
-                            "value": "distance from 0.5 0.7 over the last few seconds:\nnear 0 each time the point passes the target",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "lock",
-                            "value": true,
-                            "value_type": "bool"
-                        },
-                        "2": {
-                            "name": "width",
-                            "value": 321,
-                            "value_type": "int"
-                        },
-                        "3": {
-                            "name": "height",
-                            "value": 24,
-                            "value_type": "int"
-                        },
-                        "4": {
-                            "name": "text_size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "text": "distance from 0.5 0.7 over the last few seconds:\nnear 0 each time the point passes the target"
-                },
                 "11": {
                     "name": "help_link",
                     "id": 644,
                     "position_x": 30,
-                    "position_y": 704,
+                    "position_y": 654,
                     "width": 123,
-                    "height": 44,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -573,9 +558,9 @@
                     "name": "help_link",
                     "id": 681,
                     "position_x": 169,
-                    "position_y": 704,
+                    "position_y": 654,
                     "width": 155,
-                    "height": 44,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -586,9 +571,9 @@
                     "name": "help_link",
                     "id": 718,
                     "position_x": 340,
-                    "position_y": 704,
+                    "position_y": 654,
                     "width": 104,
-                    "height": 44,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -598,10 +583,10 @@
                 "14": {
                     "name": "help_link",
                     "id": 755,
-                    "position_x": 30,
-                    "position_y": 748,
-                    "width": 53,
-                    "height": 44,
+                    "position_x": 460,
+                    "position_y": 654,
+                    "width": 54,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -613,8 +598,8 @@
                     "name": "comment",
                     "id": 792,
                     "position_x": 30,
-                    "position_y": 670,
-                    "width": 156,
+                    "position_y": 620,
+                    "width": 168,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -637,7 +622,7 @@
                     "name": "close",
                     "id": 829,
                     "position_x": 24,
-                    "position_y": 822,
+                    "position_y": 764,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",
@@ -654,31 +639,31 @@
             },
             "links": {
                 "0": {
-                    "source_node": 348,
+                    "source_node": 385,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "point",
-                    "dest_node": 422,
+                    "dest_node": 459,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "input"
                 },
                 "1": {
-                    "source_node": 422,
+                    "source_node": 459,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "norm",
-                    "dest_node": 496,
+                    "dest_node": 533,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "2": {
-                    "source_node": 422,
+                    "source_node": 459,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "norm",
-                    "dest_node": 570,
+                    "dest_node": 607,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "y"
