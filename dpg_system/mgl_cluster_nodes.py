@@ -19,6 +19,8 @@ per cluster, lit by its value — over geometry that has to be built from the
 cells rather than instanced from a cube.
 """
 
+import time
+
 import numpy as np
 import moderngl
 
@@ -394,8 +396,11 @@ class MGLRegionsNode(MGLNode):
     is being made, when most regions are empty most of the time: 'frame
     floor' is the least an outline is ever drawn at (the C++ app's ALWAYS),
     'fill floor' the same for the skin. The region being edited is drawn at
-    'current boost' times those floors — so one node shows the whole authoring
-    state: what exists, what is active, and which one you are on.
+    'current boost' times those floors, and with 'current outline' its
+    outline is white and pulses at 'outline pulse (Hz)' (0: steady) whatever
+    its value — so one node shows
+    the whole authoring state: what exists, what is active, and which one you
+    are on.
 
     Skins are boundary faces with back faces culled, so a convex region puts
     one face over any pixel and its brightness is its value, not its depth
@@ -409,11 +414,25 @@ class MGLRegionsNode(MGLNode):
     'picked point' sends where, in world metres. Clicking again on the region
     that is already current takes the next one along the ray, which is how a
     region behind another is reached. The ray is cast on the draw after the
-    click, because only a draw knows the camera."""
+    click, because only a draw knows the camera.
+
+    A shift-, alt- or ctrl-click picks nothing: it sends its ray, as the command
+    the 'shift-click' / 'ctrl-click' option names, on 'click command' — wire
+    that to pc_regions' ``command``. By default shift-click is 'add piece'
+    (capture into the current region just the connected bit of the live
+    cloud that was clicked) and ctrl-click is 'cut piece' (remove the bit of
+    whichever region was clicked, which becomes current). Alt-click, with or without shift,
+    is 'new piece': the clicked bit becomes a region of its own, which is
+    made current. Ctrl wins over alt, alt over shift; on a Mac, command
+    counts as ctrl and option is alt."""
 
     # A press and release further apart than this, in displayed pixels, was a
     # drag — the orbit camera's business, not a pick.
     CLICK_SLOP = 4
+    CURRENT_OUTLINE_RGB = (1.0, 1.0, 1.0)
+    CLICK_COMMANDS = ('add piece', 'replace piece', 'new piece', 'cut piece', 'none')
+    # Modifier bits on mgl_context's mouse events (element 6; GLFW's values).
+    MOD_SHIFT, MOD_CTRL, MOD_ALT, MOD_SUPER = 1, 2, 4, 8
 
     _vert_src = '''
         #version 330
@@ -432,8 +451,10 @@ class MGLRegionsNode(MGLNode):
             int id = int(in_region + 0.5);
             ivec2 at = ivec2(id % params_width, (id / params_width) * 2);
             vec4 fill = texelFetch(params, at, 0);
-            float level = frame_pass ? texelFetch(params, at + ivec2(0, 1), 0).x : fill.w;
-            v_color = vec4(fill.rgb * level, level * alpha);
+            vec4 frame = texelFetch(params, at + ivec2(0, 1), 0);
+            vec3 rgb = frame_pass ? frame.yzw : fill.rgb;
+            float level = frame_pass ? frame.x : fill.w;
+            v_color = vec4(rgb * level, level * alpha);
         }
     '''
     _frag_src = MGLClusterBoxesNode._frag_src
@@ -464,7 +485,9 @@ class MGLRegionsNode(MGLNode):
         self.ui_input = self.add_input('ui', callback=self._ui_event)
         self.picked_output = self.add_output('picked region')
         self.picked_point_output = self.add_output('picked point')
-        self._press = None          # (x, y, button) of the mouse_down in progress
+        self.click_command_output = self.add_output('click command')
+        self._press = None          # (x, y, button, modifiers) of the mouse_down in progress
+        self._pending_ray = None    # (u, v, command), waiting for a draw's matrices
         self._pending_pick = None   # (u, v), waiting for a draw's matrices
         self.show_fill_option = self.add_option('show fill', widget_type='checkbox',
                                                 default_value=True)
@@ -479,6 +502,11 @@ class MGLRegionsNode(MGLNode):
         self.current_boost_option = self.add_option('current boost', widget_type='drag_float',
                                                     default_value=3.0, min=1.0)
         self.current_boost_option.widget.speed = 0.02
+        self.current_outline_option = self.add_option('current outline', widget_type='checkbox',
+                                                      default_value=True)
+        self.pulse_option = self.add_option('outline pulse (Hz)', widget_type='drag_float',
+                                            default_value=1.0, min=0.0)
+        self.pulse_option.widget.speed = 0.05
         self.mode_option = self.add_option('color mode', widget_type='combo',
                                            default_value='per region')
         self.mode_option.widget.combo_items = ['per region', 'uniform']
@@ -488,6 +516,15 @@ class MGLRegionsNode(MGLNode):
         self.blend_option = self.add_option('blend', widget_type='combo',
                                             default_value='additive')
         self.blend_option.widget.combo_items = ['additive', 'alpha']
+        self.shift_click_option = self.add_option('shift-click', widget_type='combo',
+                                                  default_value='add piece')
+        self.shift_click_option.widget.combo_items = list(self.CLICK_COMMANDS)
+        self.ctrl_click_option = self.add_option('ctrl-click', widget_type='combo',
+                                                 default_value='cut piece')
+        self.ctrl_click_option.widget.combo_items = list(self.CLICK_COMMANDS)
+        self.alt_click_option = self.add_option('alt-click', widget_type='combo',
+                                                default_value='new piece')
+        self.alt_click_option.widget.combo_items = list(self.CLICK_COMMANDS)
 
         # (values, colors, scene): one reference, swapped whole (see execute).
         self.frame = None
@@ -559,7 +596,8 @@ class MGLRegionsNode(MGLNode):
             return
         kind = event[0]
         if kind == 'mouse_down':
-            self._press = (float(event[1]), float(event[2]), int(event[3]))
+            mods = int(event[6]) if len(event) > 6 else 0
+            self._press = (float(event[1]), float(event[2]), int(event[3]), mods)
         elif kind == 'mouse_up':
             press, self._press = self._press, None
             if press is None or press[2] != 0 or int(event[3]) != 0 or len(event) < 6:
@@ -567,8 +605,20 @@ class MGLRegionsNode(MGLNode):
             if max(abs(float(event[1]) - press[0]), abs(float(event[2]) - press[1])) > self.CLICK_SLOP:
                 return
             u, v = float(event[4]), float(event[5])
-            if 0.0 <= u <= 1.0 and 0.0 <= v <= 1.0:
+            if not (0.0 <= u <= 1.0 and 0.0 <= v <= 1.0):
+                return
+            mods = press[3]
+            if mods & (self.MOD_CTRL | self.MOD_SUPER):
+                command = self.ctrl_click_option()
+            elif mods & self.MOD_ALT:
+                command = self.alt_click_option()
+            elif mods & self.MOD_SHIFT:
+                command = self.shift_click_option()
+            else:
                 self._pending_pick = (u, v)
+                return
+            if command in self.CLICK_COMMANDS and command != 'none':
+                self._pending_ray = (u, v, command)
 
     def _pick_ray(self, u, v):
         """World-space (origin, direction) of the ray under a 0..1 image
@@ -633,7 +683,8 @@ class MGLRegionsNode(MGLNode):
 
     def _params_data(self, values, colors, current):
         """(rows, width, 4) float32 for the parameter texture: per region, rgb
-        + fill level on the even row and the frame level on the odd one."""
+        + fill level on the even row, and the frame level + the frame's rgb
+        on the odd one."""
         n = min(values.size, colors.shape[0])
         slots = max(n, 1)
         gain = max(0.0, float(self.sensitivity_input())) * SENSITIVITY_SCALE
@@ -665,6 +716,18 @@ class MGLRegionsNode(MGLNode):
             table[:n, 0, 0:3] = colors[:n]
         table[:n, 0, 3] = fill
         table[:n, 1, 0] = frame
+        table[:n, 1, 1:4] = table[:n, 0, 0:3]
+        # The current region's outline in its own colour, pulsing. Brightness
+        # alone cannot mark it: an occupied region is already lit past the
+        # floors that 'current boost' raises, and a steady white line is
+        # easily lost among the others.
+        if 0 <= current < n and self.current_outline_option():
+            rate = max(0.0, float(self.pulse_option()))
+            phase = 0.5 + 0.5 * np.cos(2.0 * np.pi * rate * time.monotonic()) if rate else 1.0
+            # Never fully out, so it is always findable; squared on the way
+            # out by the fragment shader, hence the root.
+            table[current, 1, 0] = np.sqrt(0.15 + 0.85 * phase)
+            table[current, 1, 1:4] = self.CURRENT_OUTLINE_RGB
         # [block, x, row] -> [block * 2 + row, x]
         return np.ascontiguousarray(flat.transpose(0, 2, 1, 3).reshape(rows, _PARAM_TEX_WIDTH, 4))
 
@@ -695,6 +758,16 @@ class MGLRegionsNode(MGLNode):
     def draw(self):
         if self.ctx is None:
             return
+        if self._pending_ray is not None:
+            # Before the frame check: the first region is captured by click
+            # while there is nothing yet to draw.
+            (u, v, command), self._pending_ray = self._pending_ray, None
+            try:
+                origin, direction = self._pick_ray(u, v)
+                self.click_command_output.send([command, *(float(c) for c in origin),
+                                                *(float(c) for c in direction)])
+            except np.linalg.LinAlgError:
+                pass
         frame = self.frame
         if frame is None or frame[2] is None:
             return

@@ -684,6 +684,9 @@ class NodeProperty:
             else:
                 if self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor', 'text_display']:
                     data = any_to_string(data)
+                elif self.widget.widget == 'color_picker':
+                    # a colour is the whole list, not its first (red) value
+                    pass
                 else:
                     data = data[0]
         self.widget.set(data, propagate)
@@ -2705,7 +2708,7 @@ class NodeInput:
             else:
                 if self.widget is not None and self.widget.widget in ['text_input', 'combo', 'radio_group', 'text_editor', 'text_display']:
                     data = any_to_string(data)
-                elif self.widget is not None and self.widget.widget == 'drag_float_n':
+                elif self.widget is not None and self.widget.widget in ('drag_float_n', 'color_picker'):
                     pass
                 else:
                     data = data[0]
