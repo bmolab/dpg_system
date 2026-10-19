@@ -3,7 +3,7 @@
 np.clip, np.min, np.max (one class, NumpyClipNode) were the np_clip family
 page; their pages are hand-made now (see tools/README.md), so this script no
 longer builds them. np.cumsum, np.cumprod, np.diff were np_cumulative (the
-np.cumsum page is hand-made now too); np.distance_from_target,
+np.cumsum and np.cumprod pages are hand-made now too); np.distance_from_target,
 np.proximity_to_target, proximity_trigger were np_target. Each now has its
 own page whose demo shows the input and the output, with a SEE ALSO row
 under it.
@@ -106,100 +106,7 @@ TARGETS = [[0.5, 0.7], [-0.5, -0.7], [0.0, 0.0]]
 
 # np.clip, np.min, np.max: their pages are hand-made now (see tools/README.md).
 
-# np.cumsum: its page is hand-made now (see tools/README.md).
-
-# ------------------------------------------------------------------- np.cumprod
-body = """Replaces each value of an array with the running product up to and
-including it: the first value, then the first two multiplied, then the
-first three, and so on.
-
-It is cumsum with multiplying instead of adding. Use it for anything that
-compounds: growth by a rate per step (interest, a population, a pitch
-rising by a fixed ratio per note), decay by a factor per step (an echo
-fading), or a chain of gains or scale factors applied one after another.
-
-SYNTAX:
-np.cumprod <axis: int>
-Default axis -1, the last axis: along each row.
-
-EXAMPLE:
-np.cumprod
-
-INPUTS and PARAMETERS:
-
-in:
-The array (a list is turned into one). Every input is multiplied out and
-sent - the only inlet that makes the node send. A single number has no
-axis to run along, and sends nothing.
-
-axis (int box, also an inlet):
-Which way to run. For a 2-D array, -1 or 1 runs along each row on its
-own, 0 or -2 runs down each column. Negative counts from the end. An axis
-the array does not have sends nothing. Changing it does not send by
-itself; the next array uses it.
-
-OUTPUTS:
-
-cumprod:
-The running products, the same shape as the input. A single 0 anywhere
-makes every value after it 0. Whole numbers stay whole numbers (int64),
-which silently overflow past about 9 x 10 to the 18th - beyond 20
-factorial.
-
-READING THE DEMO:
-Top: np.ones makes 40 ones and * turns them into forty copies of the
-growth rate, 1.05. The plot shows that flat input line and its cumprod:
-1.05, then 1.05 times 1.05, ... - compound growth, a curve that bends
-upward ever faster and reaches about 7 after 40 steps. Change the * value
-on the node: 1.02 grows slowly, 0.95 decays towards 0, 1 stays flat.
-Above about 1.055 the curve runs off the top of the plot (0 to 8).
-
-Bottom: 1 2 3 4 5 6 multiplied out gives 1 2 6 24 120 720 - the
-factorials.
-
-RELATED:
-np.cumsum adds instead of multiplying. np.diff is the reverse of
-cumsum, not of cumprod (for cumprod, divide each value by the one
-before). t.cumprod is the PyTorch version."""
-
-demo = [
-    {'key': 'met', 'init': 'metro 100', 'pos': (30, 62), 'w': 129, 'h': 70,
-     'props': METRO(100)},
-    {'key': 'c0', 'comment': True, 'text': 'ten times a second', 'pos': (30, 70)},
-    {'key': 'on', 'init': 'np.ones 40', 'pos': (30, 150), 'w': 160, 'h': 140,
-     'props': {'dim 0': 40, 'dtype': 'float32'}},
-    {'key': 'c1', 'comment': True, 'text': '40 ones', 'pos': (30, 155)},
-    {'key': 'ml', 'init': '* 1.05', 'pos': (30, 310), 'w': 120, 'h': 56,
-     'props': {'operand': 1.05}},
-    {'key': 'c2', 'comment': True, 'text': 'the growth rate - change it', 'pos': (30, 315)},
-    {'key': 'tr', 'init': 't array array', 'pos': (30, 390), 'w': 140, 'h': 46},
-    {'key': 'ct', 'comment': True, 'text': 'right first: the rate as it is, then',
-     'pos': (200, 395)},
-    {'key': 'cp', 'init': 'np.cumprod', 'pos': (30, 460), 'w': 150, 'h': 70,
-     'props': {'axis': -1}},
-    {'key': 'pk', 'init': 'pack 2', 'pos': (30, 550), 'w': 130, 'h': 100},
-    {'key': 'pl', 'init': 'plot', 'pos': (30, 670), 'w': 308, 'h': 178,
-     'props': MULTI_PLOT(0.0, 8.0, 40)},
-    {'key': 'c3', 'comment': True,
-     'text': 'the flat line is the input (1.05 forty times);\nthe curve is its cumprod: compound growth',
-     'pos': (30, 860)},
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 930), 'w': 88, 'h': 46},
-    {'key': 'm1', 'init': 'message', 'pos': (30, 990), 'w': 200, 'h': 42,
-     'props': {'text in': '1 2 3 4 5 6', 'font size': '24'}},
-    {'key': 'cp2', 'init': 'np.cumprod', 'pos': (30, 1050), 'w': 150, 'h': 70,
-     'props': {'axis': -1}},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 1140), 'w': 300, 'h': 42, 'props': LIST},
-    {'key': 'c4', 'comment': True, 'text': '1 x 2 x 3 ...: the factorials', 'pos': (30, 1145)},
-] + see_also(1220, ['np.cumsum', 'np.diff', 't.cumprod'])
-links = [('met', '', 'on', ''), ('on', 'array of ones', 'ml', 'in'),
-         ('ml', 'result', 'tr', ''),
-         ('tr', 'array', 'pk', 'in 2', 1),
-         ('tr', 'array', 'cp', 'in', 0), ('cp', 'cumprod', 'pk', 'in 1'),
-         ('pk', 'out', 'pl', 'y'),
-         ('lb', 'out', 'm1', ''), ('m1', 'message out', 'cp2', 'in'),
-         ('cp2', 'cumprod', 'l1', '')]
-print(build('np.cumprod', 'np.cumprod - the running product',
-            body, demo, links, demo_width=600, text_width=760, text_height=text_h(body)))
+# np.cumsum, np.cumprod: their pages are hand-made now (see tools/README.md).
 
 # ---------------------------------------------------------------------- np.diff
 body = """Replaces an array with the differences between neighbouring values:
