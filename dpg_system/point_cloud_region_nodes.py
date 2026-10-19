@@ -52,7 +52,9 @@ will then hold only the first — 'values' is always complete, and a COO
 mgl_regions to draw.
 """
 
+import base64
 import colorsys
+import io
 import threading
 import time
 
@@ -689,6 +691,7 @@ class _RegionMap:
         return labels, values
 
     def save(self, path):
+        """Write the map as .npz to ``path``, a filename or a binary file."""
         ids = sorted(self.regions)
         data = {
             'format_version': np.int32(REGION_FILE_VERSION),
@@ -806,8 +809,10 @@ class PointCloudRegionsNode(PointCloudNode):
     To see all of it — regions lit by their values, the one being edited —
     wire ``cloud`` to mgl_regions. ``region cells`` also goes out as a plain
     cell-centre cloud on every change, for mgl_point_cloud or anything else
-    that takes a cloud. The map is kept in an .npz beside the patch: 'save' /
-    'load', and 'path' reloads it with the patch."""
+    that takes a cloud. The map is saved in the patch, so saving the patch
+    keeps it. It can also live in an .npz of its own: 'save' / 'load'; with
+    'path' set, saving the patch rewrites that file too, and a patch that
+    holds no map loads it from there."""
 
     @staticmethod
     def factory(name, data, args=None):
@@ -981,7 +986,46 @@ class PointCloudRegionsNode(PointCloudNode):
         else:
             print(f"{self.label}: 'clear region' or 'clear all'")
 
+    # -- the map in the patch ---------------------------------------------------
+    #
+    # The map rides in the patch itself, so saving the patch saves the regions
+    # as they are — the .npz is otherwise written only by 'save', and a patch
+    # saved after clicking regions in would come back with the old ones. When
+    # 'path' names a file it is rewritten too, so it stays the same map.
+
+    PATCH_KEY = 'region_map_npz'
+
+    def save_custom(self, container):
+        with self._edit_lock:
+            if self.map.grid is None or not self.map.regions:
+                return
+            buffer = io.BytesIO()
+            self.map.save(buffer)
+            container[self.PATCH_KEY] = base64.b64encode(buffer.getvalue()).decode('ascii')
+            path = str(self.path_option()).strip()
+            if path:
+                try:
+                    self.map.save(path)
+                except Exception as e:
+                    print(f'{self.label}: could not update {path}: {type(e).__name__}: {e}')
+
+    def load_custom(self, container):
+        # Applied in post_load_callback, once the node is fully built.
+        self._pending_map = container.get(self.PATCH_KEY)
+
     def post_load_callback(self):
+        pending, self._pending_map = getattr(self, '_pending_map', None), None
+        if pending:
+            try:
+                with self._edit_lock:
+                    self.map.load(io.BytesIO(base64.b64decode(pending)))
+                    self._edited()
+                self._region_changed()
+                self._reflect_grid()
+                return
+            except Exception as e:
+                print(f'{self.label}: the region map saved in the patch could not be read '
+                      f'({type(e).__name__}: {e}); trying the file')
         if self.map.is_empty():
             self._load_from_path()
 
