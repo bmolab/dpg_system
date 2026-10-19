@@ -319,8 +319,9 @@ contrast), so `make_numpy_calc_help.py` no longer builds them.
 `np.cumsum_help.json` is in two chunks (the random walk, the ramp), each a row
 with its two pictures side by side under it, and `np.cumprod_help.json` has the
 np.min row-and-plot layout (make_ones holds the metro and np.ones) with the
-factorials in a row under the plot; `make_numpy_calc_help.py` no longer builds
-them either.
+factorials in a row under the plot, and `np.diff_help.json` is in two chunks
+like np.cumsum (the differences with their heat maps, the inverse with its
+lists); `make_numpy_calc_help.py` no longer builds them either.
 `np.mean_help.json` follows
 the same layout (a toggled glitch of 30 shows the mean jump and the median
 hold); `np.median_help.json` and `np.nanmean_help.json` are David's own

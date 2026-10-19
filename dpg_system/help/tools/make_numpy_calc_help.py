@@ -2,11 +2,10 @@
 
 np.clip, np.min, np.max (one class, NumpyClipNode) were the np_clip family
 page; their pages are hand-made now (see tools/README.md), so this script no
-longer builds them. np.cumsum, np.cumprod, np.diff were np_cumulative (the
-np.cumsum and np.cumprod pages are hand-made now too); np.distance_from_target,
-np.proximity_to_target, proximity_trigger were np_target. Each now has its
-own page whose demo shows the input and the output, with a SEE ALSO row
-under it.
+longer builds them. np.cumsum, np.cumprod, np.diff were np_cumulative, and
+are hand-made now too. np.distance_from_target, np.proximity_to_target,
+proximity_trigger were np_target. Each now has its own page whose demo shows
+the input and the output, with a SEE ALSO row under it.
 """
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -106,107 +105,7 @@ TARGETS = [[0.5, 0.7], [-0.5, -0.7], [0.0, 0.0]]
 
 # np.clip, np.min, np.max: their pages are hand-made now (see tools/README.md).
 
-# np.cumsum, np.cumprod: their pages are hand-made now (see tools/README.md).
-
-# ---------------------------------------------------------------------- np.diff
-body = """Replaces an array with the differences between neighbouring values:
-each value minus the one before it.
-
-It turns positions into steps - where something WAS into how far it
-MOVED between samples. Applied twice it gives the change in the change:
-from positions, order 1 is speed and order 2 is acceleration. Use it to
-find where a sequence jumps, to get velocities from a recorded path, or
-to undo a cumsum.
-
-THE OUTPUT IS SHORTER:
-Nine values have only eight gaps between them, so the result is one
-value shorter than the input along the axis - and each further order
-loses one more. Anything expecting the original length will notice.
-
-SYNTAX:
-np.diff <order: int> <axis: int>
-Defaults: order 1, axis -1 (the last axis: along each row).
-
-EXAMPLE:
-np.diff 2
-
-INPUTS and PARAMETERS:
-
-in:
-The array (a list is turned into one). Every input is differenced and
-sent - the only inlet that makes the node send.
-
-order (int box, also an inlet):
-How many times to difference. Below 1 is treated as 1. If the array is
-not longer than the order along the axis (6 values at order 6), there is
-nothing left to send, and nothing is sent. Changing it does not send by
-itself - in the demo a metro re-sends the input five times a second.
-
-axis (int box, also an inlet):
-Which way to difference. For a 2-D array, -1 or 1 works along each row,
-0 or -2 down each column. An axis the array does not have sends nothing.
-
-OUTPUTS:
-
-differences:
-The differences, shorter by order along the axis.
-
-READING THE DEMO:
-Top: 0 1 4 9 16 25 36 49 64 are the positions of something speeding up
-(the squares). Order 1 gives 1 3 5 7 9 11 13 15 - the distance covered
-in each step, growing steadily: the speed. Type 2 into order and you get
-2 2 2 2 2 2 2 - the speed grows by the same amount every step, a
-constant acceleration. Order 3 gives zeros: the acceleration never
-changes.
-
-Bottom, the inverse: 3 1 4 1 5 9 summed by np.cumsum is the path
-3 4 8 9 14 23, and np.diff of that gives back 1 4 1 5 9 - the steps, all
-but the first, which had nothing before it to differ from. To rebuild a
-path from its steps exactly you also need where it started.
-
-RELATED:
-np.cumsum is the reverse: steps back into a path. diff does the same
-for a STREAM of numbers, one sample at a time, and diff_filter measures
-movement on a smoother timescale. t.diff is the PyTorch version."""
-
-demo = [
-    {'key': 'met', 'init': 'metro 200', 'pos': (30, 62), 'w': 129, 'h': 70,
-     'props': METRO(200)},
-    {'key': 'c0', 'comment': True, 'text': 're-sends the positions five times a second',
-     'pos': (30, 70)},
-    {'key': 'm1', 'init': 'message', 'pos': (30, 150), 'w': 300, 'h': 42,
-     'props': {'text in': '0 1 4 9 16 25 36 49 64', 'font size': '24'}},
-    {'key': 'c1', 'comment': True, 'text': 'positions of something speeding up',
-     'pos': (30, 155)},
-    {'key': 'h1', 'init': 'heat_map', 'pos': (30, 210), 'w': 468, 'h': 110,
-     'props': HM(460, 60, 1, miny=0.0, maxy=64.0, fmt='%.0f')},
-    {'key': 'c2', 'comment': True, 'text': 'in: 9 positions', 'pos': (30, 215)},
-    {'key': 'df', 'init': 'np.diff 1', 'pos': (30, 340), 'w': 150, 'h': 90,
-     'props': {'order': 1, 'axis': -1}},
-    {'key': 'c3', 'comment': True, 'text': 'type 1, 2 or 3 into order', 'pos': (30, 345)},
-    {'key': 'h2', 'init': 'heat_map', 'pos': (30, 450), 'w': 468, 'h': 110,
-     'props': HM(460, 60, 1, miny=0.0, maxy=16.0, fmt='%.0f')},
-    {'key': 'c4', 'comment': True, 'text': 'out: one value fewer per order',
-     'pos': (30, 455)},
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 600), 'w': 88, 'h': 46},
-    {'key': 'm2', 'init': 'message', 'pos': (30, 660), 'w': 200, 'h': 42,
-     'props': {'text in': '3 1 4 1 5 9', 'font size': '24'}},
-    {'key': 'c5', 'comment': True, 'text': 'six steps - click to re-send', 'pos': (30, 665)},
-    {'key': 'cs', 'init': 'np.cumsum', 'pos': (30, 720), 'w': 150, 'h': 70},
-    {'key': 'l1', 'init': 'list', 'pos': (30, 810), 'w': 300, 'h': 42, 'props': LIST},
-    {'key': 'c6', 'comment': True, 'text': 'the path they make', 'pos': (30, 815)},
-    {'key': 'df2', 'init': 'np.diff', 'pos': (30, 870), 'w': 150, 'h': 90},
-    {'key': 'l2', 'init': 'list', 'pos': (30, 980), 'w': 300, 'h': 42, 'props': LIST},
-    {'key': 'c7', 'comment': True, 'text': 'the steps again, minus the first',
-     'pos': (30, 985)},
-] + see_also(1060, ['np.cumsum', 'diff', 'diff_filter', 't.diff'])
-links = [('met', '', 'm1', ''), ('m1', 'message out', 'h1', 'y'),
-         ('m1', 'message out', 'df', 'in'), ('df', 'differences', 'h2', 'y'),
-         ('lb', 'out', 'm2', ''), ('m2', 'message out', 'cs', 'in'),
-         ('cs', 'cumsum', 'l1', ''), ('cs', 'cumsum', 'df2', 'in'),
-         ('df2', 'differences', 'l2', '')]
-print(build('np.diff', 'np.diff - the differences between neighbours',
-            body, demo, links, demo_width=600, text_width=760, text_height=text_h(body)))
+# np.cumsum, np.cumprod, np.diff: their pages are hand-made now (see tools/README.md).
 
 # ------------------------------------------------------- np.distance_from_target
 body = """Measures how far its input is from a stored target position, and
