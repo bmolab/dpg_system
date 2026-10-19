@@ -496,6 +496,9 @@ class ActiveToSMPLPoseNode(JointTranslator, Node):
         self.input = self.add_input('smpl pose', triggers_execution=True)
         self.output_format_in = self.add_input('output_format', widget_type='combo', default_value='rotation_vectors')
         self.output_format_in.widget.combo_items = ['quaternions', 'rotation_vectors', 'generic']
+        # Active poses are Y-up; 'Z' rotates the root +90 about X for SMPL's native Z-up frame
+        self.up_axis = self.add_property('up axis', widget_type='combo', default_value='Y')
+        self.up_axis.widget.combo_items = ['Y', 'Z']
         self.output = self.add_output('active pose')
 
     def execute(self):
@@ -524,6 +527,15 @@ class ActiveToSMPLPoseNode(JointTranslator, Node):
                     smpl_pose = rot.as_rotvec()
             else:
                 smpl_pose = JointTranslator.translate_from_bmolab_active_to_smpl(active_pose)
+
+            if self.up_axis() == 'Z' and smpl_pose.shape[1] in (3, 4):
+                R_yup_to_zup = scipy.spatial.transform.Rotation.from_euler('X', 90, degrees=True)
+                if smpl_pose.shape[1] == 4:
+                    root_rot = scipy.spatial.transform.Rotation.from_quat(smpl_pose[0], scalar_first=True)
+                    smpl_pose[0] = (R_yup_to_zup * root_rot).as_quat(scalar_first=True)
+                else:
+                    root_rot = scipy.spatial.transform.Rotation.from_rotvec(smpl_pose[0])
+                    smpl_pose[0] = (R_yup_to_zup * root_rot).as_rotvec()
         self.output.send(smpl_pose)
 
 

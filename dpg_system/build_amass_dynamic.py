@@ -207,27 +207,12 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
     # Add in rotation band pipeline 
     rotation_band_pipeline = RotationBandPipeline(sample_frequency = fps)
     # intiate a zero matrix storing rotation bands 
-    # T = number of frames 
-    # Number of joints = 22
-    # Number of bands 
-    # 3 = the x, y, z components of the band's axis-angle difference -> how a joint’s filtered 
-    # orientation changed from one frame to the next.
     rotation_band = np.zeros(
-        (T, N_JOINTS, rotation_band_pipeline.num_output_bands, 4),
+        (T, N_JOINTS, rotation_band_pipeline.num_output_bands, 3),
         dtype=np.float32,
     )
-    # Sets frame 0's first component, which is the w component, to 1.
-    # Ensures valid quaternion since [0 0 0 0] is not a valid quaternion
-    # but [1 0 0 0] is a valid quaternion (w^2 + x^2 + y^2 + z^2 = 1)
-    rotation_band[0,...,0] = 1.0  
-    # Gets the first frame (a flat array of axis-angel values),
-    # then groups the values into a 3 number rotation vector, 1 per joint 
-    # and then keeps only the first 22 joints 
-    first_frame_rotations = poses[0].reshape(-1, 3)[:N_JOINTS] 
-    first_frame_quaternions = axis_angle_to_quaternion(
-        torch.as_tensor(first_frame_rotations, dtype=torch.float32)
-    ) # Results in (22, 4) in wxyz order 
-    rotation_band_pipeline.capture(first_frame_quaternions)
+    first_frame_rotations = poses[0].reshape(-1, 3)[:N_JOINTS]
+    rotation_band_pipeline.capture(first_frame_rotations)
 
     # Betas: optional (constructor truncates to 10 internally)
     betas = None
@@ -318,8 +303,7 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
             band_result = rotation_band_pipeline.process_frame(frame_rotations)
             if band_result is not None:
                 # Add to rotation_band matrix 
-                band_quaternions = axis_angle_to_quaternion(band_result)
-                rotation_band[t] = band_quaternions.detach().cpu().numpy()
+                rotation_band[t] = band_result.detach().cpu().numpy()
 
         except Exception:
             # First few frames may produce partial results; leave zeros.
