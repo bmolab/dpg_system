@@ -309,7 +309,9 @@ make_dark_spot and np.argmin), so it builds no pages at all now.
 `np.[]_help.json` and `np.crop_help.json` are David's reworks, and
 `np.where_help.json` follows them (a make_ramps subpatcher feeding the two
 branch pictures, then threshold, condition, np.where and result in a row),
-so `make_numpy_select_help.py` no longer builds them.
+as does `np.argwhere_help.json` (noise, threshold and mask across the top, the
+found pairs and their count under it), so `make_numpy_select_help.py` builds no
+pages at all now.
 `np.mean_help.json` follows
 the same layout (a toggled glitch of 30 shows the mean jump and the median
 hold); `np.median_help.json` and `np.nanmean_help.json` are David's own
