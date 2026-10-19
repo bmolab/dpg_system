@@ -157,63 +157,7 @@ def clip_demo(init, props, see, extra=None, extra_links=None):
     return demo, links
 
 
-# ---------------------------------------------------------------------- np.clip
-body = """Holds every value of an array inside two limits: anything below min
-comes out as min, anything above max comes out as max, and everything in
-between passes untouched.
-
-Use it to keep a signal in range before it drives something that would
-misbehave outside it - colour components inside 0 to 1, a joint angle
-inside its safe range, a gain that must never go negative. It works on
-every element separately, so the output has the same shape as the input.
-
-SYNTAX:
-np.clip <min: float> <max: float>
-Defaults: min 0.0, max 1.0. With one argument only min is set.
-
-EXAMPLE:
-np.clip -0.5 0.7
-
-INPUTS and PARAMETERS:
-
-input:
-The array (a list is turned into one; a single number comes out as a
-one-value array). Every input is clipped and sent - this is the only
-inlet, and the only thing that makes the node send.
-
-min / max (drag floats on the node):
-The lower and upper limits. They are properties, not inlets, so they
-cannot be driven from the patch, and changing one does NOT send by
-itself - the next array uses it. In the demo make_sine re-sends the wave
-ten times a second, so the plot follows your drags. If min is above max,
-every value comes out as max.
-
-OUTPUTS:
-
-out array:
-The clipped array, the same shape as the input.
-
-READING THE DEMO:
-The plot draws the wave and the clipped copy over each other. Inside the
-limits the two lines are one; past them the wave carries on to 1 or -1
-while the copy runs flat along the limit - the top cut at 0.7, the bottom
-at -0.5. Drag max down towards min and the wave is squeezed into a band.
-
-ONE-SIDED VERSIONS:
-np.min caps only the top and np.max floors only the bottom - see their
-pages, and beware that the names read backwards.
-
-RELATED:
-np.min and np.max limit one side only. clamp does the same job with min
-and max on inlets, so they can be driven from the patch. t.clamp is the
-PyTorch version. np.where replaces out-of-range values with something
-other than the limit."""
-
-demo, links = clip_demo('np.clip -0.5 0.7', {'min': -0.5, 'max': 0.7},
-                        ['np.min', 'np.max', 'clamp', 't.clamp', 'np.where'])
-print(build('np.clip', 'np.clip - hold values between two limits',
-            body, demo, links, demo_width=600, text_width=760, text_height=text_h(body),
-            subpatch=SINE_SUB))
+# np.clip: its page is hand-made now (see tools/README.md).
 
 # ----------------------------------------------------------------------- np.min
 body = """Caps an array from above: every value larger than the limit is

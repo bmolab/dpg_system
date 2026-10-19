@@ -312,6 +312,9 @@ branch pictures, then threshold, condition, np.where and result in a row),
 as does `np.argwhere_help.json` (noise, threshold and mask across the top, the
 found pairs and their count under it), so `make_numpy_select_help.py` builds no
 pages at all now.
+`np.clip_help.json` is laid out the same way (make_sine, t array array, np.clip
+and pack 2 in one row, the plot under it), so `make_numpy_calc_help.py` no
+longer builds it.
 `np.mean_help.json` follows
 the same layout (a toggled glitch of 30 shows the mean jump and the median
 hold); `np.median_help.json` and `np.nanmean_help.json` are David's own
