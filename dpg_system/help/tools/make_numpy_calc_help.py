@@ -1,7 +1,8 @@
 """np limits, running totals and targets: one page per node.
 
 np.clip, np.min, np.max (one class, NumpyClipNode) were the np_clip family
-page; np.cumsum, np.cumprod, np.diff were np_cumulative;
+page; their pages are hand-made now (see tools/README.md), so this script no
+longer builds them. np.cumsum, np.cumprod, np.diff were np_cumulative;
 np.distance_from_target, np.proximity_to_target, proximity_trigger were
 np_target. Each now has its own page whose demo shows the input and the
 output, with a SEE ALSO row under it.
@@ -76,31 +77,6 @@ def set_state(path, node_name, state):
 
 
 # --------------------------------------------------------- demo subpatchers
-# Inside make_sine: metro 100 -> np.linspace 0 720 128 -> sin (degrees):
-# two cycles of a sine as one array of 128 values, re-sent ten times a second.
-SINE_SUB = {
-    'name': 'make_sine',
-    'host': 'mk',
-    'demo': [
-        {'key': 'met', 'init': 'metro 100', 'pos': (40, 40), 'w': 129, 'h': 70,
-         'props': METRO(100)},
-        {'key': 'cm', 'init': 'comment re-sends the wave ten times a second',
-         'pos': (190, 50), 'w': 320, 'h': 30},
-        {'key': 'ls', 'init': 'np.linspace 0 720 128', 'pos': (40, 130), 'w': 190, 'h': 150,
-         'props': {'start': 0.0, 'stop': 720.0, 'steps': 128, 'dtype': 'float32'}},
-        {'key': 'cs', 'init': 'comment 128 angles from 0 to 720 degrees',
-         'pos': (250, 145), 'w': 300, 'h': 30},
-        {'key': 'sn', 'init': 'sin', 'pos': (40, 300), 'w': 120, 'h': 70,
-         'props': {'degrees': True}},
-        {'key': 'cn', 'init': 'comment their sines: two cycles, from -1 to 1',
-         'pos': (180, 315), 'w': 340, 'h': 30},
-        {'key': 'out', 'init': 'out sine', 'pos': (40, 400), 'w': 150, 'h': 80},
-    ],
-    'links': [('met', '', 'ls', ''),
-              ('ls', 'linspace out', 'sn', 'in'),
-              ('sn', 'out', 'out', 'sine')],
-}
-
 # Inside make_point: two sines at different speeds make an x y point that
 # wanders over the square from -1 to 1, coming back near any spot every few
 # seconds (the path repeats every 12 seconds).
@@ -127,107 +103,7 @@ TARGET = [0.5, 0.7]
 TARGETS = [[0.5, 0.7], [-0.5, -0.7], [0.0, 0.0]]
 
 
-def clip_demo(init, props, see, extra=None, extra_links=None):
-    """make_sine -> t array array -> [the node] and the raw wave -> pack 2 ->
-    one plot with both lines, so the cut is seen against the original."""
-    demo = [
-        {'key': 'mk', 'init': 'p make_sine', 'pos': (30, 62), 'w': 170, 'h': 70},
-        {'key': 'c0', 'comment': True,
-         'text': 'a sine as an array of 128 values, sent 10 times a second',
-         'pos': (30, 150)},
-        {'key': 'tr', 'init': 't array array', 'pos': (30, 190), 'w': 140, 'h': 46},
-        {'key': 'ct', 'comment': True, 'text': 'right first: the wave as it is, then',
-         'pos': (200, 195)},
-        {'key': 'cl', 'init': init, 'pos': (30, 260), 'w': 170, 'h': 100,
-         'props': props},
-        {'key': 'c1', 'comment': True, 'text': 'drag the limit on the node',
-         'pos': (30, 265)},
-        {'key': 'pk', 'init': 'pack 2', 'pos': (30, 390), 'w': 130, 'h': 100},
-        {'key': 'pl', 'init': 'plot', 'pos': (30, 510), 'w': 308, 'h': 178,
-         'props': MULTI_PLOT(-1.2, 1.2, 128)},
-        {'key': 'c2', 'comment': True,
-         'text': 'the wave and its limited copy, drawn over each other:\nwhere they part, the copy runs flat at the limit',
-         'pos': (30, 700)},
-    ] + (extra or []) + see_also(790, see)
-    links = [('mk', 'sine', 'tr', ''),
-             ('tr', 'array', 'pk', 'in 2', 1),
-             ('tr', 'array', 'cl', 'input', 0),
-             ('cl', 'out array', 'pk', 'in 1'),
-             ('pk', 'out', 'pl', 'y')] + (extra_links or [])
-    return demo, links
-
-
-# np.clip: its page is hand-made now (see tools/README.md).
-
-# np.min: its page is hand-made now (see tools/README.md).
-
-# ----------------------------------------------------------------------- np.max
-body = """Floors an array from below: every value smaller than the limit is
-replaced by the limit, and larger values pass untouched.
-
-It is a clamp on ONE side - the bottom - applied to every element
-separately, so the output has the same shape as the input. Use it to keep
-anything downstream from seeing a negative (np.max with max 0 is a
-rectifier), or to give a level a minimum it never falls below.
-
-THE NAME READS BACKWARDS:
-np.max does not find the largest value of the array. It takes, for every
-element, the larger of that element and the limit (numpy calls this
-np.maximum) - which keeps the result at or ABOVE the limit, so the limit
-is a floor. To find the largest value in an array, the reduction, use
-np.amax.
-
-SYNTAX:
-np.max <limit: float>
-Default 1.0 - so a bare np.max raises everything below 1 up to 1.
-
-EXAMPLE:
-np.max -0.5
-
-INPUTS and PARAMETERS:
-
-input:
-The array (a list is turned into one; a single number comes out as a
-one-value array). Every input is floored and sent - this is the only
-inlet, and the only thing that makes the node send.
-
-max (drag float on the node):
-The floor. A property, not an inlet: it cannot be driven from the patch,
-and changing it does NOT send by itself - the next array uses it. In the
-demo make_sine re-sends the wave ten times a second.
-
-OUTPUTS:
-
-out array:
-The floored array, the same shape as the input.
-
-READING THE DEMO:
-The plot draws the wave and the floored copy over each other. Above the
-limit they are one line; below it the wave dips to -1 while the copy runs
-flat at -0.5. Drag max to 0 and every trough is gone. np.amax, below,
-reads the same wave and sends ONE number, its highest value (1): that is
-the reduction the name might make you expect.
-
-RELATED:
-np.min is the ceiling, the other side. np.clip limits both sides at
-once. np.amax finds the largest value. The max node takes the larger of
-its input and an operand on an inlet, element by element, so its limit
-can be driven from the patch. t.maximum is the PyTorch version (the
-larger of two tensors, element by element)."""
-
-demo, links = clip_demo(
-    'np.max -0.5', {'max': -0.5},
-    ['np.min', 'np.clip', 'np.amax', 'max', 't.maximum'],
-    extra=[{'key': 'am', 'init': 'np.amax', 'pos': (400, 260), 'w': 140, 'h': 70},
-           {'key': 'f1', 'init': 'float', 'pos': (400, 350), 'w': 127, 'h': 42,
-            'props': FLT},
-           {'key': 'c3', 'comment': True,
-            'text': 'np.amax of the same wave:\none number, its highest value',
-            'pos': (400, 400)}],
-    extra_links=[('mk', 'sine', 'am', 'in'), ('am', 'amax', 'f1', '')])
-print(build('np.max', 'np.max - floor values from below (element by element)',
-            body, demo, links, demo_width=600, text_width=760, text_height=text_h(body),
-            subpatch=SINE_SUB))
+# np.clip, np.min, np.max: their pages are hand-made now (see tools/README.md).
 
 # -------------------------------------------------------------------- np.cumsum
 body = """Replaces each value of an array with the running total up to and

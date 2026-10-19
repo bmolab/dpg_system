@@ -1,6 +1,6 @@
 {
     "name": "np.max_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.max_help.json",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/max/out/np.max_help.json",
     "patches": {
         "0": {
             "height": 560,
@@ -9,13 +9,13 @@
                 160,
                 160
             ],
-            "id": 1088,
+            "id": 1125,
             "name": "make_sine",
-            "parent_node_uuid": 348,
+            "parent_node_uuid": 385,
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 1125,
+                    "id": 1162,
                     "position_x": 0,
                     "position_y": 0,
                     "width": 9,
@@ -35,7 +35,7 @@
                 "1": {
                     "name": "metro",
                     "init": "metro 100",
-                    "id": 1162,
+                    "id": 1199,
                     "position_x": 40,
                     "position_y": 40,
                     "width": 129,
@@ -64,7 +64,7 @@
                 "2": {
                     "name": "comment",
                     "init": "comment re-sends the wave ten times a second",
-                    "id": 1199,
+                    "id": 1236,
                     "position_x": 190,
                     "position_y": 50,
                     "width": 320,
@@ -84,7 +84,7 @@
                 "3": {
                     "name": "np.linspace",
                     "init": "np.linspace 0 720 128",
-                    "id": 1236,
+                    "id": 1273,
                     "position_x": 40,
                     "position_y": 130,
                     "width": 190,
@@ -118,7 +118,7 @@
                 "4": {
                     "name": "comment",
                     "init": "comment 128 angles from 0 to 720 degrees",
-                    "id": 1273,
+                    "id": 1310,
                     "position_x": 250,
                     "position_y": 145,
                     "width": 300,
@@ -138,7 +138,7 @@
                 "5": {
                     "name": "sin",
                     "init": "sin",
-                    "id": 1310,
+                    "id": 1347,
                     "position_x": 40,
                     "position_y": 300,
                     "width": 120,
@@ -157,7 +157,7 @@
                 "6": {
                     "name": "comment",
                     "init": "comment their sines: two cycles, from -1 to 1",
-                    "id": 1347,
+                    "id": 1384,
                     "position_x": 180,
                     "position_y": 315,
                     "width": 340,
@@ -177,7 +177,7 @@
                 "7": {
                     "name": "out",
                     "init": "out sine",
-                    "id": 1384,
+                    "id": 1421,
                     "position_x": 40,
                     "position_y": 400,
                     "width": 150,
@@ -190,31 +190,31 @@
             },
             "links": {
                 "0": {
-                    "source_node": 1162,
+                    "source_node": 1199,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 1236,
+                    "dest_node": 1273,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "1": {
-                    "source_node": 1236,
+                    "source_node": 1273,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "linspace out",
-                    "dest_node": 1310,
+                    "dest_node": 1347,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "2": {
-                    "source_node": 1310,
+                    "source_node": 1347,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 1384,
+                    "dest_node": 1421,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "sine"
@@ -222,15 +222,15 @@
             }
         },
         "1": {
-            "height": 1002,
-            "width": 1754,
+            "height": 1044,
+            "width": 1582,
             "position": [
                 100,
                 100
             ],
-            "id": 1051,
+            "id": 1088,
             "name": "np.max_help",
-            "path": "/Users/drokeby/dpg_system/dpg_system/help/np.max_help.json",
+            "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/max/out/np.max_help.json",
             "nodes": {
                 "0": {
                     "name": "",
@@ -257,7 +257,7 @@
                     "id": 274,
                     "position_x": 24,
                     "position_y": -4,
-                    "width": 660,
+                    "width": 636,
                     "height": 42,
                     "visibility": "show_all",
                     "draggable": true,
@@ -279,17 +279,17 @@
                 "2": {
                     "name": "text_block",
                     "id": 311,
-                    "position_x": 946,
-                    "position_y": 45,
+                    "position_x": 782,
+                    "position_y": 26,
                     "width": 768,
-                    "height": 826,
+                    "height": 916,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Floors an array from below: every value smaller than the limit is replaced by the limit, and larger values pass untouched.\n\nIt is a clamp on ONE side - the bottom - applied to every element separately, so the output has the same shape as the input. Use it to keep anything downstream from seeing a negative (np.max with max 0 is a rectifier), or to give a level a minimum it never falls below.\n\nTHE NAME READS BACKWARDS:\nnp.max does not find the largest value of the array. It takes, for every element, the larger of that element and the limit (numpy calls this np.maximum) - which keeps the result at or ABOVE the limit, so the limit is a floor. To find the largest value in an array, the reduction, use np.amax.\n\nSYNTAX:\nnp.max <limit: float>\nDefault 1.0 - so a bare np.max raises everything below 1 up to 1.\n\nEXAMPLE:\nnp.max -0.5\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one; a single number comes out as a one-value array). Every input is floored and sent - this is the only inlet, and the only thing that makes the node send.\n\nmax (drag float on the node):\nThe floor. A property, not an inlet: it cannot be driven from the patch, and changing it does NOT send by itself - the next array uses it. In the demo make_sine re-sends the wave ten times a second.\n\nOUTPUTS:\n\nout array:\nThe floored array, the same shape as the input.\n\nREADING THE DEMO:\nThe plot draws the wave and the floored copy over each other. Above the limit they are one line; below it the wave dips to -1 while the copy runs flat at -0.5. Drag max to 0 and every trough is gone. np.amax, below, reads the same wave and sends ONE number, its highest value (1): that is the reduction the name might make you expect.\n\nRELATED:\nnp.min is the ceiling, the other side. np.clip limits both sides at once. np.amax finds the largest value. The max node takes the larger of its input and an operand on an inlet, element by element, so its limit can be driven from the patch. t.maximum is the PyTorch version (the larger of two tensors, element by element).",
+                            "value": "Floors an array from below: every value smaller than the limit is replaced by the limit, and larger values pass untouched.\n\nIt is a clamp on ONE side - the bottom - applied to every element separately, so the output has the same shape as the input. Use it to keep anything downstream from seeing a negative (np.max with max 0 is a rectifier), or to give a level a minimum it never falls below.\n\nTHE NAME READS BACKWARDS:\nnp.max does not find the largest value of the array. It takes, for every element, the larger of that element and the limit (numpy calls this np.maximum) - which keeps the result at or ABOVE the limit, so the limit is a floor. To find the largest value in an array, the reduction, use np.amax.\n\nSYNTAX:\nnp.max <limit: float>\nDefault 1.0 - so a bare np.max raises everything below 1 up to 1.\n\nEXAMPLE:\nnp.max -0.5\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one; a single number comes out as a one-value array). Every input is floored and sent - this is the only inlet, and the only thing that makes the node send.\n\nmax (drag float on the node):\nThe floor. A property, not an inlet: it cannot be driven from the patch, and changing it does NOT send by itself - the next array uses it. In the demo make_sine re-sends the wave ten times a second.\n\nOUTPUTS:\n\nout array:\nThe floored array, the same shape as the input.\n\nREADING THE DEMO:\nmake_sine sends two cycles of a sine, 128 values from -1 to 1, ten times a second. t array array sends the wave as it is to pack 2 first (its right outlet), then to np.max, whose floored copy completes the pack. The plot draws the two over each other. Above the limit they are one line; below it the wave dips to -1 while the copy runs flat at -0.5. Drag the floor to 0 and every trough is gone. np.amax, under the plot, reads the same wave and sends ONE number, its highest value (1): that is the reduction the name might make you expect.\n\nRELATED:\nnp.min is the ceiling, the other side. np.clip limits both sides at once. np.amax finds the largest value. The max node takes the larger of its input and an operand on an inlet, element by element, so its limit can be driven from the patch. t.maximum is the PyTorch version (the larger of two tensors, element by element).",
                             "value_type": "str"
                         },
                         "1": {
@@ -304,7 +304,7 @@
                         },
                         "3": {
                             "name": "height",
-                            "value": 810,
+                            "value": 900,
                             "value_type": "int"
                         },
                         "4": {
@@ -313,29 +313,15 @@
                             "value_type": "str"
                         }
                     },
-                    "text": "Floors an array from below: every value smaller than the limit is replaced by the limit, and larger values pass untouched.\n\nIt is a clamp on ONE side - the bottom - applied to every element separately, so the output has the same shape as the input. Use it to keep anything downstream from seeing a negative (np.max with max 0 is a rectifier), or to give a level a minimum it never falls below.\n\nTHE NAME READS BACKWARDS:\nnp.max does not find the largest value of the array. It takes, for every element, the larger of that element and the limit (numpy calls this np.maximum) - which keeps the result at or ABOVE the limit, so the limit is a floor. To find the largest value in an array, the reduction, use np.amax.\n\nSYNTAX:\nnp.max <limit: float>\nDefault 1.0 - so a bare np.max raises everything below 1 up to 1.\n\nEXAMPLE:\nnp.max -0.5\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one; a single number comes out as a one-value array). Every input is floored and sent - this is the only inlet, and the only thing that makes the node send.\n\nmax (drag float on the node):\nThe floor. A property, not an inlet: it cannot be driven from the patch, and changing it does NOT send by itself - the next array uses it. In the demo make_sine re-sends the wave ten times a second.\n\nOUTPUTS:\n\nout array:\nThe floored array, the same shape as the input.\n\nREADING THE DEMO:\nThe plot draws the wave and the floored copy over each other. Above the limit they are one line; below it the wave dips to -1 while the copy runs flat at -0.5. Drag max to 0 and every trough is gone. np.amax, below, reads the same wave and sends ONE number, its highest value (1): that is the reduction the name might make you expect.\n\nRELATED:\nnp.min is the ceiling, the other side. np.clip limits both sides at once. np.amax finds the largest value. The max node takes the larger of its input and an operand on an inlet, element by element, so its limit can be driven from the patch. t.maximum is the PyTorch version (the larger of two tensors, element by element)."
+                    "text": "Floors an array from below: every value smaller than the limit is replaced by the limit, and larger values pass untouched.\n\nIt is a clamp on ONE side - the bottom - applied to every element separately, so the output has the same shape as the input. Use it to keep anything downstream from seeing a negative (np.max with max 0 is a rectifier), or to give a level a minimum it never falls below.\n\nTHE NAME READS BACKWARDS:\nnp.max does not find the largest value of the array. It takes, for every element, the larger of that element and the limit (numpy calls this np.maximum) - which keeps the result at or ABOVE the limit, so the limit is a floor. To find the largest value in an array, the reduction, use np.amax.\n\nSYNTAX:\nnp.max <limit: float>\nDefault 1.0 - so a bare np.max raises everything below 1 up to 1.\n\nEXAMPLE:\nnp.max -0.5\n\nINPUTS and PARAMETERS:\n\ninput:\nThe array (a list is turned into one; a single number comes out as a one-value array). Every input is floored and sent - this is the only inlet, and the only thing that makes the node send.\n\nmax (drag float on the node):\nThe floor. A property, not an inlet: it cannot be driven from the patch, and changing it does NOT send by itself - the next array uses it. In the demo make_sine re-sends the wave ten times a second.\n\nOUTPUTS:\n\nout array:\nThe floored array, the same shape as the input.\n\nREADING THE DEMO:\nmake_sine sends two cycles of a sine, 128 values from -1 to 1, ten times a second. t array array sends the wave as it is to pack 2 first (its right outlet), then to np.max, whose floored copy completes the pack. The plot draws the two over each other. Above the limit they are one line; below it the wave dips to -1 while the copy runs flat at -0.5. Drag the floor to 0 and every trough is gone. np.amax, under the plot, reads the same wave and sends ONE number, its highest value (1): that is the reduction the name might make you expect.\n\nRELATED:\nnp.min is the ceiling, the other side. np.clip limits both sides at once. np.amax finds the largest value. The max node takes the larger of its input and an operand on an inlet, element by element, so its limit can be driven from the patch. t.maximum is the PyTorch version (the larger of two tensors, element by element)."
                 },
                 "3": {
-                    "name": "p",
-                    "id": 348,
-                    "position_x": 30,
-                    "position_y": 62,
-                    "width": 72,
-                    "height": 42,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "p make_sine",
-                    "patcher id": 1088
-                },
-                "4": {
-                    "init": "comment a sine as an array of 128 values, sent 10 times a second",
+                    "init": "comment the wave",
                     "name": "comment",
-                    "id": 385,
-                    "position_x": 556,
-                    "position_y": 150,
-                    "width": 353,
+                    "id": 348,
+                    "position_x": 28,
+                    "position_y": 53,
+                    "width": 56,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -343,7 +329,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "a sine as an array of 128 values, sent 10 times a second",
+                            "value": "the wave",
                             "value_type": "str"
                         },
                         "1": {
@@ -352,28 +338,67 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "a sine as an array of 128 values, sent 10 times a second"
+                    "comment": "the wave"
+                },
+                "4": {
+                    "name": "p",
+                    "id": 385,
+                    "position_x": 28,
+                    "position_y": 92,
+                    "width": 100,
+                    "height": 70,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {},
+                    "init": "p make_sine",
+                    "patcher id": 1125
                 },
                 "5": {
-                    "name": "t",
+                    "init": "comment the wave first, then",
+                    "name": "comment",
                     "id": 422,
-                    "position_x": 30,
-                    "position_y": 190,
-                    "width": 39,
-                    "height": 56,
+                    "position_x": 170,
+                    "position_y": 53,
+                    "width": 140,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the wave first, then",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the wave first, then"
+                },
+                "6": {
+                    "name": "t",
+                    "id": 459,
+                    "position_x": 170,
+                    "position_y": 92,
+                    "width": 140,
+                    "height": 46,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "t array array"
                 },
-                "6": {
-                    "init": "comment right first: the wave as it is, then",
+                "7": {
+                    "init": "comment drag the floor",
                     "name": "comment",
-                    "id": 459,
-                    "position_x": 556,
-                    "position_y": 195,
-                    "width": 230,
+                    "id": 496,
+                    "position_x": 350,
+                    "position_y": 53,
+                    "width": 98,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -381,7 +406,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "right first: the wave as it is, then",
+                            "value": "drag the floor",
                             "value_type": "str"
                         },
                         "1": {
@@ -390,15 +415,15 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "right first: the wave as it is, then"
+                    "comment": "drag the floor"
                 },
-                "7": {
+                "8": {
                     "name": "np.max",
-                    "id": 496,
-                    "position_x": 30,
-                    "position_y": 260,
-                    "width": 111,
-                    "height": 56,
+                    "id": 533,
+                    "position_x": 350,
+                    "position_y": 92,
+                    "width": 170,
+                    "height": 80,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -411,13 +436,13 @@
                     },
                     "init": "np.max -0.5"
                 },
-                "8": {
-                    "init": "comment drag the limit on the node",
+                "9": {
+                    "init": "comment both into one plot",
                     "name": "comment",
-                    "id": 533,
-                    "position_x": 556,
-                    "position_y": 265,
-                    "width": 168,
+                    "id": 570,
+                    "position_x": 560,
+                    "position_y": 53,
+                    "width": 126,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -425,7 +450,7 @@
                     "properties": {
                         "0": {
                             "name": "text",
-                            "value": "drag the limit on the node",
+                            "value": "both into one plot",
                             "value_type": "str"
                         },
                         "1": {
@@ -434,28 +459,53 @@
                             "value_type": "str"
                         }
                     },
-                    "comment": "drag the limit on the node"
+                    "comment": "both into one plot"
                 },
-                "9": {
+                "10": {
                     "name": "pack",
-                    "id": 570,
-                    "position_x": 30,
-                    "position_y": 390,
-                    "width": 33,
-                    "height": 56,
+                    "id": 607,
+                    "position_x": 560,
+                    "position_y": 92,
+                    "width": 130,
+                    "height": 100,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "pack 2"
                 },
-                "10": {
+                "11": {
+                    "init": "comment the wave and its floored copy: below -0.5 the copy runs flat",
+                    "name": "comment",
+                    "id": 644,
+                    "position_x": 28,
+                    "position_y": 225,
+                    "width": 420,
+                    "height": 30,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "text",
+                            "value": "the wave and its floored copy: below -0.5 the copy runs flat",
+                            "value_type": "str"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "str"
+                        }
+                    },
+                    "comment": "the wave and its floored copy: below -0.5 the copy runs flat"
+                },
+                "12": {
                     "name": "plot",
-                    "id": 607,
-                    "position_x": 30,
-                    "position_y": 510,
-                    "width": 308,
-                    "height": 178,
+                    "id": 681,
+                    "position_x": 28,
+                    "position_y": 260,
+                    "width": 700,
+                    "height": 300,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -467,12 +517,12 @@
                         },
                         "1": {
                             "name": "width",
-                            "value": 300,
+                            "value": 680,
                             "value_type": "int"
                         },
                         "2": {
                             "name": "height",
-                            "value": 128,
+                            "value": 240,
                             "value_type": "int"
                         },
                         "3": {
@@ -512,51 +562,36 @@
                         }
                     }
                 },
-                "11": {
-                    "name": "text_block",
-                    "id": 644,
-                    "annotation": true,
-                    "position_x": 556,
-                    "position_y": 700,
-                    "width": 360,
-                    "height": 40,
+                "13": {
+                    "init": "comment not the same thing: np.amax gives one number, the highest value",
+                    "name": "comment",
+                    "id": 718,
+                    "position_x": 28,
+                    "position_y": 590,
+                    "width": 441,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
-                            "name": "block",
-                            "value": "the wave and its limited copy, drawn over each other:\nwhere they part, the copy runs flat at the limit",
+                            "name": "text",
+                            "value": "not the same thing: np.amax gives one number, the highest value",
                             "value_type": "str"
                         },
                         "1": {
-                            "name": "lock",
-                            "value": true,
-                            "value_type": "bool"
-                        },
-                        "2": {
-                            "name": "width",
-                            "value": 352,
-                            "value_type": "int"
-                        },
-                        "3": {
-                            "name": "height",
-                            "value": 24,
-                            "value_type": "int"
-                        },
-                        "4": {
-                            "name": "text_size",
+                            "name": "font size",
                             "value": "24",
                             "value_type": "str"
                         }
                     },
-                    "text": "the wave and its limited copy, drawn over each other:\nwhere they part, the copy runs flat at the limit"
+                    "comment": "not the same thing: np.amax gives one number, the highest value"
                 },
-                "12": {
+                "14": {
                     "name": "np.amax",
-                    "id": 681,
-                    "position_x": 400,
-                    "position_y": 260,
+                    "id": 755,
+                    "position_x": 28,
+                    "position_y": 625,
                     "width": 117,
                     "height": 56,
                     "visibility": "show_all",
@@ -564,11 +599,11 @@
                     "presentation_state": "show_all",
                     "properties": {}
                 },
-                "13": {
+                "15": {
                     "name": "float",
-                    "id": 718,
-                    "position_x": 400,
-                    "position_y": 350,
+                    "id": 792,
+                    "position_x": 170,
+                    "position_y": 630,
                     "width": 130,
                     "height": 42,
                     "visibility": "show_all",
@@ -592,118 +627,78 @@
                         }
                     }
                 },
-                "14": {
-                    "name": "text_block",
-                    "id": 755,
-                    "annotation": true,
-                    "position_x": 556,
-                    "position_y": 400,
-                    "width": 212,
-                    "height": 40,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "block",
-                            "value": "np.amax of the same wave:\none number, its highest value",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "lock",
-                            "value": true,
-                            "value_type": "bool"
-                        },
-                        "2": {
-                            "name": "width",
-                            "value": 204,
-                            "value_type": "int"
-                        },
-                        "3": {
-                            "name": "height",
-                            "value": 24,
-                            "value_type": "int"
-                        },
-                        "4": {
-                            "name": "text_size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "text": "np.amax of the same wave:\none number, its highest value"
-                },
-                "15": {
+                "16": {
                     "name": "help_link",
-                    "id": 792,
+                    "id": 829,
                     "position_x": 30,
-                    "position_y": 824,
+                    "position_y": 754,
                     "width": 54,
-                    "height": 44,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "help_link np.min"
                 },
-                "16": {
+                "17": {
                     "name": "help_link",
-                    "id": 829,
+                    "id": 866,
                     "position_x": 100,
-                    "position_y": 824,
+                    "position_y": 754,
                     "width": 60,
-                    "height": 44,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "help_link np.clip"
                 },
-                "17": {
+                "18": {
                     "name": "help_link",
-                    "id": 866,
+                    "id": 903,
                     "position_x": 176,
-                    "position_y": 824,
+                    "position_y": 754,
                     "width": 60,
-                    "height": 44,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "help_link np.amax"
                 },
-                "18": {
+                "19": {
                     "name": "help_link",
-                    "id": 903,
+                    "id": 940,
                     "position_x": 252,
-                    "position_y": 824,
+                    "position_y": 754,
                     "width": 35,
-                    "height": 44,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "help_link max"
                 },
-                "19": {
+                "20": {
                     "name": "help_link",
-                    "id": 940,
+                    "id": 977,
                     "position_x": 303,
-                    "position_y": 824,
+                    "position_y": 754,
                     "width": 73,
-                    "height": 44,
+                    "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
                     "init": "help_link t.maximum"
                 },
-                "20": {
+                "21": {
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
-                    "id": 977,
+                    "id": 1014,
                     "position_x": 30,
-                    "position_y": 790,
-                    "width": 156,
+                    "position_y": 720,
+                    "width": 168,
                     "height": 30,
                     "visibility": "show_all",
                     "draggable": true,
@@ -722,11 +717,11 @@
                     },
                     "comment": "SEE ALSO - click to open"
                 },
-                "21": {
+                "22": {
                     "name": "close",
-                    "id": 1014,
+                    "id": 1051,
                     "position_x": 24,
-                    "position_y": 898,
+                    "position_y": 864,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",
@@ -743,71 +738,71 @@
             },
             "links": {
                 "0": {
-                    "source_node": 348,
+                    "source_node": 385,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "sine",
-                    "dest_node": 422,
+                    "dest_node": 459,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "1": {
-                    "source_node": 422,
+                    "source_node": 459,
                     "source_node_name": "",
                     "source_output_index": 1,
                     "source_output_name": "array",
-                    "dest_node": 570,
+                    "dest_node": 607,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in 2"
                 },
                 "2": {
-                    "source_node": 422,
+                    "source_node": 459,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "array",
-                    "dest_node": 496,
+                    "dest_node": 533,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "input"
                 },
                 "3": {
-                    "source_node": 496,
+                    "source_node": 533,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out array",
-                    "dest_node": 570,
+                    "dest_node": 607,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in 1"
                 },
                 "4": {
-                    "source_node": 570,
+                    "source_node": 607,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 607,
+                    "dest_node": 681,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "y"
                 },
                 "5": {
-                    "source_node": 348,
+                    "source_node": 385,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "sine",
-                    "dest_node": 681,
+                    "dest_node": 755,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": "in"
                 },
                 "6": {
-                    "source_node": 681,
+                    "source_node": 755,
                     "source_node_name": "",
                     "source_output_index": 0,
                     "source_output_name": "amax",
-                    "dest_node": 718,
+                    "dest_node": 792,
                     "dest_node_name": "",
                     "dest_input_index": 0,
                     "dest_input_name": ""
