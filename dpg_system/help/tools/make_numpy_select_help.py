@@ -1,5 +1,5 @@
-"""np selecting: np.where, np.argwhere -- one page each. (The np.[] and
-np.crop pages are hand-made.)
+"""np selecting: np.argwhere. (The np.[], np.crop and np.where pages are
+hand-made.)
 
 These were one family page (np_select). Each now has its own page whose demo
 shows the source array and the selected part side by side, with a SEE ALSO row
@@ -37,107 +37,7 @@ def see_also(y, stems, x=30):
 
 # np.crop: its page is hand-made now (see tools/README.md).
 
-# --------------------------------------------------------------------- np.where
-body = """Builds a new array cell by cell: where the condition is true it takes the value from 'if true', elsewhere from 'if false'.
-
-Think of it as a stencil or a masked blend rather than a lookup. Feed it a
-comparison as the condition and you have "use this where the reading is
-good and that where it is not" across a whole array in one step - no
-loop, no branching. Replace bad readings with a fallback, paste one image
-into another through a mask, zero everything below a threshold.
-
-SYNTAX:
-np.where
-It takes no arguments.
-
-INPUTS and PARAMETERS:
-
-condition:
-The mask. Usually the result of a comparison node (>, <, ==) on an array,
-but any array works: a non-zero value counts as true. This is the only
-inlet that makes the node send.
-
-if true / if false:
-The values to choose from. Each can be an array the same shape as the
-condition, or a single number used everywhere - 'if false' 0 blanks every
-cell the condition rejects. These inlets are cold: they are stored, and
-used when the next condition arrives. Send them FIRST.
-
-The node sends NOTHING until both 'if true' and 'if false' have received
-something. A np.where with one branch unwired stays silent and gives no
-sign why. If the shapes cannot be matched up (a 10 x 10 condition with a
-6 x 6 'if true'), nothing is sent either; with verbose on the console
-names the shapes.
-
-OUTPUTS:
-
-selected:
-An array the shape of the condition, each cell from one source or the
-other.
-
-READING THE DEMO:
-np.grid makes a 10 x 10 square of points from -1 to 1. Two pictures come
-out of it: 'if true' is the x of each point (dark on the left, bright on
-the right), 'if false' is the y (dark at the top, bright at the bottom).
-np.linalg.norm gives each point's distance from the centre, and < 0.75
-turns that into the condition: a white disc, true inside, black outside.
-The result shows the left-to-right ramp inside the disc and the top-to-
-bottom ramp around it. Drag the number on the < node and the disc grows
-or shrinks.
-
-The 't array array' fires right to left, so both pictures reach np.where
-before the condition does - the order matters, because only the condition
-makes it send.
-
-RELATED:
-np.argwhere answers a different question about the same mask: not what
-values to use, but WHERE the true cells are. The comparison nodes (>, <,
-...) make the condition. np.clip limits values without a mask. In PyTorch,
-t.masked_select (on the t.index_select page) takes out just the values
-where a mask is true. np.[] selects by position."""
-
-demo = [
-    {'key': 'met', 'init': 'metro 100', 'pos': (30, 62), 'w': 129, 'h': 70,
-     'props': {'on': True, 'period': 100.0, 'units': 'milliseconds'}},
-    {'key': 'c0', 'comment': True, 'text': 'remakes the grid 10 times a second',
-     'pos': (30, 70)},
-    {'key': 'gr', 'init': 'np.grid -1 1 -1 1 10 10', 'pos': (30, 150), 'w': 200, 'h': 220,
-     'props': {'min x': -1.0, 'max x': 1.0, 'min y': -1.0, 'max y': 1.0,
-               'divisions x': 10, 'divisions y': 10, 'z': 0.0}},
-    {'key': 'tr', 'init': 't array array', 'pos': (30, 390), 'w': 140, 'h': 46},
-    {'key': 'sx', 'init': 'np.[] :,:,0', 'pos': (250, 470), 'w': 150, 'h': 70},
-    {'key': 'sy', 'init': 'np.[] :,:,1', 'pos': (470, 470), 'w': 150, 'h': 70},
-    {'key': 'hx', 'init': 'heat_map', 'pos': (250, 560), 'w': 208, 'h': 250,
-     'props': HM(200, 200, 10, -1.0, 1.0, fmt='none')},
-    {'key': 'hy', 'init': 'heat_map', 'pos': (470, 560), 'w': 208, 'h': 250,
-     'props': HM(200, 200, 10, -1.0, 1.0, fmt='none')},
-    {'key': 'c1', 'comment': True, 'text': "'if true': x of each point. 'if false': y",
-     'pos': (250, 570)},
-    {'key': 'nm', 'init': 'np.linalg.norm', 'pos': (30, 470), 'w': 160, 'h': 70,
-     'props': {'axis': '2'}},
-    {'key': 'lt', 'init': '< 0.75', 'pos': (30, 560), 'w': 130, 'h': 70,
-     'props': {'': 0.75, 'output_type': 'bool'}},
-    {'key': 'c2', 'comment': True, 'text': 'drag 0.75: the radius of the disc',
-     'pos': (30, 570)},
-    {'key': 'hm', 'init': 'heat_map', 'pos': (30, 840), 'w': 208, 'h': 250,
-     'props': HM(200, 200, 10, 0.0, 1.0, fmt='none', color='hot')},
-    {'key': 'c3', 'comment': True, 'text': 'the condition: true inside the disc',
-     'pos': (30, 850)},
-    {'key': 'wh', 'init': 'np.where', 'pos': (470, 840), 'w': 160, 'h': 100},
-    {'key': 'hr', 'init': 'heat_map', 'pos': (470, 960), 'w': 208, 'h': 250,
-     'props': HM(200, 200, 10, -1.0, 1.0, fmt='none')},
-    {'key': 'c4', 'comment': True, 'text': 'x inside the disc, y outside it',
-     'pos': (470, 970)},
-] + see_also(1240, ['np.argwhere', 'greater', 'np.clip', 't.index_select', 'np.[]'])
-links = [('met', '', 'gr', ''), ('gr', 'grid points', 'tr', ''),
-         ('tr', 'array', 'sx', 'tensor in', 1), ('tr', 'array', 'sy', 'tensor in', 1),
-         ('sx', 'output', 'hx', 'y'), ('sy', 'output', 'hy', 'y'),
-         ('sx', 'output', 'wh', 'if true'), ('sy', 'output', 'wh', 'if false'),
-         ('tr', 'array', 'nm', 'input', 0), ('nm', 'norm', 'lt', 'in'),
-         ('lt', 'result', 'hm', 'y'), ('lt', 'result', 'wh', 'condition'),
-         ('wh', 'selected', 'hr', 'y')]
-print(build('np.where', 'np.where - choose between two arrays by a mask', body, demo, links,
-            demo_width=720, text_width=760, text_height=1000))
+# np.where: its page is hand-made now (see tools/README.md).
 
 # ------------------------------------------------------------------ np.argwhere
 body = """Lists the positions of every true (non-zero) cell in an array.
