@@ -2,10 +2,11 @@
 
 np.clip, np.min, np.max (one class, NumpyClipNode) were the np_clip family
 page; their pages are hand-made now (see tools/README.md), so this script no
-longer builds them. np.cumsum, np.cumprod, np.diff were np_cumulative;
-np.distance_from_target, np.proximity_to_target, proximity_trigger were
-np_target. Each now has its own page whose demo shows the input and the
-output, with a SEE ALSO row under it.
+longer builds them. np.cumsum, np.cumprod, np.diff were np_cumulative (the
+np.cumsum page is hand-made now too); np.distance_from_target,
+np.proximity_to_target, proximity_trigger were np_target. Each now has its
+own page whose demo shows the input and the output, with a SEE ALSO row
+under it.
 """
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -105,95 +106,7 @@ TARGETS = [[0.5, 0.7], [-0.5, -0.7], [0.0, 0.0]]
 
 # np.clip, np.min, np.max: their pages are hand-made now (see tools/README.md).
 
-# -------------------------------------------------------------------- np.cumsum
-body = """Replaces each value of an array with the running total up to and
-including it: the first value, then the first two added, then the first
-three, and so on.
-
-A sum gives you the total; a cumulative sum gives you the total SO FAR at
-every point. Use it to turn steps into a path (movements into positions,
-speeds into distance travelled), to turn a histogram into a cumulative
-distribution, or to turn a list of durations into start times.
-
-SYNTAX:
-np.cumsum <axis: int>
-Default axis -1, the last axis: along each row.
-
-EXAMPLE:
-np.cumsum
-
-INPUTS and PARAMETERS:
-
-in:
-The array (a list is turned into one). Every input is summed and sent -
-the only inlet that makes the node send. A single number has no axis to
-run along, and sends nothing.
-
-axis (int box, also an inlet):
-Which way to run. For a 2-D array, -1 or 1 runs along each row on its
-own, 0 or -2 runs down each column. Negative counts from the end. An axis
-the array does not have sends nothing. Changing it does not send by
-itself; the next array uses it.
-
-OUTPUTS:
-
-cumsum:
-The running totals, the same shape as the input. The last value is the
-sum of the whole row (what np.sum would give).
-
-READING THE DEMO:
-Top: np.rand makes 200 random steps between -1 and 1, a new set every
-half second. The upper plot shows them - noise, with no shape. The lower plot
-is their cumsum: a random walk, the path you get by taking those steps
-one after another. Drag np.rand's max up to 1.2 (or min down) and the
-steps are no longer balanced: the walk drifts steadily up (or down).
-
-Bottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a
-constant is a straight line whose slope is the constant. Edit the
-message (2 2 2, or 1 -1 1 -1) and click it.
-
-RELATED:
-np.diff is the reverse: it turns a path back into its steps. np.cumprod
-multiplies instead of adding. accumulate keeps a running total of a
-STREAM, one number at a time. np.sum gives only the final total.
-t.cumsum is the PyTorch version."""
-
-demo = [
-    {'key': 'met', 'init': 'metro 500', 'pos': (30, 62), 'w': 129, 'h': 70,
-     'props': METRO(500)},
-    {'key': 'c0', 'comment': True, 'text': 'new steps twice a second', 'pos': (30, 70)},
-    {'key': 'rnd', 'init': 'np.rand 200', 'pos': (30, 150), 'w': 160, 'h': 140,
-     'props': {'min': -1.0, 'max': 1.0, 'dim 0': 200, 'dtype': 'float32'}},
-    {'key': 'c1', 'comment': True, 'text': '200 steps between min and max - drag them',
-     'pos': (30, 155)},
-    {'key': 'p1', 'init': 'plot', 'pos': (30, 310), 'w': 308, 'h': 178,
-     'props': ARRAY_PLOT(-1.5, 1.5, 200)},
-    {'key': 'c2', 'comment': True, 'text': 'the steps: noise', 'pos': (30, 315)},
-    {'key': 'cs', 'init': 'np.cumsum', 'pos': (30, 510), 'w': 150, 'h': 70,
-     'props': {'axis': -1}},
-    {'key': 'p2', 'init': 'plot', 'pos': (30, 600), 'w': 308, 'h': 178,
-     'props': ARRAY_PLOT(-30.0, 30.0, 200)},
-    {'key': 'c3', 'comment': True, 'text': 'their running total: a random walk (-30 to 30)',
-     'pos': (30, 605)},
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 820), 'w': 88, 'h': 46},
-    {'key': 'm1', 'init': 'message', 'pos': (30, 880), 'w': 300, 'h': 42,
-     'props': {'text in': '1 1 1 1 1 1 1 1 1 1', 'font size': '24'}},
-    {'key': 'c4', 'comment': True, 'text': 'ten 1s - edit and click', 'pos': (30, 885)},
-    {'key': 'h1', 'init': 'heat_map', 'pos': (30, 940), 'w': 468, 'h': 110,
-     'props': HM(460, 60, 1, miny=0.0, maxy=10.0, fmt='%.0f')},
-    {'key': 'c5', 'comment': True, 'text': 'in: ten 1s', 'pos': (30, 945)},
-    {'key': 'cs2', 'init': 'np.cumsum', 'pos': (30, 1070), 'w': 150, 'h': 70,
-     'props': {'axis': -1}},
-    {'key': 'h2', 'init': 'heat_map', 'pos': (30, 1160), 'w': 468, 'h': 110,
-     'props': HM(460, 60, 1, miny=0.0, maxy=10.0, fmt='%.0f')},
-    {'key': 'c6', 'comment': True, 'text': 'out: 1 to 10, a ramp', 'pos': (30, 1165)},
-] + see_also(1300, ['np.diff', 'np.cumprod', 'accumulate', 'np.sum', 't.cumsum'])
-links = [('met', '', 'rnd', ''), ('rnd', 'random array', 'p1', 'y'),
-         ('rnd', 'random array', 'cs', 'in'), ('cs', 'cumsum', 'p2', 'y'),
-         ('lb', 'out', 'm1', ''), ('m1', 'message out', 'h1', 'y'),
-         ('m1', 'message out', 'cs2', 'in'), ('cs2', 'cumsum', 'h2', 'y')]
-print(build('np.cumsum', 'np.cumsum - the running total',
-            body, demo, links, demo_width=600, text_width=760, text_height=text_h(body)))
+# np.cumsum: its page is hand-made now (see tools/README.md).
 
 # ------------------------------------------------------------------- np.cumprod
 body = """Replaces each value of an array with the running product up to and

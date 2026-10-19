@@ -1,13 +1,13 @@
 {
-    "height": 1512,
-    "width": 1680,
+    "height": 1084,
+    "width": 1682,
     "position": [
         100,
         100
     ],
-    "id": 1236,
+    "id": 1310,
     "name": "np.cumsum_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.cumsum_help.json",
+    "path": "/private/tmp/claude-501/-Users-drokeby-dpg-system/875feb0e-f6f2-4382-b340-bae60e82ad51/scratchpad/cumsum/out/np.cumsum_help.json",
     "nodes": {
         "0": {
             "name": "",
@@ -34,7 +34,7 @@
             "id": 274,
             "position_x": 24,
             "position_y": -4,
-            "width": 365,
+            "width": 348,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -56,17 +56,17 @@
         "2": {
             "name": "text_block",
             "id": 311,
-            "position_x": 872,
-            "position_y": 45,
+            "position_x": 882,
+            "position_y": 26,
             "width": 768,
-            "height": 811,
+            "height": 916,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Replaces each value of an array with the running total up to and including it: the first value, then the first two added, then the first three, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at every point. Use it to turn steps into a path (movements into positions, speeds into distance travelled), to turn a histogram into a cumulative distribution, or to turn a list of durations into start times.\n\nSYNTAX:\nnp.cumsum <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumsum\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is summed and sent - the only inlet that makes the node send. A single number has no axis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its own, 0 or -2 runs down each column. Negative counts from the end. An axis the array does not have sends nothing. Changing it does not send by itself; the next array uses it.\n\nOUTPUTS:\n\ncumsum:\nThe running totals, the same shape as the input. The last value is the sum of the whole row (what np.sum would give).\n\nREADING THE DEMO:\nTop: np.rand makes 200 random steps between -1 and 1, a new set every half second. The upper plot shows them - noise, with no shape. The lower plot is their cumsum: a random walk, the path you get by taking those steps one after another. Drag np.rand's max up to 1.2 (or min down) and the steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a constant is a straight line whose slope is the constant. Edit the message (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.diff is the reverse: it turns a path back into its steps. np.cumprod multiplies instead of adding. accumulate keeps a running total of a STREAM, one number at a time. np.sum gives only the final total. t.cumsum is the PyTorch version.",
+                    "value": "Replaces each value of an array with the running total up to and including it: the first value, then the first two added, then the first three, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at every point. Use it to turn steps into a path (movements into positions, speeds into distance travelled), to turn a histogram into a cumulative distribution, or to turn a list of durations into start times.\n\nSYNTAX:\nnp.cumsum <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumsum\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is summed and sent - the only inlet that makes the node send. A single number has no axis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its own, 0 or -2 runs down each column. Negative counts from the end. An axis the array does not have sends nothing. Changing it does not send by itself; the next array uses it.\n\nOUTPUTS:\n\ncumsum:\nThe running totals, the same shape as the input. The last value is the sum of the whole row (what np.sum would give).\n\nREADING THE DEMO:\nTop: np.rand makes 200 random steps between -1 and 1, a new set every half second. The left plot shows them - noise, with no shape. The right plot is their cumsum: a random walk, the path you get by taking those steps one after another. Drag np.rand's max up to 1.2 (or min down) and the steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a constant is a straight line whose slope is the constant. Edit the message (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.diff is the reverse: it turns a path back into its steps. np.cumprod multiplies instead of adding. accumulate keeps a running total of a STREAM, one number at a time. np.sum gives only the final total. t.cumsum is the PyTorch version.",
                     "value_type": "str"
                 },
                 "1": {
@@ -81,7 +81,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 795,
+                    "value": 900,
                     "value_type": "int"
                 },
                 "4": {
@@ -90,13 +90,38 @@
                     "value_type": "str"
                 }
             },
-            "text": "Replaces each value of an array with the running total up to and including it: the first value, then the first two added, then the first three, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at every point. Use it to turn steps into a path (movements into positions, speeds into distance travelled), to turn a histogram into a cumulative distribution, or to turn a list of durations into start times.\n\nSYNTAX:\nnp.cumsum <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumsum\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is summed and sent - the only inlet that makes the node send. A single number has no axis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its own, 0 or -2 runs down each column. Negative counts from the end. An axis the array does not have sends nothing. Changing it does not send by itself; the next array uses it.\n\nOUTPUTS:\n\ncumsum:\nThe running totals, the same shape as the input. The last value is the sum of the whole row (what np.sum would give).\n\nREADING THE DEMO:\nTop: np.rand makes 200 random steps between -1 and 1, a new set every half second. The upper plot shows them - noise, with no shape. The lower plot is their cumsum: a random walk, the path you get by taking those steps one after another. Drag np.rand's max up to 1.2 (or min down) and the steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a constant is a straight line whose slope is the constant. Edit the message (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.diff is the reverse: it turns a path back into its steps. np.cumprod multiplies instead of adding. accumulate keeps a running total of a STREAM, one number at a time. np.sum gives only the final total. t.cumsum is the PyTorch version."
+            "text": "Replaces each value of an array with the running total up to and including it: the first value, then the first two added, then the first three, and so on.\n\nA sum gives you the total; a cumulative sum gives you the total SO FAR at every point. Use it to turn steps into a path (movements into positions, speeds into distance travelled), to turn a histogram into a cumulative distribution, or to turn a list of durations into start times.\n\nSYNTAX:\nnp.cumsum <axis: int>\nDefault axis -1, the last axis: along each row.\n\nEXAMPLE:\nnp.cumsum\n\nINPUTS and PARAMETERS:\n\nin:\nThe array (a list is turned into one). Every input is summed and sent - the only inlet that makes the node send. A single number has no axis to run along, and sends nothing.\n\naxis (int box, also an inlet):\nWhich way to run. For a 2-D array, -1 or 1 runs along each row on its own, 0 or -2 runs down each column. Negative counts from the end. An axis the array does not have sends nothing. Changing it does not send by itself; the next array uses it.\n\nOUTPUTS:\n\ncumsum:\nThe running totals, the same shape as the input. The last value is the sum of the whole row (what np.sum would give).\n\nREADING THE DEMO:\nTop: np.rand makes 200 random steps between -1 and 1, a new set every half second. The left plot shows them - noise, with no shape. The right plot is their cumsum: a random walk, the path you get by taking those steps one after another. Drag np.rand's max up to 1.2 (or min down) and the steps are no longer balanced: the walk drifts steadily up (or down).\n\nBottom: ten 1s summed give the ramp 1 2 3 ... 10 - the cumsum of a constant is a straight line whose slope is the constant. Edit the message (2 2 2, or 1 -1 1 -1) and click it.\n\nRELATED:\nnp.diff is the reverse: it turns a path back into its steps. np.cumprod multiplies instead of adding. accumulate keeps a running total of a STREAM, one number at a time. np.sum gives only the final total. t.cumsum is the PyTorch version."
         },
         "3": {
-            "name": "metro",
+            "init": "comment twice a second",
+            "name": "comment",
             "id": 348,
-            "position_x": 30,
-            "position_y": 62,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 98,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
             "width": 129,
             "height": 70,
             "visibility": "show_all",
@@ -121,13 +146,13 @@
             },
             "init": "metro 500"
         },
-        "4": {
-            "init": "comment new steps twice a second",
+        "5": {
+            "init": "comment 200 steps: drag min, max",
             "name": "comment",
-            "id": 385,
-            "position_x": 551,
-            "position_y": 70,
-            "width": 156,
+            "id": 422,
+            "position_x": 190,
+            "position_y": 53,
+            "width": 168,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -135,7 +160,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "new steps twice a second",
+                    "value": "200 steps: drag min, max",
                     "value_type": "str"
                 },
                 "1": {
@@ -144,15 +169,15 @@
                     "value_type": "str"
                 }
             },
-            "comment": "new steps twice a second"
+            "comment": "200 steps: drag min, max"
         },
-        "5": {
+        "6": {
             "name": "np.rand",
-            "id": 422,
-            "position_x": 30,
-            "position_y": 150,
-            "width": 123,
-            "height": 84,
+            "id": 459,
+            "position_x": 190,
+            "position_y": 92,
+            "width": 160,
+            "height": 140,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -180,13 +205,13 @@
             },
             "init": "np.rand 200"
         },
-        "6": {
-            "init": "comment 200 steps between min and max - drag them",
+        "7": {
+            "init": "comment the running total",
             "name": "comment",
-            "id": 459,
-            "position_x": 551,
-            "position_y": 155,
-            "width": 260,
+            "id": 496,
+            "position_x": 440,
+            "position_y": 53,
+            "width": 119,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -194,7 +219,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "200 steps between min and max - drag them",
+                    "value": "the running total",
                     "value_type": "str"
                 },
                 "1": {
@@ -203,15 +228,58 @@
                     "value_type": "str"
                 }
             },
-            "comment": "200 steps between min and max - drag them"
+            "comment": "the running total"
         },
-        "7": {
+        "8": {
+            "name": "np.cumsum",
+            "id": 533,
+            "position_x": 440,
+            "position_y": 92,
+            "width": 150,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "axis",
+                    "value": -1,
+                    "value_type": "int"
+                }
+            }
+        },
+        "9": {
+            "init": "comment the steps: noise",
+            "name": "comment",
+            "id": 570,
+            "position_x": 28,
+            "position_y": 255,
+            "width": 112,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the steps: noise",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the steps: noise"
+        },
+        "10": {
             "name": "plot",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 310,
-            "width": 308,
-            "height": 178,
+            "id": 607,
+            "position_x": 28,
+            "position_y": 290,
+            "width": 380,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -223,12 +291,12 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 300,
+                    "value": 360,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 128,
+                    "value": 150,
                     "value_type": "int"
                 },
                 "3": {
@@ -268,13 +336,13 @@
                 }
             }
         },
-        "8": {
-            "init": "comment the steps: noise",
+        "11": {
+            "init": "comment their running total: a random walk (-30 to 30)",
             "name": "comment",
-            "id": 533,
-            "position_x": 551,
-            "position_y": 315,
-            "width": 107,
+            "id": 644,
+            "position_x": 440,
+            "position_y": 255,
+            "width": 322,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -282,7 +350,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "the steps: noise",
+                    "value": "their running total: a random walk (-30 to 30)",
                     "value_type": "str"
                 },
                 "1": {
@@ -291,33 +359,15 @@
                     "value_type": "str"
                 }
             },
-            "comment": "the steps: noise"
+            "comment": "their running total: a random walk (-30 to 30)"
         },
-        "9": {
-            "name": "np.cumsum",
-            "id": 570,
-            "position_x": 30,
-            "position_y": 510,
-            "width": 117,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "axis",
-                    "value": -1,
-                    "value_type": "int"
-                }
-            }
-        },
-        "10": {
+        "12": {
             "name": "plot",
-            "id": 607,
-            "position_x": 30,
-            "position_y": 600,
-            "width": 308,
-            "height": 178,
+            "id": 681,
+            "position_x": 440,
+            "position_y": 290,
+            "width": 380,
+            "height": 210,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
@@ -329,12 +379,12 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 300,
+                    "value": 360,
                     "value_type": "int"
                 },
                 "2": {
                     "name": "height",
-                    "value": 128,
+                    "value": 150,
                     "value_type": "int"
                 },
                 "3": {
@@ -374,13 +424,13 @@
                 }
             }
         },
-        "11": {
-            "init": "comment their running total: a random walk (-30 to 30)",
+        "13": {
+            "init": "comment ten 1s: edit and click",
             "name": "comment",
-            "id": 644,
-            "position_x": 551,
-            "position_y": 605,
-            "width": 291,
+            "id": 718,
+            "position_x": 140,
+            "position_y": 540,
+            "width": 154,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -388,7 +438,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "their running total: a random walk (-30 to 30)",
+                    "value": "ten 1s: edit and click",
                     "value_type": "str"
                 },
                 "1": {
@@ -397,26 +447,26 @@
                     "value_type": "str"
                 }
             },
-            "comment": "their running total: a random walk (-30 to 30)"
+            "comment": "ten 1s: edit and click"
         },
-        "12": {
+        "14": {
             "name": "load_bang",
-            "id": 681,
-            "position_x": 30,
-            "position_y": 820,
+            "id": 755,
+            "position_x": 28,
+            "position_y": 575,
             "width": 88,
-            "height": 42,
+            "height": 46,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {}
         },
-        "13": {
+        "15": {
             "name": "message",
-            "id": 718,
-            "position_x": 30,
-            "position_y": 880,
-            "width": 130,
+            "id": 792,
+            "position_x": 140,
+            "position_y": 575,
+            "width": 280,
             "height": 42,
             "visibility": "show_all",
             "draggable": true,
@@ -434,13 +484,13 @@
                 }
             }
         },
-        "14": {
-            "init": "comment ten 1s - edit and click",
+        "16": {
+            "init": "comment the running total",
             "name": "comment",
-            "id": 755,
-            "position_x": 551,
-            "position_y": 885,
-            "width": 150,
+            "id": 829,
+            "position_x": 440,
+            "position_y": 540,
+            "width": 119,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -448,7 +498,7 @@
             "properties": {
                 "0": {
                     "name": "text",
-                    "value": "ten 1s - edit and click",
+                    "value": "the running total",
                     "value_type": "str"
                 },
                 "1": {
@@ -457,67 +507,32 @@
                     "value_type": "str"
                 }
             },
-            "comment": "ten 1s - edit and click"
+            "comment": "the running total"
         },
-        "15": {
-            "name": "heat_map",
-            "id": 792,
-            "position_x": 30,
-            "position_y": 940,
-            "width": 468,
-            "height": 110,
+        "17": {
+            "name": "np.cumsum",
+            "id": 866,
+            "position_x": 440,
+            "position_y": 575,
+            "width": 150,
+            "height": 70,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {
                 "0": {
-                    "name": "color",
-                    "value": "viridis",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "width",
-                    "value": 460,
+                    "name": "axis",
+                    "value": -1,
                     "value_type": "int"
-                },
-                "2": {
-                    "name": "height",
-                    "value": 60,
-                    "value_type": "int"
-                },
-                "3": {
-                    "name": "sample count",
-                    "value": 1,
-                    "value_type": "int"
-                },
-                "4": {
-                    "name": "min y",
-                    "value": 0.0,
-                    "value_type": "float"
-                },
-                "5": {
-                    "name": "max y",
-                    "value": 10.0,
-                    "value_type": "float"
-                },
-                "6": {
-                    "name": "update_mode",
-                    "value": "heat_map",
-                    "value_type": "str"
-                },
-                "7": {
-                    "name": "number format",
-                    "value": "%.0f",
-                    "value_type": "str"
                 }
             }
         },
-        "16": {
+        "18": {
             "init": "comment in: ten 1s",
             "name": "comment",
-            "id": 829,
-            "position_x": 551,
-            "position_y": 945,
+            "id": 903,
+            "position_x": 28,
+            "position_y": 670,
             "width": 70,
             "height": 30,
             "visibility": "show_all",
@@ -537,30 +552,12 @@
             },
             "comment": "in: ten 1s"
         },
-        "17": {
-            "name": "np.cumsum",
-            "id": 866,
-            "position_x": 30,
-            "position_y": 1070,
-            "width": 117,
-            "height": 56,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "axis",
-                    "value": -1,
-                    "value_type": "int"
-                }
-            }
-        },
-        "18": {
+        "19": {
             "name": "heat_map",
-            "id": 903,
-            "position_x": 30,
-            "position_y": 1160,
-            "width": 468,
+            "id": 940,
+            "position_x": 28,
+            "position_y": 705,
+            "width": 380,
             "height": 110,
             "visibility": "show_all",
             "draggable": true,
@@ -573,7 +570,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 460,
+                    "value": 360,
                     "value_type": "int"
                 },
                 "2": {
@@ -608,13 +605,13 @@
                 }
             }
         },
-        "19": {
+        "20": {
             "init": "comment out: 1 to 10, a ramp",
             "name": "comment",
-            "id": 940,
-            "position_x": 551,
-            "position_y": 1165,
-            "width": 131,
+            "id": 977,
+            "position_x": 440,
+            "position_y": 670,
+            "width": 140,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -633,78 +630,131 @@
             },
             "comment": "out: 1 to 10, a ramp"
         },
-        "20": {
+        "21": {
+            "name": "heat_map",
+            "id": 1014,
+            "position_x": 440,
+            "position_y": 705,
+            "width": 380,
+            "height": 110,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "color",
+                    "value": "viridis",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 360,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "height",
+                    "value": 60,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "sample count",
+                    "value": 1,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "min y",
+                    "value": 0.0,
+                    "value_type": "float"
+                },
+                "5": {
+                    "name": "max y",
+                    "value": 10.0,
+                    "value_type": "float"
+                },
+                "6": {
+                    "name": "update_mode",
+                    "value": "heat_map",
+                    "value_type": "str"
+                },
+                "7": {
+                    "name": "number format",
+                    "value": "%.0f",
+                    "value_type": "str"
+                }
+            }
+        },
+        "22": {
             "name": "help_link",
-            "id": 977,
+            "id": 1051,
             "position_x": 30,
-            "position_y": 1334,
+            "position_y": 884,
             "width": 60,
-            "height": 44,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "help_link np.diff"
         },
-        "21": {
+        "23": {
             "name": "help_link",
-            "id": 1014,
+            "id": 1088,
             "position_x": 106,
-            "position_y": 1334,
+            "position_y": 884,
             "width": 79,
-            "height": 44,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "help_link np.cumprod"
         },
-        "22": {
+        "24": {
             "name": "help_link",
-            "id": 1051,
+            "id": 1125,
             "position_x": 201,
-            "position_y": 1334,
+            "position_y": 884,
             "width": 79,
-            "height": 44,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "help_link accumulate"
         },
-        "23": {
+        "25": {
             "name": "help_link",
-            "id": 1088,
+            "id": 1162,
             "position_x": 296,
-            "position_y": 1334,
+            "position_y": 884,
             "width": 54,
-            "height": 44,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "help_link np.sum"
         },
-        "24": {
+        "26": {
             "name": "help_link",
-            "id": 1125,
+            "id": 1199,
             "position_x": 366,
-            "position_y": 1334,
+            "position_y": 884,
             "width": 66,
-            "height": 44,
+            "height": 30,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
             "init": "help_link t.cumsum"
         },
-        "25": {
+        "27": {
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
-            "id": 1162,
+            "id": 1236,
             "position_x": 30,
-            "position_y": 1300,
-            "width": 156,
+            "position_y": 850,
+            "width": 168,
             "height": 30,
             "visibility": "show_all",
             "draggable": true,
@@ -723,11 +773,11 @@
             },
             "comment": "SEE ALSO - click to open"
         },
-        "26": {
+        "28": {
             "name": "close",
-            "id": 1199,
+            "id": 1273,
             "position_x": 24,
-            "position_y": 1408,
+            "position_y": 994,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -744,67 +794,67 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
+            "source_node": 385,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 422,
+            "dest_node": 459,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "1": {
-            "source_node": 422,
+            "source_node": 459,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "random array",
-            "dest_node": 496,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "y"
-        },
-        "2": {
-            "source_node": 422,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "random array",
-            "dest_node": 570,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": "in"
-        },
-        "3": {
-            "source_node": 570,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "cumsum",
             "dest_node": 607,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "random array",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "cumsum",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
         "4": {
-            "source_node": 681,
+            "source_node": 755,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "out",
-            "dest_node": 718,
+            "dest_node": 792,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "5": {
-            "source_node": 718,
+            "source_node": 792,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
-            "dest_node": 792,
+            "dest_node": 940,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "6": {
-            "source_node": 718,
+            "source_node": 792,
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "message out",
@@ -818,7 +868,7 @@
             "source_node_name": "",
             "source_output_index": 0,
             "source_output_name": "cumsum",
-            "dest_node": 903,
+            "dest_node": 1014,
             "dest_node_name": "",
             "dest_input_index": 0,
             "dest_input_name": "y"
