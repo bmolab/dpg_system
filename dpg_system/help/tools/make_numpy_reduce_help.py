@@ -1,5 +1,5 @@
-"""np reductions: np.argmax, np.argmin -- one page each. (The np.sum,
-np.nansum, np.any, np.all, np.amax and np.amin pages are hand-made.)
+"""np reductions: np.argmin. (The np.sum, np.nansum, np.any, np.all,
+np.amax, np.amin and np.argmax pages are hand-made.)
 
 These were part of one family page (np_stats). Each now has its own page whose
 demo shows the array as a heat_map and the reduction beside it: the whole
@@ -208,7 +208,7 @@ def index_page(op):
 
 # np.amin: its page is hand-made now (see tools/README.md).
 
-# -------------------------------------------------------------------- np.argmax
+# ------------------------------------------------------------ np.argmax, np.argmin
 ARG_INDEX = """THE INDEX WITH NO AXIS:
 With axis None the answer is ONE whole number counting the cells of the
 whole array in reading order - along row 0, then row 1, and so on - not
@@ -219,64 +219,8 @@ With an axis, each answer is a position along THAT axis: axis 0 gives,
 for each column, the row it was found in; axis 1 gives, for each row,
 the column."""
 
-body = """Gives the POSITION of the largest value in an array - its index, not
-the value itself.
-
-Use it to pick a winner: which sensor reads highest, which frequency
-band is loudest, which class a set of scores votes for, where the
-brightest pixel is. To get the value itself, use np.amax. If several
-cells share the largest value, the first one (in reading order, or the
-lowest along the axis) is the one given.
-
-""" + ARG_INDEX + """
-
-""" + AXIS_TEXT + """
-
-SYNTAX:
-np.argmax <axis: int>
-Default: no axis - one index into the whole array.
-
-EXAMPLE:
-np.argmax 1
-
-INPUTS and PARAMETERS:
-
-in:
-The array. Every array that arrives is searched and the answer sent;
-this is the only inlet that makes the node send.
-""" + wrong_input('argmax') + """
-A NaN counts as larger than everything: the index of the first NaN is
-given.
-
-""" + AXIS_PARAM.replace('{op}', 'argmax') + """
-
-OUTPUTS:
-
-argmax:
-Whole numbers (int64). With axis None, one index; with an axis, an
-array of indices, one per row or column.
-
-READING THE DEMO:
-make_spot draws 8 by 10 of dim noise with one bright cell (exactly 1.0)
-where the sliders put it - it starts at row 5, column 6. np.argmax with
-axis None answers 56; the two int boxes under it split that into row
-5 and column 6. Move the sliders and the index follows the spot.
-np.argmax 1 asks each ROW where its largest value is: 8 column numbers,
-and the spot's row (the sixth entry) says 6. The others point at the
-brightest noise in their row. np.argmax 0 asks each COLUMN: 10 row
-numbers, and the spot's column (the seventh entry) says 5.
-
-RELATED:
-np.amax gives the largest value itself. np.argmin finds the smallest.
-np.argsort ranks every value, not just the top one. np.argwhere lists
-every position where a condition holds. t.argmax is the PyTorch
-version."""
-
-demo, links = index_page('argmax')
-demo += see_also(820, ['np.amax', 'np.argmin', 'np.argsort', 'np.argwhere', 't.argmax'])
-print(build('np.argmax', 'np.argmax - where the largest value is',
-            body, demo, links, demo_width=830, text_width=760, text_height=th(body),
-            subpatch=spot_sub(dark=False)))
+# np.argmax: its page is hand-made now (see tools/README.md); ARG_INDEX is
+# still used by np.argmin below.
 
 # -------------------------------------------------------------------- np.argmin
 body = """Gives the POSITION of the smallest value in an array - its index, not

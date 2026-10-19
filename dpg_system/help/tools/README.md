@@ -302,7 +302,11 @@ totals in a column beside it and the column totals in a strip under it);
 (David's rework) and `np.all_help.json` (np.any's layout with np.all in it),
 nor `np.amax_help.json` (make_spot feeding the array, row maxima in a column
 beside it, column maxima in a strip under it) and `np.amin_help.json` (the same
-with make_dark_spot). `np.mean_help.json` follows
+with make_dark_spot), nor `np.argmax_help.json` (the np.amax layout, with the
+index of each row's and each column's largest value lined up the same way).
+`np.[]_help.json` and `np.crop_help.json` are David's reworks, so
+`make_numpy_select_help.py` no longer builds them.
+`np.mean_help.json` follows
 the same layout (a toggled glitch of 30 shows the mean jump and the median
 hold); `np.median_help.json` and `np.nanmean_help.json` are David's own
 reworks, and `np.nanmedian_help.json` is np.nanmean's layout with the median
