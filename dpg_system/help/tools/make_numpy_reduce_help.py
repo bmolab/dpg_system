@@ -1,5 +1,8 @@
-"""np reductions: np.argmin. (The np.sum, np.nansum, np.any, np.all,
-np.amax, np.amin and np.argmax pages are hand-made.)
+"""np reductions: one page per node.
+
+None any more: the np.sum, np.nansum, np.any, np.all, np.amax, np.amin,
+np.argmax and np.argmin pages are all hand-made now (see tools/README.md).
+The shared pieces below are kept for reference; nothing calls build().
 
 These were part of one family page (np_stats). Each now has its own page whose
 demo shows the array as a heat_map and the reduction beside it: the whole
@@ -219,69 +222,9 @@ With an axis, each answer is a position along THAT axis: axis 0 gives,
 for each column, the row it was found in; axis 1 gives, for each row,
 the column."""
 
-# np.argmax: its page is hand-made now (see tools/README.md); ARG_INDEX is
-# still used by np.argmin below.
+# np.argmax: its page is hand-made now (see tools/README.md).
 
-# -------------------------------------------------------------------- np.argmin
-body = """Gives the POSITION of the smallest value in an array - its index, not
-the value itself.
-
-Use it to find the nearest of a set of points (the smallest distance),
-the quietest channel, the lowest point of a curve, or the best match
-when smaller scores are better. To get the value itself, use np.amin.
-If several cells share the smallest value, the first one (in reading
-order, or the lowest along the axis) is the one given.
-
-""" + ARG_INDEX + """
-
-""" + AXIS_TEXT + """
-
-SYNTAX:
-np.argmin <axis: int>
-Default: no axis - one index into the whole array.
-
-EXAMPLE:
-np.argmin 0
-
-INPUTS and PARAMETERS:
-
-in:
-The array. Every array that arrives is searched and the answer sent;
-this is the only inlet that makes the node send.
-""" + wrong_input('argmin') + """
-A NaN counts as smaller than everything: the index of the first NaN is
-given.
-
-""" + AXIS_PARAM.replace('{op}', 'argmin') + """
-
-OUTPUTS:
-
-argmin:
-Whole numbers (int64). With axis None, one index; with an axis, an
-array of indices, one per row or column.
-
-READING THE DEMO:
-make_dark_spot draws 8 by 10 of light noise with one dark cell
-(exactly 0) where the sliders put it - it starts at row 5, column 6.
-np.argmin with axis None answers 56; the int boxes under it split that
-into row 5 and column 6. Move the sliders and the index follows the
-spot. np.argmin 1 asks each ROW where its smallest value is: 8 column
-numbers, and the spot's row (the sixth entry) says 6. np.argmin 0 asks
-each COLUMN: 10 row numbers, and the spot's column (the seventh entry)
-says 5.
-
-RELATED:
-np.amin gives the smallest value itself. np.argmax finds the largest.
-np.argsort ranks every value. np.argwhere lists every position where a
-condition holds. There is no t.argmin; t.min (on the t.max page) gives
-the PyTorch minimum."""
-
-demo, links = index_page('argmin')
-demo[[d['key'] for d in demo].index('spot')]['init'] = 'p make_dark_spot'
-demo += see_also(820, ['np.amin', 'np.argmax', 'np.argsort', 'np.argwhere'])
-print(build('np.argmin', 'np.argmin - where the smallest value is',
-            body, demo, links, demo_width=830, text_width=760, text_height=th(body),
-            subpatch=spot_sub(dark=True)))
+# np.argmin: its page is hand-made now (see tools/README.md).
 
 # np.sum and np.nansum: their pages are hand-made now (see tools/README.md).
 

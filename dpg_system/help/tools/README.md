@@ -303,7 +303,9 @@ totals in a column beside it and the column totals in a strip under it);
 nor `np.amax_help.json` (make_spot feeding the array, row maxima in a column
 beside it, column maxima in a strip under it) and `np.amin_help.json` (the same
 with make_dark_spot), nor `np.argmax_help.json` (the np.amax layout, with the
-index of each row's and each column's largest value lined up the same way).
+index of each row's and each column's largest value lined up the same way, then
+David's adjustments), nor `np.argmin_help.json` (np.argmax's layout with
+make_dark_spot and np.argmin), so it builds no pages at all now.
 `np.[]_help.json` and `np.crop_help.json` are David's reworks, so
 `make_numpy_select_help.py` no longer builds them.
 `np.mean_help.json` follows
