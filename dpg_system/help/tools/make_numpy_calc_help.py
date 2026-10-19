@@ -159,72 +159,7 @@ def clip_demo(init, props, see, extra=None, extra_links=None):
 
 # np.clip: its page is hand-made now (see tools/README.md).
 
-# ----------------------------------------------------------------------- np.min
-body = """Caps an array from above: every value larger than the limit is
-replaced by the limit, and smaller values pass untouched.
-
-It is a clamp on ONE side - the top - applied to every element
-separately, so the output has the same shape as the input. Use it to stop
-a level from overshooting, or to cut a curve's peaks off flat.
-
-THE NAME READS BACKWARDS:
-np.min does not find the smallest value of the array. It takes, for every
-element, the smaller of that element and the limit (numpy calls this
-np.minimum) - which keeps the result at or BELOW the limit, so the limit
-is a ceiling. To find the smallest value in an array, the reduction, use
-np.amin.
-
-SYNTAX:
-np.min <limit: float>
-Default 0.0 - so a bare np.min turns every positive value into 0.
-
-EXAMPLE:
-np.min 0.5
-
-INPUTS and PARAMETERS:
-
-input:
-The array (a list is turned into one; a single number comes out as a
-one-value array). Every input is capped and sent - this is the only
-inlet, and the only thing that makes the node send.
-
-min (drag float on the node):
-The ceiling. A property, not an inlet: it cannot be driven from the
-patch, and changing it does NOT send by itself - the next array uses it.
-In the demo make_sine re-sends the wave ten times a second.
-
-OUTPUTS:
-
-out array:
-The capped array, the same shape as the input.
-
-READING THE DEMO:
-The plot draws the wave and the capped copy over each other. Below the
-limit they are one line; above it the wave rises to 1 while the copy runs
-flat at 0.5. The bottom half of the wave is left alone. np.amin, below,
-reads the same wave and sends ONE number, its lowest value (-1): that is
-the reduction the name might make you expect.
-
-RELATED:
-np.max is the floor, the other side. np.clip limits both sides at once.
-np.amin finds the smallest value. The min node takes the smaller of its
-input and an operand on an inlet, element by element, so its limit can be
-driven from the patch. t.minimum is the PyTorch version (the smaller of
-two tensors, element by element)."""
-
-demo, links = clip_demo(
-    'np.min 0.5', {'min': 0.5},
-    ['np.max', 'np.clip', 'np.amin', 'min', 't.minimum'],
-    extra=[{'key': 'am', 'init': 'np.amin', 'pos': (400, 260), 'w': 140, 'h': 70},
-           {'key': 'f1', 'init': 'float', 'pos': (400, 350), 'w': 127, 'h': 42,
-            'props': FLT},
-           {'key': 'c3', 'comment': True,
-            'text': 'np.amin of the same wave:\none number, its lowest value',
-            'pos': (400, 400)}],
-    extra_links=[('mk', 'sine', 'am', 'in'), ('am', 'amin', 'f1', '')])
-print(build('np.min', 'np.min - cap values from above (element by element)',
-            body, demo, links, demo_width=600, text_width=760, text_height=text_h(body),
-            subpatch=SINE_SUB))
+# np.min: its page is hand-made now (see tools/README.md).
 
 # ----------------------------------------------------------------------- np.max
 body = """Floors an array from below: every value smaller than the limit is
