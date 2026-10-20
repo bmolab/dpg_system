@@ -1263,7 +1263,7 @@ class NodeEditor:
                             link_container['source_node'] = node.uuid
                             link_container['source_node_name'] = node.label
                             link_container['source_output_index'] = out_index
-                            link_container['source_output_name'] = output.get_label()
+                            link_container['source_output_name'] = output.get_save_label()
                             dest_node = input.node
                             link_container['dest_node'] = dest_node.uuid
                             link_container['dest_node_name'] = dest_node.label
@@ -1615,7 +1615,7 @@ class NodeEditor:
                         link_container['source_node'] = node.uuid
                         link_container['source_node_name'] = node.label
                         link_container['source_output_index'] = out_index
-                        link_container['source_output_name'] = output.get_label()
+                        link_container['source_output_name'] = output.get_save_label()
                         dest_node = input.node
                         link_container['dest_node'] = dest_node.uuid
                         link_container['dest_node_name'] = dest_node.label

@@ -139,7 +139,9 @@ class TorchDeviceDtypeNode(TorchNode):
         self.device = torch.device(device_name)
 
     def requires_grad_changed(self):
-        self.requires_grad = self.grad_input()
+        # a toggle sends 1 / 0, and torch refuses requires_grad=1 (TypeError),
+        # so the node stopped sending; torch wants a real bool
+        self.requires_grad = any_to_bool(self.grad_input())
 
     def dtype_changed(self):
         dtype = self.dtype_input()
@@ -206,6 +208,9 @@ class TorchInfoNode(TorchNode):
         self.dtype_output = self.add_output('dtype')
         self.device_output = self.add_output('device')
         self.requires_grad_output = self.add_output('grad')
+        # the labels show the readings, so links save by the outlets' names
+        for output in self.outputs:
+            output.save_name = output.get_label()
 
     def execute(self):
         # an empty tensor is still a tensor with a shape to report; dropping

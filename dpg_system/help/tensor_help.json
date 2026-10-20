@@ -1,23 +1,23 @@
 {
-    "height": 1273,
-    "width": 1722,
+    "height": 1150,
+    "width": 1598,
     "position": [
         100,
-        100
+        67
     ],
-    "id": 1014,
+    "id": 1572,
     "name": "tensor_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/tensor_help.json",
     "nodes": {
         "0": {
             "name": "",
-            "id": 237,
+            "id": 1600,
+            "sid": 1,
             "position_x": 0,
             "position_y": 0,
             "width": 9,
             "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
+            "visibility": "hidden",
+            "draggable": false,
             "protected": true,
             "presentation_state": "hidden",
             "properties": {
@@ -31,7 +31,8 @@
         "1": {
             "init": "comment tensor (and t.to) - make a torch tensor of the type you want",
             "name": "comment",
-            "id": 274,
+            "id": 1618,
+            "sid": 2,
             "position_x": 24,
             "position_y": -4,
             "width": 746,
@@ -43,21 +44,22 @@
                 "0": {
                     "name": "text",
                     "value": "tensor (and t.to) - make a torch tensor of the type you want",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "48",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "tensor (and t.to) - make a torch tensor of the type you want"
         },
         "2": {
             "name": "text_block",
-            "id": 311,
-            "position_x": 914,
-            "position_y": 45,
+            "id": 1629,
+            "sid": 3,
+            "position_x": 791,
+            "position_y": 21,
             "width": 768,
             "height": 1134,
             "visibility": "show_all",
@@ -66,8 +68,8 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "Turns whatever arrives - a number, a list, a NumPy array or another tensor - into a torch tensor of the type, on the device, that you choose.\n\nReach for it at the point where data enters the torch part of a patch, or wherever one operation needs a different type than the last one gave it: int64 for indices, uint8 for 8-bit image data, a GPU device for heavy work. Most torch nodes here convert lists and NumPy arrays by themselves (always to float32 on the cpu), so you need this node when the default is not what you want, or when you want the conversion done once rather than at every node downstream.\n\nt.to IS THE SAME NODE:\nt.to is another name for tensor - the same code, the same inlets, the same result. Use whichever reads better: \"tensor\" where data becomes a tensor, \"t.to\" where an existing tensor changes type or device.\n\nTHE THREE THINGS A TENSOR CARRIES BESIDES ITS NUMBERS:\ndtype - what kind of number. float32 is what most operations expect. Converting floats to an integer type cuts the fractions off (2.9 becomes 2, -2.9 becomes -2); converting to bool makes 0 False and anything else True; uint8 holds 0 to 255 and values outside that range do not survive. device - where it lives: cpu, or a GPU (mps on Apple machines, cuda on NVIDIA). Two tensors on different devices cannot be combined in one operation, which is the commonest torch error there is. requires_grad - whether operations on it are recorded so gradients can be computed (training). It only applies to float and complex types; on an integer type it is quietly left off.\n\nSYNTAX:\ntensor <dtype> <device>\nt.to <dtype> <device>\nBoth arguments are optional and may come in either order. Defaults:\nfloat32, cpu, requires_grad off.\n\nEXAMPLE:\ntensor int64\nt.to mps\n\nINPUTS and PARAMETERS:\n\nin:\nThe data. Every message that arrives is converted and sent; this is the only inlet that makes the node send. Something that is not a number (a word) is not converted and nothing is sent.\n\ndtype (menu, also an inlet):\nfloat32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\nChanging it does not send; the next input uses it.\n\ndevice (menu, also an inlet):\ncpu, plus mps, cuda or xpu when this machine has one.\n\nrequires_grad (checkbox, also an inlet):\nOff by default. See above.\n\nOUTPUTS:\n\ntensor out:\nThe converted tensor.\n\nREADING THE DEMO:\nA metro re-sends a NumPy array of 8 values from 0 to 3 (np.linspace), so the node converts it five times a second. The top strip is the array going in; the strip under the node is the tensor coming out, and the text beside it is what t.info reports. Set dtype to int64: the fractions are cut off and the strip turns into steps, 0 0 0 1 1 2 2 3. uint8 does the same. bool gives False for the first value and True for the rest. Back to float32 and the ramp returns.\n\nRELATED:\nt.info reports a tensor's type, device and shape. t.detach cuts off the gradient history. np.astype changes the type of a NumPy array. Many torch nodes (t.rand, t.linspace ...) also have their own dtype and device menus, so they can make the right kind of tensor in the first place.",
-                    "value_type": "str"
+                    "value": "Turns whatever arrives - a number, a list, a NumPy array or another tensor - into a torch tensor of the type, on the device, that you choose.\n\nReach for it at the point where data enters the torch part of a patch, or wherever one operation needs a different type than the last one gave it: int64 for indices, uint8 for 8-bit image data, a GPU device for heavy work. Most torch nodes here convert lists and NumPy arrays by themselves (always to float32 on the cpu), so you need this node when the default is not what you want, or when you want the conversion done once rather than at every node downstream.\n\nt.to IS THE SAME NODE:\nt.to is another name for tensor - the same code, the same inlets, the same result. Use whichever reads better: \"tensor\" where data becomes a tensor, \"t.to\" where an existing tensor changes type or device.\n\nTHE THREE THINGS A TENSOR CARRIES BESIDES ITS NUMBERS:\ndtype - what kind of number. float32 is what most operations expect. Converting floats to an integer type cuts the fractions off (2.9 becomes 2, -2.9 becomes -2); converting to bool makes 0 False and anything else True; uint8 holds 0 to 255 and values outside that range do not survive. device - where it lives: cpu, or a GPU (mps on Apple machines, cuda on NVIDIA). Two tensors on different devices cannot be combined in one operation, which is the commonest torch error there is. requires_grad - whether operations on it are recorded so gradients can be computed (training). It only applies to float and complex types; on an integer type it is quietly left off.\n\nSYNTAX:\ntensor <dtype> <device>\nt.to <dtype> <device>\nBoth arguments are optional and may come in either order. Defaults:\nfloat32, cpu, requires_grad off.\n\nEXAMPLE:\ntensor int64\nt.to mps\n\nINPUTS and PARAMETERS:\n\nin:\nThe data. Every message that arrives is converted and sent; this is the only inlet that makes the node send. Something that is not a number (a word) is not converted and nothing is sent.\n\ndtype (menu, also an inlet):\nfloat32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\nChanging it does not send; the next input uses it.\n\ndevice (menu, also an inlet):\ncpu, plus mps, cuda or xpu when this machine has one.\n\nrequires_grad (checkbox, also an inlet):\nOff by default. See above.\n\nOUTPUTS:\n\ntensor out:\nThe converted tensor.\n\nREADING THE DEMO:\nA metro re-sends a NumPy array of 8 values from 0 to 3 (np.linspace), so the node converts it five times a second. The top strip is the array going in; the strip beside the node is the tensor coming out, and the labels on t.info's outlets under it show its shape, dtype and device. Set dtype to int64: the fractions are cut off and the strip turns into steps, 0 0 0 1 1 2 2 3. uint8 does the same. bool gives False for the first value and True for the rest. Back to float32 and the ramp returns.\n\nRELATED:\nt.info reports a tensor's type, device and shape. t.detach cuts off the gradient history. np.astype changes the type of a NumPy array. Many torch nodes (t.rand, t.linspace ...) also have their own dtype and device menus, so they can make the right kind of tensor in the first place.",
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "lock",
@@ -87,14 +89,16 @@
                 "4": {
                     "name": "text_size",
                     "value": "30",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
-            "text": "Turns whatever arrives - a number, a list, a NumPy array or another tensor - into a torch tensor of the type, on the device, that you choose.\n\nReach for it at the point where data enters the torch part of a patch, or wherever one operation needs a different type than the last one gave it: int64 for indices, uint8 for 8-bit image data, a GPU device for heavy work. Most torch nodes here convert lists and NumPy arrays by themselves (always to float32 on the cpu), so you need this node when the default is not what you want, or when you want the conversion done once rather than at every node downstream.\n\nt.to IS THE SAME NODE:\nt.to is another name for tensor - the same code, the same inlets, the same result. Use whichever reads better: \"tensor\" where data becomes a tensor, \"t.to\" where an existing tensor changes type or device.\n\nTHE THREE THINGS A TENSOR CARRIES BESIDES ITS NUMBERS:\ndtype - what kind of number. float32 is what most operations expect. Converting floats to an integer type cuts the fractions off (2.9 becomes 2, -2.9 becomes -2); converting to bool makes 0 False and anything else True; uint8 holds 0 to 255 and values outside that range do not survive. device - where it lives: cpu, or a GPU (mps on Apple machines, cuda on NVIDIA). Two tensors on different devices cannot be combined in one operation, which is the commonest torch error there is. requires_grad - whether operations on it are recorded so gradients can be computed (training). It only applies to float and complex types; on an integer type it is quietly left off.\n\nSYNTAX:\ntensor <dtype> <device>\nt.to <dtype> <device>\nBoth arguments are optional and may come in either order. Defaults:\nfloat32, cpu, requires_grad off.\n\nEXAMPLE:\ntensor int64\nt.to mps\n\nINPUTS and PARAMETERS:\n\nin:\nThe data. Every message that arrives is converted and sent; this is the only inlet that makes the node send. Something that is not a number (a word) is not converted and nothing is sent.\n\ndtype (menu, also an inlet):\nfloat32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\nChanging it does not send; the next input uses it.\n\ndevice (menu, also an inlet):\ncpu, plus mps, cuda or xpu when this machine has one.\n\nrequires_grad (checkbox, also an inlet):\nOff by default. See above.\n\nOUTPUTS:\n\ntensor out:\nThe converted tensor.\n\nREADING THE DEMO:\nA metro re-sends a NumPy array of 8 values from 0 to 3 (np.linspace), so the node converts it five times a second. The top strip is the array going in; the strip under the node is the tensor coming out, and the text beside it is what t.info reports. Set dtype to int64: the fractions are cut off and the strip turns into steps, 0 0 0 1 1 2 2 3. uint8 does the same. bool gives False for the first value and True for the rest. Back to float32 and the ramp returns.\n\nRELATED:\nt.info reports a tensor's type, device and shape. t.detach cuts off the gradient history. np.astype changes the type of a NumPy array. Many torch nodes (t.rand, t.linspace ...) also have their own dtype and device menus, so they can make the right kind of tensor in the first place."
+            "text": "Turns whatever arrives - a number, a list, a NumPy array or another tensor - into a torch tensor of the type, on the device, that you choose.\n\nReach for it at the point where data enters the torch part of a patch, or wherever one operation needs a different type than the last one gave it: int64 for indices, uint8 for 8-bit image data, a GPU device for heavy work. Most torch nodes here convert lists and NumPy arrays by themselves (always to float32 on the cpu), so you need this node when the default is not what you want, or when you want the conversion done once rather than at every node downstream.\n\nt.to IS THE SAME NODE:\nt.to is another name for tensor - the same code, the same inlets, the same result. Use whichever reads better: \"tensor\" where data becomes a tensor, \"t.to\" where an existing tensor changes type or device.\n\nTHE THREE THINGS A TENSOR CARRIES BESIDES ITS NUMBERS:\ndtype - what kind of number. float32 is what most operations expect. Converting floats to an integer type cuts the fractions off (2.9 becomes 2, -2.9 becomes -2); converting to bool makes 0 False and anything else True; uint8 holds 0 to 255 and values outside that range do not survive. device - where it lives: cpu, or a GPU (mps on Apple machines, cuda on NVIDIA). Two tensors on different devices cannot be combined in one operation, which is the commonest torch error there is. requires_grad - whether operations on it are recorded so gradients can be computed (training). It only applies to float and complex types; on an integer type it is quietly left off.\n\nSYNTAX:\ntensor <dtype> <device>\nt.to <dtype> <device>\nBoth arguments are optional and may come in either order. Defaults:\nfloat32, cpu, requires_grad off.\n\nEXAMPLE:\ntensor int64\nt.to mps\n\nINPUTS and PARAMETERS:\n\nin:\nThe data. Every message that arrives is converted and sent; this is the only inlet that makes the node send. Something that is not a number (a word) is not converted and nothing is sent.\n\ndtype (menu, also an inlet):\nfloat32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\nChanging it does not send; the next input uses it.\n\ndevice (menu, also an inlet):\ncpu, plus mps, cuda or xpu when this machine has one.\n\nrequires_grad (checkbox, also an inlet):\nOff by default. See above.\n\nOUTPUTS:\n\ntensor out:\nThe converted tensor.\n\nREADING THE DEMO:\nA metro re-sends a NumPy array of 8 values from 0 to 3 (np.linspace), so the node converts it five times a second. The top strip is the array going in; the strip beside the node is the tensor coming out, and the labels on t.info's outlets under it show its shape, dtype and device. Set dtype to int64: the fractions are cut off and the strip turns into steps, 0 0 0 1 1 2 2 3. uint8 does the same. bool gives False for the first value and True for the rest. Back to float32 and the ramp returns.\n\nRELATED:\nt.info reports a tensor's type, device and shape. t.detach cuts off the gradient history. np.astype changes the type of a NumPy array. Many torch nodes (t.rand, t.linspace ...) also have their own dtype and device menus, so they can make the right kind of tensor in the first place."
         },
         "3": {
+            "init": "metro 200",
             "name": "metro",
-            "id": 348,
+            "id": 1646,
+            "sid": 4,
             "position_x": 30,
             "position_y": 62,
             "width": 129,
@@ -116,16 +120,17 @@
                 "2": {
                     "name": "units",
                     "value": "milliseconds",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
-            },
-            "init": "metro 200"
+            }
         },
         "4": {
+            "init": "np.linspace 0 3 8",
             "name": "np.linspace",
-            "id": 385,
-            "position_x": 30,
-            "position_y": 150,
+            "id": 1662,
+            "sid": 5,
+            "position_x": 177,
+            "position_y": 61,
             "width": 123,
             "height": 98,
             "visibility": "show_all",
@@ -133,33 +138,38 @@
             "presentation_state": "show_all",
             "properties": {
                 "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
                     "name": "start",
                     "value": 0.0,
                     "value_type": "float"
                 },
-                "1": {
+                "2": {
                     "name": "stop",
                     "value": 3.0,
                     "value_type": "float"
                 },
-                "2": {
+                "3": {
                     "name": "steps",
                     "value": 8,
                     "value_type": "int"
                 },
-                "3": {
+                "4": {
                     "name": "dtype",
                     "value": "float64",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
-            },
-            "init": "np.linspace 0 3 8"
+            }
         },
         "5": {
             "name": "heat_map",
-            "id": 422,
-            "position_x": 240,
-            "position_y": 150,
+            "id": 1681,
+            "sid": 6,
+            "position_x": 332,
+            "position_y": 95,
             "width": 388,
             "height": 90,
             "visibility": "show_all",
@@ -169,7 +179,7 @@
                 "0": {
                     "name": "color",
                     "value": "viridis",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "width",
@@ -199,21 +209,22 @@
                 "6": {
                     "name": "update_mode",
                     "value": "heat_map",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "7": {
                     "name": "number format",
                     "value": "%.2f",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             }
         },
         "6": {
             "init": "comment in: a NumPy array, 0 to 3 in 8 steps",
             "name": "comment",
-            "id": 459,
-            "position_x": 654,
-            "position_y": 240,
+            "id": 1723,
+            "sid": 7,
+            "position_x": 425,
+            "position_y": 52,
             "width": 230,
             "height": 30,
             "visibility": "show_all",
@@ -223,34 +234,52 @@
                 "0": {
                     "name": "text",
                     "value": "in: a NumPy array, 0 to 3 in 8 steps",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "in: a NumPy array, 0 to 3 in 8 steps"
         },
         "7": {
             "name": "tensor",
-            "id": 496,
-            "position_x": 30,
-            "position_y": 320,
+            "id": 1734,
+            "sid": 8,
+            "position_x": 130,
+            "position_y": 264,
             "width": 163,
             "height": 84,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {
+                "0": {
+                    "name": "device",
+                    "value": "cpu",
+                    "value_type": "string"
+                },
+                "1": {
+                    "name": "dtype",
+                    "value": "float32",
+                    "value_type": "string"
+                },
+                "2": {
+                    "name": "requires_grad",
+                    "value": false,
+                    "value_type": "bool"
+                }
+            }
         },
         "8": {
             "init": "comment try dtype int64, uint8, bool",
             "name": "comment",
-            "id": 533,
-            "position_x": 654,
-            "position_y": 330,
+            "id": 1750,
+            "sid": 9,
+            "position_x": 129,
+            "position_y": 224,
             "width": 181,
             "height": 30,
             "visibility": "show_all",
@@ -260,21 +289,22 @@
                 "0": {
                     "name": "text",
                     "value": "try dtype int64, uint8, bool",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "try dtype int64, uint8, bool"
         },
         "9": {
             "name": "heat_map",
-            "id": 570,
-            "position_x": 240,
-            "position_y": 490,
+            "id": 1761,
+            "sid": 10,
+            "position_x": 336,
+            "position_y": 267,
             "width": 388,
             "height": 90,
             "visibility": "show_all",
@@ -284,7 +314,7 @@
                 "0": {
                     "name": "color",
                     "value": "viridis",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "width",
@@ -314,21 +344,22 @@
                 "6": {
                     "name": "update_mode",
                     "value": "heat_map",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "7": {
                     "name": "number format",
                     "value": "%.2f",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             }
         },
         "10": {
             "init": "comment out: the tensor",
             "name": "comment",
-            "id": 607,
-            "position_x": 654,
-            "position_y": 580,
+            "id": 1798,
+            "sid": 11,
+            "position_x": 499,
+            "position_y": 226,
             "width": 101,
             "height": 30,
             "visibility": "show_all",
@@ -338,157 +369,155 @@
                 "0": {
                     "name": "text",
                     "value": "out: the tensor",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "out: the tensor"
         },
         "11": {
             "name": "t.info",
-            "id": 644,
-            "position_x": 30,
-            "position_y": 490,
-            "width": 45,
+            "id": 1809,
+            "sid": 12,
+            "position_x": 337,
+            "position_y": 384,
+            "width": 88,
             "height": 84,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {}
+            "presentation_state": "show_all"
         },
         "12": {
-            "name": "string",
-            "id": 681,
-            "position_x": 30,
-            "position_y": 650,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "13": {
-            "name": "string",
-            "id": 718,
-            "position_x": 250,
-            "position_y": 650,
-            "width": 130,
-            "height": 42,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text in",
-                    "value": "",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            }
-        },
-        "14": {
-            "init": "comment dtype and device of the tensor",
-            "name": "comment",
-            "id": 755,
-            "position_x": 654,
-            "position_y": 705,
-            "width": 193,
-            "height": 30,
-            "visibility": "show_all",
-            "draggable": true,
-            "presentation_state": "show_all",
-            "properties": {
-                "0": {
-                    "name": "text",
-                    "value": "dtype and device of the tensor",
-                    "value_type": "str"
-                },
-                "1": {
-                    "name": "font size",
-                    "value": "24",
-                    "value_type": "str"
-                }
-            },
-            "comment": "dtype and device of the tensor"
-        },
-        "15": {
+            "init": "help_link t.info",
             "name": "help_link",
-            "id": 792,
-            "position_x": 30,
-            "position_y": 794,
-            "width": 54,
+            "id": 1884,
+            "sid": 16,
+            "position_x": 37,
+            "position_y": 561,
+            "width": 53,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "help_link t.info"
+            "properties": {
+                "0": {
+                    "name": "t.info",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
         },
-        "16": {
+        "13": {
+            "init": "help_link t.detach",
             "name": "help_link",
-            "id": 829,
-            "position_x": 100,
-            "position_y": 794,
+            "id": 1895,
+            "sid": 17,
+            "position_x": 107,
+            "position_y": 561,
             "width": 66,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "help_link t.detach"
+            "properties": {
+                "0": {
+                    "name": "t.detach",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
         },
-        "17": {
+        "14": {
+            "init": "help_link np.astype",
             "name": "help_link",
-            "id": 866,
-            "position_x": 182,
-            "position_y": 794,
-            "width": 73,
+            "id": 1906,
+            "sid": 18,
+            "position_x": 189,
+            "position_y": 561,
+            "width": 72,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "help_link np.astype"
+            "properties": {
+                "0": {
+                    "name": "np.astype",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
         },
-        "18": {
+        "15": {
+            "init": "help_link t.linspace",
             "name": "help_link",
-            "id": 903,
-            "position_x": 271,
-            "position_y": 794,
-            "width": 79,
+            "id": 1917,
+            "sid": 19,
+            "position_x": 278,
+            "position_y": 561,
+            "width": 78,
             "height": 44,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {},
-            "init": "help_link t.linspace"
+            "properties": {
+                "0": {
+                    "name": "t.linspace",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 0,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "auto",
+                    "value_type": "string"
+                }
+            }
         },
-        "19": {
+        "16": {
             "init": "comment SEE ALSO - click to open",
             "name": "comment",
-            "id": 940,
-            "position_x": 30,
-            "position_y": 760,
+            "id": 1928,
+            "sid": 20,
+            "position_x": 37,
+            "position_y": 527,
             "width": 156,
             "height": 30,
             "visibility": "show_all",
@@ -498,21 +527,22 @@
                 "0": {
                     "name": "text",
                     "value": "SEE ALSO - click to open",
-                    "value_type": "str"
+                    "value_type": "string"
                 },
                 "1": {
                     "name": "font size",
                     "value": "24",
-                    "value_type": "str"
+                    "value_type": "string"
                 }
             },
             "comment": "SEE ALSO - click to open"
         },
-        "20": {
+        "17": {
             "name": "close",
-            "id": 977,
-            "position_x": 24,
-            "position_y": 868,
+            "id": 1939,
+            "sid": 21,
+            "position_x": 31,
+            "position_y": 635,
             "width": 88,
             "height": 44,
             "visibility": "show_all",
@@ -529,74 +559,54 @@
     },
     "links": {
         "0": {
-            "source_node": 348,
-            "source_node_name": "",
+            "source_node": 1646,
+            "source_node_name": "metro",
             "source_output_index": 0,
             "source_output_name": "",
-            "dest_node": 385,
-            "dest_node_name": "",
+            "dest_node": 1662,
+            "dest_node_name": "np.linspace",
             "dest_input_index": 0,
             "dest_input_name": ""
         },
         "1": {
-            "source_node": 385,
-            "source_node_name": "",
+            "source_node": 1662,
+            "source_node_name": "np.linspace",
             "source_output_index": 0,
             "source_output_name": "linspace out",
-            "dest_node": 422,
-            "dest_node_name": "",
+            "dest_node": 1681,
+            "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "2": {
-            "source_node": 385,
-            "source_node_name": "",
+            "source_node": 1662,
+            "source_node_name": "np.linspace",
             "source_output_index": 0,
             "source_output_name": "linspace out",
-            "dest_node": 496,
-            "dest_node_name": "",
+            "dest_node": 1734,
+            "dest_node_name": "tensor",
             "dest_input_index": 0,
             "dest_input_name": "in"
         },
         "3": {
-            "source_node": 496,
-            "source_node_name": "",
+            "source_node": 1734,
+            "source_node_name": "tensor",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 570,
-            "dest_node_name": "",
+            "dest_node": 1761,
+            "dest_node_name": "heat_map",
             "dest_input_index": 0,
             "dest_input_name": "y"
         },
         "4": {
-            "source_node": 496,
-            "source_node_name": "",
+            "source_node": 1734,
+            "source_node_name": "tensor",
             "source_output_index": 0,
             "source_output_name": "tensor out",
-            "dest_node": 644,
-            "dest_node_name": "",
+            "dest_node": 1809,
+            "dest_node_name": "t.info",
             "dest_input_index": 0,
             "dest_input_name": "in"
-        },
-        "5": {
-            "source_node": 644,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "dtype",
-            "dest_node": 681,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
-        },
-        "6": {
-            "source_node": 644,
-            "source_node_name": "",
-            "source_output_index": 0,
-            "source_output_name": "device",
-            "dest_node": 718,
-            "dest_node_name": "",
-            "dest_input_index": 0,
-            "dest_input_name": ""
         }
     }
 }

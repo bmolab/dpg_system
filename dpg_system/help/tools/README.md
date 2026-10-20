@@ -338,7 +338,10 @@ sliders into make_noise, and a make_jitter table whose np.std 0 strip sits
 under its columns), and `np.robust_mean_help.json` is David's rework.
 `np.var_help.json` is David's rework too, so `make_numpy_average_help.py`
 builds no pages at all now. `t.take_along_dim_help.json` is David's rework,
-so `make_torch_select_help.py` no longer builds it. Use `relayout.py --minimal`
+so `make_torch_select_help.py` no longer builds it. `tensor_help.json` is
+David's simplification (t.info's outlet labels show the dtype and device, so
+the string displays are gone) and `t.detach_help.json` is David's rework, so
+`make_torch_tensor_help.py` no longer builds either. Use `relayout.py --minimal`
 on these, never plain relayout.
 
 To hand-edit any generated page: open it, rework it, save over the same file

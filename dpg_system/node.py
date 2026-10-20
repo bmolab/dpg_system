@@ -205,11 +205,17 @@ class NodeOutput:
         self.new_output = False
         self.output_type = None
         self.name_archive = []
+        # a node that writes readouts into its outlet labels (t.info) sets
+        # this to the outlet's real name, so saved links use it and reconnect
+        self.save_name = None
         self.sent_type = None
         self.sent_bang = False
 
     def get_label(self) -> str:
         return self._label
+
+    def get_save_label(self) -> str:
+        return self.save_name if self.save_name is not None else self._label
 
     def set_label(self, name: str) -> None:
         self._label = name
