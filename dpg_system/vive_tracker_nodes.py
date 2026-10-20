@@ -5,6 +5,11 @@ from collections import deque
 from dpg_system.conversion_utils import *
 from dpg_system.triad_openvr.triad_openvr import *
 import numpy as np
+import os
+import dearpygui.dearpygui as dpg
+
+# serial -> name assignments for trackers, written by the vive_tracker save_names button
+VIVE_NAMES_PATH = os.path.join(os.path.dirname(__file__), 'triad_openvr', 'vive_names.json')
 
 def register_vive_tracker_nodes():
     Node.app.register_node('vive_tracker', ViveTrackerNode.factory)
@@ -27,7 +32,7 @@ class ViveTrackerNode(Node):
         super().__init__(label, data, args)
         if ViveTrackerNode.open_vr is None:
             try:
-                ViveTrackerNode.open_vr = triad_openvr()
+                ViveTrackerNode.open_vr = triad_openvr(VIVE_NAMES_PATH)
                 ViveTrackerNode.open_vr.print_discovered_objects()
             except Exception as e:
                 print(f'ViveTrackerNode: OpenVR initialization failed ({e}); node will report disconnected')
@@ -44,7 +49,7 @@ class ViveTrackerNode(Node):
         self.enable_in = self.add_input('enable_in', widget_type='checkbox', triggers_execution=True)
         self.output_format_in = self.add_input('output_format', widget_type='combo', default_value='quaternion')
         self.which_tracker_in = self.add_input('which_tracker', widget_type='combo', default_value='tracker_1')
-        self.which_tracker_in.widget.combo_items = ['tracker_1', 'tracker_2', 'tracker_3', 'tracker_4']
+        self.which_tracker_in.widget.combo_items = self._tracker_names()
         self.output_format_in.widget.combo_items = ['quaternion', 'euler', 'matrix']
         self.play_area_x_in = self.add_input('play_area_x_m', widget_type='drag_float', default_value=3.0)
         self.play_area_z_in = self.add_input('play_area_z_m', widget_type='drag_float', default_value=3.0)
@@ -59,6 +64,8 @@ class ViveTrackerNode(Node):
         self.compute_from_corners_in = self.add_input('compute_from_corners', widget_type='button', callback=self.compute_from_corners)
         self.clear_corners_in = self.add_input('clear_corners', widget_type='button', callback=self.clear_corners)
         self.apply_chaperone_in = self.add_input('apply_chaperone', widget_type='button', callback=self.apply_chaperone)
+        self.save_names_in = self.add_input('save_names', widget_type='button', callback=self.save_names)
+        self.reload_names_in = self.add_input('reload_names', widget_type='button', callback=self.reload_names)
         self.orientation_out = self.add_output('orientation')
         self.position_out = self.add_output('position')
         self.connected_out = self.add_output('connected')
@@ -68,6 +75,7 @@ class ViveTrackerNode(Node):
         self.connected = False
         self.tracker_serial = None       # serial of the tracker we're bound to
         self.tracker_device_name = None   # current name in open_vr.devices
+        self.selected_name = None         # which_tracker value the serial was taken from
         self.captured_corners = [None, None, None, None]  # FL, FR, BR, BL in raw tracking coords
         self.__mutex = threading.Lock()
         self._stop_event = threading.Event()
@@ -77,27 +85,75 @@ class ViveTrackerNode(Node):
             self.thread.start()
             self.thread_started = True
 
-    def _cache_tracker_serial(self):
-        """Cache the serial number of the currently selected tracker so we can find it after reconnection."""
-        target_name = self.which_tracker_in()
-        if target_name in ViveTrackerNode.open_vr.devices:
-            device = ViveTrackerNode.open_vr.devices[target_name]
-            self.tracker_serial = device.get_serial()
-            self.tracker_device_name = target_name
-            self.connected = True
-            self.connected_out.send(1)
-            print(f'Tracker bound to "{target_name}" (serial: {self.tracker_serial})')
-            return True
-        return False
+    @staticmethod
+    def _tracker_names():
+        open_vr = ViveTrackerNode.open_vr
+        if open_vr is None:
+            return ['tracker_1', 'tracker_2', 'tracker_3', 'tracker_4']
+        with open_vr.lock:
+            names = set(open_vr.object_names['Tracker'])
+            names |= {e['name'] for e in open_vr.config_entries if e.get('type') == 'Tracker'}
+        return sorted(names) or ['tracker_1']
 
-    def _find_tracker_by_serial(self):
-        """Find the tracker in open_vr.devices by serial number, regardless of its current name."""
-        if self.tracker_serial is None:
-            return None
-        for name, device in ViveTrackerNode.open_vr.devices.items():
-            if device.device_class == "Tracker" and device.get_serial() == self.tracker_serial:
-                return name
+    def _refresh_tracker_list(self):
+        names = self._tracker_names()
+        self.which_tracker_in.widget.combo_items = names
+        dpg.configure_item(self.which_tracker_in.widget.uuid, items=names)
+
+    def save_names(self):
+        """Write the current tracker names and serials to the names file. Edit the
+        names there (e.g. to 'left_wrist'), then press reload_names."""
+        if ViveTrackerNode.open_vr is None:
+            return
+        try:
+            ViveTrackerNode.open_vr.save_names(VIVE_NAMES_PATH)
+            print(f'ViveTrackerNode: device names saved to {VIVE_NAMES_PATH}')
+        except Exception as e:
+            print(f'ViveTrackerNode: save_names failed ({e})')
+        self._refresh_tracker_list()
+
+    def reload_names(self):
+        if ViveTrackerNode.open_vr is None:
+            return
+        try:
+            if ViveTrackerNode.open_vr.load_names(VIVE_NAMES_PATH):
+                ViveTrackerNode.open_vr.print_discovered_objects()
+            else:
+                print(f'ViveTrackerNode: no names file at {VIVE_NAMES_PATH} (use save_names to create one)')
+        except Exception as e:
+            print(f'ViveTrackerNode: reload_names failed ({e})')
+        self._refresh_tracker_list()
+
+    def _bind_tracker(self):
+        """Return the device bound to the selected tracker, or None if it is offline.
+
+        The binding is by serial: it is taken from the selected name once, and only
+        redone when the selection itself changes, so a tracker that drops out and
+        returns can't hand the node over to a different physical tracker."""
+        open_vr = ViveTrackerNode.open_vr
+        target_name = self.which_tracker_in()
+        with open_vr.lock:
+            if target_name != self.selected_name:
+                self.selected_name = target_name
+                self.tracker_serial = None
+            if self.tracker_serial is None:
+                device = open_vr.devices.get(target_name)
+                if device is None:
+                    return None
+                self.tracker_serial = device.get_serial()
+                print(f'Tracker bound to "{target_name}" (serial: {self.tracker_serial})')
+            for name, device in open_vr.devices.items():
+                if device.device_class == "Tracker" and device.get_serial() == self.tracker_serial:
+                    if name != self.tracker_device_name and self.tracker_device_name is not None:
+                        print(f'Tracker reconnected as "{name}" (serial: {self.tracker_serial})')
+                    self.tracker_device_name = name
+                    return device
         return None
+
+    def _set_connected(self, connected):
+        if connected != self.connected:
+            self.connected = connected
+            self.connected_out.send(1 if connected else 0)
 
     def vive_service_loop(self):
         while not self._stop_event.is_set():
@@ -147,11 +203,11 @@ class ViveTrackerNode(Node):
     def _get_current_tracker_position(self):
         if ViveTrackerNode.open_vr is None:
             return None
-        target_name = self.tracker_device_name or self.which_tracker_in()
-        if target_name not in ViveTrackerNode.open_vr.devices:
+        device = self._bind_tracker()
+        if device is None:
             return None
         try:
-            pose = ViveTrackerNode.open_vr.devices[target_name].get_pose_quaternion()
+            pose = device.get_pose_quaternion()
         except Exception as e:
             print(f'ViveTrackerNode: pose read failed ({e})')
             return None
@@ -226,86 +282,45 @@ class ViveTrackerNode(Node):
             return
 
         try:
-            target_name = self.which_tracker_in()
-
-            # First time: cache the serial of the selected tracker
-            if self.tracker_serial is None:
-                if not self._cache_tracker_serial():
-                    # Tracker not yet available at all
-                    if self.connected:
-                        self.connected = False
-                        self.connected_out.send(0)
-                    return
-
-            # Check if the tracker is still under its known name
-            if self.tracker_device_name not in ViveTrackerNode.open_vr.devices:
-                # Tracker disappeared — try to find it by serial (it may have reconnected under a new name)
-                new_name = self._find_tracker_by_serial()
-                if new_name is not None:
-                    self.tracker_device_name = new_name
-                    if not self.connected:
-                        self.connected = True
-                        self.connected_out.send(1)
-                        print(f'Tracker reconnected as "{new_name}" (serial: {self.tracker_serial})')
+            device = self._bind_tracker()
+            if device is None:
+                self._set_connected(False)
+                return
+            if self.output_format_in() == 'quaternion':
+                orientation = device.get_pose_quaternion()
+                if orientation is not None:
+                    self.orientation = any_to_array(orientation[3:])
+                    self.position = any_to_array(orientation[:3])
+                    self.orientation_out.send(self.orientation)
+                    self.position_out.send(self.position)
+                    self._set_connected(True)
                 else:
-                    # Tracker is genuinely offline
-                    if self.connected:
-                        self.connected = False
-                        self.connected_out.send(0)
-                        print(f'Tracker disconnected (serial: {self.tracker_serial})')
-                    return
+                    self._set_connected(False)
+            elif self.output_format_in() == 'euler':
+                orientation = device.get_pose_euler()
+                if orientation is not None:
+                    self.orientation = any_to_array(orientation[3:])
+                    self.position = any_to_array(orientation[:3])
+                    if self.previous_orientation is not None:
+                        if self.previous_orientation[0] - self.orientation[0] > 180:
+                            self.orientation[0] += 360
+                        elif self.previous_orientation[0] - self.orientation[0] < -180:
+                            self.orientation[0] -= 360
+                        if self.previous_orientation[1] - self.orientation[1] > 180:
+                            self.orientation[1] += 360
+                        elif self.previous_orientation[1] - self.orientation[1] < -180:
+                            self.orientation[1] -= 360
+                        if self.previous_orientation[2] - self.orientation[2] > 180:
+                            self.orientation[2] += 360
+                        elif self.previous_orientation[2] - self.orientation[2] < -180:
+                            self.orientation[2] -= 360
+                    self.previous_orientation = self.orientation
+                    self.orientation_out.send(self.orientation)
+                    self.position_out.send(self.position)
 
-            # If the user changed the tracker selection, re-cache
-            if target_name != self.tracker_device_name and target_name in ViveTrackerNode.open_vr.devices:
-                self._cache_tracker_serial()
-
-            device = ViveTrackerNode.open_vr.devices[self.tracker_device_name]
-            if device is not None:
-                if self.output_format_in() == 'quaternion':
-                    orientation = device.get_pose_quaternion()
-                    if orientation is not None:
-                        self.orientation = any_to_array(orientation[3:])
-                        self.position = any_to_array(orientation[:3])
-                        self.orientation_out.send(self.orientation)
-                        self.position_out.send(self.position)
-                        if not self.connected:
-                            self.connected = True
-                            self.connected_out.send(1)
-                    else:
-                        if self.connected:
-                            self.connected = False
-                            self.connected_out.send(0)
-                elif self.output_format_in() == 'euler':
-                    orientation = device.get_pose_euler()
-                    if orientation is not None:
-                        self.orientation = any_to_array(orientation[3:])
-                        self.position = any_to_array(orientation[:3])
-                        if self.previous_orientation is not None:
-                            if self.previous_orientation[0] - self.orientation[0] > 180:
-                                self.orientation[0] += 360
-                            elif self.previous_orientation[0] - self.orientation[0] < -180:
-                                self.orientation[0] -= 360
-                            if self.previous_orientation[1] - self.orientation[1] > 180:
-                                self.orientation[1] += 360
-                            elif self.previous_orientation[1] - self.orientation[1] < -180:
-                                self.orientation[1] -= 360
-                            if self.previous_orientation[2] - self.orientation[2] > 180:
-                                self.orientation[2] += 360
-                            elif self.previous_orientation[2] - self.orientation[2] < -180:
-                                self.orientation[2] -= 360
-                        self.previous_orientation = self.orientation
-                        self.orientation_out.send(self.orientation)
-                        self.position_out.send(self.position)
-
-                        if not self.connected:
-                            self.connected = True
-                            self.connected_out.send(1)
-                    else:
-                        if self.connected:
-                            self.connected = False
-                            self.connected_out.send(0)
-            else:
-                print('tracker not found')
+                    self._set_connected(True)
+                else:
+                    self._set_connected(False)
         except Exception:
             # ZeroDivisionError: degenerate pose matrix (r_w == 0 in quaternion conversion)
             # KeyError: device removed from dict between our check and access
@@ -418,7 +433,7 @@ class ViveBaseStationNode(Node):
         # (openvr.init() must only be called once per process).
         if ViveTrackerNode.open_vr is None:
             try:
-                ViveTrackerNode.open_vr = triad_openvr()
+                ViveTrackerNode.open_vr = triad_openvr(VIVE_NAMES_PATH)
                 ViveTrackerNode.open_vr.print_discovered_objects()
             except Exception as e:
                 print(f'ViveBaseStationNode: OpenVR initialization failed ({e}); node will report no stations')
