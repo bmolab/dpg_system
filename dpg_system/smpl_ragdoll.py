@@ -240,6 +240,7 @@ from dpg_system.node import Node
 from dpg_system.interface_nodes import SliderBankNode
 from dpg_system.smpl_processor import SMPLProcessor, SMPLProcessingOptions
 from dpg_system.body_defs import JointTranslator
+from dpg_system.remote_worker import RemoteObject, WorkerDied
 
 
 # This system's other pose format: the twenty "active" joints derived from the
@@ -287,6 +288,10 @@ class SMPLRagdollNode(Node):
         'neck', 'left_collar', 'right_collar', 'head', 'left_shoulder', 'right_shoulder',
         'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist', 'left_hand', 'right_hand'
     ]
+
+    # Class-level so a subclass that skips __init__ (the tests' stubs) still has them.
+    _rebuild_sim = False
+    worker_prop = None
 
     @staticmethod
     def factory(name, data, args=None):
@@ -397,6 +402,12 @@ class SMPLRagdollNode(Node):
             'axis_permutation', widget_type='text_input', default_value='x, z, -y')
         self.quat_format_prop = self.add_option('quat_format', widget_type='combo', default_value='wxyz')
         self.quat_format_prop.widget.combo_items = ['xyzw', 'wxyz']
+        # The physics in a process of its own (remote_worker), so it neither
+        # waits for nor delays the render loop.  Toggling rebuilds the sim.
+        self.worker_prop = self.add_option(
+            'worker_process', widget_type='checkbox', default_value=True,
+            callback=self._on_worker_changed)
+        self._rebuild_sim = False
 
         self._parse_free_joints('all')
 
@@ -634,7 +645,10 @@ class SMPLRagdollNode(Node):
 
     def _reset_sim(self):
         if self.sim is not None:
-            self.sim.reset()
+            try:
+                self.sim.reset()
+            except WorkerDied:
+                self._rebuild_sim = True
         self._unsupported_time = 0.0
         self._apply_weight_immediately()
 
@@ -667,7 +681,10 @@ class SMPLRagdollNode(Node):
             # is exactly when the loss it is measuring begins
             ramping = bool(np.any(self.weight_targets - self.weights > 1e-6))
             if self.root_free and self.sim is not None and released and not ramping:
-                support = float(getattr(self.sim, 'last_support', 1.0))
+                try:
+                    support = float(getattr(self.sim, 'last_support', 1.0))
+                except WorkerDied:
+                    support = 1.0          # advance() below reports it and restarts
                 if support < 0.5:
                     self._unsupported_time += dt
                 else:
@@ -692,15 +709,31 @@ class SMPLRagdollNode(Node):
     def _to_array(self, d):
         return np.asarray(d, dtype=float) if not isinstance(d, np.ndarray) else d.astype(float)
 
+    def _processor_kwargs(self):
+        return dict(framerate=self.framerate, betas=self.betas, gender=self.gender,
+                    total_mass_kg=float(self.total_mass_prop()),
+                    model_path=os.path.dirname(os.path.abspath(__file__)))
+
     def _ensure_processor(self, rebuild=False):
-        if self.processor is None or rebuild:
-            self.processor = SMPLProcessor(
-                framerate=self.framerate,
-                betas=self.betas,
-                gender=self.gender,
-                total_mass_kg=float(self.total_mass_prop()),
-                model_path=os.path.dirname(os.path.abspath(__file__)))
-            self.sim = self._make_sim()
+        if self.processor is None or rebuild or self._rebuild_sim:
+            self._rebuild_sim = False
+            use_worker = self.worker_prop is not None and bool(self.worker_prop())
+            # A live worker rebuilds in place; otherwise one is started --
+            # first, so that it builds its processor while this one is built.
+            remote = None
+            if use_worker and isinstance(self.sim, RemoteObject) and self.sim.alive:
+                remote, self.sim = self.sim, None
+                try:
+                    remote.recreate(self._processor_kwargs())
+                except Exception as e:
+                    print(f'smpl_ragdoll: worker rebuild failed ({e}); starting a new one')
+                    remote.close()
+                    remote = None
+            self._close_sim()
+            if use_worker and remote is None:
+                remote = self._start_remote_sim()
+            self.processor = SMPLProcessor(**self._processor_kwargs())
+            self.sim = self._finish_remote_sim(remote) if remote is not None else self._make_sim()
             self.sim.set_free_joints([j for j in self.free_indices if j > 0])
             self.sim.set_root_free(self.root_free)
             # Reported because nothing else shows it and the frame rate is not
@@ -712,6 +745,39 @@ class SMPLRagdollNode(Node):
             print('smpl_ragdoll: body = %s, %g Hz, betas %s'
                   % (self.gender, self.framerate,
                      'supplied' if np.any(self.betas) else 'ZERO (no config?)'))
+
+    def _start_remote_sim(self):
+        from dpg_system.smpl_bullet import RemoteRagdollSim     # lazy: circular import
+        try:
+            return RemoteRagdollSim(self._processor_kwargs())
+        except Exception as e:
+            print(f'smpl_ragdoll: worker process failed to start ({e}); running in-process')
+            return None
+
+    def _finish_remote_sim(self, remote):
+        try:
+            remote.wait_ready()
+            return remote
+        except Exception as e:
+            print(f'smpl_ragdoll: worker process failed ({e}); running in-process')
+            remote.close()
+            return self._make_sim()
+
+    def _close_sim(self):
+        sim, self.sim = self.sim, None
+        if sim is not None:
+            try:
+                sim.close()
+            except Exception:
+                pass
+
+    def _on_worker_changed(self):
+        # Rebuilt on the next frame, on the thread that runs the node.
+        if self.sim is not None:
+            self._rebuild_sim = True
+
+    def custom_cleanup(self):
+        self._close_sim()
 
     def _make_sim(self):
         """The physics core: pybullet."""
@@ -883,6 +949,13 @@ class SMPLRagdollNode(Node):
                     frame, root_trans.reshape(1, 3), options)
                 result, root_rot, trans_int = self.sim.advance(
                     aa_int[0], t_int[0], self.weights, p, tones=self.tones)
+            except WorkerDied as e:
+                # A new worker on the next frame; the body restarts from the capture.
+                print(f'smpl_ragdoll: {e}; restarting it')
+                self._rebuild_sim = True
+                self.pose_output.send(raw)
+                self.trans_output.send(root_trans)
+                return
             except Exception as e:
                 print(f'smpl_ragdoll: simulation failed ({e}); passing through')
                 self.pose_output.send(raw)

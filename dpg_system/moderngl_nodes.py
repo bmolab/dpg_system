@@ -254,6 +254,20 @@ class MGLImageNode(MGLNode):
 _DPG_UI_KEY_MAPS = None
 
 
+def _dpg_ui_mods():
+    """The modifier keys held now, as GLFW's bits (1 shift, 2 ctrl, 4 alt,
+    8 super), for mouse events from the DPG-embedded view: the native
+    windows' events carry the same."""
+    def down(*names):
+        return any(dpg.is_key_down(getattr(dpg, n)) for n in names if hasattr(dpg, n))
+    # The ImGui Mod_ keys as well as the left/right ones: which of them
+    # reports reliably has varied between DPG versions.
+    return ((1 if down('mvKey_ModShift', 'mvKey_LShift', 'mvKey_RShift', 'mvKey_Shift') else 0)
+            | (2 if down('mvKey_ModCtrl', 'mvKey_LControl', 'mvKey_RControl', 'mvKey_Control') else 0)
+            | (4 if down('mvKey_ModAlt', 'mvKey_LAlt', 'mvKey_RAlt', 'mvKey_Alt') else 0)
+            | (8 if down('mvKey_ModSuper', 'mvKey_LWin', 'mvKey_RWin') else 0))
+
+
 def _dpg_ui_key_maps():
     global _DPG_UI_KEY_MAPS
     if _DPG_UI_KEY_MAPS is None:
@@ -470,7 +484,7 @@ class MGLContextNode(Node):
         self._dpg_mouse_captured = True
         x, y = self._dpg_ui_mouse_xy(win)
         u, v = self._dpg_ui_mouse_uv(win, x, y)
-        self._push_dpg_ui_event(['mouse_down', x, y, int(button), u, v])
+        self._push_dpg_ui_event(['mouse_down', x, y, int(button), u, v, _dpg_ui_mods()])
 
     def _dpg_ui_mouse_release(self, sender, button):
         # gate on capture or focus, not hover, so the release that ends a
@@ -482,7 +496,7 @@ class MGLContextNode(Node):
             return
         x, y = self._dpg_ui_mouse_xy(win)
         u, v = self._dpg_ui_mouse_uv(win, x, y)
-        self._push_dpg_ui_event(['mouse_up', x, y, int(button), u, v])
+        self._push_dpg_ui_event(['mouse_up', x, y, int(button), u, v, _dpg_ui_mods()])
 
     def _dpg_ui_mouse_move(self, sender, app_data):
         win = self._dpg_ui_window()

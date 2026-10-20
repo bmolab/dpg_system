@@ -461,15 +461,16 @@ class _Seed:
     """Smoothed velocity estimate with the averaging lag cancelled, for the
     momentum a release inherits."""
 
-    def __init__(self, alpha=0.3):
+    def __init__(self, alpha=0.3, shape=(3,)):
         self.alpha = alpha
+        self.shape = shape          # (3,), or (n, 3) for n estimates at once
         self.reset()
 
     def reset(self):
-        self.vel = np.zeros(3)
-        self.acc = np.zeros(3)
+        self.vel = np.zeros(self.shape)
+        self.acc = np.zeros(self.shape)
         self.prev_raw = None
-        self.value = np.zeros(3)
+        self.value = np.zeros(self.shape)
 
     def push(self, raw, dt):
         a = self.alpha
@@ -671,11 +672,11 @@ class BulletRagdollSim:
         self.lim_margin = [None] * 24
         self.lim_margin0 = [None] * 24
         self.base_seed = _Seed(); self.base_ang_seed = _Seed()
-        self.joint_seed = {j: _Seed() for j in range(1, 24)}
+        self.joint_seed = _Seed(shape=(24, 3))      # rows 1-23 used
         self.joint_speed_ema = np.full(24, 1.0)
         self._tremor_x[:] = 0.0; self._tremor_v[:] = 0.0
         self.prev_root = None
-        self.prev_joint = {}
+        self.prev_joint_q = None          # (24, 4) last frame's joint quaternions, rows 1-23
         self.was_prescribed = np.ones(24, dtype=bool)
         self.last_torque = np.zeros((22, 3))
         self.last_inertia = np.zeros(22)
@@ -803,6 +804,11 @@ class BulletRagdollSim:
         # the limits and the jump detector all see the toned target
         tones = np.zeros(24) if tones is None else np.asarray(tones, dtype=float)
         mocap_aa, steady_aa, tremor_rate, toned = self._tone_targets(mocap_aa, tones, dt, p_)
+        # The captured pose's ground points, computed at most once per frame by
+        # _frame_lows_for().  It used to be cached on id(mocap_aa), but ids are
+        # reused once an array is freed, so a new frame could be handed the
+        # previous frame's points.
+        self._frame_lows = None
         w = np.ones(24); w[:22] = np.clip(weights[:22], 0.0, 1.0)
         self._drive_force = float(p_.drive_force)
         self._spring_rate = max(float(getattr(p_, 'spring_rate', 60.0)), 1.0)
@@ -831,22 +837,20 @@ class BulletRagdollSim:
             d_t = float(np.linalg.norm(mocap_trans - prev_trans))
             d_r = float((root_rot * prev_root.inv()).magnitude())
             d_p = 0.0
-            for j in (1, 2, 3, 16, 17):
-                q_prev = self.prev_joint.get(j)
-                if q_prev is not None:
-                    d_p = max(d_p, float((q_prev.inv() * R.from_rotvec(mocap_aa[j])).magnitude())
-                              - 3.0 * float(self.joint_speed_ema[j]) * dt)
+            if self.prev_joint_q is not None:
+                major = [1, 2, 3, 16, 17]
+                ang = np.linalg.norm(_qlog(_qmul(_qconj(self.prev_joint_q[major]),
+                                                 _qexp(mocap_aa[major]))), axis=1)
+                d_p = max(d_p, float(np.max(ang - 3.0 * self.joint_speed_ema[major] * dt)))
             t_thr = p_.jump_trans + 3.0 * float(np.linalg.norm(self.base_seed.vel)) * dt
             r_thr = p_.jump_rot + 3.0 * float(np.linalg.norm(self.base_ang_seed.vel)) * dt
             if d_t > t_thr or d_r > r_thr or d_p > p_.jump_rot:
                 self._jump = True
                 self.base_seed.reset(); self.base_ang_seed.reset()
-                for seed in self.joint_seed.values():
-                    seed.reset()
+                self.joint_seed.reset()
                 self.joint_speed_ema[:] = 0.0
                 self.prev_root = root_rot; self.prev_trans = mocap_trans.copy()
-                for j in range(1, 24):
-                    self.prev_joint[j] = R.from_rotvec(steady_aa[j])
+                self.prev_joint_q = _qexp(steady_aa[:24])
                 prev_root, prev_trans = self.prev_root, self.prev_trans
 
         # -- velocity estimates from the capture, for every joint and the base
@@ -857,27 +861,28 @@ class BulletRagdollSim:
             base_w = self.base_ang_seed.push(
                 _log_map((root_rot * prev_root.inv()).as_matrix()) / dt, dt)
         self.prev_root = root_rot; self.prev_trans = mocap_trans.copy()
-        joint_w = {}
-        for j in range(1, 24):
-            q = R.from_rotvec(steady_aa[j])      # tremor excluded: its rate is added below
-            prev = self.prev_joint.get(j)
-            if prev is not None:
-                # child-frame rate: q_prev^-1 q ; parent-frame: q q_prev^-1
-                rel = (prev.inv() * q) if JOINT_VEL_IN_CHILD_FRAME else (q * prev.inv())
-                raw = _log_map(rel.as_matrix()) / dt
-                # Capture glitches arrive as single-frame spikes of twenty
-                # radians a second on a two radian a second mean; a motor fed
-                # that as a target rate whips the limb.  Clip to a few times
-                # the joint's running speed, never below a floor.
-                cap = max(p_.spike_ratio * self.joint_speed_ema[j], p_.spike_floor)
-                n_ = float(np.linalg.norm(raw))
-                if n_ > cap:
-                    raw = raw * (cap / n_)
-                self.joint_speed_ema[j] += 0.1 * (min(n_, cap) - self.joint_speed_ema[j])
-                joint_w[j] = self.joint_seed[j].push(raw, dt)
-            else:
-                joint_w[j] = np.zeros(3)
-            self.prev_joint[j] = q
+        # All 23 joints at once, as quaternions (rows 1-23; row 0 unused).
+        q = _qexp(steady_aa[:24])            # tremor excluded: its rate is added below
+        prev = self.prev_joint_q
+        if prev is not None:
+            # child-frame rate: q_prev^-1 q ; parent-frame: q q_prev^-1
+            rel = _qmul(_qconj(prev), q) if JOINT_VEL_IN_CHILD_FRAME else _qmul(q, _qconj(prev))
+            raw = _qlog(rel) / dt
+            raw[0] = 0.0
+            # Capture glitches arrive as single-frame spikes of twenty
+            # radians a second on a two radian a second mean; a motor fed
+            # that as a target rate whips the limb.  Clip to a few times
+            # the joint's running speed, never below a floor.
+            cap = np.maximum(p_.spike_ratio * self.joint_speed_ema, p_.spike_floor)
+            n_ = np.linalg.norm(raw, axis=1)
+            over = n_ > cap
+            raw[over] *= (cap[over] / n_[over])[:, None]
+            self.joint_speed_ema[1:] += 0.1 * (np.minimum(n_, cap)[1:] - self.joint_speed_ema[1:])
+            W = self.joint_seed.push(raw, dt)
+        else:
+            W = np.zeros((24, 3))
+        self.prev_joint_q = q
+        joint_w = {j: W[j] for j in range(1, 24)}
         # the tremor's own rate, unsmoothed: the seed's averaging would take
         # most of a ten hertz rate out of the feed-forward and the motor
         # would smear the shake instead of following it
@@ -1024,9 +1029,7 @@ class BulletRagdollSim:
                         framerate=1.0 / max(dt, 1e-4), total_mass_kg=self.mass,
                         segment_masses=np.asarray(self.link_masses[:24]), frame_evaluator=fe)
                     self._lo_opts = LogOddsContactOptions(up_axis=1)
-                if getattr(self, '_frame_lows_id', None) != id(mocap_aa):
-                    self._frame_lows = self._capture_lows(mocap_aa, mocap_trans)
-                    self._frame_lows_id = id(mocap_aa)
+                self._frame_lows_for(mocap_aa, mocap_trans)
                 fk = self._last_fk
                 com = (self.link_masses[:24, None] * fk[:24]).sum(0) / self.mass
                 if self._jump or self._lo_prev_com is None:
@@ -1056,9 +1059,7 @@ class BulletRagdollSim:
         # offset on the estimate, not replaced by it.
         if body.plane is not None:
             if p_.floor_auto:
-                self._frame_lows = self._capture_lows(mocap_aa, mocap_trans)
-                self._frame_lows_id = id(mocap_aa)
-                low = min(self._frame_lows.values())
+                low = min(self._frame_lows_for(mocap_aa, mocap_trans).values())
                 # the lower envelope, not the mean: a tenth percentile over
                 # floor_tau seconds sits at the ground while the captured
                 # feet wander centimetres above it, and a dip or a jump is a
@@ -1463,6 +1464,28 @@ class BulletRagdollSim:
         caps = np.minimum(np.linalg.norm(tau, axis=1), self._drive_force)
         return targets, caps
 
+    def _frame_lows_for(self, mocap_aa, mocap_trans):
+        """This frame's _capture_lows, computed on first use in advance()."""
+        if self._frame_lows is None:
+            self._frame_lows = self._capture_lows(mocap_aa, mocap_trans)
+        return self._frame_lows
+
+    def _lows_tables(self, n):
+        """For _capture_lows: the link that carries each of the n points, and
+        its capsule radius."""
+        tables = getattr(self, '_lows_tables_cache', None)
+        if tables is None or len(tables[0]) != n:
+            link_of = np.arange(n)
+            for j in range(22, n):
+                k = j
+                while k >= 22:
+                    k = self.parents[k]
+                link_of[j] = k
+            radius = np.array([SEG_RADIUS.get(0, 0.05)]
+                              + [SEG_RADIUS.get(j, 0.04) if j < 22 else 0.02 for j in range(1, n)])
+            tables = self._lows_tables_cache = (link_of, radius)
+        return tables
+
     def _capture_lows(self, mocap_aa, mocap_trans):
         """Forward kinematics of the captured pose: the lowest point of every
         link's capsule (joints 0-21) and of the toe / finger / heel tips,
@@ -1472,25 +1495,27 @@ class BulletRagdollSim:
         offsets = np.asarray(self.processor.skeleton_offsets)
         n = min(len(self.parents), offsets.shape[0])
         pos = np.zeros((n, 3))
-        rot = [None] * n
+        local = R.from_rotvec(mocap_aa[:24]).as_matrix()
+        rot = np.empty((24, 3, 3))
         pos[0] = np.asarray(mocap_trans, dtype=float)
-        rot[0] = R.from_rotvec(mocap_aa[0])
-        lows = {0: pos[0, 1] - SEG_RADIUS.get(0, 0.05)}
-        low_xz = {0: pos[0, [0, 2]]}
+        rot[0] = local[0]
         for j in range(1, n):
             pa = self.parents[j]
-            pos[j] = pos[pa] + rot[pa].apply(offsets[j])
+            pos[j] = pos[pa] + rot[pa] @ offsets[j]
             if j < 24:
-                rot[j] = rot[pa] * R.from_rotvec(mocap_aa[j])
-            # hands (22, 23) and the virtual tips belong to the link that
-            # carries them: the wrist, the foot, the ankle
-            link = j
-            while link >= 22:
-                link = self.parents[link]
-            r = SEG_RADIUS.get(j, 0.04) if j < 22 else 0.02
-            if pos[j, 1] - r < lows.get(link, np.inf):
-                lows[link] = pos[j, 1] - r
-                low_xz[link] = pos[j, [0, 2]]
+                rot[j] = rot[pa] @ local[j]
+        # Each link's capsule bottom; hands (22, 23) and the virtual tips
+        # belong to the link that carries them: the wrist, the foot, the
+        # ankle -- the lowest point wins, the first on a tie.
+        link_of, radius = self._lows_tables(n)
+        bottom = pos[:, 1] - radius
+        best = np.arange(22)
+        for j in range(22, n):
+            k = link_of[j]
+            if bottom[j] < bottom[best[k]]:
+                best[k] = j
+        lows = dict(zip(range(22), bottom[best].tolist()))
+        low_xz = {k: pos[best[k], [0, 2]] for k in range(22)}
         self._last_lows = lows
         self._last_fk = pos
         self._low_xz = low_xz
@@ -1505,9 +1530,7 @@ class BulletRagdollSim:
         within centimetres of each other for most of the cycle -- and no floor
         plane is involved: capture foot heights wander, and a floor estimate
         that keeps the deepest heel strike sits below where the foot is now."""
-        lows = getattr(self, '_frame_lows', None)
-        if lows is None or getattr(self, '_frame_lows_id', None) != id(mocap_aa):
-            lows = self._capture_lows(mocap_aa, mocap_trans)
+        lows = self._frame_lows_for(mocap_aa, mocap_trans)
         floor = min(lows.values())
         cands = [j for j, v in lows.items() if v <= floor + p_.support_tolerance]
         conf = {}
@@ -1540,3 +1563,26 @@ class BulletRagdollSim:
     def close(self):
         if self.body is not None:
             self.body.close(); self.body = None
+
+
+def make_ragdoll_sim(processor_kwargs):
+    """Build an SMPLProcessor and the sim on it -- the worker-side factory
+    for RemoteRagdollSim."""
+    from dpg_system.smpl_processor import SMPLProcessor
+    return BulletRagdollSim(SMPLProcessor(**processor_kwargs))
+
+
+from dpg_system.remote_worker import RemoteObject
+
+
+class RemoteRagdollSim(RemoteObject):
+    """A BulletRagdollSim in a worker process (see remote_worker), with its
+    own SMPLProcessor built from the same arguments as the node's.  What
+    smpl_ragdoll reads after each frame comes back with advance."""
+    snapshot_after = {
+        'advance': (('last_torque', 'last_contact_force', 'last_energy_injected',
+                     'last_support', 'contact_intensity'), ()),
+    }
+
+    def __init__(self, processor_kwargs):
+        super().__init__('dpg_system.smpl_bullet:make_ragdoll_sim', processor_kwargs)

@@ -67,6 +67,7 @@ dependencies:
     # Networking & OSC
     - ndi-python
     - netifaces
+    - PyATEMMax==1.0b9
     - python-osc
     - simplepyble
     - websockets
