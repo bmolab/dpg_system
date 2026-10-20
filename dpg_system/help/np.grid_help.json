@@ -168,7 +168,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "np.grid 0 1 0 1 5 4"
+            "init": "np.grid 0 1 0 1 5 4",
+            "highlight": true
         },
         "5": {
             "init": "comment drag any of its values",

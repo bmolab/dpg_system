@@ -163,7 +163,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "8": {
             "init": "comment the solid body, first in the chain",
@@ -200,7 +201,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "10": {
             "name": "text_block",

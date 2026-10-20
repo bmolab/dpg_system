@@ -213,7 +213,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "name": "text_block",

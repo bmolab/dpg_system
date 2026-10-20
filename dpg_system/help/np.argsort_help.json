@@ -300,7 +300,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "11": {
             "name": "heat_map",

@@ -710,7 +710,8 @@
                             "value": "None",
                             "value_type": "str"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "12": {
                     "name": "float",
@@ -822,7 +823,8 @@
                             "value_type": "str"
                         }
                     },
-                    "init": "np.mean 1"
+                    "init": "np.mean 1",
+                    "highlight": true
                 },
                 "17": {
                     "name": "np.expand_dims",
@@ -938,7 +940,8 @@
                             "value_type": "str"
                         }
                     },
-                    "init": "np.mean 0"
+                    "init": "np.mean 0",
+                    "highlight": true
                 },
                 "21": {
                     "name": "heat_map",

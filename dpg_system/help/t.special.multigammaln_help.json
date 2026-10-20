@@ -304,7 +304,8 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "init": "comment drag p: the dimension (1 or more)",

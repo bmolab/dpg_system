@@ -216,7 +216,8 @@
                     "value": 8192,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "name": "text_block",

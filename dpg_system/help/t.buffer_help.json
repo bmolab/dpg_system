@@ -682,7 +682,8 @@
                             "value": "output buffer on every input",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "7": {
                     "name": "heat_map",
@@ -977,7 +978,8 @@
                             "value": "output samples on demand by index",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "15": {
                     "name": "float",

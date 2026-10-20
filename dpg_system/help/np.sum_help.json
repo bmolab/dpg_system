@@ -256,7 +256,8 @@
                     "value": "1",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "init": "comment axis 1: one total per row",
@@ -375,7 +376,8 @@
                     "value": "None",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "12": {
             "init": "comment axis None: all 48 cells",
@@ -480,7 +482,8 @@
                     "value": "0",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "15": {
             "name": "heat_map",

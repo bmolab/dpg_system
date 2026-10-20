@@ -103,7 +103,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "table 4 4"
+            "init": "table 4 4",
+            "highlight": true
         },
         "4": {
             "init": "comment click a cell and type into it",

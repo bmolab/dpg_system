@@ -592,7 +592,8 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {},
+                    "highlight": true
                 },
                 "11": {
                     "name": "heat_map",

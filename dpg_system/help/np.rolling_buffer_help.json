@@ -193,7 +193,8 @@
                     "value": null,
                     "value_type": "NoneType"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "init": "comment the last 60 of them, as one array",

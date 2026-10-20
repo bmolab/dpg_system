@@ -119,7 +119,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "slider_bank root spine left_arm"
+            "init": "slider_bank root spine left_arm",
+            "highlight": true
         },
         "4": {
             "init": "comment move any slider",

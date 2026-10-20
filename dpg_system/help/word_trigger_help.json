@@ -151,7 +151,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "word_trigger stop faster slower"
+            "init": "word_trigger stop faster slower",
+            "highlight": true
         },
         "6": {
             "init": "comment an outlet per word you name",
@@ -254,7 +255,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "first_letter_trigger g s"
+            "init": "first_letter_trigger g s",
+            "highlight": true
         },
         "11": {
             "name": "text_block",

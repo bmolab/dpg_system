@@ -287,7 +287,8 @@
                     "value": "C",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "init": "comment switch order between C and F",

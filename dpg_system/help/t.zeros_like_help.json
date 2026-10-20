@@ -263,7 +263,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "9": {
             "name": "t.info",

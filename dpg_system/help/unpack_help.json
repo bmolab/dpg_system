@@ -158,7 +158,8 @@
             "height": 112,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all"
+            "presentation_state": "show_all",
+            "highlight": true
         },
         "6": {
             "init": "comment unpack 6",
@@ -342,7 +343,8 @@
             "height": 112,
             "visibility": "show_all",
             "draggable": true,
-            "presentation_state": "show_all"
+            "presentation_state": "show_all",
+            "highlight": true
         },
         "15": {
             "name": "info",

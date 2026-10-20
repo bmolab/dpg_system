@@ -156,7 +156,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "8": {
             "init": "comment set mode to lines to see the triangles",
@@ -206,7 +207,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "11": {
             "init": "comment drag sweep angle: a value as an arc",

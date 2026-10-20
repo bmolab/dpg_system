@@ -195,7 +195,8 @@
                             "value": "None",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "7": {
                     "name": "np.mean",
@@ -1598,7 +1599,8 @@
                             "value": "None",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "12": {
                     "name": "float",
@@ -2016,7 +2018,8 @@
                             "value": "0",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "22": {
                     "name": "heat_map",

@@ -288,6 +288,20 @@ generators (make_torch_calc_a ... make_butterworth_help.py) are gone.
 6. `python3 smoke.py ../<family>_help.json` to confirm the demo actually moves
 7. `python3 check_coverage.py <module>.py` to see what is left
 
+## The featured node is highlighted
+
+Every page highlights the node it is about, wherever it appears, including
+inside subpatches: `"highlight": true` on the node, which the app draws with a
+tinted background and a thick amber outline (Visibility > Toggle Highlight
+for Selected). `highlight_featured.py` works out a page's featured names (its
+stem plus whatever resolves to it through check_coverage, so the tensor page
+highlights t.to too) and marks them. `build()` and every `derive_*_help.py`
+script call it before writing, so regenerated pages keep their highlights. Run
+it on its own after making a page by hand. On the comment, text_block,
+help_link and close pages, the page's own title, prose, SEE ALSO row and close
+button are skipped. comment, text_block and help_link draw their own look, so
+their highlight is saved but does not show.
+
 ## Hand-made pages taken out of their generators
 
 `np.sequence_help.json` is laid out by hand: its picture-making chain lives in
@@ -340,8 +354,8 @@ under its columns), and `np.robust_mean_help.json` is David's rework.
 builds no pages at all now. `t.take_along_dim_help.json` is David's rework,
 so `make_torch_select_help.py` no longer builds it. `tensor_help.json` is
 David's simplification (t.info's outlet labels show the dtype and device, so
-the string displays are gone), and `t.detach_help.json`, `t.buffer_help.json`
-and `t.rolling_buffer_help.json` are David's reworks, so
+the string displays are gone), and `t.detach_help.json`, `t.info_help.json`,
+`t.buffer_help.json` and `t.rolling_buffer_help.json` are David's reworks, so
 `make_torch_tensor_help.py` no longer builds any of them. `t.data_set` has
 no page any more: `register_torch_dataloader_nodes()` is never called, so the
 node does not exist in the app (and it has no inlets or outlets anyway).

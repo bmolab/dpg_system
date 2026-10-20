@@ -145,7 +145,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "mgl_translate -1 0 0"
+            "init": "mgl_translate -1 0 0",
+            "highlight": true
         },
         "7": {
             "name": "mgl_box",
@@ -195,7 +196,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "mgl_translate 2 0 0"
+            "init": "mgl_translate 2 0 0",
+            "highlight": true
         },
         "10": {
             "name": "mgl_sphere",

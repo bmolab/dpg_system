@@ -412,7 +412,8 @@
                             "value": "reduced",
                             "value_type": "str"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "7": {
                     "init": "comment choose the mode",

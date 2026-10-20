@@ -682,7 +682,8 @@
                             "value": "input is multi-channel sample",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "7": {
                     "init": "comment click reset to empty it",
@@ -1211,7 +1212,8 @@
                             "value": "input is stream of samples",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 }
             },
             "links": {

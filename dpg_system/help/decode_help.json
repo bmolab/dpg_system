@@ -494,7 +494,8 @@
                     "value": "bang",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "14": {
             "init": "metro 100",

@@ -193,7 +193,8 @@
                     "value": "24",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "name": "text_block",

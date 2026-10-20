@@ -214,7 +214,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "name": "plot",

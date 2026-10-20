@@ -3056,6 +3056,8 @@ class Node:
         self.edit_visibility = 'show_all'
         self.edit_draggable = True
         self.do_not_delete = False
+        # drawn in the highlight theme: a help page's featured node
+        self.highlighted = False
         self.active_input = None
         self.in_loading_process = False
         self.show_options_check = None
@@ -3137,10 +3139,16 @@ class Node:
         self.draggable = can_drag
         dpg.configure_item(self.uuid, draggable=self.draggable)
 
+    def set_highlight(self, on: bool) -> None:
+        self.highlighted = on
+        self.set_visibility(self.visibility)
+
     def set_visibility(self, visibility_state: str = 'show_all') -> None:
         self.visibility = visibility_state
         if visibility_state == 'show_all':
-            if self.do_not_delete:
+            if self.highlighted:
+                dpg.bind_item_theme(self.uuid, theme=self.app.highlight_theme)
+            elif self.do_not_delete:
                 dpg.bind_item_theme(self.uuid, theme=self.app.do_not_delete_theme)
             elif not self.draggable:
                 dpg.bind_item_theme(self.uuid, theme=self.app.locked_position_theme)
@@ -3966,6 +3974,8 @@ class Node:
             node_container['draggable'] = self.edit_draggable if presenting else self.draggable
             if self.do_not_delete:
                 node_container['protected'] = True
+            if self.highlighted:
+                node_container['highlight'] = True
             node_container['presentation_state'] = self.presentation_state
 
             self.store_properties(node_container)
@@ -3999,6 +4009,13 @@ class Node:
                     dpg.set_item_pos(self.uuid, pos)
                 if 'protected' in node_container:
                     self.do_not_delete = True
+                # set before the visibility, which binds the theme; undo
+                # reloads in place, so a missing key turns it off
+                highlighted = bool(node_container.get('highlight', False))
+                if highlighted != self.highlighted:
+                    self.highlighted = highlighted
+                    if 'visibility' not in node_container:
+                        self.set_visibility(self.visibility)
                 if 'visibility' in node_container:
                     self.set_visibility(node_container['visibility'])
                 if 'draggable' in node_container:

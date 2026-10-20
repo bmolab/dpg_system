@@ -153,7 +153,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "vca~ 0"
+            "init": "vca~ 0",
+            "highlight": true
         },
         "7": {
             "init": "comment knob at zero, envelope into gain",
@@ -191,7 +192,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "fader_out~ 1 2"
+            "init": "fader_out~ 1 2",
+            "highlight": true
         },
         "9": {
             "init": "comment unity sits three quarters up the throw",

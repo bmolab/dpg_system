@@ -822,7 +822,8 @@
                     "value": 1000,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "14": {
             "name": "list",
@@ -1045,7 +1046,8 @@
                     "value": 1000,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "19": {
             "init": "comment reset (on the node) empties the store",

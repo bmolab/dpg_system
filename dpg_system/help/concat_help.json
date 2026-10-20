@@ -341,7 +341,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "11": {
             "init": "comment concat 5",

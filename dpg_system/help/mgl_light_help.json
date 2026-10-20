@@ -150,7 +150,8 @@
                     ],
                     "value_type": "list"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "init": "comment a red light from the left",
@@ -207,7 +208,8 @@
                     ],
                     "value_type": "list"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "name": "text_block",

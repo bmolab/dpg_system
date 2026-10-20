@@ -406,7 +406,8 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {},
+                    "highlight": true
                 },
                 "7": {
                     "name": "heat_map",
@@ -543,7 +544,8 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {},
+                    "highlight": true
                 },
                 "13": {
                     "init": "comment turned first, then t.ravel",

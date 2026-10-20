@@ -118,7 +118,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "init": "comment a state: click it, and it stays where you put it",
@@ -304,7 +305,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "13": {
             "name": "int",

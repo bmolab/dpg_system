@@ -126,7 +126,8 @@
                     "value": "bang",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "init": "np.rand 2 2",

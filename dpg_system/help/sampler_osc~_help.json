@@ -103,7 +103,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "sampler_osc~ scrub"
+            "init": "sampler_osc~ scrub",
+            "highlight": true
         },
         "4": {
             "init": "comment click 'load' and choose a sound file",

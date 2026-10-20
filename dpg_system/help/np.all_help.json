@@ -509,7 +509,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "init": "np.all"
+            "init": "np.all",
+            "highlight": true
         },
         "16": {
             "name": "toggle",

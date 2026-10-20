@@ -305,7 +305,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "t.unsqueeze 1"
+            "init": "t.unsqueeze 1",
+            "highlight": true
         },
         "11": {
             "init": "comment type 0, 1, -1 or -2 into dim",

@@ -158,7 +158,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "gain 1.0"
+            "init": "gain 1.0",
+            "highlight": true
         },
         "5": {
             "name": "plot",

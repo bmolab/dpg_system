@@ -458,7 +458,8 @@
                             "value_type": "int"
                         }
                     },
-                    "init": "t.select 0 3"
+                    "init": "t.select 0 3",
+                    "highlight": true
                 },
                 "8": {
                     "init": "comment dim: 0 rows, 1 columns. index: which one",

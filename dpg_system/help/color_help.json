@@ -118,7 +118,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "init": "comment pick a colour",

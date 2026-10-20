@@ -197,7 +197,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "np.ones 8"
+            "init": "np.ones 8",
+            "highlight": true
         },
         "8": {
             "name": "list",

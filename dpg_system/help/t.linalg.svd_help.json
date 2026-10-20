@@ -671,7 +671,8 @@
                             "value": false,
                             "value_type": "bool"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "10": {
                     "init": "comment full off: the reduced form",

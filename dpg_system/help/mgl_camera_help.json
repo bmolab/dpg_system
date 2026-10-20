@@ -140,7 +140,8 @@
                     ],
                     "value_type": "list"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "init": "comment a fixed eye, up and to the right",
@@ -331,7 +332,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "13": {
             "init": "comment fed from the context's ui outlet",

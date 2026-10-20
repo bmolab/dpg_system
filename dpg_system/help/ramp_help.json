@@ -194,7 +194,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "message",

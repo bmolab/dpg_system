@@ -141,7 +141,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "record~ 30"
+            "init": "record~ 30",
+            "highlight": true
         },
         "6": {
             "name": "text_block",

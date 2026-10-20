@@ -275,7 +275,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "diff_filter 0.8 0.97"
+            "init": "diff_filter 0.8 0.97",
+            "highlight": true
         },
         "8": {
             "name": "plot",
@@ -587,7 +588,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "diff_filter 0.3 0.85 0.99"
+            "init": "diff_filter 0.3 0.85 0.99",
+            "highlight": true
         },
         "16": {
             "name": "plot",

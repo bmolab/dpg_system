@@ -672,7 +672,8 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {},
+                    "highlight": true
                 },
                 "12": {
                     "name": "list",

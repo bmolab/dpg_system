@@ -379,7 +379,8 @@
                     "value": 1.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "11": {
             "init": "comment min_cutoff 1, beta 0.5, d_cutoff 1",

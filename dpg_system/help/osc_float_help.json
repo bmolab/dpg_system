@@ -116,7 +116,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "osc_slider /fader/1"
+            "init": "osc_slider /fader/1",
+            "highlight": true
         },
         "5": {
             "init": "comment set path and target name; that is all",
@@ -207,7 +208,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "osc_toggle /mute/1"
+            "init": "osc_toggle /mute/1",
+            "highlight": true
         },
         "9": {
             "name": "int",
@@ -248,7 +250,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "osc_vector /colour"
+            "init": "osc_vector /colour",
+            "highlight": true
         },
         "11": {
             "init": "comment several numbers, one address",

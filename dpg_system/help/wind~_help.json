@@ -174,7 +174,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "brass~ 116"
+            "init": "brass~ 116",
+            "highlight": true
         },
         "7": {
             "name": "text_block",
@@ -226,7 +227,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "9": {
             "init": "comment patch a limb speed into speed",

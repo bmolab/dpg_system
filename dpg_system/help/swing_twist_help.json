@@ -258,7 +258,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "swing_twist x y"
+            "init": "swing_twist x y",
+            "highlight": true
         },
         "9": {
             "name": "float",

@@ -243,7 +243,8 @@
                     "value": "15",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "name": "t.squeeze",
@@ -360,7 +361,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "13": {
             "name": "t.squeeze",
@@ -462,7 +464,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "17": {
             "name": "t.squeeze",
@@ -565,7 +568,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "k.dog_response_single 1.0 1.6"
+            "init": "k.dog_response_single 1.0 1.6",
+            "highlight": true
         },
         "21": {
             "name": "t.squeeze",

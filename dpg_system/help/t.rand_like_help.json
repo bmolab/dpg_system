@@ -274,7 +274,8 @@
                     "value": 1.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "init": "comment drag min and max",

@@ -317,7 +317,8 @@
                     "value": 0.3,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "13": {
             "name": "text_block",

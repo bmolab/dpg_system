@@ -255,7 +255,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "np.repeat 3"
+            "init": "np.repeat 3",
+            "highlight": true
         },
         "8": {
             "init": "comment step repeats; axis 1 adds a new axis",

@@ -152,7 +152,8 @@
                     "value": "computer",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "info",

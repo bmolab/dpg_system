@@ -156,7 +156,8 @@
                     "value": 0.5,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "plot",
@@ -339,7 +340,8 @@
                     "value": 5,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "name": "int",
@@ -844,7 +846,8 @@
                     "value": 0.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "22": {
             "init": "t bang bang",

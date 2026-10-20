@@ -159,7 +159,8 @@
                     "value": "24",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "text_block",
@@ -228,7 +229,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "int 10"
+            "init": "int 10",
+            "highlight": true
         },
         "8": {
             "name": "text_block",

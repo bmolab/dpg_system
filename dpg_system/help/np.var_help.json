@@ -1130,7 +1130,8 @@
                             "value": "None",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "11": {
                     "name": "np.std",

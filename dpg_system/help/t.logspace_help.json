@@ -173,7 +173,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "t.logspace 0 2 9"
+            "init": "t.logspace 0 2 9",
+            "highlight": true
         },
         "6": {
             "init": "comment 1 to 100: start and stop are powers of ten",

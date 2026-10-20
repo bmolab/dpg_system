@@ -186,7 +186,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "t.ones 8"
+            "init": "t.ones 8",
+            "highlight": true
         },
         "8": {
             "name": "list",

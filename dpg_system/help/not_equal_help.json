@@ -156,7 +156,8 @@
                     "value": "int",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "plot",
@@ -339,7 +340,8 @@
                     "value": "bool",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "name": "toggle",
@@ -804,7 +806,8 @@
                     "value": "float",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "22": {
             "init": "t bang bang",

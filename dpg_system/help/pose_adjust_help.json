@@ -240,7 +240,8 @@
                     ],
                     "value_type": "list"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "name": "text_block",

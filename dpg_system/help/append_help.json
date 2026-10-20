@@ -394,7 +394,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "12": {
             "init": "append 145",
@@ -418,7 +419,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         }
     },
     "links": {

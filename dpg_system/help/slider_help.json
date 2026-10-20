@@ -167,7 +167,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "name": "int",
@@ -331,7 +332,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "init": "comment slider 100 makes an int slider with a range of 0-100",

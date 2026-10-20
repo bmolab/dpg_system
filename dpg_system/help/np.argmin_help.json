@@ -1125,7 +1125,8 @@
                             "value": "None",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "14": {
                     "name": "int",
@@ -1230,7 +1231,8 @@
                             "value": "1",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "17": {
                     "init": "np.expand_dims 1",
@@ -1350,7 +1352,8 @@
                             "value": "0",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "21": {
                     "name": "heat_map",

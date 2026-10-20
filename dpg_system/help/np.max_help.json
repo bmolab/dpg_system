@@ -434,7 +434,8 @@
                             "value_type": "float"
                         }
                     },
-                    "init": "np.max -0.5"
+                    "init": "np.max -0.5",
+                    "highlight": true
                 },
                 "9": {
                     "init": "comment both into one plot",

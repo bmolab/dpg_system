@@ -295,7 +295,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "11": {
             "init": "comment no argument: one index into the whole tensor",
@@ -571,7 +572,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "t.argmax 0"
+            "init": "t.argmax 0",
+            "highlight": true
         },
         "23": {
             "init": "comment with a dim: one index per column (0) or row (1)",

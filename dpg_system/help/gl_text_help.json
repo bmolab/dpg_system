@@ -133,7 +133,8 @@
                     "value": "Inconsolata-g.otf",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "text_block",
@@ -233,7 +234,8 @@
                     "value": "Inconsolata-g.otf",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "name": "text_block",

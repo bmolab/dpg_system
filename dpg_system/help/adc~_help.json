@@ -103,7 +103,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "adc~ 1 2"
+            "init": "adc~ 1 2",
+            "highlight": true
         },
         "4": {
             "name": "text_block",

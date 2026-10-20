@@ -463,7 +463,8 @@
                             "value_type": "int"
                         }
                     },
-                    "init": "t.narrow 0 2 3"
+                    "init": "t.narrow 0 2 3",
+                    "highlight": true
                 },
                 "8": {
                     "init": "comment drag start and length; dim 0 rows, 1 columns",

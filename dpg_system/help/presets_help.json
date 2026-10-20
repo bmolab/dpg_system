@@ -103,7 +103,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "presets 8"
+            "init": "presets 8",
+            "highlight": true
         },
         "4": {
             "name": "text_block",

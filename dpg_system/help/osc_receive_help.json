@@ -116,7 +116,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "osc_route /fader /button"
+            "init": "osc_route /fader /button",
+            "highlight": true
         },
         "5": {
             "init": "comment one outlet per address",
@@ -308,7 +309,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "osc_send console /fader/1"
+            "init": "osc_send console /fader/1",
+            "highlight": true
         },
         "12": {
             "init": "comment and out to a named target",

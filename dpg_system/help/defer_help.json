@@ -69,7 +69,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "3": {
             "name": "micro_metro",

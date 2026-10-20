@@ -169,7 +169,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "plot",
@@ -251,7 +252,8 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "name": "plot",

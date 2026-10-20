@@ -202,7 +202,8 @@
                     "value": "int64",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "name": "list",

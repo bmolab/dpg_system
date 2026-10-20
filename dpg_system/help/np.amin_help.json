@@ -892,7 +892,8 @@
                             "value": "None",
                             "value_type": "str"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "14": {
                     "name": "float",
@@ -964,7 +965,8 @@
                             "value_type": "str"
                         }
                     },
-                    "init": "np.amin 1"
+                    "init": "np.amin 1",
+                    "highlight": true
                 },
                 "17": {
                     "name": "np.expand_dims",
@@ -1080,7 +1082,8 @@
                             "value_type": "str"
                         }
                     },
-                    "init": "np.amin 0"
+                    "init": "np.amin 0",
+                    "highlight": true
                 },
                 "21": {
                     "name": "heat_map",

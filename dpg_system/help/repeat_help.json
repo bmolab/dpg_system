@@ -140,7 +140,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "repeat_in_order 3"
+            "init": "repeat_in_order 3",
+            "highlight": true
         },
         "6": {
             "init": "comment the rightmost outlet fires first",

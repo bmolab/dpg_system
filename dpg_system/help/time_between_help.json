@@ -126,7 +126,8 @@
                     "value": "seconds",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "b",

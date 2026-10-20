@@ -564,7 +564,8 @@
                             "value_type": "int"
                         }
                     },
-                    "init": "t.index_select 1"
+                    "init": "t.index_select 1",
+                    "highlight": true
                 },
                 "13": {
                     "init": "comment dim 1: the list picks columns; 0 picks rows",

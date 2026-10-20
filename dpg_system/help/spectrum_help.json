@@ -330,7 +330,8 @@
                     "value": 60.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "init": "comment eight bands from 1 to 20 Hz",

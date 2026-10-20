@@ -8,6 +8,7 @@ import json, os
 from strip_starters import strip_patch, strip_toggles
 from reflow_prose import reflow
 from compact_see_also import compact
+from highlight_featured import mark_featured
 
 HELP_DIR = '/Users/drokeby/dpg_system/dpg_system/help'
 
@@ -198,6 +199,7 @@ def build(name, title, body, demo, links, demo_width=520,
         strip_patch(patch)
         if not keep_toggles:
             strip_toggles(patch)
+        mark_featured(patch, name)      # the node the page is about, highlighted
         json.dump(patch, open(path, 'w'), indent=4)
         return path
 
@@ -268,5 +270,6 @@ def build(name, title, body, demo, links, demo_width=520,
         strip_patch(pt)
         if not keep_toggles:
             strip_toggles(pt)
+    mark_featured(doc, name)            # the node the page is about, highlighted
     json.dump(doc, open(path, 'w'), indent=4)
     return path

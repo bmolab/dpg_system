@@ -298,7 +298,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "10": {
             "init": "comment scaled_modified_bessel_k0 of each value",

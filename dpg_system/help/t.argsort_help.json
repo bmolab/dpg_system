@@ -257,7 +257,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "init": "comment tick descending, then click t.rand",

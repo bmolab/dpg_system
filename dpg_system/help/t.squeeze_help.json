@@ -405,7 +405,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "16": {
             "name": "heat_map",
@@ -537,7 +538,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "t.squeeze 0"
+            "init": "t.squeeze 0",
+            "highlight": true
         },
         "21": {
             "init": "comment t.squeeze 0: only axis 0, only if it is 1",

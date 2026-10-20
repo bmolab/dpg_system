@@ -880,7 +880,8 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {},
+                    "highlight": true
                 },
                 "19": {
                     "name": "float",
@@ -1136,7 +1137,8 @@
                             "value_type": "bool"
                         }
                     },
-                    "init": "t.nanmean 1"
+                    "init": "t.nanmean 1",
+                    "highlight": true
                 },
                 "28": {
                     "name": "heat_map",

@@ -362,7 +362,8 @@
                     "value": 3,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "13": {
             "name": "text_block",

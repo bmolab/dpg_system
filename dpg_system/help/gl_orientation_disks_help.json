@@ -191,7 +191,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "gl_orientation_disks 3 0.25"
+            "init": "gl_orientation_disks 3 0.25",
+            "highlight": true
         },
         "8": {
             "name": "text_block",
@@ -320,7 +321,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "13": {
             "name": "text_block",

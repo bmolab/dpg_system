@@ -317,7 +317,8 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "name": "int",

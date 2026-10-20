@@ -374,7 +374,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "adaptive_filter 2.0"
+            "init": "adaptive_filter 2.0",
+            "highlight": true
         },
         "11": {
             "init": "comment power 2, everything else at its defaults",

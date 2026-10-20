@@ -413,7 +413,8 @@
                             "value_type": "str"
                         }
                     },
-                    "init": "t.repeat 2 3"
+                    "init": "t.repeat 2 3",
+                    "highlight": true
                 },
                 "7": {
                     "init": "comment type counts: down, across",

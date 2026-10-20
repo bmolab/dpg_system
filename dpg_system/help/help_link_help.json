@@ -128,7 +128,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "help_link nodes dpg_system nodes"
+            "init": "help_link nodes dpg_system nodes",
+            "highlight": true
         },
         "5": {
             "init": "comment opens a help patch:",
@@ -166,7 +167,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "help_link trig"
+            "init": "help_link trig",
+            "highlight": true
         },
         "7": {
             "name": "close",

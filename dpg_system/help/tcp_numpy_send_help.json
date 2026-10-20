@@ -140,7 +140,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "tcp_latent_send 127.0.0.1 4500"
+            "init": "tcp_latent_send 127.0.0.1 4500",
+            "highlight": true
         },
         "7": {
             "name": "int",
@@ -246,7 +247,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "tcp_latent_receive 127.0.0.1 4500"
+            "init": "tcp_latent_receive 127.0.0.1 4500",
+            "highlight": true
         },
         "11": {
             "name": "int",

@@ -171,7 +171,8 @@
                     "value": 60,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "heat_map",

@@ -268,7 +268,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "t.rand 12 12"
+            "init": "t.rand 12 12",
+            "highlight": true
         },
         "11": {
             "name": "text_block",

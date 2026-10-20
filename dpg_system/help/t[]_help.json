@@ -485,7 +485,8 @@
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
-                    "init": "t[] 2:5 4:8"
+                    "init": "t[] 2:5 4:8",
+                    "highlight": true
                 },
                 "10": {
                     "init": "comment or type one into the field here",

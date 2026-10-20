@@ -395,7 +395,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "t.scatter 0"
+            "init": "t.scatter 0",
+            "highlight": true
         },
         "15": {
             "name": "heat_map",

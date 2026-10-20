@@ -195,7 +195,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "np.edit 1:3, 2:6"
+            "init": "np.edit 1:3, 2:6",
+            "highlight": true
         },
         "7": {
             "name": "text_block",

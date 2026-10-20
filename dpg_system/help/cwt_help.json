@@ -220,7 +220,8 @@
                     "value": "morlet",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "name": "heat_map",

@@ -234,7 +234,8 @@
                     "value": 1.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "name": "heat_map",

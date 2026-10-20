@@ -140,7 +140,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "6": {
             "init": "comment a mallet swung: one hit per ask",
@@ -177,7 +178,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "8": {
             "init": "comment change material, then hardness and position",
@@ -214,7 +216,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "10": {
             "init": "comment raise drop: the roll is gravity, not a pattern",

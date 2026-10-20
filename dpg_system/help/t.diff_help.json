@@ -288,7 +288,8 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "init": "comment type 1, 2 or 3 into n",
@@ -529,7 +530,8 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "20": {
             "name": "list",

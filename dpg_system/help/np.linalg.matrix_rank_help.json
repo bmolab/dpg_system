@@ -467,7 +467,8 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {},
+                    "highlight": true
                 },
                 "8": {
                     "name": "int",
@@ -691,7 +692,8 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {},
+                    "highlight": true
                 },
                 "15": {
                     "name": "np.linalg.matrix_rank",
@@ -703,7 +705,8 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {},
+                    "highlight": true
                 },
                 "16": {
                     "name": "int",

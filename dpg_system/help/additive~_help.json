@@ -102,7 +102,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "4": {
             "name": "text_block",
@@ -226,7 +227,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "additive~ 220"
+            "init": "additive~ 220",
+            "highlight": true
         },
         "9": {
             "init": "comment draw the partials; stretch makes it a bell",

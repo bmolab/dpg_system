@@ -197,7 +197,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "t.dist.half_normal 64 64"
+            "init": "t.dist.half_normal 64 64",
+            "highlight": true
         },
         "8": {
             "name": "heat_map",

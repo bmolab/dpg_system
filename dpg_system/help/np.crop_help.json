@@ -276,7 +276,8 @@
                     "value": null,
                     "value_type": "NoneType"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "init": "comment drag left, top, right, bottom",

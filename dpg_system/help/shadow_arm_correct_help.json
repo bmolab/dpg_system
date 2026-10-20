@@ -187,7 +187,8 @@
                     "value": 20.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "name": "text_block",

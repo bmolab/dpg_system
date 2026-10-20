@@ -1,7 +1,8 @@
 """torch tensor basics: tensor (and its alias t.to), t.detach, t.info,
 t.numel, t.contiguous, t.is_contiguous, t.buffer, t.rolling_buffer -- one
-page each. The tensor, t.detach, t.buffer and t.rolling_buffer pages are
-hand-made now (see tools/README.md), so this script no longer builds them.
+page each. The tensor, t.detach, t.info, t.buffer and t.rolling_buffer
+pages are hand-made now (see tools/README.md), so this script no longer
+builds them.
 t.data_set's page is retired: the node is never registered.
 
 These were three family pages (tensor, t.info, t.buffer) plus a t.data_set
@@ -65,82 +66,7 @@ def shape_source(x=30, y=62):
 
 # t.detach: its page is hand-made now (see tools/README.md).
 
-# =================================================================== t.info
-body = """Reports what a tensor is: its shape, its dtype, the device it lives
-on, and whether it is tracking gradients - each on its own outlet.
-
-It is the first thing to patch in when a torch node refuses a tensor or
-gives a surprising result. The cause is nearly always one of these four:
-the shape is not what you thought, the type is wrong (integers where
-floats were expected), it is on a different device from the tensor it
-meets, or it is carrying gradient history. The outlet labels change to
-show the values, so the node itself is a display.
-
-SYNTAX:
-t.info
-
-EXAMPLE:
-t.info
-
-INPUTS and PARAMETERS:
-
-in:
-The tensor. Every tensor that arrives is reported. A list or NumPy array
-is turned into a float32 cpu tensor first and that is what is reported -
-so t.info on a NumPy array always says float32, whatever the array's own
-type. An empty tensor is reported like any other: its shape has a 0 in
-it ([0] for an empty 1-D tensor). An empty list is reported the same
-way, as [0].
-
-OUTPUTS (sent right to left - grad first, shape last):
-
-shape:
-The size of each dimension, as a list: [3, 4] is 3 rows of 4.
-
-dtype:
-The type, as text: torch.float32, torch.int64 ...
-
-device:
-Where it lives, as text: cpu, or mps:0, cuda:0 for a GPU.
-
-grad:
-True if the tensor tracks gradients, False if not. The outlet's label
-reads "grad" or "inference" to match.
-
-READING THE DEMO:
-A metro makes a fresh t.rand tensor three times a second; pick a shape
-from the menu to change it (2x3x4 has three dimensions). The tensor then
-passes through t.to, whose dtype and device menus you can change, and
-whose requires_grad box you can tick. Each change appears in the four
-displays and in the outlet labels.
-
-RELATED:
-t.numel gives the total number of values. t.is_contiguous tells you how
-the values are laid out in memory. tensor (t.to) changes the dtype,
-device and requires_grad that this reports. np.shape is the NumPy
-version of the shape outlet."""
-
-demo, links = shape_source()
-demo += [
-    {'key': 'to', 'init': 't.to', 'pos': (290, 212), 'w': 230, 'h': 150},
-    {'key': 'cto', 'comment': True, 'text': 'change dtype, device, requires_grad here',
-     'pos': (290, 372)},
-    {'key': 'inf', 'init': 't.info', 'pos': (30, 410), 'w': 300, 'h': 140},
-    {'key': 'lsh', 'init': 'list', 'pos': (30, 570), 'w': 140, 'h': 42, 'props': LIST},
-    {'key': 'csh2', 'comment': True, 'text': 'shape', 'pos': (30, 620)},
-    {'key': 'sdt', 'init': 'string', 'pos': (190, 570), 'w': 180, 'h': 42, 'props': LIST},
-    {'key': 'cdt', 'comment': True, 'text': 'dtype', 'pos': (190, 620)},
-    {'key': 'sdv', 'init': 'string', 'pos': (410, 570), 'w': 130, 'h': 42, 'props': LIST},
-    {'key': 'cdv', 'comment': True, 'text': 'device', 'pos': (410, 620)},
-    {'key': 'lg', 'init': 'string', 'pos': (570, 570), 'w': 130, 'h': 42, 'props': LIST},
-    {'key': 'cg', 'comment': True, 'text': 'grad', 'pos': (570, 620)},
-]
-links += [('rnd', 'random tensor', 'to', 'in'), ('to', 'tensor out', 'inf', 'in'),
-          ('inf', 'shape', 'lsh', ''), ('inf', 'dtype', 'sdt', ''),
-          ('inf', 'device', 'sdv', ''), ('inf', 'grad', 'lg', '')]
-demo += see_also(670, ['t.numel', 'tensor', 't.is_contiguous', 'np.shape'])
-print(build('t.info', 't.info - shape, dtype, device and gradient tracking',
-            body, demo, links, demo_width=720, text_width=760, text_height=th(body)))
+# t.info: its page is hand-made now (see tools/README.md).
 
 # =================================================================== t.numel
 body = """Counts the values in a tensor: the product of its shape.

@@ -947,6 +947,19 @@ class App:
         self._node_core_styles.append((item, list(values)))
         return item
 
+    highlight_background = (72, 60, 22, 255)
+    highlight_outline = (255, 190, 0, 255)
+    highlight_border = 3
+
+    def highlight_colors(self):
+        background = self.highlight_background
+        lifted = tuple(min(255, c + 18) for c in background[:3]) + (255,)
+        dpg.add_theme_color(dpg.mvNodeCol_NodeBackground, background, category=dpg.mvThemeCat_Nodes)
+        dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundHovered, lifted, category=dpg.mvThemeCat_Nodes)
+        dpg.add_theme_color(dpg.mvNodeCol_NodeBackgroundSelected, lifted, category=dpg.mvThemeCat_Nodes)
+        dpg.add_theme_color(dpg.mvNodeCol_NodeOutline, self.highlight_outline, category=dpg.mvThemeCat_Nodes)
+        dpg.add_theme_style(dpg.mvNodeStyleVar_NodeBorderThickness, self.highlight_border, category=dpg.mvThemeCat_Nodes)
+
     def core_styles(self, scaling=True):
         """The spacing and padding a node is laid out with.
 
@@ -1021,6 +1034,17 @@ class App:
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
                 dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+
+        # a help page's featured node: global_theme plus a tinted background
+        # and a bright, thicker outline
+        with dpg.theme() as self.highlight_theme:
+            with dpg.theme_component(dpg.mvAll):
+                self.core_styles()
+                dpg.add_theme_style(dpg.mvStyleVar_GrabMinSize, 4, 4, category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, (255, 255, 0, 128), category=dpg.mvThemeCat_Core)
+                dpg.add_theme_color(dpg.mvThemeCol_CheckMark, (255, 255, 0, 255), category=dpg.mvThemeCat_Core)
+                self.highlight_colors()
 
         with dpg.theme() as self.invisible_theme:
             with dpg.theme_component(dpg.mvAll):
@@ -1489,6 +1513,7 @@ class App:
                 dpg.add_menu_item(label="Toggle Lock Position for Selected", callback=self.lock_position_for_selected)
                 dpg.add_menu_item(label="Show / Hide Options for Selected", callback=self.options_for_selected)
                 dpg.add_menu_item(label='Toggle Do Not Delete for Selected', callback=self.protect_selected)
+                dpg.add_menu_item(label='Toggle Highlight for Selected', callback=self.highlight_selected)
                 dpg.add_separator()
                 dpg.add_menu_item(label="Set As Presentation", callback=self.set_presentation)
                 self.presentation_edit_menu_item = dpg.add_menu_item(label="Presentation Mode", check=True, callback=self.toggle_presentation)
@@ -1970,6 +1995,19 @@ class App:
                 node = dpg.get_item_user_data(selected_nodes_uuid)
                 node.do_not_delete = not node.do_not_delete
                 node.set_visibility(node.visibility)
+
+    def highlight_selected(self):
+        editor = self.get_current_editor()
+        if editor is None:
+            return
+        nodes = [dpg.get_item_user_data(uuid) for uuid in dpg.get_selected_nodes(editor.uuid)]
+        nodes = [node for node in nodes if node is not None]
+        if not nodes:
+            return
+        self.snapshot_for_undo()
+        for node in nodes:
+            node.set_highlight(not node.highlighted)
+        editor.modified = True
 
     def options_for_selected(self):
         if self.get_current_editor() is not None:

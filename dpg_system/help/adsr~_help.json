@@ -102,7 +102,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "4": {
             "name": "text_block",
@@ -155,7 +156,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "ramp~ 0.5"
+            "init": "ramp~ 0.5",
+            "highlight": true
         },
         "6": {
             "init": "comment set target to 1: up an octave in half a second",

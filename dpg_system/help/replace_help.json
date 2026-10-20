@@ -174,7 +174,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "replace left_hand LeftHand"
+            "init": "replace left_hand LeftHand",
+            "highlight": true
         },
         "7": {
             "name": "list",

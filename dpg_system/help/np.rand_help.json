@@ -283,7 +283,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "np.rand 12 12"
+            "init": "np.rand 12 12",
+            "highlight": true
         },
         "11": {
             "name": "text_block",

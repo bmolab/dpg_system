@@ -218,7 +218,8 @@
                     "value": null,
                     "value_type": "NoneType"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "init": "comment click reset to bring it home",
@@ -456,7 +457,8 @@
                     "value": null,
                     "value_type": "NoneType"
                 }
-            }
+            },
+            "highlight": true
         },
         "14": {
             "name": "plot",

@@ -154,7 +154,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "param_slider gain 0.5"
+            "init": "param_slider gain 0.5",
+            "highlight": true
         },
         "6": {
             "init": "comment a slider that knows it is called gain",
@@ -236,7 +237,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "param_float threshold 0.25"
+            "init": "param_float threshold 0.25",
+            "highlight": true
         },
         "9": {
             "name": "float",

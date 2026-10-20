@@ -371,7 +371,8 @@
                             "value_type": "float"
                         }
                     },
-                    "init": "t.clamp -0.5 0.7"
+                    "init": "t.clamp -0.5 0.7",
+                    "highlight": true
                 },
                 "6": {
                     "init": "comment drag min and max on the node",

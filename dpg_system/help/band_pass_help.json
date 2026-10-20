@@ -378,7 +378,8 @@
                     "value": 60.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "11": {
             "init": "comment lowpass: keep what is slower than high (1 Hz)",
@@ -549,7 +550,8 @@
                     "value": 60.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "15": {
             "name": "text_block",

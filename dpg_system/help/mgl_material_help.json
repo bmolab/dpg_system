@@ -166,7 +166,8 @@
                     "value": 4.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "text_block",
@@ -330,7 +331,8 @@
                     "value": 128.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "name": "text_block",

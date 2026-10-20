@@ -119,7 +119,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "pan_view -400 0"
+            "init": "pan_view -400 0",
+            "highlight": true
         },
         "4": {
             "name": "pan_view",
@@ -148,7 +149,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "pan_view 400 0"
+            "init": "pan_view 400 0",
+            "highlight": true
         },
         "5": {
             "name": "home_view",
@@ -166,7 +168,8 @@
                     "value": "home",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "text_block",

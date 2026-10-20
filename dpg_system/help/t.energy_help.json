@@ -263,7 +263,8 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "name": "float",
@@ -435,7 +436,8 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "15": {
             "name": "float",

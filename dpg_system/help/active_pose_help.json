@@ -150,7 +150,8 @@
                     ],
                     "value_type": "list"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "text_block",

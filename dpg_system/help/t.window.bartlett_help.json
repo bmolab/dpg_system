@@ -187,7 +187,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "init": "comment drag m on the node, or untick sym",

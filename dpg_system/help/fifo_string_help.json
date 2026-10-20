@@ -212,7 +212,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "fifo_string 3"
+            "init": "fifo_string 3",
+            "highlight": true
         },
         "8": {
             "name": "string",

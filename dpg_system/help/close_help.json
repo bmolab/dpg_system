@@ -69,7 +69,8 @@
                     "value": null,
                     "value_type": "NoneType"
                 }
-            }
+            },
+            "highlight": true
         },
         "3": {
             "name": "text_block",

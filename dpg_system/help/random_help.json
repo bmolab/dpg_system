@@ -157,7 +157,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "random.gauss 0.0 1.0"
+            "init": "random.gauss 0.0 1.0",
+            "highlight": true
         },
         "6": {
             "name": "plot",
@@ -269,7 +270,8 @@
                     "value_type": "bool"
                 }
             },
-            "init": "random 1.0"
+            "init": "random 1.0",
+            "highlight": true
         },
         "9": {
             "name": "plot",

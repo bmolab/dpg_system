@@ -383,7 +383,8 @@
                             "value": "None",
                             "value_type": "str"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "7": {
                     "name": "float",
@@ -619,7 +620,8 @@
                             "value": "2",
                             "value_type": "str"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "17": {
                     "init": "comment axis 2: one length per point",

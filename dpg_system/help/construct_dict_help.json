@@ -219,7 +219,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "construct_dict x y"
+            "init": "construct_dict x y",
+            "highlight": true
         },
         "9": {
             "init": "comment two named values in one bundle",

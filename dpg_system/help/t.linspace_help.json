@@ -173,7 +173,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "t.linspace 0 1 9"
+            "init": "t.linspace 0 1 9",
+            "highlight": true
         },
         "6": {
             "init": "comment drag start, stop or steps on the node",

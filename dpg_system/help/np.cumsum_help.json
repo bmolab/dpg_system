@@ -246,7 +246,8 @@
                     "value": -1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "init": "comment the steps: noise",
@@ -525,7 +526,8 @@
                     "value": -1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "18": {
             "init": "comment in: ten 1s",

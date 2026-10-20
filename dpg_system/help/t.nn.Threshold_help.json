@@ -375,7 +375,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "t.nn.Threshold 1.5 -1"
+            "init": "t.nn.Threshold 1.5 -1",
+            "highlight": true
         },
         "14": {
             "name": "t.stack",

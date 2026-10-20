@@ -271,7 +271,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "init": "comment try dtype int64, uint8, bool",

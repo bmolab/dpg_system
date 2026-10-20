@@ -199,7 +199,8 @@
                     "value": "console",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "name": "text_block",

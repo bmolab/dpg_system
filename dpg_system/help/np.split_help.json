@@ -413,7 +413,8 @@
                             "value_type": "int"
                         }
                     },
-                    "init": "np.split 3"
+                    "init": "np.split 3",
+                    "highlight": true
                 },
                 "7": {
                     "init": "comment type 0 or 1 into axis",

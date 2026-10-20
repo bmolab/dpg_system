@@ -57,7 +57,8 @@
                             "value": "signal",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "2": {
                     "init": "* 0.5",
@@ -122,7 +123,8 @@
                             "value": "scaled",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "5": {
                     "init": "comment an in node creates an input on the patcher node",
@@ -471,7 +473,8 @@
                         false,
                         false
                     ],
-                    "patcher id": 6281
+                    "patcher id": 6281,
+                    "highlight": true
                 },
                 "6": {
                     "name": "text_block",

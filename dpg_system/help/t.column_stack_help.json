@@ -251,7 +251,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "10": {
             "init": "comment two rows of 8 in, as two columns",
@@ -430,7 +431,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "17": {
             "init": "comment the 8 x 2 table beside a row of 8: different widths",

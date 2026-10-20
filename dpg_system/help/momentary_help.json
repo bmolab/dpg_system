@@ -113,7 +113,8 @@
                     "value": 120,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "init": "comment drag it, then let go",

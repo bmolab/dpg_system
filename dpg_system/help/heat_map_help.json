@@ -193,7 +193,8 @@
                     "value": "%.2f",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "name": "text_block",
@@ -286,7 +287,8 @@
                     "value": "%.2f",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "name": "text_block",
@@ -446,7 +448,8 @@
                     "value": "%.2f",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "14": {
             "name": "text_block",

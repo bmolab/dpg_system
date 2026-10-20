@@ -193,7 +193,8 @@
                     "value": 0.9900000095367432,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "init": "comment three timescales at once",

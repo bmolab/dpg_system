@@ -515,7 +515,8 @@
                     "value": "None",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "float",
@@ -811,7 +812,8 @@
                     "value": "None",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "14": {
             "name": "float",

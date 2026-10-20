@@ -209,7 +209,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "vae 784 512 4"
+            "init": "vae 784 512 4",
+            "highlight": true
         },
         "8": {
             "init": "comment 784 in, 4 latent numbers, 784 back",

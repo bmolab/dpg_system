@@ -278,7 +278,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "t.dist.kumaraswamy 64 64"
+            "init": "t.dist.kumaraswamy 64 64",
+            "highlight": true
         },
         "11": {
             "name": "heat_map",

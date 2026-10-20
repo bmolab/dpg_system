@@ -150,7 +150,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "send demo_count"
+            "init": "send demo_count",
+            "highlight": true
         },
         "6": {
             "init": "comment no cord from here down",
@@ -188,7 +189,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "receive demo_count"
+            "init": "receive demo_count",
+            "highlight": true
         },
         "8": {
             "name": "int",
@@ -229,7 +231,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "receive demo_count"
+            "init": "receive demo_count",
+            "highlight": true
         },
         "10": {
             "name": "int",

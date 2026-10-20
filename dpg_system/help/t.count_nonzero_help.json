@@ -504,7 +504,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "19": {
             "name": "int",
@@ -648,7 +649,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "t.count_nonzero 0"
+            "init": "t.count_nonzero 0",
+            "highlight": true
         },
         "25": {
             "name": "heat_map",

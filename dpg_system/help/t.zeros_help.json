@@ -224,7 +224,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "t.zeros 8 8"
+            "init": "t.zeros 8 8",
+            "highlight": true
         },
         "10": {
             "name": "text_block",

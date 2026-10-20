@@ -204,7 +204,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "subsample 10"
+            "init": "subsample 10",
+            "highlight": true
         },
         "8": {
             "name": "int",

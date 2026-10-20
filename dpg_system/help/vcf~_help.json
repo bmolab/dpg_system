@@ -191,7 +191,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "vcf~ 600"
+            "init": "vcf~ 600",
+            "highlight": true
         },
         "8": {
             "name": "text_block",

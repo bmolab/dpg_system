@@ -245,7 +245,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "crossfade 0.5"
+            "init": "crossfade 0.5",
+            "highlight": true
         },
         "8": {
             "init": "comment drag mix from 0 to 1",

@@ -665,7 +665,8 @@
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
-                    "init": "t.permute 1 2 0"
+                    "init": "t.permute 1 2 0",
+                    "highlight": true
                 },
                 "14": {
                     "name": "t.info",

@@ -193,7 +193,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "trigger 0.6 0.3"
+            "init": "trigger 0.6 0.3",
+            "highlight": true
         },
         "6": {
             "name": "text_block",

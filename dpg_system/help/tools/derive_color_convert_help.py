@@ -23,6 +23,7 @@ import colorsys, copy, json, os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 HELP = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
+from highlight_featured import mark_featured
 from derive_arithmetic_help import set_prop, set_comment, set_block, link
 
 # node ids in the template
@@ -266,7 +267,9 @@ def main():
     for src, dst in PAIRS_ORDER:
         path = os.path.join(HELP, f'{src}_to_{dst}_help.json')
         with open(path, 'w') as f:
-            json.dump(derive(template, src, dst), f, indent=4)
+            doc = derive(template, src, dst)
+            mark_featured(doc, f'{src}_to_{dst}', clear=True)   # the page's own node, highlighted
+            json.dump(doc, f, indent=4)
         print(path)
 
 

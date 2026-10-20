@@ -142,7 +142,8 @@
                     "value": "someplace",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "message",

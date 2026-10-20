@@ -231,7 +231,8 @@
                     "value": 0,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "init": "comment drag decimals: 0 whole numbers, 1 tenths",
@@ -465,7 +466,8 @@
                     "value": 0,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "17": {
             "name": "list",

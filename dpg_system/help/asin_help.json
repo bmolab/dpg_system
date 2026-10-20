@@ -156,7 +156,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "plot",
@@ -339,7 +340,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "name": "float",
@@ -660,7 +662,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         }
     },
     "links": {

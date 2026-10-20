@@ -269,7 +269,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "10": {
             "init": "comment 37 rows in, 20 out",

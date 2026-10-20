@@ -836,7 +836,8 @@
                             "value": "backward",
                             "value_type": "str"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "12": {
                     "init": "comment and back into samples (still complex)",

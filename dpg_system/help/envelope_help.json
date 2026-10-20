@@ -197,7 +197,8 @@
                     "value": 200,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "name": "text_block",

@@ -301,7 +301,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "t.scatter_hold 8"
+            "init": "t.scatter_hold 8",
+            "highlight": true
         },
         "12": {
             "init": "comment click clear to zero it",

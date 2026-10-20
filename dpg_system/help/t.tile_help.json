@@ -413,7 +413,8 @@
                             "value_type": "str"
                         }
                     },
-                    "init": "t.tile 3 2"
+                    "init": "t.tile 3 2",
+                    "highlight": true
                 },
                 "7": {
                     "init": "comment type counts: down, across",

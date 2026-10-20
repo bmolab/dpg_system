@@ -304,7 +304,8 @@
                     "value": 1e-06,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "init": "comment drag eps: try 0.001 and the ends come in to 6.9",

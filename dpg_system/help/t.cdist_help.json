@@ -455,7 +455,8 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {},
+                    "highlight": true
                 },
                 "10": {
                     "init": "comment nothing in points 2: every point to every point",
@@ -707,7 +708,8 @@
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {},
+                    "highlight": true
                 },
                 "19": {
                     "init": "comment the 8 points against the held point: 8 x 1",

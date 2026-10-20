@@ -187,7 +187,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "buffer 128"
+            "init": "buffer 128",
+            "highlight": true
         },
         "6": {
             "name": "plot",
@@ -319,7 +320,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "buffer 128"
+            "init": "buffer 128",
+            "highlight": true
         },
         "9": {
             "name": "signal",
@@ -479,7 +481,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "rolling_buffer 64"
+            "init": "rolling_buffer 64",
+            "highlight": true
         },
         "14": {
             "name": "heat_map",

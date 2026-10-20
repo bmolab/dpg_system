@@ -286,7 +286,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "weighted_prompt 4"
+            "init": "weighted_prompt 4",
+            "highlight": true
         },
         "10": {
             "name": "text_block",
@@ -402,7 +403,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "ambient_prompt 4"
+            "init": "ambient_prompt 4",
+            "highlight": true
         },
         "14": {
             "init": "comment the same four phrases, as brackets",

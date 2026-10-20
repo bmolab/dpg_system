@@ -97,7 +97,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "name": "text_block",

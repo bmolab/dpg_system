@@ -103,7 +103,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "osc_target console 127.0.0.1 8000"
+            "init": "osc_target console 127.0.0.1 8000",
+            "highlight": true
         },
         "4": {
             "name": "text_block",
@@ -156,7 +157,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "osc_source listener 8001"
+            "init": "osc_source listener 8001",
+            "highlight": true
         },
         "6": {
             "name": "text_block",
@@ -232,7 +234,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "9": {
             "init": "comment what sources and targets exist",

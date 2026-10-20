@@ -316,7 +316,8 @@
                     "value": 60,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "init": "comment or type one into the field here",

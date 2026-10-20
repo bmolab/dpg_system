@@ -186,7 +186,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "udp_numpy_send 127.0.0.1 9000"
+            "init": "udp_numpy_send 127.0.0.1 9000",
+            "highlight": true
         },
         "8": {
             "name": "udp_numpy_receive",
@@ -199,7 +200,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "udp_numpy_receive 9000"
+            "init": "udp_numpy_receive 9000",
+            "highlight": true
         },
         "9": {
             "name": "info",

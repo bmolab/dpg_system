@@ -167,7 +167,8 @@
                     "value": 0.3,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "init": "comment glide 0.3: a slow, smooth follow",

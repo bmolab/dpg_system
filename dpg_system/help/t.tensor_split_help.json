@@ -413,7 +413,8 @@
                             "value_type": "int"
                         }
                     },
-                    "init": "t.tensor_split 3"
+                    "init": "t.tensor_split 3",
+                    "highlight": true
                 },
                 "7": {
                     "init": "comment type 0 or 1 into dim",

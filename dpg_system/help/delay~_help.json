@@ -166,7 +166,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "delay~ 0.25"
+            "init": "delay~ 0.25",
+            "highlight": true
         },
         "9": {
             "name": "text_block",

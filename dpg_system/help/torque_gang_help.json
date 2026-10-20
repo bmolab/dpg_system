@@ -178,7 +178,8 @@
                     "value_type": "bool"
                 }
             },
-            "init": "torque_gang spine_flex"
+            "init": "torque_gang spine_flex",
+            "highlight": true
         },
         "7": {
             "name": "text_block",
@@ -562,7 +563,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "17": {
             "name": "heat_map",

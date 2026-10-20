@@ -209,7 +209,8 @@
                     ],
                     "value_type": "list"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "name": "text_block",

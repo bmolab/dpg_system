@@ -49,7 +49,8 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "2": {
             "name": "plot",
@@ -159,7 +160,8 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "int",

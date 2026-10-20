@@ -209,7 +209,8 @@
                     "value_type": "bool"
                 }
             },
-            "init": "dict_extract x y"
+            "init": "dict_extract x y",
+            "highlight": true
         },
         "9": {
             "name": "float",

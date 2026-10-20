@@ -163,7 +163,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "t.eye 6"
+            "init": "t.eye 6",
+            "highlight": true
         },
         "6": {
             "init": "comment type a new n into the node",

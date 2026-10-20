@@ -137,7 +137,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "6": {
             "name": "list",
@@ -197,7 +198,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "9": {
             "name": "string",
@@ -304,7 +306,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "combine 2"
+            "init": "combine 2",
+            "highlight": true
         },
         "14": {
             "name": "string",

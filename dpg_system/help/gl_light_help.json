@@ -233,7 +233,8 @@
                     "value": 0,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "name": "message",
@@ -328,7 +329,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "gl_light 1"
+            "init": "gl_light 1",
+            "highlight": true
         },
         "14": {
             "name": "gl_sphere",

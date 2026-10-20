@@ -212,7 +212,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "t.full 4 4"
+            "init": "t.full 4 4",
+            "highlight": true
         },
         "8": {
             "name": "heat_map",

@@ -108,7 +108,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "init": "comment tick auto_render to draw every frame",
@@ -218,7 +219,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "11": {
             "name": "text_block",

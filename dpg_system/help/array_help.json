@@ -350,7 +350,8 @@
                     "value": "",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "name": "info",
@@ -501,7 +502,8 @@
                     "value": "3 3",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "15": {
             "name": "heat_map",

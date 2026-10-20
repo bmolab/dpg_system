@@ -255,7 +255,8 @@
                     "value": 0.54,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "name": "plot",

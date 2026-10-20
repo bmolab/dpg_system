@@ -128,7 +128,8 @@
                     "value": 6,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "init": "comment joy_stick: the dot stays where you leave it",
@@ -272,7 +273,8 @@
                     "value": 6,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "init": "comment momentary_xy: it springs back to the centre",

@@ -272,7 +272,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "mgl_body_orientation 3"
+            "init": "mgl_body_orientation 3",
+            "highlight": true
         },
         "10": {
             "name": "text_block",

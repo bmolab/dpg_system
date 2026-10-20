@@ -155,7 +155,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "color_source 7"
+            "init": "color_source 7",
+            "highlight": true
         },
         "6": {
             "name": "text_block",

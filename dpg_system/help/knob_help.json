@@ -118,7 +118,8 @@
                     "value": "%.3f",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "init": "comment drag up or right to turn it",
@@ -184,7 +185,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "knob 100"
+            "init": "knob 100",
+            "highlight": true
         },
         "7": {
             "name": "int",

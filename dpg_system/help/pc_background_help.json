@@ -157,7 +157,8 @@
                     "value": 1,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "name": "text_block",

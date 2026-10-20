@@ -266,7 +266,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "mgl_orientation_disks 3 0.25"
+            "init": "mgl_orientation_disks 3 0.25",
+            "highlight": true
         },
         "10": {
             "name": "text_block",

@@ -418,7 +418,8 @@
                             "value_type": "int"
                         }
                     },
-                    "init": "t.transpose 0 1"
+                    "init": "t.transpose 0 1",
+                    "highlight": true
                 },
                 "7": {
                     "init": "comment which two axes swap",

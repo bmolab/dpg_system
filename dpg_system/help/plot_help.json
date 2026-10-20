@@ -196,7 +196,8 @@
                     "value": 1.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "init": "comment one value at a time, scrolling",
@@ -284,7 +285,8 @@
                     "value": 1.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "name": "text_block",
@@ -437,7 +439,8 @@
                     "value": 1.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "12": {
             "name": "text_block",

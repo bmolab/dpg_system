@@ -315,7 +315,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "11": {
             "init": "comment axis -1: each row. 0: each column",

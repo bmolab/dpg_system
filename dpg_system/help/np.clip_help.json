@@ -439,7 +439,8 @@
                             "value_type": "float"
                         }
                     },
-                    "init": "np.clip -0.5 0.7"
+                    "init": "np.clip -0.5 0.7",
+                    "highlight": true
                 },
                 "9": {
                     "init": "comment both into one plot",

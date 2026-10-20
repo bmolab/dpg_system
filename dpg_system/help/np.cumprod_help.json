@@ -418,7 +418,8 @@
                             "value": -1,
                             "value_type": "int"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "11": {
                     "init": "comment both into one plot",
@@ -647,7 +648,8 @@
                             "value": -1,
                             "value_type": "int"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "20": {
                     "init": "comment 1 x 2 x 3 ...: the factorials",

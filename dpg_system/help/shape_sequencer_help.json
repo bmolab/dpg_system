@@ -226,7 +226,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "shape_seq 8"
+            "init": "shape_seq 8",
+            "highlight": true
         },
         "8": {
             "name": "text_block",

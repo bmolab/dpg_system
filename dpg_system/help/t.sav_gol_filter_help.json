@@ -759,7 +759,8 @@
                             "value": false,
                             "value_type": "bool"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "10": {
                     "name": "t",

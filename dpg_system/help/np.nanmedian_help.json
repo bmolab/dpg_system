@@ -482,7 +482,8 @@
                             "value": "None",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "8": {
                     "name": "float",
@@ -877,7 +878,8 @@
                             "value": "0",
                             "value_type": "string"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "16": {
                     "name": "heat_map",

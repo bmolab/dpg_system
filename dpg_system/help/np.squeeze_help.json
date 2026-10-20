@@ -394,7 +394,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "np.squeeze 1"
+            "init": "np.squeeze 1",
+            "highlight": true
         },
         "15": {
             "init": "comment axis must have length 1, or nothing is sent",

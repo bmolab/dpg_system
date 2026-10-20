@@ -257,7 +257,8 @@
                     "value": 0,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "init": "comment type 0 or 1 into dim",

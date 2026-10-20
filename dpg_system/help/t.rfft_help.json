@@ -793,7 +793,8 @@
                             "value": "backward",
                             "value_type": "str"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "10": {
                     "init": "comment 129 complex values: one per frequency",

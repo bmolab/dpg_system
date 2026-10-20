@@ -166,7 +166,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "print count"
+            "init": "print count",
+            "highlight": true
         },
         "6": {
             "name": "text_block",

@@ -108,7 +108,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "4": {
             "init": "comment ticked: move the mouse anywhere",

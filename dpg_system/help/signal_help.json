@@ -134,7 +134,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "signal 2.0 sin"
+            "init": "signal 2.0 sin",
+            "highlight": true
         },
         "4": {
             "name": "plot",
@@ -266,7 +267,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "signal 3.0 triangle"
+            "init": "signal 3.0 triangle",
+            "highlight": true
         },
         "7": {
             "name": "plot",

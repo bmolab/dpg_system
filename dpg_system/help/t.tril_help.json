@@ -452,7 +452,8 @@
                             "value": 0,
                             "value_type": "int"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "8": {
                     "init": "comment which diag: 0 main, 1 up a step, -1 down",

@@ -109,7 +109,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "lfo~ 5"
+            "init": "lfo~ 5",
+            "highlight": true
         },
         "4": {
             "init": "comment 5 Hz, depth 0.05 of an octave",
@@ -147,7 +148,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "vco~ 220"
+            "init": "vco~ 220",
+            "highlight": true
         },
         "6": {
             "init": "comment into pitch: vibrato",
@@ -241,7 +243,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "phasor~ 0.5"
+            "init": "phasor~ 0.5",
+            "highlight": true
         },
         "11": {
             "name": "snapshot~",

@@ -131,7 +131,8 @@
                     "value_type": "str"
                 }
             },
-            "init": "np.zeros 8 8"
+            "init": "np.zeros 8 8",
+            "highlight": true
         },
         "5": {
             "name": "heat_map",

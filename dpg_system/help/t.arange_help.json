@@ -173,7 +173,8 @@
                     "value_type": "float"
                 }
             },
-            "init": "t.arange 0 1 0.1"
+            "init": "t.arange 0 1 0.1",
+            "highlight": true
         },
         "6": {
             "init": "comment drag step: the count changes",

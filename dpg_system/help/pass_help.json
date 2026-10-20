@@ -235,7 +235,8 @@
                     "value_type": "bool"
                 }
             },
-            "init": "pass > 0.5"
+            "init": "pass > 0.5",
+            "highlight": true
         },
         "6": {
             "name": "plot",
@@ -445,7 +446,8 @@
                     "value_type": "bool"
                 }
             },
-            "init": "pass > 0.5"
+            "init": "pass > 0.5",
+            "highlight": true
         },
         "11": {
             "name": "float",

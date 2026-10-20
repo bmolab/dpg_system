@@ -267,7 +267,8 @@
                     "value": "0",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "name": "heat_map",

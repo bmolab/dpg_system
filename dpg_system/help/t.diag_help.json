@@ -452,7 +452,8 @@
                             "value": 0,
                             "value_type": "int"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "8": {
                     "init": "comment which diag: 0 the main one, 1 above, -1 below",
@@ -709,7 +710,8 @@
                             "value": 0,
                             "value_type": "int"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "16": {
                     "name": "heat_map",

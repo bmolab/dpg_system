@@ -314,7 +314,8 @@
                     "value": 4.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "init": "comment 32 bins from -4 to 4 - drag bin count, min, max",

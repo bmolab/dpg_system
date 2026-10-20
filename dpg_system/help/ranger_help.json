@@ -203,7 +203,8 @@
                     "value_type": "bool"
                 }
             },
-            "init": "ranger -1.0 1.0 0.0 360.0"
+            "init": "ranger -1.0 1.0 0.0 360.0",
+            "highlight": true
         },
         "6": {
             "name": "text_block",

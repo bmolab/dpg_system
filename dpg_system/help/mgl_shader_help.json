@@ -120,7 +120,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "text_block",

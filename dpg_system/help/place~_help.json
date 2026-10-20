@@ -212,7 +212,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "place~ 4"
+            "init": "place~ 4",
+            "highlight": true
         },
         "9": {
             "init": "comment four speakers in a ring",

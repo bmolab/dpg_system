@@ -156,7 +156,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "string_replace cat dog"
+            "init": "string_replace cat dog",
+            "highlight": true
         },
         "6": {
             "name": "string",
@@ -222,7 +223,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "word_replace cat dog"
+            "init": "word_replace cat dog",
+            "highlight": true
         },
         "9": {
             "name": "string",

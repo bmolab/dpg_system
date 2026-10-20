@@ -431,7 +431,8 @@
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
-                    "init": "t.view 6 7"
+                    "init": "t.view 6 7",
+                    "highlight": true
                 },
                 "9": {
                     "name": "heat_map",
@@ -594,7 +595,8 @@
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
-                    "init": "t.view 42"
+                    "init": "t.view 42",
+                    "highlight": true
                 },
                 "16": {
                     "init": "comment fails: nothing sent, error printed",
@@ -644,7 +646,8 @@
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {},
-                    "init": "t.view 42"
+                    "init": "t.view 42",
+                    "highlight": true
                 },
                 "19": {
                     "init": "comment copied into order first: works",

@@ -103,7 +103,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "midi_control_in 1"
+            "init": "midi_control_in 1",
+            "highlight": true
         },
         "4": {
             "name": "int",

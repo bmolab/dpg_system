@@ -115,7 +115,8 @@
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all",
-            "properties": {}
+            "properties": {},
+            "highlight": true
         },
         "5": {
             "init": "comment the bow arm: two coordinated signals",
@@ -153,7 +154,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "bow~ 196"
+            "init": "bow~ 196",
+            "highlight": true
         },
         "7": {
             "name": "text_block",

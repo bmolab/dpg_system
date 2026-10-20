@@ -54,7 +54,8 @@
                     "value": "milliseconds",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "2": {
             "init": "comment micro_metro",

@@ -210,7 +210,8 @@
                     "value": 4,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "8": {
             "name": "plot",

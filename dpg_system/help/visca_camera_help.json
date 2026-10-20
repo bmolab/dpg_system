@@ -103,7 +103,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "visca_camera 10.1.1.160"
+            "init": "visca_camera 10.1.1.160",
+            "highlight": true
         },
         "4": {
             "name": "text_block",

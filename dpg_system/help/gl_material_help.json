@@ -145,7 +145,8 @@
                     "value": "gold",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "init": "comment gold, for both spheres",
@@ -324,7 +325,8 @@
                     "value": "gold",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "14": {
             "name": "gl_sphere",

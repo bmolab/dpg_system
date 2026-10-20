@@ -204,7 +204,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "var demo_level"
+            "init": "var demo_level",
+            "highlight": true
         },
         "9": {
             "name": "float",
@@ -282,7 +283,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "var demo_level"
+            "init": "var demo_level",
+            "highlight": true
         },
         "13": {
             "name": "float",

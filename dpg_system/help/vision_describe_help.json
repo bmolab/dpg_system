@@ -289,7 +289,8 @@
                     "value": "auto",
                     "value_type": "str"
                 }
-            }
+            },
+            "highlight": true
         },
         "11": {
             "name": "text_block",

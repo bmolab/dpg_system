@@ -413,7 +413,8 @@
                             "value_type": "str"
                         }
                     },
-                    "init": "t.flip 0"
+                    "init": "t.flip 0",
+                    "highlight": true
                 },
                 "7": {
                     "init": "comment type 0, 1, or 0 1 into flip dims",

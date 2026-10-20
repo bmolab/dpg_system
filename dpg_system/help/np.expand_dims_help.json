@@ -310,7 +310,8 @@
                     "value_type": "int"
                 }
             },
-            "init": "np.expand_dims 1"
+            "init": "np.expand_dims 1",
+            "highlight": true
         },
         "11": {
             "init": "comment set axis to 0 or 1",

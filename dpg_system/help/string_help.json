@@ -388,7 +388,8 @@
                     "value": "24",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "11": {
             "name": "list",
@@ -426,7 +427,8 @@
                     "value": "24",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "12": {
             "init": "comment array",
@@ -489,7 +491,8 @@
                     "value": "24",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         }
     },
     "links": {

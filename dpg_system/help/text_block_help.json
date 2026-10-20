@@ -90,7 +90,8 @@
                     "value_type": "string"
                 }
             },
-            "text": "This is a text block. \n\nIt can have multiple lines."
+            "text": "This is a text block. \n\nIt can have multiple lines.",
+            "highlight": true
         },
         "3": {
             "name": "text_block",

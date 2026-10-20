@@ -418,7 +418,8 @@
                             "value_type": "int"
                         }
                     },
-                    "init": "np.roll 2 1"
+                    "init": "np.roll 2 1",
+                    "highlight": true
                 },
                 "7": {
                     "init": "comment step shifts; axis 0 rows, 1 columns",

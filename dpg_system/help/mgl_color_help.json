@@ -141,7 +141,8 @@
                     ],
                     "value_type": "list"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "init": "comment orange, for both shapes",
@@ -345,7 +346,8 @@
                     ],
                     "value_type": "list"
                 }
-            }
+            },
+            "highlight": true
         },
         "13": {
             "init": "comment replaces the orange for the box only",

@@ -206,7 +206,8 @@
                     "value": 4,
                     "value_type": "int"
                 }
-            }
+            },
+            "highlight": true
         },
         "7": {
             "name": "text_block",
@@ -402,7 +403,8 @@
                     "value": 3.0,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "16": {
             "name": "text_block",

@@ -929,7 +929,8 @@
                             "value": 0.0,
                             "value_type": "float"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "6": {
                     "name": "np.linalg.norm",

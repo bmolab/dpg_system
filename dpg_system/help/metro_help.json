@@ -94,7 +94,8 @@
                     "value": "milliseconds",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "3": {
             "name": "counter",

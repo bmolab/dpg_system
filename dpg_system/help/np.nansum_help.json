@@ -756,7 +756,8 @@
                             "value": "None",
                             "value_type": "str"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "14": {
                     "name": "float",
@@ -828,7 +829,8 @@
                             "value_type": "str"
                         }
                     },
-                    "init": "np.nansum 1"
+                    "init": "np.nansum 1",
+                    "highlight": true
                 },
                 "17": {
                     "name": "np.expand_dims",
@@ -944,7 +946,8 @@
                             "value_type": "str"
                         }
                     },
-                    "init": "np.nansum 0"
+                    "init": "np.nansum 0",
+                    "highlight": true
                 },
                 "21": {
                     "name": "heat_map",

@@ -188,7 +188,8 @@
                     "value_type": "bool"
                 }
             },
-            "init": "noise_gate 0.15"
+            "init": "noise_gate 0.15",
+            "highlight": true
         },
         "6": {
             "name": "text_block",

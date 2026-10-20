@@ -292,7 +292,8 @@
                     "value": 0.7200000286102295,
                     "value_type": "float"
                 }
-            }
+            },
+            "highlight": true
         },
         "9": {
             "name": "plot",

@@ -1241,7 +1241,8 @@
                             "value": 2,
                             "value_type": "int"
                         }
-                    }
+                    },
+                    "highlight": true
                 },
                 "8": {
                     "name": "p",

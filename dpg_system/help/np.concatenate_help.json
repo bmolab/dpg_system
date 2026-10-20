@@ -702,7 +702,8 @@
                             "value_type": "str"
                         }
                     },
-                    "init": "np.concatenate 0"
+                    "init": "np.concatenate 0",
+                    "highlight": true
                 },
                 "10": {
                     "init": "comment choose axis 0, 1 or None",

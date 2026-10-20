@@ -398,7 +398,8 @@
                     "target": [
                         0.5,
                         0.7
-                    ]
+                    ],
+                    "highlight": true
                 },
                 "7": {
                     "init": "comment the distance now",

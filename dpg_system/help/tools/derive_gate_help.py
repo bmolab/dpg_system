@@ -25,6 +25,7 @@ import copy, json, os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 HELP = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
+from highlight_featured import mark_featured
 from derive_arithmetic_help import set_prop, set_comment, set_block, set_number, link
 
 TITLE, TEXT, SIGNAL, PLOT_IN, GATE, PLOT_OUT, NOTE_OUT = 1470, 1481, 1515, 1537, 1588, 1607, 1653
@@ -333,7 +334,9 @@ def main():
     for stem in ('decreasing', 'change', 'pass'):
         path = os.path.join(HELP, stem + '_help.json')
         with open(path, 'w') as f:
-            json.dump(derive(template, stem), f, indent=4)
+            doc = derive(template, stem)
+            mark_featured(doc, stem, clear=True)   # the page's own node, highlighted
+            json.dump(doc, f, indent=4)
         print(path)
 
 

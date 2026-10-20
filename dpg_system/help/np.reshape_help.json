@@ -409,7 +409,8 @@
             "draggable": true,
             "presentation_state": "show_all",
             "properties": {},
-            "init": "np.reshape 3 4"
+            "init": "np.reshape 3 4",
+            "highlight": true
         },
         "15": {
             "name": "heat_map",

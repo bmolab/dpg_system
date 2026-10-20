@@ -234,7 +234,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "6": {
             "init": "comment counts steps, not frames",
@@ -379,7 +380,8 @@
                     "value": true,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "10": {
             "name": "float",

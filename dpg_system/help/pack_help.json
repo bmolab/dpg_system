@@ -127,7 +127,8 @@
                     "value": "list",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "5": {
             "name": "message",
@@ -502,7 +503,8 @@
                     "value": "list",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "13": {
             "name": "list",
@@ -718,7 +720,8 @@
                     "value": "array",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "18": {
             "name": "message",
@@ -958,7 +961,8 @@
                     "value": "list",
                     "value_type": "string"
                 }
-            }
+            },
+            "highlight": true
         },
         "28": {
             "name": "list",

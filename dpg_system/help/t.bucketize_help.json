@@ -334,7 +334,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "12": {
             "init": "comment tick right: values ON a boundary move up",
@@ -523,7 +524,8 @@
                     "value": false,
                     "value_type": "bool"
                 }
-            }
+            },
+            "highlight": true
         },
         "18": {
             "name": "int",
