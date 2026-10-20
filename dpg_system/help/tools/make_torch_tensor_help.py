@@ -1,7 +1,8 @@
 """torch tensor basics: tensor (and its alias t.to), t.detach, t.info,
-t.numel, t.contiguous, t.is_contiguous, t.buffer, t.rolling_buffer,
-t.data_set -- one page each. The tensor and t.detach pages are hand-made
-now (see tools/README.md), so this script no longer builds them.
+t.numel, t.contiguous, t.is_contiguous, t.buffer, t.rolling_buffer -- one
+page each. The tensor, t.detach, t.buffer and t.rolling_buffer pages are
+hand-made now (see tools/README.md), so this script no longer builds them.
+t.data_set's page is retired: the node is never registered.
 
 These were three family pages (tensor, t.info, t.buffer) plus a t.data_set
 page in make_small_help.py. Each node now has its own page whose demo shows
@@ -11,7 +12,7 @@ the metadata as text, the buffers filling over time with rows = time.
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_help import build
-from help_common import INT, FLT
+from help_common import INT
 
 
 def HM(width, height, count, miny=0.0, maxy=1.0, fmt='%.2f', color='viridis'):
@@ -38,26 +39,9 @@ def see_also(y, stems, x=30):
     return row
 
 
-def sub_comments(sub):
-    """Inside a subpatch build() takes comments as 'comment <text>' nodes."""
-    for d in sub['demo']:
-        if d.pop('comment', False):
-            text = d.pop('text')
-            d['init'] = 'comment ' + text
-            d['w'] = int(len(text) * 7.7) + 20
-            d['h'] = 30
-    return sub
-
-
 def th(body):
     """Prose box height: about 14 px a line at text size 30, plus a margin."""
     return (body.count('\n') + 1) * 14 + 40
-
-
-DTYPES = """float32 (the default), float16, int64, uint8, bool, complex64 and
-complex128. The menu also lists the same types under their torch names
-(torch.float32, float, torch.float ...). There is no float64 here: a
-float64 NumPy array comes out float32."""
 
 
 def shape_source(x=30, y=62):
@@ -75,38 +59,6 @@ def shape_source(x=30, y=62):
     ]
     links = [('men', '', 'rnd', 'shape'), ('met', '', 'rnd', '###input')]
     return demo, links
-
-
-# ------------------------------------------------- make_bump (buffer pages)
-def bump_sub(host):
-    """make_bump: a gaussian bump of 16 values that steps one place along each
-    tick, wrapping round -- one multi-channel sample per tick."""
-    return sub_comments({
-        'name': 'make_bump',
-        'host': host,
-        'demo': [
-            {'key': 'met', 'init': 'metro 60', 'pos': (40, 40), 'w': 129, 'h': 70,
-             'props': dict(METRO, period=60.0)},
-            {'key': 'cm', 'comment': True, 'text': 'one step every 60 ms', 'pos': (200, 50)},
-            {'key': 'cnt', 'init': 'counter 16 1', 'pos': (40, 130), 'w': 160, 'h': 90,
-             'props': {'count': 16, 'step': 1}},
-            {'key': 'cc', 'comment': True, 'text': 'counts 0 to 15 and round again',
-             'pos': (230, 140)},
-            {'key': 'tbf', 'init': 't bang int', 'pos': (40, 240), 'w': 130, 'h': 46},
-            {'key': 'win', 'init': 't.window.gaussian', 'pos': (40, 310), 'w': 230, 'h': 200,
-             'props': {'m': 16, 'std': 1.5, 'sym': True}},
-            {'key': 'cw', 'comment': True, 'text': 'a bump 16 values wide', 'pos': (300, 320)},
-            {'key': 'roll', 'init': 't.roll', 'pos': (300, 380), 'w': 200, 'h': 100,
-             'props': {'shifts': '0', 'dims': '0'}},
-            {'key': 'cr', 'comment': True, 'text': 'moved along by the count',
-             'pos': (520, 390)},
-            {'key': 'out', 'init': 'out bump', 'pos': (300, 520), 'w': 150, 'h': 80},
-        ],
-        'links': [('met', '', 'cnt', 'input'), ('cnt', 'count out', 'tbf', ''),
-                  ('tbf', '', 'roll', 'shifts', 1), ('tbf', '', 'win', '', 0),
-                  ('win', 'window tensor out', 'roll', 'tensor in'),
-                  ('roll', 'rolled tensor', 'out', 'bump')],
-    })
 
 
 # tensor: its page is hand-made now (see tools/README.md).
@@ -438,291 +390,6 @@ demo += see_also(830, ['t.contiguous', 't.view', 't.reshape', 't.narrow', 't.inf
 print(build('t.is_contiguous', 't.is_contiguous - is it stored row after row?',
             body, demo, links, demo_width=980, text_width=760, text_height=th(body)))
 
-# =================================================================== t.buffer
-body = """Stores what arrives in a tensor of fixed length, and either sends
-the whole store each time something arrives or hands back one stored
-position when asked.
+# t.buffer, t.rolling_buffer: their pages are hand-made now (see tools/README.md).
 
-It has three ways of filling and two ways of answering, which makes it
-two nodes in one. As a recorder of the recent past ("input is
-multi-channel sample" or "input is stream of samples" with "output
-buffer on every input") it keeps the last sample count arrivals and
-sends them oldest first - the demo at the top. As a store you read from
-(the default: "output samples on demand by index") it holds values and
-sends the one at the position you ask for - the demo at the bottom. For
-the recorder job alone, t.rolling_buffer is simpler and has a reset.
-
-SYNTAX:
-t.buffer <sample count> <dtype> <device>
-Default sample count 256, float32, cpu.
-
-EXAMPLE:
-t.buffer 32
-
-INPUTS and PARAMETERS:
-
-input:
-Data to store. Every arrival is stored, and in "output buffer on every
-input" mode the buffer is then sent. A single number is one sample.
-
-sample to output:
-A position (an int, 0 = the first slot). The value stored there is sent
-- a single number, or a list for a multi-channel buffer. A position
-outside 0 to sample count - 1 is ignored. In the two stream modes this
-is a position in the store, not in time: the slots are written round and
-round, so slot 0 is not necessarily the oldest.
-
-sample count (option):
-How many samples are kept. At one sample per frame (60 a second) 60 is
-one second of history. A change takes effect at the next input: the
-buffer starts again, empty, at the new length.
-
-update style (option):
-"input is stream of samples" (the default) - each number that arrives is
-one sample, written into the next slot, wrapping round at the end. A
-list of several numbers writes them all in order, so a list exactly
-sample count long fills the store in one go.
-"input is multi-channel sample" - each arrival (a list or 1-D tensor of
-N values) is ONE sample of N channels, stored as one row: the buffer is
-sample count rows by N columns. A single number is one sample of one
-channel. A different N starts a new, empty buffer.
-"buffer holds one sample of input" - each arrival simply replaces the
-whole buffer (a copy of it, whatever its length).
-
-output style (option):
-"output samples on demand by index" (the default) - nothing is sent when
-data arrives; send a position into "sample to output".
-"output buffer on every input" - after each arrival a copy of the whole
-buffer is sent, rotated so that the oldest sample is first and the
-newest last. Rows not yet filled are zeros, at the oldest end.
-
-dtype / device / requires_grad (also inlets):
-What the stored tensor is. Incoming data is converted to it.
-""" + DTYPES + """
-
-OUTPUTS:
-
-output:
-The buffer (rows = samples, oldest first), or the value at one position.
-
-READING THE DEMO:
-Top: make_bump sends a bump 16 values wide that steps one place along
-every 60 ms. t.buffer 32, set to multi-channel and to output on every
-input, keeps the last 32 of them: the heat_map has one row per sample,
-oldest at the top, newest at the bottom, so the moving bump draws a
-diagonal stripe that scrolls up as new rows arrive. Change sample count
-in the node's options (16, or 64) and the store starts again at that
-length; the heat_map follows.
-Bottom: a t.buffer 8 with the default settings. The message stores 8
-numbers when the page opens (one list of 8 fills the 8 slots exactly);
-drag the slider to read any slot back. Click the message after editing
-it to store new numbers.
-
-RELATED:
-t.rolling_buffer is the always-sends recorder with a reset. np.sequence
-and np.rolling_buffer do these jobs for NumPy arrays. capture~ records
-the audio graph."""
-
-demo = [
-    {'key': 'bump', 'init': 'p make_bump', 'pos': (30, 62), 'w': 200, 'h': 70},
-    {'key': 'cbump', 'comment': True, 'text': 'a bump of 16 values, moving along',
-     'pos': (250, 72)},
-    {'key': 'hin', 'init': 'heat_map', 'pos': (30, 150), 'w': 340, 'h': 60,
-     'props': HM(320, 30, 1, fmt='none')},
-    {'key': 'chin', 'comment': True, 'text': 'one sample: the latest bump', 'pos': (390, 160)},
-    {'key': 'buf', 'init': 't.buffer 32', 'pos': (30, 230), 'w': 340, 'h': 230,
-     'props': {'sample count': 32, 'update style': 'input is multi-channel sample',
-               'output style': 'output buffer on every input'}},
-    {'key': 'hbuf', 'init': 'heat_map', 'pos': (30, 480), 'w': 340, 'h': 350,
-     'props': HM(320, 320, 32, fmt='none')},
-    {'key': 'chbuf', 'comment': True, 'text': 'the last 32 samples: oldest at the top, newest at the bottom',
-     'pos': (390, 490)},
-    {'key': 'lb', 'init': 'load_bang', 'pos': (30, 850), 'w': 88, 'h': 46},
-    {'key': 'msg', 'init': 'message', 'pos': (30, 910), 'w': 400, 'h': 42,
-     'props': {'text in': '0.1 0.5 0.9 0.3 0.7 0.0 1.0 0.4', 'font size': '24'}},
-    {'key': 'cmsg', 'comment': True, 'text': '8 numbers, stored when the page opens',
-     'pos': (450, 918)},
-    {'key': 'sl', 'init': 'slider 7', 'pos': (30, 970), 'w': 200, 'h': 42,
-     'props': {'min': 0, 'max': 7, 'format': '%d', 'width': 180}},
-    {'key': 'csl', 'comment': True, 'text': 'drag: which slot to read', 'pos': (250, 978)},
-    {'key': 'b8', 'init': 't.buffer 8', 'pos': (30, 1030), 'w': 340, 'h': 230,
-     'props': {'sample count': 8}},
-    {'key': 'f8', 'init': 'float', 'pos': (30, 1280), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'cf8', 'comment': True, 'text': 'the value in that slot', 'pos': (180, 1288)},
-]
-links = [('bump', 'bump', 'hin', 'y'), ('bump', 'bump', 'buf', 'input'),
-         ('buf', 'output', 'hbuf', 'y'),
-         ('lb', 'out', 'msg', ''), ('msg', 'message out', 'b8', 'input'), ('sl', 'int out', 'b8', 'sample to output'),
-         ('b8', 'output', 'f8', '')]
-demo += see_also(1350, ['t.rolling_buffer', 'np.sequence', 'np.rolling_buffer', 'capture~'])
-print(build('t.buffer', 't.buffer - store samples, send them all or one at a time',
-            body, demo, links, demo_width=700, text_width=780, text_height=th(body),
-            subpatch=bump_sub('bump')))
-
-# ============================================================ t.rolling_buffer
-body = """Keeps the last N samples that arrived and sends them all, oldest
-first, every time a new one comes in.
-
-This turns a stream - one value, or one set of values, per frame - into
-a tensor of the recent past that other nodes can work on: average it,
-take its spectrum, find its peak, draw it. Almost any question about
-"the last second" starts here.
-
-THE OUTPUT IS ALWAYS FULL LENGTH:
-From the very first sample the output has N rows. Rows that have not
-been filled yet are zeros, at the oldest (top) end, and they scroll out
-as real samples arrive. reset sets every row back to zero.
-
-SAMPLE COUNT IS A TIME WINDOW:
-At 60 samples a second, 60 is one second of history and 600 is ten.
-Longer windows give steadier statistics that react more slowly.
-
-SYNTAX:
-t.rolling_buffer <sample count> <dtype> <device>
-Default sample count 256, float32, cpu.
-
-EXAMPLE:
-t.rolling_buffer 32
-
-INPUTS and PARAMETERS:
-
-input:
-The sample. Every arrival is stored and the whole buffer sent. A single
-number is one sample.
-
-reset (button, also an inlet):
-Sets every stored value to zero, keeping the shape, and sends the
-cleared buffer straight away.
-
-sample count (option):
-N, the number of samples kept. A change takes effect at the next
-input: the buffer starts again, empty, at the new length.
-
-update style (option):
-"input is stream of samples" (the default) - each number is one sample;
-a list of several numbers is several samples, written in order (a list
-longer than N leaves just its last N). The output is N rows by 1 column.
-"input is multi-channel sample" - each arrival (a list or 1-D tensor of
-C values) is ONE sample of C channels; the output is N rows by C
-columns. A sample with a different C starts a new, empty buffer.
-"buffer holds one sample of input" - each arrival replaces the whole
-buffer, which then has the arrival's length.
-
-dtype / device / requires_grad (also inlets):
-What the stored tensor is. Incoming data is converted to it.
-""" + DTYPES + """
-
-OUTPUTS:
-
-output:
-A copy of the buffer: N rows, oldest first, newest in the last row.
-
-READING THE DEMO:
-Top: make_bump sends a bump 16 values wide that steps one place along
-every 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last
-32: one heat_map row per sample, oldest at the top and newest at the
-bottom, so the moving bump draws a diagonal stripe that scrolls upward.
-Click reset on the node and the picture empties, then refills from the
-bottom. Change sample count in the node's options (16, or 64) and the
-window starts again at that length; the heat_map follows.
-Bottom: single random numbers (the default stream mode) gathered into
-the last 64 (64 rows of 1 column), drawn as a curve with the newest at
-the right (t.flatten makes the column one row for plot), and averaged
-by t.mean - a stream turned into something that can be measured.
-
-RELATED:
-t.buffer can also hand back one stored value by position. np.rolling_buffer
-is the NumPy version; np.sequence records and plays back. capture~ records
-the audio graph. t.mean and t.rfft are typical next steps."""
-
-demo = [
-    {'key': 'bump', 'init': 'p make_bump', 'pos': (30, 62), 'w': 200, 'h': 70},
-    {'key': 'cbump', 'comment': True, 'text': 'a bump of 16 values, moving along',
-     'pos': (250, 72)},
-    {'key': 'hin', 'init': 'heat_map', 'pos': (30, 150), 'w': 340, 'h': 60,
-     'props': HM(320, 30, 1, fmt='none')},
-    {'key': 'chin', 'comment': True, 'text': 'one sample: the latest bump', 'pos': (390, 160)},
-    {'key': 'rb', 'init': 't.rolling_buffer 32', 'pos': (30, 230), 'w': 340, 'h': 230,
-     'props': {'sample count': 32, 'update style': 'input is multi-channel sample'}},
-    {'key': 'crb', 'comment': True, 'text': 'click reset to empty it', 'pos': (390, 240)},
-    {'key': 'hbuf', 'init': 'heat_map', 'pos': (30, 480), 'w': 340, 'h': 350,
-     'props': HM(320, 320, 32, fmt='none')},
-    {'key': 'chbuf', 'comment': True, 'text': 'the last 32 samples: oldest at the top, newest at the bottom',
-     'pos': (390, 490)},
-    {'key': 'met', 'init': 'metro 50', 'pos': (30, 860), 'w': 129, 'h': 70,
-     'props': dict(METRO, period=50.0)},
-    {'key': 'ran', 'init': 'random 1.0', 'pos': (30, 945), 'w': 140, 'h': 80,
-     'props': {'range': 1.0, 'bipolar': False}},
-    {'key': 'cran', 'comment': True, 'text': 'one number every 50 ms', 'pos': (190, 955)},
-    {'key': 'rb2', 'init': 't.rolling_buffer 64', 'pos': (30, 1040), 'w': 340, 'h': 230},
-    {'key': 'fl', 'init': 't.flatten', 'pos': (390, 1040), 'w': 150, 'h': 70},
-    {'key': 'cfl', 'comment': True, 'text': '64 rows of 1 into one row of 64, for plot',
-     'pos': (560, 1050)},
-    {'key': 'pl', 'init': 'plot', 'pos': (390, 1130), 'w': 340, 'h': 200,
-     'props': {'color': 'none', 'width': 320, 'height': 150, 'style': 'line',
-               'update style': 'buffer holds one sample of input', 'sample count': 64,
-               'min x': 0.0, 'max x': 64.0, 'min y': 0.0, 'max y': 1.0}},
-    {'key': 'cpl', 'comment': True, 'text': 'the last 64, newest at the right',
-     'pos': (390, 1340)},
-    {'key': 'mn', 'init': 't.mean', 'pos': (30, 1290), 'w': 150, 'h': 100},
-    {'key': 'fmn', 'init': 'float', 'pos': (200, 1290), 'w': 127, 'h': 42, 'props': FLT},
-    {'key': 'cmn', 'comment': True, 'text': 'their average, about 0.5', 'pos': (200, 1340)},
-]
-links = [('bump', 'bump', 'hin', 'y'), ('bump', 'bump', 'rb', 'input'),
-         ('rb', 'output', 'hbuf', 'y'),
-         ('met', '', 'ran', 'trigger'), ('ran', 'out', 'rb2', 'input'),
-         ('rb2', 'output', 'fl', 'tensor in'), ('fl', 'tensor out', 'pl', 'y'),
-         ('rb2', 'output', 'mn', 'tensor in'),
-         ('mn', 'output', 'fmn', '')]
-demo += see_also(1390, ['t.buffer', 'np.rolling_buffer', 'np.sequence', 't.mean', 'capture~'])
-print(build('t.rolling_buffer', 't.rolling_buffer - the last N samples, as one tensor',
-            body, demo, links, demo_width=760, text_width=780, text_height=th(body),
-            subpatch=bump_sub('bump')))
-
-# ================================================================= t.data_set
-body = """Loads every .pt file in a folder into a torch Dataset, for training
-code - it has no inlets and no outlets.
-
-Give it a folder as its argument. Each .pt file there (a tensor saved
-with torch.save) is loaded and kept under its file name, and the node
-holds the result as a torch Dataset: item i is a dictionary of the i-th
-row of every file, and the length is the shortest file's length.
-
-NOTHING IN A PATCH CAN READ IT:
-The node exposes no inlets and no outlets, so a patch cannot ask it for
-anything. It is groundwork for training code that reaches the node from
-Python, not a way to bring data into a patch. To get recorded data into
-a patch use np.load (a NumPy file) or np.sequence (a recording); to make
-test tensors, t.rand or t.linspace.
-
-SYNTAX:
-t.data_set <folder>
-With no folder, nothing is loaded.
-
-EXAMPLE:
-t.data_set /Users/me/datasets/poses
-
-INPUTS and PARAMETERS:
-The folder, as the argument. It is read once, when the node is made.
-A folder that does not exist prints a message in the console and leaves
-the dataset empty; a .pt file that cannot be read is skipped with a
-message and the rest are kept.
-
-OUTPUTS:
-None.
-
-RELATED:
-np.load reads a saved NumPy array into a patch. t.buffer and
-t.rolling_buffer collect data as it arrives."""
-
-demo = [
-    {'key': 'ds', 'init': 't.data_set', 'pos': (30, 62), 'w': 160, 'h': 46},
-    {'key': 'cds', 'comment': True,
-     'text': 'no inlets, no outlets: give it a folder of .pt files\n'
-             'as its argument and it loads them for training code',
-     'pos': (30, 130)},
-]
-links = []
-demo += see_also(200, ['np.load', 't.buffer', 't.rolling_buffer', 't.rand'])
-print(build('t.data_set', 't.data_set - a folder of saved tensors, for training code',
-            body, demo, links, demo_width=560, text_width=760, text_height=th(body)))
+# t.data_set: its page is retired (see tools/README.md).

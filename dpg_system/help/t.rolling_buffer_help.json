@@ -1,27 +1,27 @@
 {
     "name": "t.rolling_buffer_help",
-    "path": "/Users/drokeby/dpg_system/dpg_system/help/t.rolling_buffer_help.json",
     "patches": {
         "0": {
-            "height": 680,
-            "width": 804,
+            "height": 1262,
+            "width": 1979,
             "position": [
-                160,
-                160
+                77,
+                67
             ],
-            "id": 1347,
+            "id": 2316,
+            "parent_node_uuid": 2536,
             "name": "make_bump",
-            "parent_node_uuid": 348,
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 1384,
+                    "id": 2344,
+                    "sid": 1,
                     "position_x": 0,
                     "position_y": 0,
-                    "width": 9,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "hidden",
+                    "draggable": false,
                     "protected": true,
                     "presentation_state": "hidden",
                     "properties": {
@@ -33,13 +33,14 @@
                     }
                 },
                 "1": {
-                    "name": "metro",
                     "init": "metro 60",
-                    "id": 1421,
+                    "name": "metro",
+                    "id": 2362,
+                    "sid": 2,
                     "position_x": 40,
                     "position_y": 40,
-                    "width": 129,
-                    "height": 70,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -57,18 +58,19 @@
                         "2": {
                             "name": "units",
                             "value": "milliseconds",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     }
                 },
                 "2": {
-                    "name": "comment",
                     "init": "comment one step every 60 ms",
-                    "id": 1458,
+                    "name": "comment",
+                    "id": 2375,
+                    "sid": 3,
                     "position_x": 200,
                     "position_y": 50,
-                    "width": 174,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -76,19 +78,25 @@
                         "0": {
                             "name": "text",
                             "value": "one step every 60 ms",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "one step every 60 ms"
                 },
                 "3": {
-                    "name": "counter",
                     "init": "counter 16 1",
-                    "id": 1495,
+                    "name": "counter",
+                    "id": 2386,
+                    "sid": 4,
                     "position_x": 40,
                     "position_y": 130,
-                    "width": 160,
-                    "height": 90,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -106,13 +114,14 @@
                     }
                 },
                 "4": {
-                    "name": "comment",
                     "init": "comment counts 0 to 15 and round again",
-                    "id": 1532,
+                    "name": "comment",
+                    "id": 2405,
+                    "sid": 5,
                     "position_x": 230,
                     "position_y": 140,
-                    "width": 251,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -120,61 +129,114 @@
                         "0": {
                             "name": "text",
                             "value": "counts 0 to 15 and round again",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "counts 0 to 15 and round again"
                 },
                 "5": {
-                    "name": "t",
                     "init": "t bang int",
-                    "id": 1569,
+                    "name": "t",
+                    "id": 2416,
+                    "sid": 6,
                     "position_x": 40,
                     "position_y": 240,
-                    "width": 130,
-                    "height": 46,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {}
-                },
-                "6": {
-                    "name": "t.window.gaussian",
-                    "init": "t.window.gaussian",
-                    "id": 1606,
-                    "position_x": 40,
-                    "position_y": 310,
-                    "width": 230,
-                    "height": 200,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "trigger 0",
+                            "value": "bang",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "trigger 1",
+                            "value": "int",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "6": {
+                    "name": "t.window.gaussian",
+                    "id": 2431,
+                    "sid": 7,
+                    "position_x": 40,
+                    "position_y": 310,
+                    "width": 0,
+                    "height": 0,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "type",
+                            "value": "gaussian",
+                            "value_type": "string"
+                        },
+                        "2": {
                             "name": "m",
                             "value": 16,
                             "value_type": "int"
                         },
-                        "1": {
+                        "3": {
                             "name": "std",
                             "value": 1.5,
                             "value_type": "float"
                         },
-                        "2": {
+                        "4": {
+                            "name": "",
+                            "value": 1.0,
+                            "value_type": "float"
+                        },
+                        "5": {
                             "name": "sym",
                             "value": true,
+                            "value_type": "bool"
+                        },
+                        "6": {
+                            "name": "device",
+                            "value": "cpu",
+                            "value_type": "string"
+                        },
+                        "7": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "string"
+                        },
+                        "8": {
+                            "name": "requires_grad",
+                            "value": false,
                             "value_type": "bool"
                         }
                     }
                 },
                 "7": {
-                    "name": "comment",
                     "init": "comment a bump 16 values wide",
-                    "id": 1643,
+                    "name": "comment",
+                    "id": 2462,
+                    "sid": 8,
                     "position_x": 300,
                     "position_y": 320,
-                    "width": 181,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -182,43 +244,49 @@
                         "0": {
                             "name": "text",
                             "value": "a bump 16 values wide",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "a bump 16 values wide"
                 },
                 "8": {
                     "name": "t.roll",
-                    "init": "t.roll",
-                    "id": 1680,
+                    "id": 2473,
+                    "sid": 9,
                     "position_x": 300,
                     "position_y": 380,
-                    "width": 200,
-                    "height": 100,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
                             "name": "shifts",
-                            "value": "0",
-                            "value_type": "str"
+                            "value": "5",
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "dims",
                             "value": "0",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     }
                 },
                 "9": {
-                    "name": "comment",
                     "init": "comment moved along by the count",
-                    "id": 1717,
+                    "name": "comment",
+                    "id": 2486,
+                    "sid": 10,
                     "position_x": 520,
                     "position_y": 390,
-                    "width": 204,
-                    "height": 30,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -226,108 +294,125 @@
                         "0": {
                             "name": "text",
                             "value": "moved along by the count",
-                            "value_type": "str"
+                            "value_type": "string"
+                        },
+                        "1": {
+                            "name": "font size",
+                            "value": "24",
+                            "value_type": "string"
                         }
                     },
                     "comment": "moved along by the count"
                 },
                 "10": {
-                    "name": "out",
                     "init": "out bump",
-                    "id": 1754,
+                    "name": "out",
+                    "id": 2497,
+                    "sid": 11,
                     "position_x": 300,
                     "position_y": 520,
-                    "width": 150,
-                    "height": 80,
+                    "width": 0,
+                    "height": 0,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
-                    "properties": {}
+                    "properties": {
+                        "0": {
+                            "name": "dest",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "output name",
+                            "value": "bump",
+                            "value_type": "string"
+                        }
+                    }
                 }
             },
             "links": {
                 "0": {
-                    "source_node": 1421,
-                    "source_node_name": "",
+                    "source_node": 2362,
+                    "source_node_name": "metro",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 1495,
-                    "dest_node_name": "",
+                    "dest_node": 2386,
+                    "dest_node_name": "counter",
                     "dest_input_index": 0,
                     "dest_input_name": "input"
                 },
                 "1": {
-                    "source_node": 1495,
-                    "source_node_name": "",
+                    "source_node": 2386,
+                    "source_node_name": "counter",
                     "source_output_index": 0,
                     "source_output_name": "count out",
-                    "dest_node": 1569,
-                    "dest_node_name": "",
+                    "dest_node": 2416,
+                    "dest_node_name": "t",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
                 "2": {
-                    "source_node": 1569,
-                    "source_node_name": "",
-                    "source_output_index": 1,
-                    "source_output_name": "",
-                    "dest_node": 1680,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "shifts"
-                },
-                "3": {
-                    "source_node": 1569,
-                    "source_node_name": "",
+                    "source_node": 2416,
+                    "source_node_name": "t",
                     "source_output_index": 0,
-                    "source_output_name": "",
-                    "dest_node": 1606,
-                    "dest_node_name": "",
+                    "source_output_name": "bang",
+                    "dest_node": 2431,
+                    "dest_node_name": "t.window.gaussian",
                     "dest_input_index": 0,
                     "dest_input_name": ""
                 },
+                "3": {
+                    "source_node": 2416,
+                    "source_node_name": "t",
+                    "source_output_index": 1,
+                    "source_output_name": "int",
+                    "dest_node": 2473,
+                    "dest_node_name": "t.roll",
+                    "dest_input_index": 1,
+                    "dest_input_name": "shifts"
+                },
                 "4": {
-                    "source_node": 1606,
-                    "source_node_name": "",
+                    "source_node": 2431,
+                    "source_node_name": "t.window.gaussian",
                     "source_output_index": 0,
                     "source_output_name": "window tensor out",
-                    "dest_node": 1680,
-                    "dest_node_name": "",
+                    "dest_node": 2473,
+                    "dest_node_name": "t.roll",
                     "dest_input_index": 0,
                     "dest_input_name": "tensor in"
                 },
                 "5": {
-                    "source_node": 1680,
-                    "source_node_name": "",
+                    "source_node": 2473,
+                    "source_node_name": "t.roll",
                     "source_output_index": 0,
                     "source_output_name": "rolled tensor",
-                    "dest_node": 1754,
-                    "dest_node_name": "",
+                    "dest_node": 2497,
+                    "dest_node_name": "out",
                     "dest_input_index": 0,
                     "dest_input_name": "bump"
                 }
             }
         },
         "1": {
-            "height": 1602,
+            "height": 1262,
             "width": 1979,
             "position": [
-                100,
-                100
+                77,
+                67
             ],
-            "id": 1310,
+            "id": 2268,
             "name": "t.rolling_buffer_help",
-            "path": "/Users/drokeby/dpg_system/dpg_system/help/t.rolling_buffer_help.json",
             "nodes": {
                 "0": {
                     "name": "",
-                    "id": 237,
+                    "id": 2296,
+                    "sid": 1,
                     "position_x": 0,
                     "position_y": 0,
                     "width": 9,
                     "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
+                    "visibility": "hidden",
+                    "draggable": false,
                     "protected": true,
                     "presentation_state": "hidden",
                     "properties": {
@@ -341,11 +426,12 @@
                 "1": {
                     "init": "comment t.rolling_buffer - the last N samples, as one tensor",
                     "name": "comment",
-                    "id": 274,
+                    "id": 2508,
+                    "sid": 2,
                     "position_x": 24,
                     "position_y": -4,
                     "width": 647,
-                    "height": 42,
+                    "height": 41,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -353,31 +439,32 @@
                         "0": {
                             "name": "text",
                             "value": "t.rolling_buffer - the last N samples, as one tensor",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "48",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "t.rolling_buffer - the last N samples, as one tensor"
                 },
                 "2": {
                     "name": "text_block",
-                    "id": 311,
-                    "position_x": 1151,
-                    "position_y": 45,
+                    "id": 2519,
+                    "sid": 3,
+                    "position_x": 1003,
+                    "position_y": 16,
                     "width": 788,
-                    "height": 1134,
+                    "height": 1133,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
                             "name": "block",
-                            "value": "Keeps the last N samples that arrived and sends them all, oldest first, every time a new one comes in.\n\nThis turns a stream - one value, or one set of values, per frame - into a tensor of the recent past that other nodes can work on: average it, take its spectrum, find its peak, draw it. Almost any question about \"the last second\" starts here.\n\nTHE OUTPUT IS ALWAYS FULL LENGTH:\nFrom the very first sample the output has N rows. Rows that have not been filled yet are zeros, at the oldest (top) end, and they scroll out as real samples arrive. reset sets every row back to zero.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 samples a second, 60 is one second of history and 600 is ten. Longer windows give steadier statistics that react more slowly.\n\nSYNTAX:\nt.rolling_buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.rolling_buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nThe sample. Every arrival is stored and the whole buffer sent. A single number is one sample.\n\nreset (button, also an inlet):\nSets every stored value to zero, keeping the shape, and sends the cleared buffer straight away.\n\nsample count (option):\nN, the number of samples kept. A change takes effect at the next input: the buffer starts again, empty, at the new length.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number is one sample;\na list of several numbers is several samples, written in order (a list longer than N leaves just its last N). The output is N rows by 1 column. \"input is multi-channel sample\" - each arrival (a list or 1-D tensor of C values) is ONE sample of C channels; the output is N rows by C columns. A sample with a different C starts a new, empty buffer. \"buffer holds one sample of input\" - each arrival replaces the whole buffer, which then has the arrival's length.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it. float32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nA copy of the buffer: N rows, oldest first, newest in the last row.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along every 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last 32: one heat_map row per sample, oldest at the top and newest at the bottom, so the moving bump draws a diagonal stripe that scrolls upward. Click reset on the node and the picture empties, then refills from the bottom. Change sample count in the node's options (16, or 64) and the window starts again at that length; the heat_map follows.\nBottom: single random numbers (the default stream mode) gathered into the last 64 (64 rows of 1 column), drawn as a curve with the newest at the right (t.flatten makes the column one row for plot), and averaged by t.mean - a stream turned into something that can be measured.\n\nRELATED:\nt.buffer can also hand back one stored value by position. np.rolling_buffer is the NumPy version; np.sequence records and plays back. capture~ records the audio graph. t.mean and t.rfft are typical next steps.",
-                            "value_type": "str"
+                            "value": "Keeps the last N samples that arrived and sends them all, oldest first, every time a new one comes in.\n\nThis turns a stream - one value, or one set of values, per frame - into a tensor of the recent past that other nodes can work on: average it, take its spectrum, find its peak, draw it. Almost any question about \"the last second\" starts here.\n\nTHE OUTPUT IS ALWAYS FULL LENGTH:\nFrom the very first sample the output has N rows. Rows that have not been filled yet are zeros, at the oldest (top) end, and they scroll out as real samples arrive. reset sets every row back to zero.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 samples a second, 60 is one second of history and 600 is ten. Longer windows give steadier statistics that react more slowly.\n\nSYNTAX:\nt.rolling_buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.rolling_buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nThe sample. Every arrival is stored and the whole buffer sent. A single number is one sample.\n\nreset (button, also an inlet):\nSets every stored value to zero, keeping the shape, and sends the cleared buffer straight away.\n\nsample count (option):\nN, the number of samples kept. A change takes effect at the next input: the buffer starts again, empty, at the new length.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number is one sample;\na list of several numbers is several samples, written in order (a list longer than N leaves just its last N). The output is N rows by 1 column. \"input is multi-channel sample\" - each arrival (a list or 1-D tensor of C values) is ONE sample of C channels; the output is N rows by C columns. A sample with a different C starts a new, empty buffer. \"buffer holds one sample of input\" - each arrival replaces the whole buffer, which then has the arrival's length.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it. float32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nA copy of the buffer: N rows, oldest first, newest in the last row.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along every 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last 32: one heat_map row per sample, oldest at the top and newest at the bottom, so the moving bump draws a diagonal stripe that scrolls upward. Click reset on the node and the picture empties, then refills from the bottom. Change sample count in the node's options (16, or 64) and the window starts again at that length; the heat_map follows.\nBottom: single random numbers (the default stream mode) gathered into the last 64 (64 rows of 1 column), drawn as a curve with the newest at the right (t.flatten makes the column one row for plot).\n\nRELATED:\nt.buffer can also hand back one stored value by position. np.rolling_buffer is the NumPy version; np.sequence records and plays back. capture~ records the audio graph. t.mean and t.rfft are typical next steps.",
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "lock",
@@ -397,57 +484,89 @@
                         "4": {
                             "name": "text_size",
                             "value": "30",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
-                    "text": "Keeps the last N samples that arrived and sends them all, oldest first, every time a new one comes in.\n\nThis turns a stream - one value, or one set of values, per frame - into a tensor of the recent past that other nodes can work on: average it, take its spectrum, find its peak, draw it. Almost any question about \"the last second\" starts here.\n\nTHE OUTPUT IS ALWAYS FULL LENGTH:\nFrom the very first sample the output has N rows. Rows that have not been filled yet are zeros, at the oldest (top) end, and they scroll out as real samples arrive. reset sets every row back to zero.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 samples a second, 60 is one second of history and 600 is ten. Longer windows give steadier statistics that react more slowly.\n\nSYNTAX:\nt.rolling_buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.rolling_buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nThe sample. Every arrival is stored and the whole buffer sent. A single number is one sample.\n\nreset (button, also an inlet):\nSets every stored value to zero, keeping the shape, and sends the cleared buffer straight away.\n\nsample count (option):\nN, the number of samples kept. A change takes effect at the next input: the buffer starts again, empty, at the new length.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number is one sample;\na list of several numbers is several samples, written in order (a list longer than N leaves just its last N). The output is N rows by 1 column. \"input is multi-channel sample\" - each arrival (a list or 1-D tensor of C values) is ONE sample of C channels; the output is N rows by C columns. A sample with a different C starts a new, empty buffer. \"buffer holds one sample of input\" - each arrival replaces the whole buffer, which then has the arrival's length.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it. float32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nA copy of the buffer: N rows, oldest first, newest in the last row.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along every 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last 32: one heat_map row per sample, oldest at the top and newest at the bottom, so the moving bump draws a diagonal stripe that scrolls upward. Click reset on the node and the picture empties, then refills from the bottom. Change sample count in the node's options (16, or 64) and the window starts again at that length; the heat_map follows.\nBottom: single random numbers (the default stream mode) gathered into the last 64 (64 rows of 1 column), drawn as a curve with the newest at the right (t.flatten makes the column one row for plot), and averaged by t.mean - a stream turned into something that can be measured.\n\nRELATED:\nt.buffer can also hand back one stored value by position. np.rolling_buffer is the NumPy version; np.sequence records and plays back. capture~ records the audio graph. t.mean and t.rfft are typical next steps."
+                    "text": "Keeps the last N samples that arrived and sends them all, oldest first, every time a new one comes in.\n\nThis turns a stream - one value, or one set of values, per frame - into a tensor of the recent past that other nodes can work on: average it, take its spectrum, find its peak, draw it. Almost any question about \"the last second\" starts here.\n\nTHE OUTPUT IS ALWAYS FULL LENGTH:\nFrom the very first sample the output has N rows. Rows that have not been filled yet are zeros, at the oldest (top) end, and they scroll out as real samples arrive. reset sets every row back to zero.\n\nSAMPLE COUNT IS A TIME WINDOW:\nAt 60 samples a second, 60 is one second of history and 600 is ten. Longer windows give steadier statistics that react more slowly.\n\nSYNTAX:\nt.rolling_buffer <sample count> <dtype> <device>\nDefault sample count 256, float32, cpu.\n\nEXAMPLE:\nt.rolling_buffer 32\n\nINPUTS and PARAMETERS:\n\ninput:\nThe sample. Every arrival is stored and the whole buffer sent. A single number is one sample.\n\nreset (button, also an inlet):\nSets every stored value to zero, keeping the shape, and sends the cleared buffer straight away.\n\nsample count (option):\nN, the number of samples kept. A change takes effect at the next input: the buffer starts again, empty, at the new length.\n\nupdate style (option):\n\"input is stream of samples\" (the default) - each number is one sample;\na list of several numbers is several samples, written in order (a list longer than N leaves just its last N). The output is N rows by 1 column. \"input is multi-channel sample\" - each arrival (a list or 1-D tensor of C values) is ONE sample of C channels; the output is N rows by C columns. A sample with a different C starts a new, empty buffer. \"buffer holds one sample of input\" - each arrival replaces the whole buffer, which then has the arrival's length.\n\ndtype / device / requires_grad (also inlets):\nWhat the stored tensor is. Incoming data is converted to it. float32 (the default), float16, int64, uint8, bool, complex64 and complex128. The menu also lists the same types under their torch names (torch.float32, float, torch.float ...). There is no float64 here: a float64 NumPy array comes out float32.\n\nOUTPUTS:\n\noutput:\nA copy of the buffer: N rows, oldest first, newest in the last row.\n\nREADING THE DEMO:\nTop: make_bump sends a bump 16 values wide that steps one place along every 60 ms. t.rolling_buffer 32, in multi-channel mode, keeps the last 32: one heat_map row per sample, oldest at the top and newest at the bottom, so the moving bump draws a diagonal stripe that scrolls upward. Click reset on the node and the picture empties, then refills from the bottom. Change sample count in the node's options (16, or 64) and the window starts again at that length; the heat_map follows.\nBottom: single random numbers (the default stream mode) gathered into the last 64 (64 rows of 1 column), drawn as a curve with the newest at the right (t.flatten makes the column one row for plot).\n\nRELATED:\nt.buffer can also hand back one stored value by position. np.rolling_buffer is the NumPy version; np.sequence records and plays back. capture~ records the audio graph. t.mean and t.rfft are typical next steps."
                 },
                 "3": {
+                    "init": "p make_bump",
                     "name": "p",
-                    "id": 348,
+                    "id": 2536,
+                    "sid": 4,
                     "position_x": 30,
                     "position_y": 62,
                     "width": 72,
-                    "height": 42,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "p make_bump",
-                    "patcher id": 1347
-                },
-                "4": {
-                    "init": "comment a bump of 16 values, moving along",
-                    "name": "comment",
-                    "id": 385,
-                    "position_x": 744,
-                    "position_y": 72,
-                    "width": 211,
-                    "height": 30,
+                    "height": 41,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
-                            "name": "text",
-                            "value": "a bump of 16 values, moving along",
-                            "value_type": "str"
+                            "name": "make_bump",
+                            "value": null,
+                            "value_type": "NoneType"
                         },
                         "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
+                            "name": "patcher name",
+                            "value": "make_bump",
+                            "value_type": "string"
                         }
                     },
-                    "comment": "a bump of 16 values, moving along"
+                    "show inputs": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "show outputs": [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "patcher id": 2316
                 },
-                "5": {
+                "4": {
                     "name": "heat_map",
-                    "id": 422,
-                    "position_x": 30,
-                    "position_y": 150,
-                    "width": 328,
-                    "height": 80,
+                    "id": 2655,
+                    "sid": 6,
+                    "position_x": 133,
+                    "position_y": 66,
+                    "width": 327,
+                    "height": 79,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -455,7 +574,7 @@
                         "0": {
                             "name": "color",
                             "value": "viridis",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "width",
@@ -485,23 +604,24 @@
                         "6": {
                             "name": "update_mode",
                             "value": "heat_map",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "7": {
                             "name": "number format",
                             "value": "none",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     }
                 },
-                "6": {
+                "5": {
                     "init": "comment one sample: the latest bump",
                     "name": "comment",
-                    "id": 459,
-                    "position_x": 744,
-                    "position_y": 160,
+                    "id": 2692,
+                    "sid": 7,
+                    "position_x": 207,
+                    "position_y": 37,
                     "width": 174,
-                    "height": 30,
+                    "height": 29,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -509,48 +629,70 @@
                         "0": {
                             "name": "text",
                             "value": "one sample: the latest bump",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "one sample: the latest bump"
                 },
-                "7": {
+                "6": {
+                    "init": "t.rolling_buffer 32",
                     "name": "t.rolling_buffer",
-                    "id": 496,
-                    "position_x": 30,
-                    "position_y": 230,
-                    "width": 163,
-                    "height": 98,
+                    "id": 2703,
+                    "sid": 8,
+                    "position_x": 38,
+                    "position_y": 194,
+                    "width": 162,
+                    "height": 97,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
+                            "name": "reset",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "device",
+                            "value": "cpu",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "requires_grad",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "4": {
                             "name": "sample count",
                             "value": 32,
                             "value_type": "int"
                         },
-                        "1": {
+                        "5": {
                             "name": "update style",
                             "value": "input is multi-channel sample",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
-                    },
-                    "init": "t.rolling_buffer 32"
+                    }
                 },
-                "8": {
+                "7": {
                     "init": "comment click reset to empty it",
                     "name": "comment",
-                    "id": 533,
-                    "position_x": 744,
-                    "position_y": 240,
+                    "id": 2728,
+                    "sid": 9,
+                    "position_x": 43,
+                    "position_y": 153,
                     "width": 150,
-                    "height": 30,
+                    "height": 29,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -558,23 +700,24 @@
                         "0": {
                             "name": "text",
                             "value": "click reset to empty it",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "click reset to empty it"
                 },
-                "9": {
+                "8": {
                     "name": "heat_map",
-                    "id": 570,
-                    "position_x": 30,
-                    "position_y": 480,
-                    "width": 328,
-                    "height": 370,
+                    "id": 2739,
+                    "sid": 10,
+                    "position_x": 227,
+                    "position_y": 198,
+                    "width": 327,
+                    "height": 369,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -582,7 +725,7 @@
                         "0": {
                             "name": "color",
                             "value": "viridis",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "width",
@@ -612,23 +755,24 @@
                         "6": {
                             "name": "update_mode",
                             "value": "heat_map",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "7": {
                             "name": "number format",
                             "value": "none",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     }
                 },
-                "10": {
+                "9": {
                     "init": "comment the last 32 samples: oldest at the top, newest at the bottom",
                     "name": "comment",
-                    "id": 607,
-                    "position_x": 744,
-                    "position_y": 490,
+                    "id": 2776,
+                    "sid": 11,
+                    "position_x": 213,
+                    "position_y": 153,
                     "width": 377,
-                    "height": 30,
+                    "height": 29,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -636,23 +780,25 @@
                         "0": {
                             "name": "text",
                             "value": "the last 32 samples: oldest at the top, newest at the bottom",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "the last 32 samples: oldest at the top, newest at the bottom"
                 },
-                "11": {
+                "10": {
+                    "init": "metro 50",
                     "name": "metro",
-                    "id": 644,
-                    "position_x": 30,
-                    "position_y": 860,
-                    "width": 129,
-                    "height": 70,
+                    "id": 2787,
+                    "sid": 12,
+                    "position_x": 29,
+                    "position_y": 605,
+                    "width": 128,
+                    "height": 69,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -670,18 +816,19 @@
                         "2": {
                             "name": "units",
                             "value": "milliseconds",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
-                    },
-                    "init": "metro 50"
+                    }
                 },
-                "12": {
+                "11": {
+                    "init": "random 1.0",
                     "name": "random",
-                    "id": 681,
-                    "position_x": 30,
-                    "position_y": 945,
-                    "width": 123,
-                    "height": 56,
+                    "id": 2800,
+                    "sid": 13,
+                    "position_x": 183,
+                    "position_y": 619,
+                    "width": 122,
+                    "height": 55,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -696,17 +843,17 @@
                             "value": false,
                             "value_type": "bool"
                         }
-                    },
-                    "init": "random 1.0"
+                    }
                 },
-                "13": {
+                "12": {
                     "init": "comment one number every 50 ms",
                     "name": "comment",
-                    "id": 718,
-                    "position_x": 744,
-                    "position_y": 955,
+                    "id": 2813,
+                    "sid": 14,
+                    "position_x": 177,
+                    "position_y": 586,
                     "width": 144,
-                    "height": 30,
+                    "height": 29,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -714,73 +861,36 @@
                         "0": {
                             "name": "text",
                             "value": "one number every 50 ms",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "one number every 50 ms"
                 },
-                "14": {
-                    "name": "t.rolling_buffer",
-                    "id": 755,
-                    "position_x": 30,
-                    "position_y": 1040,
-                    "width": 163,
-                    "height": 98,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "t.rolling_buffer 64"
-                },
-                "15": {
+                "13": {
                     "name": "t.flatten",
-                    "id": 792,
-                    "position_x": 390,
-                    "position_y": 1040,
-                    "width": 70,
-                    "height": 42,
+                    "id": 2849,
+                    "sid": 16,
+                    "position_x": 539,
+                    "position_y": 623,
+                    "width": 69,
+                    "height": 41,
                     "visibility": "show_all",
                     "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {}
+                    "presentation_state": "show_all"
                 },
-                "16": {
-                    "init": "comment 64 rows of 1 into one row of 64, for plot",
-                    "name": "comment",
-                    "id": 829,
-                    "position_x": 744,
-                    "position_y": 1050,
-                    "width": 260,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "64 rows of 1 into one row of 64, for plot",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "64 rows of 1 into one row of 64, for plot"
-                },
-                "17": {
+                "14": {
                     "name": "plot",
-                    "id": 866,
-                    "position_x": 390,
-                    "position_y": 1130,
-                    "width": 328,
-                    "height": 200,
+                    "id": 2867,
+                    "sid": 18,
+                    "position_x": 637,
+                    "position_y": 614,
+                    "width": 327,
+                    "height": 199,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -788,7 +898,7 @@
                         "0": {
                             "name": "color",
                             "value": "none",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "width",
@@ -803,12 +913,12 @@
                         "3": {
                             "name": "style",
                             "value": "line",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "4": {
                             "name": "update style",
                             "value": "buffer holds one sample of input",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "5": {
                             "name": "sample count",
@@ -837,14 +947,15 @@
                         }
                     }
                 },
-                "18": {
+                "15": {
                     "init": "comment the last 64, newest at the right",
                     "name": "comment",
-                    "id": 903,
-                    "position_x": 744,
-                    "position_y": 1380,
+                    "id": 2913,
+                    "sid": 19,
+                    "position_x": 694,
+                    "position_y": 579,
                     "width": 205,
-                    "height": 30,
+                    "height": 29,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -852,154 +963,175 @@
                         "0": {
                             "name": "text",
                             "value": "the last 64, newest at the right",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "the last 64, newest at the right"
                 },
-                "19": {
-                    "name": "t.mean",
-                    "id": 940,
-                    "position_x": 30,
-                    "position_y": 1290,
-                    "width": 64,
-                    "height": 42,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {}
-                },
-                "20": {
-                    "name": "float",
-                    "id": 977,
-                    "position_x": 200,
-                    "position_y": 1290,
-                    "width": 130,
-                    "height": 42,
+                "16": {
+                    "init": "help_link t.buffer",
+                    "name": "help_link",
+                    "id": 2975,
+                    "sid": 23,
+                    "position_x": 33,
+                    "position_y": 822,
+                    "width": 66,
+                    "height": 44,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
                     "properties": {
                         "0": {
-                            "name": "format",
-                            "value": "%.3f",
-                            "value_type": "str"
+                            "name": "t.buffer",
+                            "value": null,
+                            "value_type": "NoneType"
                         },
                         "1": {
                             "name": "width",
-                            "value": 100,
+                            "value": 0,
                             "value_type": "int"
                         },
                         "2": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "17": {
+                    "init": "help_link np.rolling_buffer",
+                    "name": "help_link",
+                    "id": 2986,
+                    "sid": 24,
+                    "position_x": 115,
+                    "position_y": 822,
+                    "width": 121,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "np.rolling_buffer",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "18": {
+                    "init": "help_link np.sequence",
+                    "name": "help_link",
+                    "id": 2997,
+                    "sid": 25,
+                    "position_x": 254,
+                    "position_y": 822,
+                    "width": 84,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "np.sequence",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "19": {
+                    "init": "help_link t.mean",
+                    "name": "help_link",
+                    "id": 3008,
+                    "sid": 26,
+                    "position_x": 355,
+                    "position_y": 822,
+                    "width": 53,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "t.mean",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
+                        }
+                    }
+                },
+                "20": {
+                    "init": "help_link capture~",
+                    "name": "help_link",
+                    "id": 3019,
+                    "sid": 27,
+                    "position_x": 425,
+                    "position_y": 822,
+                    "width": 66,
+                    "height": 44,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "capture~",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "width",
+                            "value": 0,
+                            "value_type": "int"
+                        },
+                        "2": {
+                            "name": "colour",
+                            "value": "auto",
+                            "value_type": "string"
                         }
                     }
                 },
                 "21": {
-                    "init": "comment their average, about 0.5",
-                    "name": "comment",
-                    "id": 1014,
-                    "position_x": 744,
-                    "position_y": 1340,
-                    "width": 156,
-                    "height": 30,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {
-                        "0": {
-                            "name": "text",
-                            "value": "their average, about 0.5",
-                            "value_type": "str"
-                        },
-                        "1": {
-                            "name": "font size",
-                            "value": "24",
-                            "value_type": "str"
-                        }
-                    },
-                    "comment": "their average, about 0.5"
-                },
-                "22": {
-                    "name": "help_link",
-                    "id": 1051,
-                    "position_x": 30,
-                    "position_y": 1424,
-                    "width": 66,
-                    "height": 44,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "help_link t.buffer"
-                },
-                "23": {
-                    "name": "help_link",
-                    "id": 1088,
-                    "position_x": 112,
-                    "position_y": 1424,
-                    "width": 123,
-                    "height": 44,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "help_link np.rolling_buffer"
-                },
-                "24": {
-                    "name": "help_link",
-                    "id": 1125,
-                    "position_x": 251,
-                    "position_y": 1424,
-                    "width": 85,
-                    "height": 44,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "help_link np.sequence"
-                },
-                "25": {
-                    "name": "help_link",
-                    "id": 1162,
-                    "position_x": 352,
-                    "position_y": 1424,
-                    "width": 54,
-                    "height": 44,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "help_link t.mean"
-                },
-                "26": {
-                    "name": "help_link",
-                    "id": 1199,
-                    "position_x": 422,
-                    "position_y": 1424,
-                    "width": 66,
-                    "height": 44,
-                    "visibility": "show_all",
-                    "draggable": true,
-                    "presentation_state": "show_all",
-                    "properties": {},
-                    "init": "help_link capture~"
-                },
-                "27": {
                     "init": "comment SEE ALSO - click to open",
                     "name": "comment",
-                    "id": 1236,
-                    "position_x": 30,
-                    "position_y": 1390,
+                    "id": 3030,
+                    "sid": 28,
+                    "position_x": 33,
+                    "position_y": 788,
                     "width": 156,
-                    "height": 30,
+                    "height": 29,
                     "visibility": "show_all",
                     "draggable": true,
                     "presentation_state": "show_all",
@@ -1007,21 +1139,22 @@
                         "0": {
                             "name": "text",
                             "value": "SEE ALSO - click to open",
-                            "value_type": "str"
+                            "value_type": "string"
                         },
                         "1": {
                             "name": "font size",
                             "value": "24",
-                            "value_type": "str"
+                            "value_type": "string"
                         }
                     },
                     "comment": "SEE ALSO - click to open"
                 },
-                "28": {
+                "22": {
                     "name": "close",
-                    "id": 1273,
-                    "position_x": 24,
-                    "position_y": 1498,
+                    "id": 3041,
+                    "sid": 29,
+                    "position_x": 27,
+                    "position_y": 896,
                     "width": 88,
                     "height": 44,
                     "visibility": "show_all",
@@ -1034,98 +1167,123 @@
                             "value_type": "NoneType"
                         }
                     }
+                },
+                "23": {
+                    "init": "t.rolling_buffer 64",
+                    "name": "t.rolling_buffer",
+                    "id": 3109,
+                    "sid": 15,
+                    "position_x": 341,
+                    "position_y": 607,
+                    "width": 162,
+                    "height": 97,
+                    "visibility": "show_all",
+                    "draggable": true,
+                    "presentation_state": "show_all",
+                    "properties": {
+                        "0": {
+                            "name": "reset",
+                            "value": null,
+                            "value_type": "NoneType"
+                        },
+                        "1": {
+                            "name": "device",
+                            "value": "cpu",
+                            "value_type": "string"
+                        },
+                        "2": {
+                            "name": "dtype",
+                            "value": "float32",
+                            "value_type": "string"
+                        },
+                        "3": {
+                            "name": "requires_grad",
+                            "value": false,
+                            "value_type": "bool"
+                        },
+                        "4": {
+                            "name": "sample count",
+                            "value": 64,
+                            "value_type": "int"
+                        },
+                        "5": {
+                            "name": "update style",
+                            "value": "input is stream of samples",
+                            "value_type": "string"
+                        }
+                    }
                 }
             },
             "links": {
                 "0": {
-                    "source_node": 348,
-                    "source_node_name": "",
+                    "source_node": 2536,
+                    "source_node_name": "p",
                     "source_output_index": 0,
                     "source_output_name": "bump",
-                    "dest_node": 422,
-                    "dest_node_name": "",
+                    "dest_node": 2655,
+                    "dest_node_name": "heat_map",
                     "dest_input_index": 0,
                     "dest_input_name": "y"
                 },
                 "1": {
-                    "source_node": 348,
-                    "source_node_name": "",
+                    "source_node": 2536,
+                    "source_node_name": "p",
                     "source_output_index": 0,
                     "source_output_name": "bump",
-                    "dest_node": 496,
-                    "dest_node_name": "",
+                    "dest_node": 2703,
+                    "dest_node_name": "t.rolling_buffer",
                     "dest_input_index": 0,
                     "dest_input_name": "input"
                 },
                 "2": {
-                    "source_node": 496,
-                    "source_node_name": "",
+                    "source_node": 2703,
+                    "source_node_name": "t.rolling_buffer",
                     "source_output_index": 0,
                     "source_output_name": "output",
-                    "dest_node": 570,
-                    "dest_node_name": "",
+                    "dest_node": 2739,
+                    "dest_node_name": "heat_map",
                     "dest_input_index": 0,
                     "dest_input_name": "y"
                 },
                 "3": {
-                    "source_node": 644,
-                    "source_node_name": "",
+                    "source_node": 2787,
+                    "source_node_name": "metro",
                     "source_output_index": 0,
                     "source_output_name": "",
-                    "dest_node": 681,
-                    "dest_node_name": "",
+                    "dest_node": 2800,
+                    "dest_node_name": "random",
                     "dest_input_index": 0,
                     "dest_input_name": "trigger"
                 },
                 "4": {
-                    "source_node": 681,
-                    "source_node_name": "",
+                    "source_node": 2800,
+                    "source_node_name": "random",
                     "source_output_index": 0,
                     "source_output_name": "out",
-                    "dest_node": 755,
-                    "dest_node_name": "",
+                    "dest_node": 3109,
+                    "dest_node_name": "t.rolling_buffer",
                     "dest_input_index": 0,
                     "dest_input_name": "input"
                 },
                 "5": {
-                    "source_node": 755,
-                    "source_node_name": "",
-                    "source_output_index": 0,
-                    "source_output_name": "output",
-                    "dest_node": 792,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": "tensor in"
-                },
-                "6": {
-                    "source_node": 792,
-                    "source_node_name": "",
+                    "source_node": 2849,
+                    "source_node_name": "t.flatten",
                     "source_output_index": 0,
                     "source_output_name": "tensor out",
-                    "dest_node": 866,
-                    "dest_node_name": "",
+                    "dest_node": 2867,
+                    "dest_node_name": "plot",
                     "dest_input_index": 0,
                     "dest_input_name": "y"
                 },
-                "7": {
-                    "source_node": 755,
-                    "source_node_name": "",
+                "6": {
+                    "source_node": 3109,
+                    "source_node_name": "t.rolling_buffer",
                     "source_output_index": 0,
                     "source_output_name": "output",
-                    "dest_node": 940,
-                    "dest_node_name": "",
+                    "dest_node": 2849,
+                    "dest_node_name": "t.flatten",
                     "dest_input_index": 0,
                     "dest_input_name": "tensor in"
-                },
-                "8": {
-                    "source_node": 940,
-                    "source_node_name": "",
-                    "source_output_index": 0,
-                    "source_output_name": "output",
-                    "dest_node": 977,
-                    "dest_node_name": "",
-                    "dest_input_index": 0,
-                    "dest_input_name": ""
                 }
             }
         }

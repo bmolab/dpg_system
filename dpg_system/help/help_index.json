@@ -1951,12 +1951,6 @@
   "t.uniform": [
     "t.uniform"
   ],
-  "_torch_dataloaders": [
-    "--- torch_dataloaders.py ---"
-  ],
-  "t.data_set": [
-    "t.data_set"
-  ],
   "_torch_generator_nodes": [
     "--- torch_generator_nodes.py ---",
     "the 21 t.dist.* names reach t.dist_help via",

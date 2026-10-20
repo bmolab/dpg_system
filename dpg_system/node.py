@@ -4494,6 +4494,14 @@ class PatcherNode(Node):
         if 'patcher id' in container:
             self.subpatcher_loaded_uuid = container['patcher id']
 
+        # undo reloads a live node in place: it already has its subpatch,
+        # which is not orphaned, so the search below would add an empty
+        # patcher tab and move this node's ins and outs over to it
+        if self.patch_editor is not None and self.patch_editor in self.app.node_editors:
+            self.update_inputs()
+            self.update_outputs()
+            return
+
         self.patch_editor = self.app.find_orphaned_subpatch(self.patcher_name, self.subpatcher_loaded_uuid)
         # note that patch_editor may not have been opened yet if opening from file
         if self.patch_editor is None:

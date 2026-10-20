@@ -159,7 +159,7 @@ TREE = {
     ]),
     'nodes_torch_tensors': ('Tensors', 'Getting data into torch, and making tensors from nothing.', [
         ('Tensors', ['tensor', 't.detach', 't.info', 't.numel', 't.contiguous', 't.is_contiguous']),
-        ('Buffers and data sets', ['t.buffer', 't.rolling_buffer', 't.data_set']),
+        ('Buffers', ['t.buffer', 't.rolling_buffer']),
         ('Making tensors', ['t.zeros', 't.ones', 't.full', 't.eye', 't.rand', 't.zeros_like', 't.ones_like',
                             't.rand_like', 't.linspace', 't.logspace', 't.arange', 't.range']),
         ('Random fills', ['t.uniform', 't.normal', 't.log_normal', 't.cauchy', 't.exponential', 't.geometric',

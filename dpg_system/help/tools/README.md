@@ -340,8 +340,13 @@ under its columns), and `np.robust_mean_help.json` is David's rework.
 builds no pages at all now. `t.take_along_dim_help.json` is David's rework,
 so `make_torch_select_help.py` no longer builds it. `tensor_help.json` is
 David's simplification (t.info's outlet labels show the dtype and device, so
-the string displays are gone) and `t.detach_help.json` is David's rework, so
-`make_torch_tensor_help.py` no longer builds either. Use `relayout.py --minimal`
+the string displays are gone), and `t.detach_help.json`, `t.buffer_help.json`
+and `t.rolling_buffer_help.json` are David's reworks, so
+`make_torch_tensor_help.py` no longer builds any of them. `t.data_set` has
+no page any more: `register_torch_dataloader_nodes()` is never called, so the
+node does not exist in the app (and it has no inlets or outlets anyway).
+check_coverage lists it as undocumented, because iface.json is read from the
+source and still sees its register_node line. Use `relayout.py --minimal`
 on these, never plain relayout.
 
 To hand-edit any generated page: open it, rework it, save over the same file
@@ -1420,8 +1425,8 @@ sense:
 - movesense, display_info, t.data_set — three singletons.
   `display_info` needs Quartz (pyobjc) on macOS and reports nothing without it —
   verified here, where it returns []. On Linux it reads xrandr.
-  `t.data_set` genuinely has NO inlets and NO outlets; the page says so plainly
-  rather than implying it is usable from a patch.
+  `t.data_set` genuinely has NO inlets and NO outlets, and it turned out never
+  to be registered at all; its page has since been retired.
 - mgl_shader — ShaderToy-compatible. The point worth the most: a shader that
   fails to compile leaves the PREVIOUS one running, so a silent failure looks
   exactly like a shader that did nothing. Watch 'status'.

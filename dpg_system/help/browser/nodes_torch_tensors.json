@@ -1,6 +1,6 @@
 {
     "height": 512,
-    "width": 706,
+    "width": 663,
     "position": [
         100,
         100
@@ -140,7 +140,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 169,
+            "width": 126,
             "height": 44,
             "properties": {
                 "0": {
@@ -150,7 +150,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 153,
+                    "value": 110,
                     "value_type": "int"
                 }
             },
@@ -162,7 +162,7 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 207,
+            "position_x": 164,
             "position_y": 154,
             "width": 372,
             "height": 40,
@@ -200,21 +200,21 @@
             "presentation_state": "show_all"
         },
         "7": {
-            "init": "help_link nodes_torch_tensors_buffers_and_data_sets Buffers and data sets",
+            "init": "help_link nodes_torch_tensors_buffers Buffers",
             "name": "help_link",
             "position_x": 24,
             "position_y": 202,
-            "width": 169,
+            "width": 126,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Buffers and data sets",
+                    "name": "Buffers",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 153,
+                    "value": 110,
                     "value_type": "int"
                 }
             },
@@ -226,14 +226,14 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 207,
+            "position_x": 164,
             "position_y": 206,
-            "width": 268,
+            "width": 194,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "t.buffer, t.rolling_buffer, t.data_set",
+                    "value": "t.buffer, t.rolling_buffer",
                     "value_type": "str"
                 },
                 "1": {
@@ -243,7 +243,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 260,
+                    "value": 186,
                     "value_type": "int"
                 },
                 "3": {
@@ -257,7 +257,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "t.buffer, t.rolling_buffer, t.data_set",
+            "text": "t.buffer, t.rolling_buffer",
             "id": 833,
             "visibility": "show_all",
             "draggable": true,
@@ -268,7 +268,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 254,
-            "width": 169,
+            "width": 126,
             "height": 44,
             "properties": {
                 "0": {
@@ -278,7 +278,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 153,
+                    "value": 110,
                     "value_type": "int"
                 }
             },
@@ -290,7 +290,7 @@
         "10": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 207,
+            "position_x": 164,
             "position_y": 258,
             "width": 440,
             "height": 40,
@@ -332,7 +332,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 306,
-            "width": 169,
+            "width": 126,
             "height": 44,
             "properties": {
                 "0": {
@@ -342,7 +342,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 153,
+                    "value": 110,
                     "value_type": "int"
                 }
             },
@@ -354,7 +354,7 @@
         "12": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 207,
+            "position_x": 164,
             "position_y": 310,
             "width": 397,
             "height": 40,
@@ -396,7 +396,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 358,
-            "width": 169,
+            "width": 126,
             "height": 44,
             "properties": {
                 "0": {
@@ -406,7 +406,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 153,
+                    "value": 110,
                     "value_type": "int"
                 }
             },
@@ -418,7 +418,7 @@
         "14": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 207,
+            "position_x": 164,
             "position_y": 362,
             "width": 459,
             "height": 88,
