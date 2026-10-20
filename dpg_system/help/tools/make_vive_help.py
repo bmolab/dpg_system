@@ -7,10 +7,11 @@ from help_common import SIG, PLOT, INT, FLT, starter
 body = """Position and orientation from a Vive tracker, in room coordinates.
 
 THESE NODES ARE LINUX ONLY:
-They need OpenVR and a running SteamVR, together with the triad_openvr wrapper
-alongside this file. On any other platform the module does not load at all -
-the console says so at startup and the nodes simply do not exist, so a patch
-built around them will open with those nodes missing rather than half working.
+They need OpenVR and a running SteamVR (the triad_openvr wrapper they use is
+included, as vive_openvr.py). On any other platform the module does not load at
+all - the console says so at startup and the nodes simply do not exist, so a
+patch built around them will open with those nodes missing rather than half
+working.
 
 That is worth knowing before you go looking for a fault: if 'vive_tracker' is
 not in the node list, the machine is the reason.
@@ -60,7 +61,7 @@ tracker_1, tracker_2 ... handed out in the order SteamVR happens to report them,
 so tracker_1 can be a different physical tracker from one day to the next.
 
 To pin them down, press 'save_names'. That writes every connected device's name
-and serial number to triad_openvr/vive_names.json. Edit the names in that file -
+and serial number to dpg_system/vive_names.json. Edit the names in that file -
 'left_wrist', 'prop', whatever means something - and press 'reload_names'. From
 then on each tracker is called by its own name every time dpg_system starts, and
 a patch saved with 'which_tracker' set to 'left_wrist' finds that tracker even if

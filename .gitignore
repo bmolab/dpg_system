@@ -87,3 +87,6 @@ patches/
 
 # Generated noise-estimation histograms
 dpg_system/noise_estimation/hists/
+
+# per-rig Vive tracker names (written by the vive_tracker save_names button)
+dpg_system/vive_names.json

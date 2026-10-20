@@ -164,6 +164,14 @@ for import_name in to_be_imported:
             _skipped.append('No module named ' + import_name)
         else:
             _skipped.append(f'Skipped {import_name}: missing dependency {e.name!r}')
+    except Exception as e:
+        # An optional module whose dependency is installed but can't work on
+        # this platform (a native library that won't load, say) is skipped
+        # like a missing one rather than stopping the app. Core modules still
+        # fail loudly.
+        if import_name not in optional_import:
+            raise
+        _skipped.append(f'Skipped {import_name}: {type(e).__name__}: {e}')
 if _line_started:
     sys.stdout.write('\n')
     sys.stdout.flush()

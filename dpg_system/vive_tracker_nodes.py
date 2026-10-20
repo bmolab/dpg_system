@@ -3,13 +3,13 @@ import threading
 import math
 from collections import deque
 from dpg_system.conversion_utils import *
-from dpg_system.triad_openvr.triad_openvr import *
+from dpg_system.vive_openvr import *
 import numpy as np
 import os
 import dearpygui.dearpygui as dpg
 
 # serial -> name assignments for trackers, written by the vive_tracker save_names button
-VIVE_NAMES_PATH = os.path.join(os.path.dirname(__file__), 'triad_openvr', 'vive_names.json')
+VIVE_NAMES_PATH = os.path.join(os.path.dirname(__file__), 'vive_names.json')
 
 def register_vive_tracker_nodes():
     Node.app.register_node('vive_tracker', ViveTrackerNode.factory)
