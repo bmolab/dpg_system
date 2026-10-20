@@ -299,8 +299,9 @@ highlights t.to too) and marks them. `build()` and every `derive_*_help.py`
 script call it before writing, so regenerated pages keep their highlights. Run
 it on its own after making a page by hand. On the comment, text_block,
 help_link and close pages, the page's own title, prose, SEE ALSO row and close
-button are skipped. comment, text_block and help_link draw their own look, so
-their highlight is saved but does not show.
+button are skipped. Nodes drawn without chrome (comment, text_block,
+help_link, close, a hidden title bar) take a highlighted chromeless theme, so
+their highlight shows too.
 
 ## Hand-made pages taken out of their generators
 

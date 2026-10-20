@@ -270,7 +270,7 @@ class CommentNode(Node):
         self.comment_text_option.widget.adjust_to_text_width()
 
     def custom_create(self, from_file):
-        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        self.bind_chromeless_theme(CommentNode.comment_theme)
         dpg.configure_item(self.uuid, label='')
 
     def save_custom(self, container):
@@ -279,12 +279,12 @@ class CommentNode(Node):
 
     def load_custom(self, container):
         self.comment_text = container['comment']
-        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        self.bind_chromeless_theme(CommentNode.comment_theme)
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label='')
-        dpg.bind_item_theme(self.uuid, CommentNode.comment_theme)
+        self.bind_chromeless_theme(CommentNode.comment_theme)
 
 
 class TextBlockNode(Node):
@@ -353,7 +353,7 @@ class TextBlockNode(Node):
             TextBlockNode.inited = True
 
     def custom_create(self, from_file):
-        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+        self.bind_chromeless_theme(TextBlockNode.theme, frameless=True)
         dpg.configure_item(self.uuid, label='')
 
     def save_custom(self, container):
@@ -363,12 +363,12 @@ class TextBlockNode(Node):
     def load_custom(self, container):
         text = container['text']
         self.text_block.set(text)
-        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+        self.bind_chromeless_theme(TextBlockNode.theme, frameless=True)
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label='')
-        dpg.bind_item_theme(self.uuid, TextBlockNode.theme)
+        self.bind_chromeless_theme(TextBlockNode.theme, frameless=True)
 
 
 class ClosePatchNode(Node):
@@ -399,7 +399,7 @@ class ClosePatchNode(Node):
             ClosePatchNode.inited = True
 
     def custom_create(self, from_file):
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
         dpg.configure_item(self.uuid, label='')
         self.input.widget.set_active_theme(Node.active_theme_yellow)
         dpg.set_item_height(self.input.widget.uuid, 28)
@@ -426,12 +426,12 @@ class ClosePatchNode(Node):
         container['name'] = 'close'
 
     def load_custom(self, container):
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label='')
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
 
 
 class HelpLinkNode(Node):
@@ -491,7 +491,7 @@ class HelpLinkNode(Node):
         self.colour_option.widget.combo_items = ['auto'] + list(HelpLinkNode.palette)
 
     def custom_create(self, from_file):
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
         dpg.configure_item(self.uuid, label='')
         self.colour_changed()
         dpg.set_item_height(self.input.widget.uuid, 28)
@@ -575,12 +575,12 @@ class HelpLinkNode(Node):
         app.select_editor(editor)
 
     def load_custom(self, container):
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
         dpg.configure_item(self.uuid, label='')
 
     def set_custom_visibility(self):
         dpg.configure_item(self.uuid, label='')
-        dpg.bind_item_theme(self.uuid, ClosePatchNode.theme)
+        self.bind_chromeless_theme(ClosePatchNode.theme)
 
 
 class SaveNode(_ViewButtonNodeMixin, Node):
