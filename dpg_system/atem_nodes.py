@@ -26,7 +26,15 @@ def register_atem_nodes():
 
 
 # Switcher commands whose arrival should be reflected on the state output.
-_STATE_COMMANDS = {'PrgI', 'PrvI', 'TrPs', 'TlSr', 'AuxS', 'DskS', 'KeOn', 'MRPr'}
+_STATE_COMMANDS = {'PrgI', 'PrvI', 'TrPs', 'TlSr', 'AuxS', 'DskS', 'KeOn', 'MRPr',
+                   'TrSS', 'TMxP', 'TDpP', 'TWpP', 'TDvP'}
+# Transition-style and per-style-rate commands.
+_TRANSITION_COMMANDS = {'TrSS', 'TMxP', 'TDpP', 'TWpP', 'TDvP'}
+
+_TRANSITION_STYLES = ['mix', 'dip', 'wipe', 'dVE', 'sting']
+# Each style keeps its own duration; the stinger's is set by its clip instead.
+_RATE_SETTERS = {'mix': 'setTransitionMixRate', 'dip': 'setTransitionDipRate',
+                 'wipe': 'setTransitionWipeRate', 'dVE': 'setTransitionDVERate'}
 
 
 class AtemSwitcherNode(Node):
@@ -62,6 +70,8 @@ class AtemSwitcherNode(Node):
         self.cut_input = self.add_input('cut', widget_type='button', callback=self.cut)
         self.auto_input = self.add_input('auto', widget_type='button', callback=self.auto)
         self.tbar_input = self.add_input('t-bar', widget_type='slider_float', widget_width=120, default_value=0.0, min=0.0, max=1.0, callback=self.tbar_changed)
+        self.style_input = self.add_input('transition', widget_type='combo', widget_width=80, default_value='mix', callback=self.style_changed)
+        self.style_input.widget.combo_items = _TRANSITION_STYLES
 
         self.state_output = self.add_output('state')
 
@@ -85,6 +95,8 @@ class AtemSwitcherNode(Node):
             'macro_stop': self.cmd_macro_stop,
             'style': self.cmd_style,
             'rate': self.cmd_rate,
+            'wipe_pattern': self.cmd_wipe_pattern,
+            'dip_source': self.cmd_dip_source,
             'connect': self.cmd_connect,
             'disconnect': self.cmd_disconnect,
             'ip': self.cmd_ip,
@@ -174,7 +186,7 @@ class AtemSwitcherNode(Node):
                 self.connected = True
                 self.status_property.set(f'{self.switcher.atemModel} @ {self.ip_property()}')
                 self.state_output.send(['connected', 1])
-                changed.update(('PrgI', 'PrvI', 'TrPs'))
+                changed.update(('PrgI', 'PrvI', 'TrPs', 'TrSS'))
             elif kind == 'disconnect':
                 self.connected = False
                 self.status_property.set('connection lost, retrying')
@@ -235,6 +247,22 @@ class AtemSwitcherNode(Node):
                         self.state_output.send(['key', m + 1, k + 1, int(sw.keyer[m][k].onAir.enabled)])
             if 'MRPr' in changed:
                 self.state_output.send(['macro_running', int(sw.macro.runStatus.state.running), sw.macro.runStatus.index + 1])
+            if changed & _TRANSITION_COMMANDS:
+                for m in mes:
+                    t = sw.transition[m]
+                    style = t.style.name
+                    if style not in _TRANSITION_STYLES:
+                        continue
+                    if 'TrSS' in changed:
+                        self.state_output.send(['style', m + 1, style])
+                        if m == me:
+                            self.style_input.set(style)
+                    if style in _RATE_SETTERS:
+                        self.state_output.send(['rate', m + 1, getattr(t, style).rate])
+                    if 'TWpP' in changed and t.wipe.pattern.value is not None:
+                        self.state_output.send(['wipe_pattern', m + 1, t.wipe.pattern.value + 1, t.wipe.pattern.name])
+                    if 'TDpP' in changed and t.dip.input.value is not None:
+                        self.state_output.send(['dip_source', m + 1, t.dip.input.value])
         except Exception as e:
             if self.print_debug_opt():
                 print('atem state report error:', e)
@@ -247,7 +275,10 @@ class AtemSwitcherNode(Node):
     def me_changed(self):
         # Show the newly selected M/E's state in the program/preview/t-bar widgets.
         if self.connected:
-            self.report_state({'PrgI', 'PrvI', 'TrPs'})
+            self.report_state({'PrgI', 'PrvI', 'TrPs', 'TrSS'})
+
+    def style_changed(self):
+        self.set_style(self.current_me(), any_to_string(self.style_input()))
 
     def program_changed(self):
         self.call_switcher('setProgramInputVideoSource', self.current_me(), self.program_input())
@@ -350,14 +381,41 @@ class AtemSwitcherNode(Node):
         self.call_switcher('setMacroAction', 0, 'stopMacro')
 
     def cmd_style(self, args):
-        # style [me] mix|dip|wipe|dVE|sting
+        # style [me] mix|dip|wipe|dve|sting
         me, rest = self.me_and_rest(args, 1)
-        self.call_switcher('setTransitionStyle', me, any_to_string(rest[0]))
+        self.set_style(me, any_to_string(rest[0]))
+
+    def set_style(self, me, name):
+        style = {s.lower(): s for s in _TRANSITION_STYLES}.get(name.lower())
+        if style is None:
+            print(f'atem: unknown transition style "{name}"; use {", ".join(_TRANSITION_STYLES)}')
+            return
+        self.call_switcher('setTransitionStyle', me, style)
 
     def cmd_rate(self, args):
-        # rate [me] frames  (mix transition rate)
+        # rate [me] frames  -- duration of the M/E's current transition style
         me, rest = self.me_and_rest(args, 1)
-        self.call_switcher('setTransitionMixRate', me, any_to_int(rest[0]))
+        if not self.connected:
+            return
+        style = self.switcher.transition[me].style.name
+        if style not in _RATE_SETTERS:
+            print(f'atem: M/E {me + 1} is on "{style}", which has no rate (a stinger runs for its clip duration)')
+            return
+        self.call_switcher(_RATE_SETTERS[style], me, any_to_int(rest[0]))
+
+    def cmd_wipe_pattern(self, args):
+        # wipe_pattern [me] n|name  (n from 1; names as PyATEMMax's patternStyles, e.g. circleIris)
+        me, rest = self.me_and_rest(args, 1)
+        pattern = rest[0]
+        if isinstance(pattern, str) and not pattern.isdigit():
+            self.call_switcher('setTransitionWipePattern', me, pattern)
+        else:
+            self.call_switcher('setTransitionWipePattern', me, any_to_int(pattern) - 1)
+
+    def cmd_dip_source(self, args):
+        # dip_source [me] src
+        me, rest = self.me_and_rest(args, 1)
+        self.call_switcher('setTransitionDipInput', me, self.source(rest[0]))
 
     def cmd_connect(self, args):
         if len(args) > 0 and not any_to_bool(args[0]):

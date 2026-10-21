@@ -59,6 +59,7 @@ import time
 import numpy as np
 from dpg_system.node import Node, SaveDialog, LoadDialog
 from dpg_system.conversion_utils import any_to_array
+from dpg_system.interface_nodes import ButtonSetNode
 from dpg_system.point_cloud_nodes import (
     CLOUD_KEY, CROP_KEY, VOXEL_SIZE_KEY, CLUSTER_KEY,
     PointCloudNode, _VoxelGrid, unwrap_cloud)
@@ -73,6 +74,7 @@ MAX_REGION_ID = 32000
 def register_point_cloud_region_nodes():
     Node.app.register_node('pc_regions', PointCloudRegionsNode.factory)
     Node.app.register_node('pc_accumulate', PointCloudAccumulateNode.factory)
+    Node.app.register_node('pc_region_moves', RegionMovesNode.factory)
 
 
 def _region_color(region_id):
@@ -246,6 +248,57 @@ def extend_cells(grid, cells, axis, direction='both'):
     out[:, others[1]] = np.repeat(columns % grid.dims[others[1]], counts)
     nx, ny = grid.dims[0], grid.dims[1]
     return np.sort(out[:, 0] + out[:, 1] * nx + out[:, 2] * (nx * ny))
+
+
+def _pieces(grid, cells):
+    """Split a cell set into its connected pieces: (piece (M,) int32 per
+    cell, 1-based, alongside ``cells``; count). Cells touching at a face, an
+    edge or only a corner are one piece — a capture is a speckled shell, and
+    with faces only it falls apart into dust."""
+    from scipy.ndimage import label
+    vol, lo = _to_volume(grid, cells, 0)
+    labelled, count = label(vol, structure=np.ones((3, 3, 3), dtype=bool))
+    r = grid.coords(cells) - lo
+    return labelled[r[:, 2], r[:, 1], r[:, 0]], count
+
+
+def count_pieces(grid, cells):
+    if cells.size == 0:
+        return 0
+    return _pieces(grid, cells)[1]
+
+
+def touched_pieces(grid, cells, seeds):
+    """The cells of every piece of ``cells`` that holds one of ``seeds``
+    (sorted, unique linear indices); empty if no seed is in the set."""
+    hit = np.isin(cells, seeds, assume_unique=True)
+    if cells.size == 0 or not hit.any():
+        return cells[:0]
+    piece, _ = _pieces(grid, cells)
+    return cells[np.isin(piece, np.unique(piece[hit]))]
+
+
+def first_cell_on_ray(grid, cells, origin, direction, with_distance=False):
+    """The first cell of ``cells`` that a ray passes through, nearest the
+    origin, ahead of it; None if it misses them all. A cell counts if its
+    centre is within half a cell's diagonal of the ray — every cell the ray
+    actually crosses, and a few it only grazes, which a sparse live cloud
+    needs: a ray between its occupied cells would otherwise find nothing."""
+    if cells.size == 0:
+        return (None, np.inf) if with_distance else None
+    origin = np.asarray(origin, dtype=np.float64)
+    direction = np.asarray(direction, dtype=np.float64)
+    direction = direction / max(np.linalg.norm(direction), 1e-12)
+    rel = grid.centres(cells).astype(np.float64) - origin
+    t = rel @ direction
+    off = rel - t[:, None] * direction
+    reach = 0.5 * float(np.linalg.norm(grid.voxel_size))
+    ok = (t > 0.0) & (np.einsum('ij,ij->i', off, off) <= reach * reach)
+    if not ok.any():
+        return (None, np.inf) if with_distance else None
+    nearest = np.argmin(t[ok])
+    cell = int(cells[ok][nearest])
+    return (cell, float(t[ok][nearest])) if with_distance else cell
 
 
 def surface_cells(grid, cells):
@@ -478,7 +531,10 @@ class _RegionMap:
         return r
 
     def _checkpoint(self):
-        self._undo.append({rid: r.copy() for rid, r in self.regions.items()})
+        # The grid goes in too: once the map is empty it follows the frame
+        # again, and cells put back on a grid other than their own would land
+        # somewhere else entirely.
+        self._undo.append((self.grid, {rid: r.copy() for rid, r in self.regions.items()}))
         del self._undo[:-UNDO_DEPTH]
 
     def undo(self):
@@ -487,7 +543,8 @@ class _RegionMap:
         # Cells go back; names stay. A region named since the checkpoint was
         # not in it, and keeps its slot, empty, rather than vanishing — which
         # would also shorten 'values' under whatever reads it.
-        current, self.regions = self.regions, self._undo.pop()
+        current = self.regions
+        self.grid, self.regions = self._undo.pop()
         for rid, region in current.items():
             if rid in self.regions:
                 self.regions[rid].name = region.name
@@ -558,6 +615,15 @@ class _RegionMap:
         self._checkpoint()
         region.keep(np.zeros(region.cells.size, dtype=bool))
         self.version += 1
+
+    def clear_all(self):
+        """Start over: every region goes, names and slots too. Undoable."""
+        if not self.regions:
+            return False
+        self._checkpoint()
+        self.regions = {}
+        self.version += 1
+        return True
 
     def rename(self, region_id, name):
         self.region(region_id, create=True).name = name
@@ -682,6 +748,8 @@ class PointCloudRegionsNode(PointCloudNode):
       pick region        make current the region that holds most of the cloud
                          'capture' reads — stand in it. (mgl_regions'
                          'picked region' does the same from a mouse click.)
+      clear all          remove every region, names and all; 'undo' brings
+                         them back.
 
     region — the one you are working on
       region, name       its number and name. An unused number is a new one.
@@ -702,15 +770,29 @@ class PointCloudRegionsNode(PointCloudNode):
       hull / box         convex hull / bounding box. A captured body is a
                          shell open to the far side; hull makes a solid of it.
       snap               whole pc_voxel boxes at least 'snap coverage' full.
+      cut                remove the pieces of the region (its connected
+                         blobs; the count is under the region's name) that
+                         the capture cloud touches: stand in the stray bit,
+                         as for 'pick region', and press.
       undo
 
-    By message only, to keep the node itself short — put them on a
-    button_set wired to ``command`` when they are wanted as buttons:
+    By message only, to keep the node itself short. pc_region_moves is a
+    button_set already holding them all: wire it to ``command``.
       left / right / down / up / back / forward
                          shift the region by ``steps`` cells along -x / +x,
                          -y / +y, -z / +z (the grid's axes: with a levelled
                          camera y is up, z is away from it).
       move x y z         shift by whole cells.
+      add piece / replace piece / new piece / cut piece  ox oy oz dx dy dz
+                         along a ray (world metres): add the connected piece
+                         of the capture cloud the ray first meets to the
+                         region, make it the whole region, or make it a new
+                         region (the lowest unused number, which becomes
+                         current); or cut the piece of whichever region it
+                         first meets, making that region current. mgl_regions sends these for shift-, alt- and
+                         ctrl-clicks on its 'click command' outlet — wire
+                         that to ``command`` — and a wand would send the
+                         same.
       extend x|y|z [+|-] flood the region along an axis to the grid's edge —
                          both ways, or one way from what it holds: a footprint
                          becomes a floor-to-ceiling pillar with 'extend y'.
@@ -762,7 +844,7 @@ class PointCloudRegionsNode(PointCloudNode):
         self.add_spacer()
         self.add_label('- map -')
         self.map_label = self.add_label('no regions yet')
-        self._button_row(('pick region',))
+        self._button_row(('pick region', 'clear all'))
 
         self.add_spacer()
         self.add_label('- region -')
@@ -782,7 +864,7 @@ class PointCloudRegionsNode(PointCloudNode):
         self.steps_input = self.add_input('steps', widget_type='drag_int', default_value=1, min=0)
         self._button_row(('grow', 'shrink', 'fill'))
         self._button_row(('hull', 'box', 'snap'))
-        self._button_row(('undo',))
+        self._button_row(('cut', 'undo'))
         self.command_input = self.add_input('command')
 
         self.output = self.add_output('cloud')
@@ -813,6 +895,10 @@ class PointCloudRegionsNode(PointCloudNode):
         self.message_handlers['move'] = self._move_message
         self.message_handlers['extend'] = self._extend_message
         self.message_handlers['absorb'] = self._absorb_message
+        for name in self._PIECES:
+            self.message_handlers[name] = self._piece_message
+        # Typed as text, 'new piece ...' arrives as 'new' (see _action_message).
+        self.message_handlers['new'] = self._action_message
         for name in self._DIRECTIONS:
             self.message_handlers[name] = self._direction_message
         for name in self._ACTIONS:
@@ -821,6 +907,10 @@ class PointCloudRegionsNode(PointCloudNode):
         self._old_names = {'pick': 'pick region', 'snap to boxes': 'snap'}
         for old in self._old_names:
             self.message_handlers[old] = self._action_message
+        # A message arriving as text is split at its spaces, so 'clear all'
+        # comes in as 'clear' with 'all' after it (and 'pick region' as
+        # 'pick', which the old name above catches).
+        self.message_handlers['clear'] = self._clear_message
 
     # name -> (method, what the tooltip says). The names are what the buttons
     # show, so they are short; the tooltip carries the rest.
@@ -828,6 +918,7 @@ class PointCloudRegionsNode(PointCloudNode):
         'pick region': ('pick_region', 'make current the region that holds most of the cloud on '
                                        "'capture cloud in' (or of the live cloud) - stand in it"),
         'clear region': ('clear_region', 'empty the current region'),
+        'clear all': ('clear_all', 'remove every region, names included (undo brings them back)'),
         'add': ('add', "add the cells under the cloud on 'capture cloud in' (or the live "
                        'cloud) to the region'),
         'remove': ('remove', 'take the cells under that cloud out of the region'),
@@ -838,6 +929,8 @@ class PointCloudRegionsNode(PointCloudNode):
         'hull': ('hull', 'convex hull: makes a solid of a captured body, which is only a shell'),
         'box': ('box', 'bounding box of the region'),
         'snap': ('snap', "whole pc_voxel boxes at least 'snap coverage' full of the region"),
+        'cut': ('cut', "remove the pieces of the region that the cloud on 'capture cloud in' "
+                       '(or the live cloud) touches - stand in the stray bit'),
         'undo': ('undo', 'undo the last change to the regions'),
     }
     BUTTON_WIDTH = 66
@@ -873,7 +966,20 @@ class PointCloudRegionsNode(PointCloudNode):
             print(f'{self.label}: {name} failed: {type(e).__name__}: {e}')
 
     def _action_message(self, message='', args=None):
+        # Typed as text, 'cut piece 0 1 0 ...' arrives split at the space.
+        if args and str(args[0]).strip().lower() == 'piece':
+            self._piece_message(f'{message} piece', list(args[1:]))
+            return
         self._run_action(message)
+
+    def _clear_message(self, message='', args=None):
+        what = str(args[0]).strip().lower() if args else ''
+        if what == 'all':
+            self._run_action('clear all')
+        elif what == 'region':
+            self._run_action('clear region')
+        else:
+            print(f"{self.label}: 'clear region' or 'clear all'")
 
     def post_load_callback(self):
         if self.map.is_empty():
@@ -1090,6 +1196,101 @@ class PointCloudRegionsNode(PointCloudNode):
         coverage = float(self.coverage_option())
         self._reshape(lambda g, c: snap_cells_to_lattice(g, c, origin, cell, shape, coverage))
 
+    def cut(self):
+        """Remove the pieces of the current region that the source cloud
+        touches."""
+        if self.map.grid is None:
+            return
+        pts = self._source_points()
+        if pts is None:
+            print(f'{self.label}: nothing to cut with - the cloud is empty')
+            return
+        self._cut_pieces(self._region_id(), self.map.cells_under(pts))
+
+    def _cut_pieces(self, region_id, seeds):
+        with self._edit_lock:
+            region = self.map.region(region_id)
+            if region is None or region.cells.size == 0:
+                print(f'{self.label}: region {region_id} is empty - nothing to cut')
+                return False
+            doomed = touched_pieces(self.map.grid, region.cells, seeds)
+            if doomed.size == 0:
+                print(f'{self.label}: that touches no piece of region {region_id}')
+                return False
+            self.map.remove(region_id, doomed)
+            self._edited()
+        return True
+
+    # Ray messages: verb -> what it does with the piece the ray meets.
+    _PIECES = ('add piece', 'replace piece', 'new piece', 'cut piece')
+
+    def _piece_message(self, message='', args=None):
+        try:
+            ray = [float(v) for v in (args or [])][:6]
+        except (TypeError, ValueError):
+            ray = []
+        if len(ray) != 6:
+            print(f'{self.label}: {message} takes a ray: ox oy oz dx dy dz, in metres')
+            return
+        try:
+            if message == 'cut piece':
+                self.cut_piece(ray[:3], ray[3:])
+            else:
+                self.capture_piece(ray[:3], ray[3:], replace=(message == 'replace piece'),
+                                   new=(message == 'new piece'))
+        except Exception as e:
+            print(f'{self.label}: {message} failed: {type(e).__name__}: {e}')
+
+    def cut_piece(self, origin, direction):
+        """Remove the piece the ray meets first, of whichever region it is
+        in, and make that region current."""
+        with self._edit_lock:
+            if self.map.grid is None:
+                return
+            best = (None, None, np.inf)       # region id, cell, distance
+            for rid, region in self.map.regions.items():
+                cell, t = first_cell_on_ray(self.map.grid, region.cells, origin, direction,
+                                            with_distance=True)
+                if cell is not None and t < best[2]:
+                    best = (rid, cell, t)
+            rid, cell, _ = best
+            if rid is None:
+                print(f'{self.label}: that misses every region')
+                return
+            changed = rid != self._region_id()
+            if changed:
+                self.region_input.set(rid, propagate=False)
+            self._cut_pieces(rid, np.asarray([cell], dtype=np.int64))
+        if changed:
+            self._region_changed()
+
+    def capture_piece(self, origin, direction, replace=False, new=False):
+        """Capture only the connected piece of the capture cloud (or the live
+        cloud) that the ray meets first: one object out of everything the
+        camera sees. ``new`` puts it in a region of its own — the lowest
+        number never used — and makes that the current region."""
+        occupied = self._captured_cells()
+        if occupied is None:
+            return
+        hit = first_cell_on_ray(self.map.grid, occupied, origin, direction)
+        if hit is None:
+            print(f'{self.label}: that misses the cloud')
+            return
+        piece = touched_pieces(self.map.grid, occupied, np.asarray([hit], dtype=np.int64))
+        with self._edit_lock:
+            if new:
+                # Never used, not merely empty: an emptied region keeps its
+                # slot, and whatever reads its value may still be mapped to it.
+                region_id = next(i for i in range(MAX_REGION_ID + 2) if i not in self.map.regions)
+                if region_id > MAX_REGION_ID:
+                    print(f'{self.label}: no region numbers left')
+                    return
+                self.region_input.set(region_id, propagate=False)
+            self.map.assign(self._region_id(), piece, mode=self.mode_option(), replace=replace)
+            self._edited()
+        if new:
+            self._region_changed()
+
     def _move_message(self, message='', args=None):
         try:
             offset = [int(round(float(v))) for v in (args or [])][:3]
@@ -1146,11 +1347,21 @@ class PointCloudRegionsNode(PointCloudNode):
             self.map.clear(self._region_id())
             self._edited()
 
+    def clear_all(self):
+        with self._edit_lock:
+            if not self.map.clear_all():
+                return
+            self._edited()
+        self._region_changed()
+
     def undo(self):
         with self._edit_lock:
+            grid = self.map.grid
             if not self.map.undo():
                 return
             self._edited()
+        if self.map.grid is not grid:
+            self._reflect_grid()
         self._region_changed()
 
     def _region_changed(self):
@@ -1215,7 +1426,11 @@ class PointCloudRegionsNode(PointCloudNode):
         try:
             self.map_label.set('no regions yet' if not live else
                                f"{live} region{'s' if live != 1 else ''}")
-            self.region_label.set(f'{held:,} cells' if held else 'empty')
+            if held:
+                pieces = count_pieces(self.map.grid, region.cells)
+                self.region_label.set(f"{held:,} cells, {pieces} piece{'s' if pieces != 1 else ''}")
+            else:
+                self.region_label.set('empty')
             # A first 'add' into an unused number creates the region with a
             # default name; show it, without touching a name being typed.
             if region is not None and not str(self.name_input()).strip():
@@ -1269,6 +1484,20 @@ class PointCloudRegionsNode(PointCloudNode):
         self._region_changed()
         self._reflect_grid()
         print(f'{self.label}: loaded {path}')
+
+
+class RegionMovesNode(ButtonSetNode):
+    """pc_regions' move and extend messages as a ready-made button_set:
+    wire its outlet to pc_regions' ``command``. Moves go by pc_regions'
+    'steps'. It is an ordinary button_set otherwise — relabel, recolour or
+    template the buttons in its options, and a saved patch keeps them."""
+    default_labels = ('left', 'right', 'down', 'up', 'back', 'forward',
+                      'extend x', 'extend y', 'extend z', 'extend y -', 'extend y +',
+                      'undo')
+
+    @staticmethod
+    def factory(name, data, args=None):
+        return RegionMovesNode(name, data, args)
 
 
 class PointCloudAccumulateNode(PointCloudNode):
