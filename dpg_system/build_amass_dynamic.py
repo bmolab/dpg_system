@@ -318,6 +318,7 @@ def process_file(src_file, out_file, total_mass=DEFAULT_MASS,
             active_quaternions[:, 0] = 1.0
             # Iterate through each axis-angle joint
             for smpl_idx, body_idx in JointTranslator.SMPL_TO_BODY_INDEX.items():
+                # Checks if smpl_idx within the valid index range 
                 if smpl_idx < smpl_quaternions.shape[0]:
                     active_quaternions[body_idx] = smpl_quaternions[smpl_idx]
 
