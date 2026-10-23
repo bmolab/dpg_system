@@ -438,7 +438,7 @@
                             "value_type": "float"
                         }
                     },
-                    "init": "slider 360"
+                    "init": "slider 360.0"
                 },
                 "7": {
                     "init": "comment the angle of b, in degrees",
