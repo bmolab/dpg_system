@@ -1252,6 +1252,11 @@ triad_openvr, no attempt to install openvr. The module being skipped with a
 clear console line is correct behaviour for an unsupported platform, and making
 the nodes register non-functionally on macOS would be worse, not better.
 
+Update 2026-10-20: triad_openvr IS now vendored, as `dpg_system/vive_openvr.py`
+(it carries fixes the node depends on). The skip behaviour is unchanged: that
+module imports openvr at the top, so on a Mac without openvr the import still
+fails and dpg_app still skips vive_tracker_nodes with the same console line.
+
 What that means for verification, stated plainly: the page's port names are
 checked (validate_help reads them from the AST-extracted interface, which does
 not need the module to import) and the patch loads clean. The WIRING and
