@@ -123,6 +123,15 @@ def register_numpy_nodes():
     Node.app.register_node('np.polyval', NumpyPolyvalNode.factory)
     Node.app.register_node('np.linalg.svd', NumpySvdNode.factory)
     Node.app.register_node('np.linalg.eigh', NumpyEighNode.factory)
+    Node.app.register_node('np.full', NumpyFullNode.factory)
+    Node.app.register_node('np.meshgrid', NumpyMeshgridNode.factory)
+    Node.app.register_node('np.trace', NumpyTraceNode.factory)
+    Node.app.register_node('np.tril', NumpyTriangleNode.factory)
+    Node.app.register_node('np.triu', NumpyTriangleNode.factory)
+    Node.app.register_node('np.take_along_axis', NumpyTakeAlongAxisNode.factory)
+    Node.app.register_node('np.tensordot', NumpyTensordotNode.factory)
+    Node.app.register_node('np.linalg.qr', NumpyQrNode.factory)
+    Node.app.register_node('np.linalg.eig', NumpyEigNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -3561,5 +3570,258 @@ class NumpyEighNode(Node):
         if self.order_option() == 'largest first':
             values = values[..., ::-1]
             vectors = vectors[..., ::-1]
+        self.vectors_output.send(vectors)
+        self.values_output.send(values)
+
+
+class NumpyFullNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyFullNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        # np.full <dims ...> <value>: the last number is the value when there are two or more
+        numbers = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                numbers.append(v)
+        self.shape = [3]
+        value = 0.0
+        if len(numbers) == 1:
+            self.shape = [max(int(numbers[0]), 0)]
+        elif len(numbers) > 1:
+            self.shape = [max(int(n), 0) for n in numbers[:-1]]
+            value = float(numbers[-1])
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.shape_input = self.add_input('shape', widget_type='text_input', widget_width=120,
+                                          default_value=' '.join(str(d) for d in self.shape),
+                                          callback=self.shape_changed)
+        self.value_input = self.add_input('value', widget_type='drag_float', default_value=value)
+        self.output = self.add_output('full out')
+
+    def shape_changed(self):
+        shape = parse_ints(self.shape_input())
+        if len(shape) > 0:
+            self.shape = [max(d, 0) for d in shape]
+
+    def execute(self):
+        if self.shape_input.fresh_input:
+            self.shape_changed()
+        self.output.send(np.full(self.shape, self.value_input(), dtype=np.float32))
+
+
+class NumpyMeshgridNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyMeshgridNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.y_value = None
+        self.input = self.add_input('x', triggers_execution=True)
+        self.y_input = self.add_input('y')
+        self.x_output = self.add_output('X')
+        self.y_output = self.add_output('Y')
+        self.indexing_option = self.add_option('indexing', widget_type='combo', default_value='xy')
+        self.indexing_option.widget.combo_items = ['xy', 'ij']
+
+    def execute(self):
+        if self.y_input.fresh_input:
+            self.y_value = any_to_array(self.y_input()).ravel()
+        x = any_to_array(self.input()).ravel()
+        # without y the grid is square, x by x
+        y = self.y_value if self.y_value is not None else x
+        indexing = 'ij' if self.indexing_option() == 'ij' else 'xy'
+        grid_x, grid_y = np.meshgrid(x, y, indexing=indexing)
+        self.y_output.send(grid_y)
+        self.x_output.send(grid_x)
+
+
+class NumpyTraceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyTraceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        k = 0
+        if len(args) > 0:
+            k = any_to_int(args[0])
+        self.input = self.add_input('in', triggers_execution=True)
+        self.k_input = self.add_input('diagonal', widget_type='input_int', default_value=k)
+        self.output = self.add_output('trace')
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if data.ndim < 2:
+            if self.app.verbose:
+                print(self.label, 'needs a matrix, got shape', data.shape)
+            return
+        # the last two axes, so a stack of matrices gives one trace each
+        self.output.send(np.trace(data, offset=self.k_input(), axis1=-2, axis2=-1))
+
+
+class NumpyTriangleNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyTriangleNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = np.triu if label == 'np.triu' else np.tril
+        k = 0
+        if len(args) > 0:
+            k = any_to_int(args[0])
+        self.input = self.add_input('in', triggers_execution=True)
+        self.k_input = self.add_input('diagonal', widget_type='input_int', default_value=k)
+        self.output = self.add_output('triangle')
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if data.ndim < 2:
+            if self.app.verbose:
+                print(self.label, 'needs a matrix, got shape', data.shape)
+            return
+        self.output.send(self.op(data, k=self.k_input()))
+
+
+class NumpyTakeAlongAxisNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyTakeAlongAxisNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        axis = -1
+        if len(args) > 0:
+            axis = any_to_int(args[0])
+        self.indices = None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.indices_input = self.add_input('indices')
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=axis)
+        self.output = self.add_output('taken')
+
+    def execute(self):
+        if self.indices_input.fresh_input:
+            self.indices = np.round(any_to_array(self.indices_input()).astype(float)).astype(int)
+        if self.indices is None:
+            return
+        data = any_to_array(self.input())
+        axis = self.axis_input()
+        if self.indices.ndim != data.ndim or not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'indices must have as many axes as the array, and axis must be one of them:',
+                      'shapes', data.shape, self.indices.shape, 'axis', axis)
+            return
+        n = data.shape[axis]
+        if n == 0:
+            return
+        # out-of-range positions are clipped, and -1 counts from the end, as for np.take
+        indices = np.clip(np.where(self.indices < 0, self.indices + n, self.indices), 0, n - 1)
+        try:
+            self.output.send(np.take_along_axis(data, indices, axis=axis))
+        except (ValueError, IndexError):
+            if self.app.verbose:
+                print(self.label, 'shapes do not match along the other axes:', data.shape, indices.shape)
+
+
+class NumpyTensordotNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyTensordotNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        axes = 2
+        if len(args) > 0:
+            axes = max(any_to_int(args[0]), 0)
+        self.input_2_value = None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.input_2 = self.add_input('in 2')
+        self.axes_input = self.add_input('axes', widget_type='input_int', default_value=axes)
+        self.output = self.add_output('result')
+
+    def execute(self):
+        if self.input_2.fresh_input:
+            self.input_2_value = any_to_array(self.input_2())
+        if self.input_2_value is None:
+            return
+        a = any_to_array(self.input())
+        try:
+            self.output.send(np.tensordot(a, self.input_2_value, axes=max(self.axes_input(), 0)))
+        except ValueError:
+            if self.app.verbose:
+                print(self.label, 'the last', self.axes_input(), 'axes of', a.shape,
+                      'do not match the first of', self.input_2_value.shape)
+
+
+class NumpyQrNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyQrNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('matrix', triggers_execution=True)
+        self.q_output = self.add_output('Q')
+        self.r_output = self.add_output('R')
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value='reduced')
+        self.mode_option.widget.combo_items = ['reduced', 'complete']
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        if data.ndim < 2:
+            if self.app.verbose:
+                print(self.label, 'needs a matrix, got shape', data.shape)
+            return
+        mode = 'complete' if self.mode_option() == 'complete' else 'reduced'
+        try:
+            q, r = np.linalg.qr(data, mode=mode)
+        except np.linalg.LinAlgError as e:
+            if self.app.verbose:
+                print(self.label, e)
+            return
+        self.r_output.send(r)
+        self.q_output.send(q)
+
+
+class NumpyEigNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyEigNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('matrix', triggers_execution=True)
+        self.values_output = self.add_output('eigenvalues')
+        self.vectors_output = self.add_output('eigenvectors')
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        if data.ndim < 2 or data.shape[-1] != data.shape[-2]:
+            if self.app.verbose:
+                print(self.label, 'needs a square matrix, got shape', data.shape)
+            return
+        try:
+            values, vectors = np.linalg.eig(data)
+        except np.linalg.LinAlgError as e:
+            if self.app.verbose:
+                print(self.label, e)
+            return
+        # most matrices met in practice have real eigenvalues; send plain
+        # numbers then, and complex ones only when a rotation makes them so
+        if np.allclose(values.imag, 0) and np.allclose(vectors.imag, 0):
+            values = values.real
+            vectors = vectors.real
         self.vectors_output.send(vectors)
         self.values_output.send(values)

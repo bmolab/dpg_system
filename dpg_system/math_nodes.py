@@ -28,6 +28,14 @@ def register_math_nodes():
     Node.app.register_node("tan", OpSingleTrigNode.factory)
     Node.app.register_node("atan", OpSingleTrigNode.factory)
     Node.app.register_node("atan2", Atan2Node.factory)
+    Node.app.register_node("hypot", Atan2Node.factory)
+    Node.app.register_node("sign", OpSingleNode.factory)
+    Node.app.register_node("log1p", OpSingleNode.factory)
+    Node.app.register_node("degrees", OpSingleNode.factory)
+    Node.app.register_node("radians", OpSingleNode.factory)
+    Node.app.register_node("tanh", OpSingleNode.factory)
+    Node.app.register_node("sinh", OpSingleNode.factory)
+    Node.app.register_node("cosh", OpSingleNode.factory)
     Node.app.register_node("log", OpSingleNode.factory)
     Node.app.register_node("log10", OpSingleNode.factory)
     Node.app.register_node("log2", OpSingleNode.factory)
@@ -545,6 +553,13 @@ class OpSingleNode(Node):
 
         self.operations = {
             'log': self.log,
+            'log1p': self.log1p,
+            'sign': self.sign,
+            'degrees': self.degrees,
+            'radians': self.radians,
+            'tanh': self.tanh,
+            'sinh': self.sinh,
+            'cosh': self.cosh,
             'log10': self.log10,
             'log2': self.log2,
             'exp': self.exp,
@@ -609,6 +624,74 @@ class OpSingleNode(Node):
         if a > 0.0:
             return math.log(a)
         return -math.inf
+
+    def log1p(self, a):
+        # log of 1 + a, accurate for small a. Unlike log, log10 and log2 it does
+        # not take the absolute value: inputs between -1 and 0 are valid
+        if type(a) == np.ndarray:
+            with np.errstate(divide='ignore', invalid='ignore'):
+                return np.log1p(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.log1p(a)
+        if a > -1.0:
+            return math.log1p(a)
+        if a == -1.0:
+            return -math.inf
+        return math.nan
+
+    def sign(self, a):
+        if type(a) == np.ndarray:
+            return np.sign(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.sign(a)
+        if a > 0:
+            return 1.0
+        if a < 0:
+            return -1.0
+        return 0.0
+
+    def degrees(self, a):
+        if type(a) == np.ndarray:
+            return np.degrees(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.rad2deg(a)
+        return math.degrees(a)
+
+    def radians(self, a):
+        if type(a) == np.ndarray:
+            return np.radians(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.deg2rad(a)
+        return math.radians(a)
+
+    def tanh(self, a):
+        if type(a) == np.ndarray:
+            return np.tanh(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.tanh(a)
+        return math.tanh(a)
+
+    def sinh(self, a):
+        if type(a) == np.ndarray:
+            with np.errstate(over='ignore'):
+                return np.sinh(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.sinh(a)
+        try:
+            return math.sinh(a)
+        except OverflowError:
+            return math.copysign(math.inf, a)
+
+    def cosh(self, a):
+        if type(a) == np.ndarray:
+            with np.errstate(over='ignore'):
+                return np.cosh(a)
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            return torch.cosh(a)
+        try:
+            return math.cosh(a)
+        except OverflowError:
+            return math.inf
 
     def log10(self, a):
         if type(a) == np.ndarray:
@@ -706,8 +789,9 @@ class OpSingleNode(Node):
 
 
 class Atan2Node(Node):
-    # the angle of the point (x, y) from the positive x axis, in all four
-    # quadrants - atan of y / x loses which side of the origin x was on
+    # atan2: the angle of the point (x, y) from the positive x axis, in all four
+    # quadrants - atan of y / x loses which side of the origin x was on.
+    # hypot: the point's distance from the origin
     @staticmethod
     def factory(name, data, args=None):
         node = Atan2Node(name, data, args)
@@ -715,15 +799,20 @@ class Atan2Node(Node):
 
     def __init__(self, label: str, data, args):
         super().__init__(label, data, args)
-        self.x = 1.0
+        self.is_hypot = label == 'hypot'
+        self.x = 0.0 if self.is_hypot else 1.0
         if len(args) > 0:
             self.x = any_to_float(args[0])
         self.degrees_to_radians = math.pi / 180
 
-        self.input = self.add_input('y', triggers_execution=True)
-        self.x_input = self.add_input('x', widget_type='drag_float', default_value=self.x, callback=self.x_changed)
-        self.use_degrees_property = self.add_property('degrees', widget_type='checkbox', default_value=True)
-        self.output = self.add_output('angle')
+        # the second inlet keeps the name x_input for both; hypot's pair is x, y
+        self.input = self.add_input('x' if self.is_hypot else 'y', triggers_execution=True)
+        self.x_input = self.add_input('y' if self.is_hypot else 'x', widget_type='drag_float',
+                                      default_value=self.x, callback=self.x_changed)
+        self.use_degrees_property = None
+        if not self.is_hypot:
+            self.use_degrees_property = self.add_property('degrees', widget_type='checkbox', default_value=True)
+        self.output = self.add_output('length' if self.is_hypot else 'angle')
 
     def x_changed(self):
         x = any_to_numerical(self.x_input(), validate=True)
@@ -737,26 +826,32 @@ class Atan2Node(Node):
         x = self.x
         if y is None:
             return
-        scale = 1.0 / self.degrees_to_radians if self.use_degrees_property() else 1.0
+        # for hypot, y here is the first inlet's x and x the second's y; the
+        # result is the same either way round
+        scale = 1.0
+        if self.use_degrees_property is not None and self.use_degrees_property():
+            scale = 1.0 / self.degrees_to_radians
+        torch_op, np_op, math_op = (torch.hypot, np.hypot, math.hypot) if self.is_hypot \
+            else (torch.atan2, np.arctan2, math.atan2)
         if self.app.torch_available and (type(y) == torch.Tensor or type(x) == torch.Tensor):
             y_t = y if type(y) == torch.Tensor else torch.as_tensor(y, dtype=torch.float32)
             x_t = x if type(x) == torch.Tensor else torch.as_tensor(x, dtype=torch.float32, device=y_t.device)
             if type(y) != torch.Tensor:
                 y_t = y_t.to(x_t.device)
-            self.output.send(torch.atan2(y_t.float(), x_t.float()) * scale)
+            self.output.send(torch_op(y_t.float(), x_t.float()) * scale)
             return
         is_list = isinstance(y, (list, tuple)) or isinstance(x, (list, tuple))
         if is_list or type(y) == np.ndarray or type(x) == np.ndarray:
             try:
-                angle = np.arctan2(list_to_array(y).astype(float) if isinstance(y, (list, tuple)) else y,
-                                   list_to_array(x).astype(float) if isinstance(x, (list, tuple)) else x) * scale
+                result = np_op(list_to_array(y).astype(float) if isinstance(y, (list, tuple)) else y,
+                               list_to_array(x).astype(float) if isinstance(x, (list, tuple)) else x) * scale
             except ValueError:
                 if self.app.verbose:
-                    print(self.label, 'y and x do not have matching shapes')
+                    print(self.label, 'the two inputs do not have matching shapes')
                 return
-            self.output.send(angle.tolist() if is_list else angle)
+            self.output.send(result.tolist() if is_list else result)
             return
-        self.output.send(math.atan2(float(y), float(x)) * scale)
+        self.output.send(math_op(float(y), float(x)) * scale)
 
 
 class OpSingleTrigNode(Node):
