@@ -180,6 +180,41 @@ log10   logarithm base 10
 exp     e to the power of the input
 ^       raise to a power""")),
 
+    dict(stem='log', label='log', title='log (natural logarithm)',
+         fn=math.log,
+         sig=dict(range=3.0, bipolar=False, pre=('+', 0.135), y=(-2.2, 1.4),
+                  note='log of a sine wave from 0.135 to 3.135:\n-2 to 1.14, the small values spread out'),
+         num=dict(value=2.718, speed=0.01),
+         np=dict(rand=(0.37, 2.72), a=(0.0, 3.0), out=(-1.0, 1.0)),
+         text=page("""
+log asks: e (2.71828...) to the power of what gives this value? It is the natural
+logarithm, the reverse of exp.
+
+2.718 comes out as 1, 1 as 0, 0.368 as -1, 7.389 as 2. Each time the input is
+MULTIPLIED by 2.718 the output goes up by 1, so equal ratios become equal steps.
+In the demo the sine wave runs from 0.135 to 3.135, and log spreads its small values
+out and squeezes its large ones together.
+
+Use it to turn something that grows by ratios - a frequency, a loudness, a scale
+factor, a speed that spans many sizes - into an even scale, or to undo exp. The
+difference of two logs is the log of their ratio, which makes it the natural
+measure of "how many times bigger".
+
+""" + ARRAYS.format(label='log'),
+             'log', """
+log        an even scale from a quantity that grows by ratios
+log then * 1.4427     the same as log2 (log10 uses 0.4343)""",
+             [], 'The natural logarithm of the input.',
+             ["""
+ZERO AND NEGATIVE NUMBERS:
+These have no logarithm. A single number of zero or less gives -inf (negative
+infinity) rather than stopping the patch. Lists, arrays and tensors take the
+logarithm of the absolute value instead, so -2.718 gives 1 and only 0 gives -inf.
+The demo adds 0.135 to the wave so it never reaches zero."""], """
+exp     e to the power of the input - the reverse of log
+log2    logarithm base 2
+log10   logarithm base 10""")),
+
     dict(stem='log10', label='log10', title='log10 (logarithm base 10)',
          fn=math.log10,
          sig=dict(range=10.0, bipolar=False, pre=('+', 0.1), y=(-1.2, 1.2),

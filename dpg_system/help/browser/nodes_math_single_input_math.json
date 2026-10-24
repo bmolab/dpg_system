@@ -1,11 +1,11 @@
 {
-    "height": 832,
-    "width": 527,
+    "height": 572,
+    "width": 1031,
     "position": [
         100,
         100
     ],
-    "id": 1610,
+    "id": 1684,
     "name": "nodes_math_single_input_math",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_math_single_input_math.json",
     "nodes": {
@@ -412,7 +412,7 @@
             "presentation_state": "show_all"
         },
         "13": {
-            "init": "help_link log2 log2",
+            "init": "help_link log log",
             "name": "help_link",
             "position_x": 24,
             "position_y": 358,
@@ -420,7 +420,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "log2",
+                    "name": "log",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -445,6 +445,75 @@
             "annotation": true,
             "position_x": 287,
             "position_y": 362,
+            "width": 138,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "natural logarithm",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "natural logarithm",
+            "id": 1055,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "15": {
+            "init": "help_link log2 log2",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 410,
+            "width": 249,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "log2",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 233,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1092,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "16": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 287,
+            "position_y": 414,
             "width": 132,
             "height": 28,
             "properties": {
@@ -475,16 +544,16 @@
                 }
             },
             "text": "logarithm base 2",
-            "id": 1055,
+            "id": 1129,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "15": {
+        "17": {
             "init": "help_link log10 log10",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 410,
+            "position_x": 528,
+            "position_y": 150,
             "width": 249,
             "height": 44,
             "properties": {
@@ -504,16 +573,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1092,
+            "id": 1166,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "16": {
+        "18": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
-            "position_y": 414,
+            "position_x": 791,
+            "position_y": 154,
             "width": 138,
             "height": 28,
             "properties": {
@@ -544,16 +613,16 @@
                 }
             },
             "text": "logarithm base 10",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "19": {
             "init": "help_link inverse inverse",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 462,
+            "position_x": 528,
+            "position_y": 202,
             "width": 249,
             "height": 44,
             "properties": {
@@ -573,16 +642,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1166,
+            "id": 1240,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
-            "position_y": 466,
+            "position_x": 791,
+            "position_y": 206,
             "width": 120,
             "height": 28,
             "properties": {
@@ -613,16 +682,16 @@
                 }
             },
             "text": "one divided by",
-            "id": 1203,
+            "id": 1277,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "21": {
             "init": "help_link norm norm",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 514,
+            "position_x": 528,
+            "position_y": 254,
             "width": 249,
             "height": 44,
             "properties": {
@@ -642,16 +711,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1240,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "22": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
-            "position_y": 518,
+            "position_x": 791,
+            "position_y": 258,
             "width": 138,
             "height": 28,
             "properties": {
@@ -682,16 +751,16 @@
                 }
             },
             "text": "scale to length 1",
-            "id": 1277,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "23": {
             "init": "help_link round round / np.round",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 566,
+            "position_x": 528,
+            "position_y": 306,
             "width": 249,
             "height": 44,
             "properties": {
@@ -711,16 +780,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1314,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
-            "position_y": 570,
+            "position_x": 791,
+            "position_y": 310,
             "width": 200,
             "height": 40,
             "properties": {
@@ -751,16 +820,16 @@
                 }
             },
             "text": "to the nearest whole number\n(np.round, round)",
-            "id": 1351,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "23": {
+        "25": {
             "init": "help_link floor floor / np.floor",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 618,
+            "position_x": 528,
+            "position_y": 358,
             "width": 249,
             "height": 44,
             "properties": {
@@ -780,16 +849,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1388,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "24": {
+        "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
-            "position_y": 622,
+            "position_x": 791,
+            "position_y": 362,
             "width": 138,
             "height": 40,
             "properties": {
@@ -820,16 +889,16 @@
                 }
             },
             "text": "round down\n(floor, np.floor)",
-            "id": 1425,
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "25": {
+        "27": {
             "init": "help_link ceil ceil / np.ceil",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 670,
+            "position_x": 528,
+            "position_y": 410,
             "width": 249,
             "height": 44,
             "properties": {
@@ -849,16 +918,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1462,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "26": {
+        "28": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
-            "position_y": 674,
+            "position_x": 791,
+            "position_y": 414,
             "width": 126,
             "height": 40,
             "properties": {
@@ -889,16 +958,16 @@
                 }
             },
             "text": "round up\n(ceil, np.ceil)",
-            "id": 1499,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "27": {
+        "29": {
             "init": "help_link trunc trunc / np.trunc",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 722,
+            "position_x": 528,
+            "position_y": 462,
             "width": 249,
             "height": 44,
             "properties": {
@@ -918,16 +987,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1536,
+            "id": 1610,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "28": {
+        "30": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 287,
-            "position_y": 726,
+            "position_x": 791,
+            "position_y": 466,
             "width": 144,
             "height": 40,
             "properties": {
@@ -958,7 +1027,7 @@
                 }
             },
             "text": "round towards zero\n(np.trunc, trunc)",
-            "id": 1573,
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

@@ -1,11 +1,11 @@
 {
-    "height": 692,
+    "height": 856,
     "width": 743,
     "position": [
         100,
         100
     ],
-    "id": 1388,
+    "id": 1610,
     "name": "nodes_numpy",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy.json",
     "nodes": {
@@ -456,7 +456,7 @@
             "presentation_state": "show_all"
         },
         "15": {
-            "init": "help_link nodes_numpy_reducing_to_an_answer Reducing to an answer",
+            "init": "help_link nodes_numpy_logic_and_gaps Logic and gaps",
             "name": "help_link",
             "position_x": 24,
             "position_y": 418,
@@ -464,7 +464,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Reducing to an answer",
+                    "name": "Logic and gaps",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -484,6 +484,70 @@
             "annotation": true,
             "position_x": 238,
             "position_y": 422,
+            "width": 415,
+            "height": 40,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np.logical_and, np.logical_or, np.logical_xor, np.logical_not,\nnp.isnan, np.isfinite, np.nan_to_num",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 407,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 24,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "np.logical_and, np.logical_or, np.logical_xor, np.logical_not,\nnp.isnan, np.isfinite, np.nan_to_num",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link nodes_numpy_reducing_to_an_answer Reducing to an answer",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 470,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Reducing to an answer",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 474,
             "width": 452,
             "height": 52,
             "properties": {
@@ -514,16 +578,80 @@
                 }
             },
             "text": "np.amax, np.amin, np.argmax, np.argmin, np.sum, np.nansum, np.mean,\nnp.median, np.nanmean, np.nanmedian, np.robust_mean, np.std, np.var,\nnp.any, np.all",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "19": {
+            "init": "help_link nodes_numpy_spread_of_values Spread of values",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 530,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Spread of values",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 534,
+            "width": 200,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np.percentile, np.histogram",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 192,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "np.percentile, np.histogram",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
             "init": "help_link nodes_numpy_running_totals_and_history Running totals and history",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 478,
+            "position_y": 582,
             "width": 200,
             "height": 44,
             "properties": {
@@ -538,16 +666,16 @@
                     "value_type": "int"
                 }
             },
-            "id": 1166,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "22": {
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 482,
+            "position_y": 586,
             "width": 335,
             "height": 28,
             "properties": {
@@ -578,16 +706,80 @@
                 }
             },
             "text": "np.cumsum, np.cumprod, np.diff, np.rolling_buffer",
-            "id": 1203,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "23": {
+            "init": "help_link nodes_numpy_curves_and_filters Curves and filters",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 634,
+            "width": 200,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Curves and filters",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 184,
+                    "value_type": "int"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 238,
+            "position_y": 638,
+            "width": 255,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np.interp, np.convolve, np.correlate",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "np.interp, np.convolve, np.correlate",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
             "init": "help_link nodes_numpy_linear_algebra Linear algebra",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 530,
+            "position_y": 686,
             "width": 200,
             "height": 44,
             "properties": {
@@ -602,22 +794,22 @@
                     "value_type": "int"
                 }
             },
-            "id": 1240,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "26": {
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 534,
+            "position_y": 690,
             "width": 452,
-            "height": 40,
+            "height": 52,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.dot, np.inner, np.outer, np.cross, np.matmul, np.linalg.norm,\nnp.linalg.det, np.linalg.matrix_rank, np.linalg.inv, np.linalg.solve",
+                    "value": "np.dot, np.inner, np.outer, np.cross, np.matmul, np.linalg.norm,\nnp.linalg.det, np.linalg.matrix_rank, np.linalg.inv, np.linalg.pinv,\nnp.linalg.solve, np.linalg.lstsq, np.einsum",
                     "value_type": "str"
                 },
                 "1": {
@@ -632,7 +824,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 36,
                     "value_type": "int"
                 },
                 "4": {
@@ -641,17 +833,17 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.dot, np.inner, np.outer, np.cross, np.matmul, np.linalg.norm,\nnp.linalg.det, np.linalg.matrix_rank, np.linalg.inv, np.linalg.solve",
-            "id": 1277,
+            "text": "np.dot, np.inner, np.outer, np.cross, np.matmul, np.linalg.norm,\nnp.linalg.det, np.linalg.matrix_rank, np.linalg.inv, np.linalg.pinv,\nnp.linalg.solve, np.linalg.lstsq, np.einsum",
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "27": {
             "init": "help_link nodes_numpy_geometry_and_targets Geometry and targets",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 582,
+            "position_y": 746,
             "width": 200,
             "height": 44,
             "properties": {
@@ -666,16 +858,16 @@
                     "value_type": "int"
                 }
             },
-            "id": 1314,
+            "id": 1536,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "28": {
             "name": "text_block",
             "annotation": true,
             "position_x": 238,
-            "position_y": 586,
+            "position_y": 750,
             "width": 446,
             "height": 40,
             "properties": {
@@ -706,7 +898,7 @@
                 }
             },
             "text": "np.distance_from_target, np.proximity_to_target, proximity_trigger,\nnp.line_intersection, rotate_position",
-            "id": 1351,
+            "id": 1573,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

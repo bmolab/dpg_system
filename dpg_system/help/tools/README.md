@@ -364,6 +364,18 @@ check_coverage lists it as undocumented, because iface.json is read from the
 source and still sees its register_node line. Use `relayout.py --minimal`
 on these, never plain relayout.
 
+The sixteen pages for the numpy nodes added 2026-10-24 (atan2,
+np.logical_and/or/xor/not, np.isnan, np.isfinite, np.nan_to_num, np.percentile,
+np.histogram, np.interp, np.convolve, np.correlate, np.linalg.pinv,
+np.linalg.lstsq, np.einsum) were seeded by `seed_numpy_more_help.py` and are
+hand-made from then on. The seeder is deliberately not a `make_*` script, so
+rebuild.py never runs it: its demos flow left to right with each comment above
+its node, and plain relayout would move those comments into a gutter. It also
+refuses to overwrite an existing page without `--force`. Use
+`relayout.py --minimal` on these pages. (`log` is derived with the other
+single-input functions in `derive_math_single_help.py`; only its own page was
+written, because regenerating log2/log10/exp would not reproduce them exactly.)
+
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add
 it here) so rebuild.py cannot write over it.
@@ -396,7 +408,7 @@ set output_type to int / float. `==` / `!=` demos compare whole numbers
 (`// 0.25` steps, int64 random arrays) - floats would never match.
 
 `derive_math_single_help.py` does it for the single-input functions (`abs`,
-`sqrt`, `exp`, `log2`, `log10`, `inverse`, `norm`, `round`, `floor`, `ceil`,
+`sqrt`, `exp`, `log`, `log2`, `log10`, `inverse`, `norm`, `round`, `floor`, `ceil`,
 `trunc`; the `np.` rounding names share their pages), again from the
 arithmetic template with the operand box and the second random array taken
 out. Logs and inverse put a `+` offset before the function so the sine never
