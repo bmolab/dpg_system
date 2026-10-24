@@ -105,6 +105,24 @@ def register_numpy_nodes():
     Node.app.register_node('np.linalg.pinv', NumpyUnaryLinearAlgebraNode.factory)
     Node.app.register_node('np.linalg.lstsq', NumpyLinalgLstsqNode.factory)
     Node.app.register_node('np.einsum', NumpyEinsumNode.factory)
+    Node.app.register_node('np.ptp', NumpyUnaryNode.factory)
+    Node.app.register_node('np.unique', NumpyUniqueNode.factory)
+    Node.app.register_node('np.cov', NumpyCovarianceNode.factory)
+    Node.app.register_node('np.corrcoef', NumpyCovarianceNode.factory)
+    Node.app.register_node('np.gradient', NumpyGradientNode.factory)
+    Node.app.register_node('np.fft.rfft', NumpyRfftNode.factory)
+    Node.app.register_node('np.fft.irfft', NumpyIrfftNode.factory)
+    Node.app.register_node('np.take', NumpyTakeNode.factory)
+    Node.app.register_node('np.pad', NumpyPadNode.factory)
+    Node.app.register_node('np.tile', NumpyTileNode.factory)
+    Node.app.register_node('np.digitize', NumpyDigitizeNode.factory)
+    Node.app.register_node('np.arange', NumpyArangeNode.factory)
+    Node.app.register_node('np.eye', NumpyEyeNode.factory)
+    Node.app.register_node('np.diag', NumpyDiagNode.factory)
+    Node.app.register_node('np.polyfit', NumpyPolyfitNode.factory)
+    Node.app.register_node('np.polyval', NumpyPolyvalNode.factory)
+    Node.app.register_node('np.linalg.svd', NumpySvdNode.factory)
+    Node.app.register_node('np.linalg.eigh', NumpyEighNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -387,7 +405,7 @@ class NumpyNodeWithAxisNode(Node):
 
 
 class NumpyUnaryNode(NumpyNodeWithAxisNode):
-    operations = {'np.sum': np.sum, 'np.mean': np.mean, 'np.std': np.std, 'np.var': np.var, 'np.median': np.median, 'np.amax': np.amax, 'np.amin': np.amin, 'np.argmax': np.argmax, 'np.argmin': np.argmin, 'np.nansum': np.nansum, 'np.nanmean': np.nanmean, 'np.nanmedian': np.nanmedian}
+    operations = {'np.sum': np.sum, 'np.mean': np.mean, 'np.std': np.std, 'np.var': np.var, 'np.median': np.median, 'np.amax': np.amax, 'np.amin': np.amin, 'np.argmax': np.argmax, 'np.argmin': np.argmin, 'np.nansum': np.nansum, 'np.nanmean': np.nanmean, 'np.nanmedian': np.nanmedian, 'np.ptp': np.ptp}
 
     @staticmethod
     def factory(name, data, args=None):
@@ -2951,3 +2969,597 @@ class NumpyEinsumNode(Node):
         except ValueError as e:
             if self.app.verbose:
                 print(self.label, e)
+
+
+def parse_ints(value):
+    """Whole numbers from a text box, a list or a single number: '2 3', [2, 3], 2."""
+    if isinstance(value, str):
+        return [int(v) for v in re.findall(r'[-+]?\d+', value)]
+    return [any_to_int(v) for v in np.ravel(np.asarray(value, dtype=object))]
+
+
+class NumpyUniqueNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyUniqueNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.values_output = self.add_output('values')
+        self.counts_output = self.add_output('counts')
+        self.inverse_output = self.add_output('inverse')
+
+    def execute(self):
+        data = any_to_array(self.input())
+        values, inverse, counts = np.unique(data, return_inverse=True, return_counts=True)
+        self.inverse_output.send(inverse.reshape(data.shape))
+        self.counts_output.send(counts)
+        self.values_output.send(values)
+
+
+class NumpyCovarianceNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyCovarianceNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = np.corrcoef if label == 'np.corrcoef' else np.cov
+        variables = 'columns'
+        if len(args) > 0 and args[0] in ['rows', 'columns']:
+            variables = args[0]
+        self.input = self.add_input('in', triggers_execution=True)
+        self.output = self.add_output('correlation' if label == 'np.corrcoef' else 'covariance')
+        self.variables_option = self.add_option('variables', widget_type='combo', default_value=variables)
+        self.variables_option.widget.combo_items = ['columns', 'rows']
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        if data.ndim != 2:
+            if self.app.verbose:
+                print(self.label, 'needs a 2-D array of observations, got shape', data.shape)
+            return
+        rowvar = self.variables_option() == 'rows'
+        if data.shape[1 if rowvar else 0] < 2:
+            if self.app.verbose:
+                print(self.label, 'needs at least 2 observations of each variable')
+            return
+        with np.errstate(divide='ignore', invalid='ignore'):
+            # a variable that never changes has no correlation: nan, not a warning
+            self.output.send(self.op(data, rowvar=rowvar))
+
+
+class NumpyGradientNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyGradientNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        spacing = 1.0
+        axis = -1
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                spacing = float(v)
+        if len(args) > 1:
+            v, t = decode_arg(args, 1)
+            if t in [int, float]:
+                axis = int(v)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.spacing_input = self.add_input('spacing', widget_type='drag_float', default_value=spacing)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=axis)
+        self.output = self.add_output('gradient')
+        self.edge_order_option = self.add_option('edge order', widget_type='combo', default_value='1')
+        self.edge_order_option.widget.combo_items = ['1', '2']
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        edge_order = 2 if self.edge_order_option() == '2' else 1
+        if data.shape[axis] < edge_order + 1:
+            if self.app.verbose:
+                print(self.label, 'needs at least', edge_order + 1, 'values along the axis')
+            return
+        spacing = self.spacing_input()
+        if spacing == 0:
+            return
+        self.output.send(np.gradient(data, spacing, axis=axis, edge_order=edge_order))
+
+
+class NumpyRfftNode(Node):
+    norms = ['backward', 'ortho', 'forward']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyRfftNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        rate = 1.0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                rate = float(v)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.rate_input = self.add_input('sample rate', widget_type='drag_float', default_value=rate)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.spectrum_output = self.add_output('spectrum')
+        self.magnitude_output = self.add_output('magnitude')
+        self.phase_output = self.add_output('phase')
+        self.frequencies_output = self.add_output('frequencies')
+        self.norm_option = self.add_option('norm', widget_type='combo', default_value='backward')
+        self.norm_option.widget.combo_items = self.norms
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if np.iscomplexobj(data):
+            if self.app.verbose:
+                print(self.label, 'takes real values; use the real part or np.fft.fft')
+            return
+        data = data.astype(float)
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim or data.shape[axis] < 2:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range or too short for shape', data.shape)
+            return
+        norm = self.norm_option()
+        if norm not in self.norms:
+            norm = 'backward'
+        spectrum = np.fft.rfft(data, axis=axis, norm=norm)
+        rate = self.rate_input()
+        if rate > 0:
+            self.frequencies_output.send(np.fft.rfftfreq(data.shape[axis], d=1.0 / rate))
+        self.phase_output.send(np.angle(spectrum))
+        self.magnitude_output.send(np.abs(spectrum))
+        self.spectrum_output.send(spectrum)
+
+
+class NumpyIrfftNode(Node):
+    norms = ['backward', 'ortho', 'forward']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyIrfftNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        length = 0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                length = int(v)
+        self.phase_value = None
+        self.input = self.add_input('spectrum', triggers_execution=True)
+        self.phase_input = self.add_input('phase')
+        self.length_input = self.add_input('length', widget_type='input_int', default_value=length)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('signal')
+        self.norm_option = self.add_option('norm', widget_type='combo', default_value='backward')
+        self.norm_option.widget.combo_items = self.norms
+
+    def execute(self):
+        if self.phase_input.fresh_input:
+            self.phase_value = any_to_array(self.phase_input()).astype(float)
+        spectrum = any_to_array(self.input())
+        if not np.iscomplexobj(spectrum):
+            # magnitudes: put the held phases back with them, or none at all
+            magnitude = spectrum.astype(float)
+            if self.phase_value is not None and self.phase_value.shape == magnitude.shape:
+                spectrum = magnitude * np.exp(1j * self.phase_value)
+            else:
+                spectrum = magnitude.astype(complex)
+        axis = self.axis_input()
+        if not -spectrum.ndim <= axis < spectrum.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', spectrum.shape)
+            return
+        length = self.length_input()
+        norm = self.norm_option()
+        if norm not in self.norms:
+            norm = 'backward'
+        self.output.send(np.fft.irfft(spectrum, n=length if length > 0 else None, axis=axis, norm=norm))
+
+
+class NumpyTakeNode(Node):
+    modes = ['clip', 'wrap']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyTakeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        indices = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                indices.append(int(v))
+        self.indices = np.array(indices, dtype=int) if len(indices) > 0 else None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.indices_input = self.add_input('indices')
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=0)
+        self.output = self.add_output('taken')
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value='clip')
+        self.mode_option.widget.combo_items = self.modes
+
+    def execute(self):
+        if self.indices_input.fresh_input:
+            self.indices = np.round(any_to_array(self.indices_input()).astype(float)).astype(int)
+        if self.indices is None:
+            return
+        data = any_to_array(self.input())
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim or data.shape[axis] == 0:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range or empty for shape', data.shape)
+            return
+        mode = self.mode_option()
+        if mode not in self.modes:
+            mode = 'clip'
+        indices = self.indices
+        if mode == 'clip':
+            # numpy's clip mode turns -1 into 0; here it counts from the end, as an index does
+            n = data.shape[axis]
+            indices = np.clip(np.where(indices < 0, indices + n, indices), 0, n - 1)
+        self.output.send(np.take(data, indices, axis=axis, mode=mode))
+
+
+class NumpyPadNode(Node):
+    modes = ['constant', 'edge', 'reflect', 'symmetric', 'wrap']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyPadNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        before = 1
+        after = 1
+        mode = 'constant'
+        numbers = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                numbers.append(int(v))
+            elif t == str and v in self.modes:
+                mode = v
+        if len(numbers) > 0:
+            before = after = numbers[0]
+        if len(numbers) > 1:
+            after = numbers[1]
+        self.input = self.add_input('in', triggers_execution=True)
+        self.before_input = self.add_input('before', widget_type='input_int', default_value=before)
+        self.after_input = self.add_input('after', widget_type='input_int', default_value=after)
+        self.value_input = self.add_input('value', widget_type='drag_float', default_value=0.0)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('padded')
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value=mode)
+        self.mode_option.widget.combo_items = self.modes
+
+    def execute(self):
+        data = any_to_array(self.input())
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        before = max(self.before_input(), 0)
+        after = max(self.after_input(), 0)
+        widths = [(0, 0)] * data.ndim
+        widths[axis] = (before, after)
+        mode = self.mode_option()
+        if mode not in self.modes:
+            mode = 'constant'
+        if mode != 'constant' and data.shape[axis] == 0:
+            return
+        if mode == 'constant':
+            self.output.send(np.pad(data, widths, mode='constant', constant_values=self.value_input()))
+        else:
+            self.output.send(np.pad(data, widths, mode=mode))
+
+
+class NumpyTileNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyTileNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.reps = [2]
+        if len(args) > 0:
+            self.reps = [max(any_to_int(a), 0) for a in args]
+        self.input = self.add_input('in', triggers_execution=True)
+        self.reps_input = self.add_input('reps', widget_type='text_input', widget_width=120,
+                                         default_value=' '.join(str(r) for r in self.reps),
+                                         callback=self.reps_changed)
+        self.output = self.add_output('tiled')
+
+    def reps_changed(self):
+        reps = parse_ints(self.reps_input())
+        if len(reps) > 0:
+            self.reps = [max(r, 0) for r in reps]
+
+    def execute(self):
+        if self.reps_input.fresh_input:
+            self.reps_changed()
+        self.output.send(np.tile(any_to_array(self.input()), self.reps))
+
+
+class NumpyDigitizeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyDigitizeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        edges = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                edges.append(float(v))
+        self.edges = np.array(edges) if len(edges) > 0 else None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.edges_input = self.add_input('edges')
+        self.output = self.add_output('bin indices')
+        self.right_option = self.add_option('right', widget_type='checkbox', default_value=False)
+
+    def execute(self):
+        if self.edges_input.fresh_input:
+            self.edges = any_to_array(self.edges_input()).astype(float).ravel()
+        if self.edges is None or self.edges.size == 0:
+            return
+        edges = self.edges
+        diffs = np.diff(edges)
+        if np.any(diffs < 0) and np.any(diffs > 0):
+            # np.digitize raises for edges that are neither rising nor falling
+            edges = np.sort(edges)
+        data = any_to_array(self.input()).astype(float)
+        self.output.send(np.digitize(data, edges, right=self.right_option()))
+
+
+class NumpyArangeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyArangeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        numbers = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                numbers.append(v)
+        # like np.arange: one number is the stop, two are start and stop
+        start, stop, step = 0, 10, 1
+        if len(numbers) == 1:
+            stop = numbers[0]
+        elif len(numbers) >= 2:
+            start, stop = numbers[0], numbers[1]
+            if len(numbers) > 2:
+                step = numbers[2]
+        widget = 'drag_float' if any(isinstance(n, float) for n in (start, stop, step)) else 'drag_int'
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.start_input = self.add_input('start', widget_type=widget, default_value=start)
+        self.stop_input = self.add_input('stop', widget_type=widget, default_value=stop)
+        self.step_input = self.add_input('step', widget_type=widget, default_value=step)
+        self.output = self.add_output('arange out')
+
+    def execute(self):
+        start, stop, step = self.start_input(), self.stop_input(), self.step_input()
+        if step == 0:
+            return
+        if (stop - start) / step > 10000000:
+            if self.app.verbose:
+                print(self.label, 'would make more than 10 million values')
+            return
+        self.output.send(np.arange(start, stop, step))
+
+
+class NumpyEyeNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyEyeNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        n, m, k = 3, 0, 0
+        if len(args) > 0:
+            n = any_to_int(args[0])
+        if len(args) > 1:
+            m = any_to_int(args[1])
+        if len(args) > 2:
+            k = any_to_int(args[2])
+        self.input = self.add_input('', widget_type='button', widget_width=16, triggers_execution=True)
+        self.rows_input = self.add_input('rows', widget_type='input_int', default_value=n)
+        self.columns_input = self.add_input('columns', widget_type='input_int', default_value=m)
+        self.k_input = self.add_input('diagonal', widget_type='input_int', default_value=k)
+        self.output = self.add_output('eye out')
+
+    def execute(self):
+        n = self.rows_input()
+        if n < 1:
+            return
+        m = self.columns_input()
+        # 0 columns means square
+        self.output.send(np.eye(n, m if m > 0 else n, k=self.k_input(), dtype=np.float32))
+
+
+class NumpyDiagNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyDiagNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        k = 0
+        if len(args) > 0:
+            k = any_to_int(args[0])
+        self.input = self.add_input('in', triggers_execution=True)
+        self.k_input = self.add_input('diagonal', widget_type='input_int', default_value=k)
+        self.output = self.add_output('diag out')
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if data.ndim > 2:
+            if self.app.verbose:
+                print(self.label, 'takes a list or a 2-D matrix, got shape', data.shape)
+            return
+        if data.ndim == 0:
+            data = data.reshape(1)
+        self.output.send(np.diag(data, k=self.k_input()))
+
+
+class NumpyPolyfitNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyPolyfitNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        degree = 1
+        if len(args) > 0:
+            degree = max(any_to_int(args[0]), 0)
+        self.x_value = None
+        self.input = self.add_input('y', triggers_execution=True)
+        self.x_input = self.add_input('x')
+        self.degree_input = self.add_input('degree', widget_type='input_int', default_value=degree)
+        self.output = self.add_output('coefficients')
+
+    def execute(self):
+        if self.x_input.fresh_input:
+            self.x_value = any_to_array(self.x_input()).astype(float).ravel()
+        y = any_to_array(self.input()).astype(float)
+        if y.ndim > 2:
+            if self.app.verbose:
+                print(self.label, 'takes a list, or a 2-D array with one curve per column')
+            return
+        # without x the points are at 0, 1, 2 ...
+        x = self.x_value if self.x_value is not None else np.arange(y.shape[0], dtype=float)
+        if x.shape[0] != y.shape[0]:
+            if self.app.verbose:
+                print(self.label, 'x has', x.shape[0], 'values but y has', y.shape[0])
+            return
+        degree = max(self.degree_input(), 0)
+        if y.shape[0] < degree + 1:
+            if self.app.verbose:
+                print(self.label, 'degree', degree, 'needs at least', degree + 1, 'points')
+            return
+        with warnings.catch_warnings():
+            # a fit with more freedom than the points can pin down is still sent
+            warnings.simplefilter('ignore', np.exceptions.RankWarning)
+            self.output.send(np.polyfit(x, y, degree))
+
+
+class NumpyPolyvalNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyPolyvalNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        coefficients = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                coefficients.append(float(v))
+        self.coefficients = np.array(coefficients) if len(coefficients) > 0 else None
+        self.input = self.add_input('x', triggers_execution=True)
+        self.coefficients_input = self.add_input('coefficients')
+        self.output = self.add_output('values')
+
+    def execute(self):
+        if self.coefficients_input.fresh_input:
+            self.coefficients = any_to_array(self.coefficients_input()).astype(float)
+        if self.coefficients is None or self.coefficients.size == 0:
+            return
+        x = any_to_array(self.input()).astype(float)
+        c = self.coefficients
+        if c.ndim == 1:
+            self.output.send(np.polyval(c, x))
+            return
+        # one column of coefficients per curve, as np.polyfit gives for several curves
+        self.output.send(np.stack([np.polyval(c[:, i], x) for i in range(c.shape[1])], axis=-1))
+
+
+class NumpySvdNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpySvdNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('matrix', triggers_execution=True)
+        self.u_output = self.add_output('U')
+        self.s_output = self.add_output('singular values')
+        self.vh_output = self.add_output('Vh')
+        self.full_option = self.add_option('full matrices', widget_type='checkbox', default_value=False)
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        if data.ndim < 2:
+            if self.app.verbose:
+                print(self.label, 'needs a matrix, got shape', data.shape)
+            return
+        try:
+            u, s, vh = np.linalg.svd(data, full_matrices=self.full_option())
+        except np.linalg.LinAlgError as e:
+            if self.app.verbose:
+                print(self.label, e)
+            return
+        self.vh_output.send(vh)
+        self.s_output.send(s)
+        self.u_output.send(u)
+
+
+class NumpyEighNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyEighNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('matrix', triggers_execution=True)
+        self.values_output = self.add_output('eigenvalues')
+        self.vectors_output = self.add_output('eigenvectors')
+        self.order_option = self.add_option('order', widget_type='combo', default_value='largest first')
+        self.order_option.widget.combo_items = ['largest first', 'smallest first']
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        if data.ndim < 2 or data.shape[-1] != data.shape[-2]:
+            if self.app.verbose:
+                print(self.label, 'needs a square matrix, got shape', data.shape)
+            return
+        try:
+            values, vectors = np.linalg.eigh(data)
+        except np.linalg.LinAlgError as e:
+            if self.app.verbose:
+                print(self.label, e)
+            return
+        if self.order_option() == 'largest first':
+            values = values[..., ::-1]
+            vectors = vectors[..., ::-1]
+        self.vectors_output.send(vectors)
+        self.values_output.send(values)
