@@ -1,5 +1,5 @@
 {
-    "height": 548,
+    "height": 560,
     "width": 1456,
     "position": [
         100,
@@ -169,7 +169,7 @@
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.zeros, np.ones, np.rand, np.linspace, np.arange, np.eye, np.grid,\nnp.load, np.sequence",
+                    "value": "np.zeros, np.ones, np.rand, np.linspace, np.arange, np.full, np.eye,\nnp.meshgrid, np.grid, np.load, np.sequence",
                     "value_type": "str"
                 },
                 "1": {
@@ -193,7 +193,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.zeros, np.ones, np.rand, np.linspace, np.arange, np.eye, np.grid,\nnp.load, np.sequence",
+            "text": "np.zeros, np.ones, np.rand, np.linspace, np.arange, np.full, np.eye,\nnp.meshgrid, np.grid, np.load, np.sequence",
             "id": 759,
             "visibility": "show_all",
             "draggable": true,
@@ -356,12 +356,12 @@
             "annotation": true,
             "position_x": 238,
             "position_y": 326,
-            "width": 317,
+            "width": 440,
             "height": 28,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.[], np.crop, np.where, np.argwhere, np.edit",
+                    "value": "np.[], np.crop, np.where, np.argwhere, np.take_along_axis, np.edit",
                     "value_type": "str"
                 },
                 "1": {
@@ -371,7 +371,7 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 309,
+                    "value": 432,
                     "value_type": "int"
                 },
                 "3": {
@@ -385,7 +385,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.[], np.crop, np.where, np.argwhere, np.edit",
+            "text": "np.[], np.crop, np.where, np.argwhere, np.take_along_axis, np.edit",
             "id": 981,
             "visibility": "show_all",
             "draggable": true,
@@ -805,11 +805,11 @@
             "position_x": 964,
             "position_y": 370,
             "width": 452,
-            "height": 64,
+            "height": 76,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "np.dot, np.inner, np.outer, np.cross, np.matmul, np.linalg.norm,\nnp.linalg.det, np.linalg.matrix_rank, np.linalg.inv, np.linalg.pinv,\nnp.linalg.solve, np.linalg.lstsq, np.linalg.svd, np.linalg.eigh,\nnp.diag, np.einsum",
+                    "value": "np.dot, np.inner, np.outer, np.cross, np.matmul, np.linalg.norm,\nnp.linalg.det, np.linalg.matrix_rank, np.linalg.inv, np.linalg.pinv,\nnp.linalg.solve, np.linalg.lstsq, np.linalg.svd, np.linalg.eigh,\nnp.linalg.eig, np.linalg.qr, np.diag, np.trace, np.tril, np.triu,\nnp.einsum, np.tensordot",
                     "value_type": "str"
                 },
                 "1": {
@@ -824,7 +824,7 @@
                 },
                 "3": {
                     "name": "height",
-                    "value": 48,
+                    "value": 60,
                     "value_type": "int"
                 },
                 "4": {
@@ -833,7 +833,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "np.dot, np.inner, np.outer, np.cross, np.matmul, np.linalg.norm,\nnp.linalg.det, np.linalg.matrix_rank, np.linalg.inv, np.linalg.pinv,\nnp.linalg.solve, np.linalg.lstsq, np.linalg.svd, np.linalg.eigh,\nnp.diag, np.einsum",
+            "text": "np.dot, np.inner, np.outer, np.cross, np.matmul, np.linalg.norm,\nnp.linalg.det, np.linalg.matrix_rank, np.linalg.inv, np.linalg.pinv,\nnp.linalg.solve, np.linalg.lstsq, np.linalg.svd, np.linalg.eigh,\nnp.linalg.eig, np.linalg.qr, np.diag, np.trace, np.tril, np.triu,\nnp.einsum, np.tensordot",
             "id": 1499,
             "visibility": "show_all",
             "draggable": true,
@@ -843,7 +843,7 @@
             "init": "help_link nodes_numpy_geometry_and_targets Geometry and targets",
             "name": "help_link",
             "position_x": 750,
-            "position_y": 438,
+            "position_y": 450,
             "width": 200,
             "height": 44,
             "properties": {
@@ -867,7 +867,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 964,
-            "position_y": 442,
+            "position_y": 454,
             "width": 446,
             "height": 40,
             "properties": {

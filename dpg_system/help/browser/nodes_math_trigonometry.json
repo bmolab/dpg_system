@@ -1,11 +1,11 @@
 {
-    "height": 624,
-    "width": 564,
+    "height": 572,
+    "width": 1130,
     "position": [
         100,
         100
     ],
-    "id": 1314,
+    "id": 1758,
     "name": "nodes_math_trigonometry",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_math_trigonometry.json",
     "nodes": {
@@ -621,8 +621,8 @@
         "19": {
             "init": "help_link atan2 atan2",
             "name": "help_link",
-            "position_x": 24,
-            "position_y": 514,
+            "position_x": 584,
+            "position_y": 150,
             "width": 218,
             "height": 44,
             "properties": {
@@ -650,8 +650,8 @@
         "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 256,
-            "position_y": 518,
+            "position_x": 816,
+            "position_y": 154,
             "width": 157,
             "height": 28,
             "properties": {
@@ -683,6 +683,420 @@
             },
             "text": "the angle of a point",
             "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
+            "init": "help_link hypot hypot",
+            "name": "help_link",
+            "position_x": 584,
+            "position_y": 202,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "hypot",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1314,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "22": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 816,
+            "position_y": 206,
+            "width": 274,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the distance of a point from the origin",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 266,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the distance of a point from the origin",
+            "id": 1351,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "23": {
+            "init": "help_link degrees degrees",
+            "name": "help_link",
+            "position_x": 584,
+            "position_y": 254,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "degrees",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1388,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "24": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 816,
+            "position_y": 258,
+            "width": 144,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "radians to degrees",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 136,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "radians to degrees",
+            "id": 1425,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "25": {
+            "init": "help_link radians radians",
+            "name": "help_link",
+            "position_x": 584,
+            "position_y": 306,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "radians",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1462,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "26": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 816,
+            "position_y": 310,
+            "width": 144,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "degrees to radians",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 136,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "degrees to radians",
+            "id": 1499,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "27": {
+            "init": "help_link tanh tanh",
+            "name": "help_link",
+            "position_x": 584,
+            "position_y": 358,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "tanh",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1536,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "28": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 816,
+            "position_y": 362,
+            "width": 224,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a smooth limit between -1 and 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a smooth limit between -1 and 1",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link sinh sinh",
+            "name": "help_link",
+            "position_x": 584,
+            "position_y": 410,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "sinh",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 816,
+            "position_y": 414,
+            "width": 126,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hyperbolic sine",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 118,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hyperbolic sine",
+            "id": 1647,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "31": {
+            "init": "help_link cosh cosh",
+            "name": "help_link",
+            "position_x": 584,
+            "position_y": 462,
+            "width": 218,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "cosh",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 202,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1684,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "32": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 816,
+            "position_y": 466,
+            "width": 138,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "hyperbolic cosine",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 130,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "hyperbolic cosine",
+            "id": 1721,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

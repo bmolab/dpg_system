@@ -1,11 +1,11 @@
 {
-    "height": 624,
+    "height": 780,
     "width": 1075,
     "position": [
         100,
         100
     ],
-    "id": 1906,
+    "id": 2350,
     "name": "nodes_numpy_linear_algebra",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_linear_algebra.json",
     "nodes": {
@@ -690,8 +690,8 @@
         "21": {
             "init": "help_link np.linalg.inv np.linalg.inv",
             "name": "help_link",
-            "position_x": 547,
-            "position_y": 150,
+            "position_x": 24,
+            "position_y": 566,
             "width": 169,
             "height": 44,
             "properties": {
@@ -719,8 +719,8 @@
         "22": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 730,
-            "position_y": 154,
+            "position_x": 207,
+            "position_y": 570,
             "width": 224,
             "height": 28,
             "properties": {
@@ -759,8 +759,8 @@
         "23": {
             "init": "help_link np.linalg.pinv np.linalg.pinv",
             "name": "help_link",
-            "position_x": 547,
-            "position_y": 202,
+            "position_x": 24,
+            "position_y": 618,
             "width": 169,
             "height": 44,
             "properties": {
@@ -788,8 +788,8 @@
         "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 730,
-            "position_y": 206,
+            "position_x": 207,
+            "position_y": 622,
             "width": 268,
             "height": 28,
             "properties": {
@@ -828,8 +828,8 @@
         "25": {
             "init": "help_link np.linalg.solve np.linalg.solve",
             "name": "help_link",
-            "position_x": 547,
-            "position_y": 254,
+            "position_x": 24,
+            "position_y": 670,
             "width": 169,
             "height": 44,
             "properties": {
@@ -857,8 +857,8 @@
         "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 730,
-            "position_y": 258,
+            "position_x": 207,
+            "position_y": 674,
             "width": 175,
             "height": 28,
             "properties": {
@@ -898,7 +898,7 @@
             "init": "help_link np.linalg.lstsq np.linalg.lstsq",
             "name": "help_link",
             "position_x": 547,
-            "position_y": 306,
+            "position_y": 150,
             "width": 169,
             "height": 44,
             "properties": {
@@ -927,7 +927,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 730,
-            "position_y": 310,
+            "position_y": 154,
             "width": 305,
             "height": 28,
             "properties": {
@@ -967,7 +967,7 @@
             "init": "help_link np.linalg.svd np.linalg.svd",
             "name": "help_link",
             "position_x": 547,
-            "position_y": 358,
+            "position_y": 202,
             "width": 169,
             "height": 44,
             "properties": {
@@ -996,7 +996,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 730,
-            "position_y": 362,
+            "position_y": 206,
             "width": 298,
             "height": 28,
             "properties": {
@@ -1036,7 +1036,7 @@
             "init": "help_link np.linalg.eigh np.linalg.eigh",
             "name": "help_link",
             "position_x": 547,
-            "position_y": 410,
+            "position_y": 254,
             "width": 169,
             "height": 44,
             "properties": {
@@ -1065,7 +1065,7 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 730,
-            "position_y": 414,
+            "position_y": 258,
             "width": 280,
             "height": 28,
             "properties": {
@@ -1102,15 +1102,15 @@
             "presentation_state": "show_all"
         },
         "33": {
-            "init": "help_link np.diag np.diag",
+            "init": "help_link np.linalg.eig np.linalg.eig",
             "name": "help_link",
             "position_x": 547,
-            "position_y": 462,
+            "position_y": 306,
             "width": 169,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "np.diag",
+                    "name": "np.linalg.eig",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -1134,7 +1134,145 @@
             "name": "text_block",
             "annotation": true,
             "position_x": 730,
-            "position_y": 466,
+            "position_y": 310,
+            "width": 268,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the directions a matrix only stretches",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 260,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the directions a matrix only stretches",
+            "id": 1795,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "35": {
+            "init": "help_link np.linalg.qr np.linalg.qr",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 358,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.linalg.qr",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1832,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "36": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 362,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "square up a set of directions",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "square up a set of directions",
+            "id": 1869,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "37": {
+            "init": "help_link np.diag np.diag",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 410,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.diag",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1906,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "38": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 414,
             "width": 292,
             "height": 28,
             "properties": {
@@ -1165,16 +1303,223 @@
                 }
             },
             "text": "put values on a diagonal, or read them off",
-            "id": 1795,
+            "id": 1943,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "35": {
-            "init": "help_link np.einsum np.einsum",
+        "39": {
+            "init": "help_link np.trace np.trace",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 462,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.trace",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1980,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "40": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 466,
+            "width": 163,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the sum of a diagonal",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 155,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the sum of a diagonal",
+            "id": 2017,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "41": {
+            "init": "help_link np.tril np.tril",
             "name": "help_link",
             "position_x": 547,
             "position_y": 514,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.tril",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 2054,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "42": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 518,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "keep the lower triangle of a matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "keep the lower triangle of a matrix",
+            "id": 2091,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "43": {
+            "init": "help_link np.triu np.triu",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 566,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.triu",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 2128,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "44": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 570,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "keep the upper triangle of a matrix",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "keep the upper triangle of a matrix",
+            "id": 2165,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "45": {
+            "init": "help_link np.einsum np.einsum",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 618,
             "width": 169,
             "height": 44,
             "properties": {
@@ -1194,16 +1539,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1832,
+            "id": 2202,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "36": {
+        "46": {
             "name": "text_block",
             "annotation": true,
             "position_x": 730,
-            "position_y": 518,
+            "position_y": 622,
             "width": 305,
             "height": 28,
             "properties": {
@@ -1234,7 +1579,76 @@
                 }
             },
             "text": "multiply and sum arrays by naming their axes",
-            "id": 1869,
+            "id": 2239,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "47": {
+            "init": "help_link np.tensordot np.tensordot",
+            "name": "help_link",
+            "position_x": 547,
+            "position_y": 670,
+            "width": 169,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.tensordot",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 153,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 2276,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "48": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 730,
+            "position_y": 674,
+            "width": 249,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "multiply and sum over matching axes",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 241,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "multiply and sum over matching axes",
+            "id": 2313,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

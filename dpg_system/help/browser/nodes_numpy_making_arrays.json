@@ -1,11 +1,11 @@
 {
-    "height": 676,
+    "height": 780,
     "width": 465,
     "position": [
         100,
         100
     ],
-    "id": 1388,
+    "id": 1536,
     "name": "nodes_numpy_making_arrays",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_making_arrays.json",
     "nodes": {
@@ -481,7 +481,7 @@
             "presentation_state": "show_all"
         },
         "15": {
-            "init": "help_link np.eye np.eye",
+            "init": "help_link np.full np.full",
             "name": "help_link",
             "position_x": 24,
             "position_y": 410,
@@ -489,7 +489,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "np.eye",
+                    "name": "np.full",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -514,6 +514,75 @@
             "annotation": true,
             "position_x": 145,
             "position_y": 414,
+            "width": 218,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "an array filled with one value",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "an array filled with one value",
+            "id": 1129,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "17": {
+            "init": "help_link np.eye np.eye",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 462,
+            "width": 107,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.eye",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 91,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "18": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 145,
+            "position_y": 466,
             "width": 218,
             "height": 28,
             "properties": {
@@ -544,16 +613,85 @@
                 }
             },
             "text": "a matrix of ones on a diagonal",
-            "id": 1129,
+            "id": 1203,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "17": {
+        "19": {
+            "init": "help_link np.meshgrid np.meshgrid",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 514,
+            "width": 107,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.meshgrid",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 91,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1240,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "20": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 145,
+            "position_y": 518,
+            "width": 255,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the x and y of every point on a grid",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the x and y of every point on a grid",
+            "id": 1277,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "21": {
             "init": "help_link np.grid np.grid",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 462,
+            "position_y": 566,
             "width": 107,
             "height": 44,
             "properties": {
@@ -573,16 +711,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1166,
+            "id": 1314,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "18": {
+        "22": {
             "name": "text_block",
             "annotation": true,
             "position_x": 145,
-            "position_y": 466,
+            "position_y": 570,
             "width": 280,
             "height": 28,
             "properties": {
@@ -613,16 +751,16 @@
                 }
             },
             "text": "the coordinates of every point in a grid",
-            "id": 1203,
+            "id": 1351,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "19": {
+        "23": {
             "init": "help_link np.load np.load",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 514,
+            "position_y": 618,
             "width": 107,
             "height": 44,
             "properties": {
@@ -642,16 +780,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1240,
+            "id": 1388,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "20": {
+        "24": {
             "name": "text_block",
             "annotation": true,
             "position_x": 145,
-            "position_y": 518,
+            "position_y": 622,
             "width": 138,
             "height": 28,
             "properties": {
@@ -682,16 +820,16 @@
                 }
             },
             "text": "read an .npz file",
-            "id": 1277,
+            "id": 1425,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "21": {
+        "25": {
             "init": "help_link np.sequence np.sequence",
             "name": "help_link",
             "position_x": 24,
-            "position_y": 566,
+            "position_y": 670,
             "width": 107,
             "height": 44,
             "properties": {
@@ -711,16 +849,16 @@
                     "value_type": "str"
                 }
             },
-            "id": 1314,
+            "id": 1462,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
         },
-        "22": {
+        "26": {
             "name": "text_block",
             "annotation": true,
             "position_x": 145,
-            "position_y": 570,
+            "position_y": 674,
             "width": 212,
             "height": 28,
             "properties": {
@@ -751,7 +889,7 @@
                 }
             },
             "text": "record arrays, play them back",
-            "id": 1351,
+            "id": 1499,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

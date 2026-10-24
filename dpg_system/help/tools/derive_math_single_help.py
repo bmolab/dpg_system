@@ -428,6 +428,193 @@ floor   round down
 ceil    round up
 round   round to the nearest
 %       "% 1" gives the fractional part (of a positive number)""")),
+
+    dict(stem='sign', label='sign', title='sign (which side of zero)',
+         fn=lambda a: (a > 0) - (a < 0),
+         sig=dict(range=1.0, bipolar=True, y=(-1.2, 1.2),
+                  note='a sine wave through sign:\na square wave, 1 or -1'),
+         num=dict(value=-7.5, speed=0.1),
+         np=dict(rand=(-1.0, 1.0), a=(-1.0, 1.0), out=(-1.0, 1.0)),
+         text=page("""
+sign says which side of zero each value is on: 1 for positive, -1 for negative, and
+0 for zero itself. The size is thrown away.
+
+-7.5 comes out as -1, 0.001 as 1, 0 as 0. In the demo a sine wave becomes a square
+wave, jumping between 1 and -1 as it crosses zero.
+
+Use it for direction without speed: which way a joint is turning, whether a value is
+above or below a centre, which way to push. Multiplied by abs of something, it puts
+a direction back on a size.
+
+""" + ARRAYS.format(label='sign') + """ Every cell becomes
+fully bright or fully dark.""",
+             'sign', """
+sign       which way something is moving, from a velocity
+- 0.5 then sign     above or below the middle of a 0 to 1 control""",
+             [], 'The sign of the input: 1, -1 or 0.', [], """
+abs     the size without the sign
+>       1 or 0 for above a threshold""")),
+
+    dict(stem='log1p', label='log1p', title='log1p (log of 1 plus the input)',
+         fn=math.log1p,
+         sig=dict(range=1.0, bipolar=False, y=(-0.1, 0.8),
+                  note='log1p of a sine wave from 0 to 1:\n0 to 0.69, bent over at the top'),
+         num=dict(value=1.718, speed=0.01),
+         np=dict(rand=(0.0, 3.0), a=(0.0, 3.0), out=(0.0, 1.5)),
+         text=page("""
+log1p gives the natural logarithm of 1 plus each value: log1p of x is log of (1 + x).
+
+0 comes out as 0, 1.718 as 1, -0.5 as -0.69. Because it starts from 1 + x, it is 0 at
+0 and well behaved near it, where log itself plunges to -infinity. Small values pass
+almost unchanged (log1p of 0.01 is 0.00995); large ones are compressed like a log.
+
+Use it to compress something that is usually small but occasionally huge - a speed,
+a count, a loudness, a jerk - when zero must stay zero. It is the reverse of exp then
+- 1.
+
+""" + ARRAYS.format(label='log1p'),
+             'log1p', """
+log1p      compress a speed that is mostly small and sometimes huge
+log1p      a log-like scale that keeps 0 at 0""",
+             [], 'The natural logarithm of 1 plus the input.',
+             ["""
+BELOW -1:
+1 + x is then zero or negative, which has no logarithm. -1 gives -inf, and anything
+below it nan (not a number). Unlike log, log2 and log10, log1p does NOT take the
+absolute value: inputs between -1 and 0 are valid and give negative results."""], """
+log     natural logarithm
+exp     e to the power of the input""")),
+
+    dict(stem='degrees', label='degrees', title='degrees (radians to degrees)',
+         fn=math.degrees,
+         sig=dict(range=math.pi, bipolar=True, y=(-200.0, 200.0),
+                  note='a sine wave from -pi to pi, in degrees:\n-180 to 180'),
+         num=dict(value=3.14159, speed=0.01),
+         np=dict(rand=(0.0, 6.283), a=(0.0, 6.283), out=(0.0, 360.0)),
+         text=page("""
+degrees converts angles in radians to degrees: it multiplies by 180 / pi (57.2958).
+
+pi (3.14159) comes out as 180, pi / 2 as 90, 1 as 57.3. A full turn is 2 pi radians
+and 360 degrees.
+
+Use it to read an angle from a node that works in radians - quaternion and rotation
+conversions, np.linalg and torch nodes, atan2 with its degrees box off - or to feed
+one into something that expects degrees.
+
+""" + ARRAYS.format(label='degrees'),
+             'degrees', """
+degrees    read a rotation angle that arrives in radians""",
+             [], 'The angle in degrees.', [], """
+radians    the other way, degrees to radians
+sin, cos   take degrees by default (a checkbox switches to radians)""")),
+
+    dict(stem='radians', label='radians', title='radians (degrees to radians)',
+         fn=math.radians,
+         sig=dict(range=180.0, bipolar=True, y=(-3.5, 3.5),
+                  note='a sine wave from -180 to 180, in radians:\n-pi to pi'),
+         num=dict(value=90.0, speed=1.0),
+         np=dict(rand=(0.0, 360.0), a=(0.0, 360.0), out=(0.0, 6.283)),
+         text=page("""
+radians converts angles in degrees to radians: it multiplies by pi / 180 (0.01745).
+
+180 comes out as 3.14159 (pi), 90 as 1.5708, 360 as 6.2832. A full turn is 360 degrees
+and 2 pi radians.
+
+Use it to feed an angle you think of in degrees into anything that expects radians:
+most maths outside this patcher, the NumPy and PyTorch nodes, rotation and quaternion
+conversions.
+
+""" + ARRAYS.format(label='radians'),
+             'radians', """
+radians    an angle for a node that works in radians""",
+             [], 'The angle in radians.', [], """
+degrees    the other way, radians to degrees
+sin, cos   take degrees by default (a checkbox switches to radians)""")),
+
+    dict(stem='tanh', label='tanh', title='tanh (a smooth limit between -1 and 1)',
+         fn=math.tanh,
+         sig=dict(range=3.0, bipolar=True, y=(-1.2, 1.2),
+                  note='a sine wave from -3 to 3 through tanh:\nits peaks flattened against 1 and -1'),
+         num=dict(value=0.5, speed=0.01),
+         np=dict(rand=(-3.0, 3.0), a=(-3.0, 3.0), out=(-1.0, 1.0)),
+         text=page("""
+tanh (the hyperbolic tangent) squeezes any value into the range -1 to 1 along a smooth
+S-shaped curve.
+
+Near zero it hardly changes anything: 0.1 comes out as 0.0997. Further out it bends
+over: 1 gives 0.76, 2 gives 0.96, and 10 is 1.0000000. In the demo a sine wave from -3
+to 3 keeps its shape in the middle but its peaks are pressed flat against 1 and -1.
+
+Use it as a soft limit - a control that can never run away, a gentle saturation
+where clip would cut hard, the bounded response of a neuron or a muscle. Scale
+before tanh to choose where the bending starts: * 0.5 then tanh bends later.
+
+""" + ARRAYS.format(label='tanh'),
+             'tanh', """
+tanh       a soft limit at -1 and 1
+* 0.5 then tanh then * 2     a soft limit at -2 and 2""",
+             [], 'The hyperbolic tangent: always between -1 and 1.', [], """
+np.clip    a hard limit
+sinh, cosh the other hyperbolic functions
+t.nn.tanh  the PyTorch version""")),
+
+    dict(stem='sinh', label='sinh', title='sinh (hyperbolic sine)',
+         fn=math.sinh,
+         sig=dict(range=2.0, bipolar=True, y=(-4.0, 4.0),
+                  note='a sine wave from -2 to 2 through sinh:\nsharpened, out to -3.6 and 3.6'),
+         num=dict(value=1.0, speed=0.01),
+         np=dict(rand=(-2.0, 2.0), a=(-2.0, 2.0), out=(-4.0, 4.0)),
+         text=page("""
+sinh, the hyperbolic sine, is half the difference between e to the input and e to
+minus the input: (exp(x) - exp(-x)) / 2.
+
+0 gives 0 and 1 gives 1.175; past that it grows like exp, doubling and redoubling,
+and negative inputs give the mirror image. In the demo a sine wave from -2 to 2 comes
+out with sharpened peaks reaching -3.6 and 3.6.
+
+Use it as an expanding curve that keeps its sign and passes through zero - the
+opposite of tanh's squeeze: small values stay small (sinh of 0.1 is 0.1002) and large
+ones are exaggerated. It is also the shape of a hanging chain's slope.
+
+""" + ARRAYS.format(label='sinh'),
+             'sinh', """
+sinh       exaggerate large values, keep small ones and the sign""",
+             [], 'The hyperbolic sine of the input.',
+             ["""
+LARGE INPUTS:
+sinh grows as fast as exp: beyond about 710 a single number is too large to hold
+and gives inf (or -inf)."""], """
+cosh, tanh the other hyperbolic functions
+exp        e to the power of the input""")),
+
+    dict(stem='cosh', label='cosh', title='cosh (hyperbolic cosine)',
+         fn=math.cosh,
+         sig=dict(range=2.0, bipolar=True, y=(0.0, 4.0),
+                  note='a sine wave from -2 to 2 through cosh:\nalways 1 or more, twice as often'),
+         num=dict(value=1.0, speed=0.01),
+         np=dict(rand=(-2.0, 2.0), a=(-2.0, 2.0), out=(1.0, 4.0)),
+         text=page("""
+cosh, the hyperbolic cosine, is the average of e to the input and e to minus the
+input: (exp(x) + exp(-x)) / 2.
+
+0 gives 1, its smallest value; 1 and -1 both give 1.543, and further out it grows like
+exp. It is a U shape: the curve of a chain or a cable hanging between two points (a
+catenary). In the demo a sine wave from -2 to 2 comes out always above 1, rising at
+both its peaks and its troughs.
+
+Use it for that hanging curve, or as a U-shaped response: a cost that is flat near
+the centre and climbs steeply on either side.
+
+""" + ARRAYS.format(label='cosh'),
+             'cosh', """
+cosh       a U-shaped response, lowest at 0""",
+             [], 'The hyperbolic cosine: always 1 or more.',
+             ["""
+LARGE INPUTS:
+cosh grows as fast as exp: beyond about 710 either way a single number is too large
+to hold and gives inf."""], """
+sinh, tanh the other hyperbolic functions
+exp        e to the power of the input""")),
 ]
 
 

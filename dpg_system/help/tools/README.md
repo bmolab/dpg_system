@@ -380,6 +380,11 @@ np.fft.rfft, np.fft.irfft, np.take, np.pad, np.tile, np.digitize, np.arange,
 np.eye, np.diag, np.polyfit, np.polyval, np.linalg.svd, np.linalg.eigh) was
 seeded the same way by `seed_numpy_batch2_help.py`, which borrows the first
 seeder's building blocks.
+The third batch (hypot, np.full, np.meshgrid, np.trace, np.tril, np.triu,
+np.take_along_axis, np.tensordot, np.linalg.qr, np.linalg.eig) is seeded by
+`seed_numpy_batch3_help.py`; its element-wise nodes (sign, log1p, degrees,
+radians, tanh, sinh, cosh) are derived in `derive_math_single_help.py`, which
+again wrote only their new pages.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add
@@ -413,7 +418,7 @@ set output_type to int / float. `==` / `!=` demos compare whole numbers
 (`// 0.25` steps, int64 random arrays) - floats would never match.
 
 `derive_math_single_help.py` does it for the single-input functions (`abs`,
-`sqrt`, `exp`, `log`, `log2`, `log10`, `inverse`, `norm`, `round`, `floor`, `ceil`,
+`sqrt`, `exp`, `log`, `log1p`, `log2`, `log10`, `sign`, `degrees`, `radians`, `tanh`, `sinh`, `cosh`, `inverse`, `norm`, `round`, `floor`, `ceil`,
 `trunc`; the `np.` rounding names share their pages), again from the
 arithmetic template with the operand box and the second random array taken
 out. Logs and inverse put a `+` offset before the function so the sine never
