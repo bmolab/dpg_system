@@ -1,0 +1,582 @@
+{
+    "height": 1121,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1088,
+    "name": "np.polyfit_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/np.polyfit_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment np.polyfit - the curve that best fits some points",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 611,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "np.polyfit - the curve that best fits some points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "np.polyfit - the curve that best fits some points"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1016,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Finds the polynomial curve - a straight line, a parabola, a cubic... - that passes as close as possible to a set of points, and gives its coefficients.\n\nDegree 1 is a straight line: the two coefficients are its slope and its offset. Degree 2 is a parabola, a + b x + c x x, and fits anything that curves once (a thrown object's path, an arc of a gesture). Higher degrees follow more wiggles - and, past a point, start following the noise instead of the shape.\n\nUse it to find a trend in a window of data (and subtract it), to measure how fast something is rising, to smooth a curve to its overall shape, or to calibrate a sensor whose response bends. np.polyval draws the curve from the coefficients.\n\nSYNTAX:\nnp.polyfit <degree: int>\nDefault: degree 1.\n\nEXAMPLE:\nnp.polyfit 2\n\nINPUTS and PARAMETERS:\n\ny:\nThe values of the points. Every input is fitted and sent. A 2-D array fits each column separately, one set of coefficients per column.\n\nx:\nWhere the points are, held. Without it they are at 0, 1, 2 ...\n\ndegree (int box, also an inlet):\nThe degree of the curve. It needs at least one more point than its degree.\n\nOUTPUTS:\n\ncoefficients:\nHighest power first: for degree 2, c b a in c x x + b x + a. Ready for np.polyval.\n\nREADING THE DEMO:\nTop: five noisy points rising by about 2 each step, from about 1. The line through them has slope 1.99 and offset 1.04.\n\nBottom: five points near 0 1 4 9 16 - the squares. Degree 2 gives about 0.96 0.11 -0.01: close to 1 x x + 0 x + 0. A metro re-sends both five times a second; the round nodes only tidy the numbers for reading.\n\nRELATED:\nnp.polyval evaluates the curve. np.linalg.lstsq fits any combination of functions, of which a polynomial is one. np.interp passes exactly through every point instead.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1000,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Finds the polynomial curve - a straight line, a parabola, a cubic... - that passes as close as possible to a set of points, and gives its coefficients.\n\nDegree 1 is a straight line: the two coefficients are its slope and its offset. Degree 2 is a parabola, a + b x + c x x, and fits anything that curves once (a thrown object's path, an arc of a gesture). Higher degrees follow more wiggles - and, past a point, start following the noise instead of the shape.\n\nUse it to find a trend in a window of data (and subtract it), to measure how fast something is rising, to smooth a curve to its overall shape, or to calibrate a sensor whose response bends. np.polyval draws the curve from the coefficients.\n\nSYNTAX:\nnp.polyfit <degree: int>\nDefault: degree 1.\n\nEXAMPLE:\nnp.polyfit 2\n\nINPUTS and PARAMETERS:\n\ny:\nThe values of the points. Every input is fitted and sent. A 2-D array fits each column separately, one set of coefficients per column.\n\nx:\nWhere the points are, held. Without it they are at 0, 1, 2 ...\n\ndegree (int box, also an inlet):\nThe degree of the curve. It needs at least one more point than its degree.\n\nOUTPUTS:\n\ncoefficients:\nHighest power first: for degree 2, c b a in c x x + b x + a. Ready for np.polyval.\n\nREADING THE DEMO:\nTop: five noisy points rising by about 2 each step, from about 1. The line through them has slope 1.99 and offset 1.04.\n\nBottom: five points near 0 1 4 9 16 - the squares. Degree 2 gives about 0.96 0.11 -0.01: close to 1 x x + 0 x + 0. A metro re-sends both five times a second; the round nodes only tidy the numbers for reading.\n\nRELATED:\nnp.polyval evaluates the curve. np.linalg.lstsq fits any combination of functions, of which a polynomial is one. np.interp passes exactly through every point instead."
+        },
+        "3": {
+            "init": "comment five times a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 125,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "five times a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "five times a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 200.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 200"
+        },
+        "5": {
+            "init": "comment noisy points along a line",
+            "name": "comment",
+            "id": 422,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 162,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "noisy points along a line",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "noisy points along a line"
+        },
+        "6": {
+            "name": "message",
+            "id": 459,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1.1 2.9 5.2 6.8 9.1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "7": {
+            "init": "comment fit a line",
+            "name": "comment",
+            "id": 496,
+            "position_x": 450,
+            "position_y": 53,
+            "width": 70,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fit a line",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fit a line"
+        },
+        "8": {
+            "name": "np.polyfit",
+            "id": 533,
+            "position_x": 450,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "9": {
+            "name": "round",
+            "id": 570,
+            "position_x": 630,
+            "position_y": 92,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            }
+        },
+        "10": {
+            "name": "list",
+            "id": 607,
+            "position_x": 630,
+            "position_y": 180,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "11": {
+            "init": "comment points near the squares",
+            "name": "comment",
+            "id": 644,
+            "position_x": 180,
+            "position_y": 270,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "points near the squares",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "points near the squares"
+        },
+        "12": {
+            "name": "message",
+            "id": 681,
+            "position_x": 180,
+            "position_y": 305,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "0 1.1 3.9 9.2 15.8",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "13": {
+            "init": "comment fit a parabola",
+            "name": "comment",
+            "id": 718,
+            "position_x": 450,
+            "position_y": 270,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "fit a parabola",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "fit a parabola"
+        },
+        "14": {
+            "name": "np.polyfit",
+            "id": 755,
+            "position_x": 450,
+            "position_y": 305,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.polyfit 2",
+            "highlight": true
+        },
+        "15": {
+            "name": "round",
+            "id": 792,
+            "position_x": 630,
+            "position_y": 305,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 2,
+                    "value_type": "int"
+                }
+            }
+        },
+        "16": {
+            "name": "list",
+            "id": 829,
+            "position_x": 630,
+            "position_y": 395,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 866,
+            "position_x": 30,
+            "position_y": 520,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "18": {
+            "name": "help_link",
+            "id": 903,
+            "position_x": 30,
+            "position_y": 554,
+            "width": 78,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.polyval"
+        },
+        "19": {
+            "name": "help_link",
+            "id": 940,
+            "position_x": 151,
+            "position_y": 554,
+            "width": 109,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.linalg.lstsq"
+        },
+        "20": {
+            "name": "help_link",
+            "id": 977,
+            "position_x": 310,
+            "position_y": 554,
+            "width": 72,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.interp"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 423,
+            "position_y": 554,
+            "width": 84,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link np.gradient"
+        },
+        "22": {
+            "name": "close",
+            "id": 1051,
+            "position_x": 24,
+            "position_y": 664,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 459,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "2": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "3": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "coefficients",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "4": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 607,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "5": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "y"
+        },
+        "6": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "coefficients",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}

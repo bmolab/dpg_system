@@ -375,6 +375,11 @@ refuses to overwrite an existing page without `--force`. Use
 `relayout.py --minimal` on these pages. (`log` is derived with the other
 single-input functions in `derive_math_single_help.py`; only its own page was
 written, because regenerating log2/log10/exp would not reproduce them exactly.)
+The second batch (np.ptp, np.unique, np.cov, np.corrcoef, np.gradient,
+np.fft.rfft, np.fft.irfft, np.take, np.pad, np.tile, np.digitize, np.arange,
+np.eye, np.diag, np.polyfit, np.polyval, np.linalg.svd, np.linalg.eigh) was
+seeded the same way by `seed_numpy_batch2_help.py`, which borrows the first
+seeder's building blocks.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add

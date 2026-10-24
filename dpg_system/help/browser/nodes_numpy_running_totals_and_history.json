@@ -1,11 +1,11 @@
 {
-    "height": 416,
+    "height": 468,
     "width": 465,
     "position": [
         100,
         100
     ],
-    "id": 1018,
+    "id": 1092,
     "name": "nodes_numpy_running_totals_and_history",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_running_totals_and_history.json",
     "nodes": {
@@ -343,7 +343,7 @@
             "presentation_state": "show_all"
         },
         "11": {
-            "init": "help_link np.rolling_buffer np.rolling_buffer",
+            "init": "help_link np.gradient np.gradient",
             "name": "help_link",
             "position_x": 24,
             "position_y": 306,
@@ -351,7 +351,7 @@
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "np.rolling_buffer",
+                    "name": "np.gradient",
                     "value": null,
                     "value_type": "NoneType"
                 },
@@ -376,6 +376,75 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 310,
+            "width": 237,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the rate of change at every point",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 229,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the rate of change at every point",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "13": {
+            "init": "help_link np.rolling_buffer np.rolling_buffer",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 358,
+            "width": 144,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "np.rolling_buffer",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 128,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 1018,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "14": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 182,
+            "position_y": 362,
             "width": 206,
             "height": 28,
             "properties": {
@@ -406,7 +475,7 @@
                 }
             },
             "text": "the recent past, as an array",
-            "id": 981,
+            "id": 1055,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"
