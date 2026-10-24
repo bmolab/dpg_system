@@ -27,6 +27,8 @@ def register_math_nodes():
     Node.app.register_node("acos", OpSingleTrigNode.factory)
     Node.app.register_node("tan", OpSingleTrigNode.factory)
     Node.app.register_node("atan", OpSingleTrigNode.factory)
+    Node.app.register_node("atan2", Atan2Node.factory)
+    Node.app.register_node("log", OpSingleNode.factory)
     Node.app.register_node("log10", OpSingleNode.factory)
     Node.app.register_node("log2", OpSingleNode.factory)
     Node.app.register_node("exp", OpSingleNode.factory)
@@ -542,6 +544,7 @@ class OpSingleNode(Node):
         super().__init__(label, data, args)
 
         self.operations = {
+            'log': self.log,
             'log10': self.log10,
             'log2': self.log2,
             'exp': self.exp,
@@ -594,6 +597,18 @@ class OpSingleNode(Node):
             result = torch.divide(a, torch.linalg.norm(a))
             return result
         return 1.0
+
+    def log(self, a):
+        if type(a) == np.ndarray:
+            with np.errstate(divide='ignore'):
+                result = np.log(np.abs(a))
+            return result
+        elif self.app.torch_available and type(a) == torch.Tensor:
+            result = torch.log(torch.abs(a))
+            return result
+        if a > 0.0:
+            return math.log(a)
+        return -math.inf
 
     def log10(self, a):
         if type(a) == np.ndarray:
@@ -688,6 +703,60 @@ class OpSingleNode(Node):
         elif self.app.torch_available and type(a) == torch.Tensor:
             return torch.trunc(a)
         return math.trunc(a)
+
+
+class Atan2Node(Node):
+    # the angle of the point (x, y) from the positive x axis, in all four
+    # quadrants - atan of y / x loses which side of the origin x was on
+    @staticmethod
+    def factory(name, data, args=None):
+        node = Atan2Node(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.x = 1.0
+        if len(args) > 0:
+            self.x = any_to_float(args[0])
+        self.degrees_to_radians = math.pi / 180
+
+        self.input = self.add_input('y', triggers_execution=True)
+        self.x_input = self.add_input('x', widget_type='drag_float', default_value=self.x, callback=self.x_changed)
+        self.use_degrees_property = self.add_property('degrees', widget_type='checkbox', default_value=True)
+        self.output = self.add_output('angle')
+
+    def x_changed(self):
+        x = any_to_numerical(self.x_input(), validate=True)
+        if x is not None:
+            self.x = x
+
+    def execute(self):
+        if self.x_input.fresh_input:
+            self.x_changed()
+        y = any_to_numerical(self.input(), validate=True)
+        x = self.x
+        if y is None:
+            return
+        scale = 1.0 / self.degrees_to_radians if self.use_degrees_property() else 1.0
+        if self.app.torch_available and (type(y) == torch.Tensor or type(x) == torch.Tensor):
+            y_t = y if type(y) == torch.Tensor else torch.as_tensor(y, dtype=torch.float32)
+            x_t = x if type(x) == torch.Tensor else torch.as_tensor(x, dtype=torch.float32, device=y_t.device)
+            if type(y) != torch.Tensor:
+                y_t = y_t.to(x_t.device)
+            self.output.send(torch.atan2(y_t.float(), x_t.float()) * scale)
+            return
+        is_list = isinstance(y, (list, tuple)) or isinstance(x, (list, tuple))
+        if is_list or type(y) == np.ndarray or type(x) == np.ndarray:
+            try:
+                angle = np.arctan2(list_to_array(y).astype(float) if isinstance(y, (list, tuple)) else y,
+                                   list_to_array(x).astype(float) if isinstance(x, (list, tuple)) else x) * scale
+            except ValueError:
+                if self.app.verbose:
+                    print(self.label, 'y and x do not have matching shapes')
+                return
+            self.output.send(angle.tolist() if is_list else angle)
+            return
+        self.output.send(math.atan2(float(y), float(x)) * scale)
 
 
 class OpSingleTrigNode(Node):

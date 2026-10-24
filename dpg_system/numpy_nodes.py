@@ -5,6 +5,7 @@ from dpg_system.conversion_utils import *
 import re
 import time
 import traceback
+import warnings
 import numpy as np
 from scipy.stats import median_abs_deviation
 
@@ -89,6 +90,21 @@ def register_numpy_nodes():
     Node.app.register_node('np.cumsum', NumpyCumulativeNode.factory)
     Node.app.register_node('np.cumprod', NumpyCumulativeNode.factory)
     Node.app.register_node('np.split', NumpySplitNode.factory)
+    Node.app.register_node('np.logical_and', NumpyLogicalNode.factory)
+    Node.app.register_node('np.logical_or', NumpyLogicalNode.factory)
+    Node.app.register_node('np.logical_xor', NumpyLogicalNode.factory)
+    Node.app.register_node('np.logical_not', NumpyLogicalNode.factory)
+    Node.app.register_node('np.isnan', NumpyFiniteTestNode.factory)
+    Node.app.register_node('np.isfinite', NumpyFiniteTestNode.factory)
+    Node.app.register_node('np.nan_to_num', NumpyNanToNumNode.factory)
+    Node.app.register_node('np.percentile', NumpyPercentileNode.factory)
+    Node.app.register_node('np.histogram', NumpyHistogramNode.factory)
+    Node.app.register_node('np.interp', NumpyInterpNode.factory)
+    Node.app.register_node('np.convolve', NumpyConvolveNode.factory)
+    Node.app.register_node('np.correlate', NumpyConvolveNode.factory)
+    Node.app.register_node('np.linalg.pinv', NumpyUnaryLinearAlgebraNode.factory)
+    Node.app.register_node('np.linalg.lstsq', NumpyLinalgLstsqNode.factory)
+    Node.app.register_node('np.einsum', NumpyEinsumNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -1132,7 +1148,8 @@ class NumpyUnaryLinearAlgebraNode(Node):
     operations = {
         'np.linalg.det': np.linalg.det,
         'np.linalg.matrix_rank': np.linalg.matrix_rank,
-        'np.linalg.inv': np.linalg.inv
+        'np.linalg.inv': np.linalg.inv,
+        'np.linalg.pinv': np.linalg.pinv
     }
     needs_square = ['np.linalg.det', 'np.linalg.inv']
 
@@ -1155,6 +1172,8 @@ class NumpyUnaryLinearAlgebraNode(Node):
             out_name = 'matrix rank'
         elif self.label == 'np.linalg.inv':
             out_name = 'inverse matrix'
+        elif self.label == 'np.linalg.pinv':
+            out_name = 'pseudo-inverse'
         self.output = self.add_output(out_name)
         # patches saved before the rename carry the old outlet name
         self.output.name_archive.append('determiner')
@@ -1162,6 +1181,10 @@ class NumpyUnaryLinearAlgebraNode(Node):
     def execute(self):
         if self.input.fresh_input:
             data = any_to_array(self.input())
+            if self.label == 'np.linalg.pinv' and len(data.shape) < 2:
+                if self.app.verbose:
+                    print(self.label, 'needs a matrix, got shape', data.shape)
+                return
             if self.label in self.needs_square:
                 if len(data.shape) < 2 or data.shape[-1] != data.shape[-2]:
                     if self.app.verbose:
@@ -2538,3 +2561,393 @@ class RotatePositionNode(Node):
                 print(f'{self.label}: expected xyz positions (3 or (N, 3)), got shape {pos.shape}; passing through unrotated')
                 self._warned_shape = True
             self.output.send(pos.astype(np.float32))
+
+class NumpyLogicalNode(Node):
+    operations = {'np.logical_and': np.logical_and, 'np.logical_or': np.logical_or,
+                  'np.logical_xor': np.logical_xor, 'np.logical_not': np.logical_not}
+    output_types = {'bool': np.bool_, 'int': np.int64, 'float': np.float32}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyLogicalNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = np.logical_and
+        if label in self.operations:
+            self.op = self.operations[label]
+        self.unary = label == 'np.logical_not'
+        self.input_2_value = None
+        self.input = self.add_input('in', triggers_execution=True)
+        if not self.unary:
+            self.input_2 = self.add_input('in 2')
+        self.output = self.add_output('result')
+        self.output_type_option = self.add_option('output_type', widget_type='combo', default_value='bool')
+        self.output_type_option.widget.combo_items = list(self.output_types.keys())
+
+    def execute(self):
+        a = any_to_array(self.input())
+        if self.unary:
+            result = self.op(a)
+        else:
+            if self.input_2.fresh_input:
+                self.input_2_value = any_to_array(self.input_2())
+            if self.input_2_value is None:
+                return
+            try:
+                result = self.op(a, self.input_2_value)
+            except ValueError:
+                if self.app.verbose:
+                    print(self.label, 'shapes do not broadcast:', a.shape, self.input_2_value.shape)
+                return
+        out_type = self.output_types.get(self.output_type_option(), np.bool_)
+        self.output.send(result.astype(out_type))
+
+
+class NumpyFiniteTestNode(Node):
+    operations = {'np.isnan': np.isnan, 'np.isfinite': np.isfinite}
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyFiniteTestNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = np.isnan
+        if label in self.operations:
+            self.op = self.operations[label]
+        self.input = self.add_input('in', triggers_execution=True)
+        self.output = self.add_output('mask')
+        self.count_output = self.add_output('count')
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if not np.issubdtype(data.dtype, np.number) and data.dtype != np.bool_:
+            if self.app.verbose:
+                print(self.label, 'needs numbers, got dtype', data.dtype)
+            return
+        mask = self.op(data)
+        self.count_output.send(int(np.count_nonzero(mask)))
+        self.output.send(mask)
+
+
+class NumpyNanToNumNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyNanToNumNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        nan_value = 0.0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                nan_value = float(v)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.nan_input = self.add_input('nan', widget_type='drag_float', default_value=nan_value)
+        self.posinf_input = self.add_input('posinf', widget_type='drag_float', default_value=0.0)
+        self.neginf_input = self.add_input('neginf', widget_type='drag_float', default_value=0.0)
+        self.output = self.add_output('out')
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if not np.issubdtype(data.dtype, np.inexact):
+            # whole numbers cannot hold nan or inf: nothing to replace
+            self.output.send(data)
+            return
+        self.output.send(np.nan_to_num(data, nan=self.nan_input(), posinf=self.posinf_input(),
+                                       neginf=self.neginf_input()))
+
+
+class NumpyPercentileNode(NumpyNodeWithAxisNode):
+    methods = ['linear', 'lower', 'higher', 'nearest', 'midpoint']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyPercentileNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.percentile = 50.0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                self.percentile = float(v)
+        if len(args) > 1:
+            v, t = decode_arg(args, 1)
+            if t == int:
+                self.axis = v
+        self.input = self.add_input('in', triggers_execution=True)
+        self.percentile_input = self.add_input('percentile', widget_type='drag_float',
+                                               default_value=self.percentile, callback=self.percentile_changed)
+        # None reduces the whole array to one value
+        self.add_dim_option()
+        self.output = self.add_output('result')
+        self.method_option = self.add_option('method', widget_type='combo', default_value='linear')
+        self.method_option.widget.combo_items = self.methods
+        self.ignore_nan_option = self.add_option('ignore nan', widget_type='checkbox', default_value=False)
+
+    def percentile_changed(self):
+        # a list asks for several percentiles at once
+        value = any_to_numerical(self.percentile_input(), validate=True)
+        if value is not None:
+            self.percentile = value
+
+    def execute(self):
+        if self.percentile_input.fresh_input:
+            self.percentile_changed()
+        data = any_to_array(self.input())
+        if data.size == 0:
+            return
+        if not self.adjust_dim_option(data):
+            if self.app.verbose:
+                print(self.label, 'axis =', self.axis, 'out of range for shape', data.shape)
+            return
+        q = np.clip(np.asarray(self.percentile, dtype=float), 0.0, 100.0)
+        op = np.nanpercentile if self.ignore_nan_option() else np.percentile
+        method = self.method_option()
+        if method not in self.methods:
+            method = 'linear'
+        with warnings.catch_warnings():
+            # an all-nan slice gives nan, which is the answer; no need to say so
+            warnings.simplefilter('ignore', RuntimeWarning)
+            self.output.send(op(data, q, axis=self.call_axis, method=method))
+
+
+class NumpyHistogramNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyHistogramNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        bins = 10
+        range_min = 0.0
+        range_max = 1.0
+        auto_range = True
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                bins = int(v)
+        if len(args) > 2:
+            v, t = decode_arg(args, 1)
+            w, u = decode_arg(args, 2)
+            if t in [int, float] and u in [int, float]:
+                range_min = float(v)
+                range_max = float(w)
+                auto_range = False
+        self.input = self.add_input('in', triggers_execution=True)
+        self.bins_input = self.add_input('bins', widget_type='input_int', default_value=bins)
+        self.min_input = self.add_input('min', widget_type='drag_float', default_value=range_min)
+        self.max_input = self.add_input('max', widget_type='drag_float', default_value=range_max)
+        self.counts_output = self.add_output('counts')
+        self.edges_output = self.add_output('bin edges')
+        self.auto_range_option = self.add_option('auto range', widget_type='checkbox', default_value=auto_range)
+        self.density_option = self.add_option('density', widget_type='checkbox', default_value=False)
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if not np.issubdtype(data.dtype, np.number) and data.dtype != np.bool_:
+            if self.app.verbose:
+                print(self.label, 'needs numbers, got dtype', data.dtype)
+            return
+        data = data.ravel().astype(float)
+        # nan and inf belong in no bin, and with them np.histogram cannot find its range
+        data = data[np.isfinite(data)]
+        bins = max(self.bins_input(), 1)
+        if self.auto_range_option():
+            if data.size == 0:
+                return
+            value_range = (data.min(), data.max())
+        else:
+            value_range = (self.min_input(), self.max_input())
+            if value_range[1] <= value_range[0]:
+                if self.app.verbose:
+                    print(self.label, 'max must be above min, got', value_range)
+                return
+        counts, edges = np.histogram(data, bins=bins, range=value_range,
+                                     density=self.density_option() and data.size > 0)
+        self.edges_output.send(edges)
+        self.counts_output.send(counts)
+
+
+class NumpyInterpNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyInterpNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.xp_value = None
+        self.fp_value = None
+        self.input = self.add_input('x', triggers_execution=True)
+        self.xp_input = self.add_input('xp')
+        self.fp_input = self.add_input('fp')
+        self.output = self.add_output('values')
+
+    def execute(self):
+        if self.xp_input.fresh_input:
+            self.xp_value = any_to_array(self.xp_input()).astype(float).ravel()
+        if self.fp_input.fresh_input:
+            self.fp_value = any_to_array(self.fp_input()).astype(float)
+        if self.fp_value is None or len(self.fp_value) == 0:
+            return
+        fp = self.fp_value
+        # without xp the table is indexed by position: 0, 1, 2 ...
+        xp = self.xp_value if self.xp_value is not None else np.arange(fp.shape[0], dtype=float)
+        if xp.shape[0] != fp.shape[0]:
+            if self.app.verbose:
+                print(self.label, 'xp has', xp.shape[0], 'positions but fp has', fp.shape[0], 'values')
+            return
+        if np.any(np.diff(xp) < 0):
+            # np.interp silently gives nonsense for unsorted positions
+            order = np.argsort(xp, kind='stable')
+            xp = xp[order]
+            fp = fp[order]
+        x = any_to_array(self.input()).astype(float)
+        if fp.ndim == 1:
+            self.output.send(np.interp(x, xp, fp))
+            return
+        # several columns of values: interpolate each, keeping the column shape
+        columns = fp.reshape(fp.shape[0], -1)
+        result = np.stack([np.interp(x, xp, columns[:, c]) for c in range(columns.shape[1])], axis=-1)
+        self.output.send(result.reshape(x.shape + fp.shape[1:]))
+
+
+class NumpyConvolveNode(Node):
+    operations = {'np.convolve': np.convolve, 'np.correlate': np.correlate}
+    modes = ['same', 'full', 'valid']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyConvolveNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.op = np.convolve
+        if label in self.operations:
+            self.op = self.operations[label]
+        mode = 'same'
+        kernel = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                kernel.append(float(v))
+            elif t == str and v in self.modes:
+                mode = v
+        self.kernel = np.array(kernel) if len(kernel) > 0 else None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.kernel_input = self.add_input('kernel' if label == 'np.convolve' else 'pattern')
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('convolved' if label == 'np.convolve' else 'correlated')
+        self.mode_option = self.add_option('mode', widget_type='combo', default_value=mode)
+        self.mode_option.widget.combo_items = self.modes
+
+    def execute(self):
+        if self.kernel_input.fresh_input:
+            self.kernel = any_to_array(self.kernel_input()).astype(float).ravel()
+        if self.kernel is None or self.kernel.size == 0:
+            return
+        data = any_to_array(self.input()).astype(float)
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        mode = self.mode_option()
+        if mode not in self.modes:
+            mode = 'same'
+        if mode == 'valid' and data.shape[axis] < self.kernel.size:
+            if self.app.verbose:
+                print(self.label, 'valid mode needs at least', self.kernel.size, 'values along the axis')
+            return
+        kernel = self.kernel
+        if data.ndim == 1:
+            self.output.send(self.op(data, kernel, mode=mode))
+            return
+        self.output.send(np.apply_along_axis(lambda row: self.op(row, kernel, mode=mode), axis, data))
+
+
+class NumpyLinalgLstsqNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyLinalgLstsqNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.b_value = None
+        self.input = self.add_input('A matrix', triggers_execution=True)
+        self.b_input = self.add_input('b')
+        self.output = self.add_output('x')
+        self.residuals_output = self.add_output('residuals')
+        self.rank_output = self.add_output('rank')
+
+    def execute(self):
+        if self.b_input.fresh_input:
+            self.b_value = any_to_array(self.b_input()).astype(float)
+        if self.b_value is None:
+            return
+        a = any_to_array(self.input()).astype(float)
+        if a.ndim != 2:
+            if self.app.verbose:
+                print(self.label, 'A must be a 2-D matrix, got shape', a.shape)
+            return
+        if self.b_value.shape[0] != a.shape[0]:
+            if self.app.verbose:
+                print(self.label, 'b needs', a.shape[0], 'rows to match A, got shape', self.b_value.shape)
+            return
+        try:
+            x, residuals, rank, singular_values = np.linalg.lstsq(a, self.b_value, rcond=None)
+        except np.linalg.LinAlgError as e:
+            if self.app.verbose:
+                print(self.label, e)
+            return
+        self.rank_output.send(int(rank))
+        self.residuals_output.send(residuals)
+        self.output.send(x)
+
+
+class NumpyEinsumNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyEinsumNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        # 'ij, jk -> ik' arrives as several args; spaces mean nothing to einsum
+        subscripts = ''.join(str(a) for a in args) if len(args) > 0 else 'ij,jk->ik'
+        self.operand_count = subscripts.split('->')[0].count(',') + 1
+        self.held = [None] * self.operand_count
+        self.operand_inputs = [self.add_input('in', triggers_execution=True)]
+        for i in range(1, self.operand_count):
+            self.operand_inputs.append(self.add_input('in ' + str(i + 1)))
+        self.output = self.add_output('result')
+        self.subscripts_option = self.add_option('subscripts', widget_type='text_input', default_value=subscripts)
+
+    def execute(self):
+        for i in range(1, self.operand_count):
+            if self.operand_inputs[i].fresh_input:
+                self.held[i] = any_to_array(self.operand_inputs[i]())
+        self.held[0] = any_to_array(self.operand_inputs[0]())
+        if any(h is None for h in self.held):
+            return
+        subscripts = self.subscripts_option().replace(' ', '')
+        if subscripts.split('->')[0].count(',') + 1 != self.operand_count:
+            if self.app.verbose:
+                print(self.label, subscripts, 'names a different number of operands than the',
+                      self.operand_count, 'inlets this node was made with')
+            return
+        try:
+            self.output.send(np.einsum(subscripts, *self.held))
+        except ValueError as e:
+            if self.app.verbose:
+                print(self.label, e)
