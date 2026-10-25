@@ -385,6 +385,11 @@ np.take_along_axis, np.tensordot, np.linalg.qr, np.linalg.eig) is seeded by
 `seed_numpy_batch3_help.py`; its element-wise nodes (sign, log1p, degrees,
 radians, tanh, sinh, cosh) are derived in `derive_math_single_help.py`, which
 again wrote only their new pages.
+The fourth batch (np.real, np.imag, np.angle, np.unwrap, np.nanmin,
+np.nanmax, np.nanstd, np.nanvar, np.average, np.histogram2d, np.top_k,
+np.isclose, np.allclose, np.trapezoid, np.cumulative_trapezoid, np.fft.fft,
+np.fft.ifft) is seeded by `seed_numpy_batch4_help.py`. smoke reports the first
+np.allclose on its page as ALWAYS ZERO: that demo is meant to answer false.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add
