@@ -3,6 +3,9 @@ import warnings
 from scipy import signal
 from scipy.interpolate import CubicSpline
 from scipy.spatial import cKDTree
+from scipy import ndimage
+from fractions import Fraction
+import re
 
 from dpg_system.node import Node
 from dpg_system.conversion_utils import *
@@ -13,6 +16,12 @@ def register_scipy_nodes():
     Node.app.register_node('scipy.filtfilt', ScipyFiltFiltNode.factory)
     Node.app.register_node('scipy.kdtree', ScipyKDTreeNode.factory)
     Node.app.register_node('scipy.cubic_spline', ScipyCubicSplineNode.factory)
+    Node.app.register_node('scipy.resample_poly', ScipyResampleNode.factory)
+    Node.app.register_node('scipy.spectrogram', ScipySpectrumNode.factory)
+    Node.app.register_node('scipy.welch', ScipySpectrumNode.factory)
+    Node.app.register_node('scipy.label', ScipyLabelNode.factory)
+    Node.app.register_node('scipy.gaussian_filter', ScipyImageFilterNode.factory)
+    Node.app.register_node('scipy.median_filter', ScipyImageFilterNode.factory)
 
 
 class ScipyFindPeaksNode(Node):
@@ -274,3 +283,193 @@ class ScipyCubicSplineNode(Node):
             # held flat beyond the ends, as np.interp does
             x = np.clip(x, self.spline.x[0], self.spline.x[-1])
         self.output.send(self.spline(x))
+
+
+class ScipyResampleNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyResampleNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        from_rate, to_rate = 60.0, 100.0
+        if len(args) > 0:
+            from_rate = any_to_float(args[0])
+        if len(args) > 1:
+            to_rate = any_to_float(args[1])
+        self.input = self.add_input('in', triggers_execution=True)
+        self.from_input = self.add_input('from rate', widget_type='drag_float', default_value=from_rate)
+        self.to_input = self.add_input('to rate', widget_type='drag_float', default_value=to_rate)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('resampled')
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim or data.shape[axis] < 2:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range or too short for shape', data.shape)
+            return
+        from_rate, to_rate = self.from_input(), self.to_input()
+        if from_rate <= 0 or to_rate <= 0:
+            return
+        # the rates as a ratio of small whole numbers: 60 to 100 is up 5, down 3
+        ratio = Fraction(to_rate / from_rate).limit_denominator(1000)
+        self.output.send(signal.resample_poly(data, ratio.numerator, ratio.denominator, axis=axis))
+
+
+class ScipySpectrumNode(Node):
+    # scipy.spectrogram: power at every frequency for each moment; scipy.welch: the
+    # average over the whole signal, steadier than a single spectrum
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipySpectrumNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.over_time = label == 'scipy.spectrogram'
+        window = 64
+        rate = 60.0
+        if len(args) > 0:
+            window = max(any_to_int(args[0]), 2)
+        if len(args) > 1:
+            rate = any_to_float(args[1])
+        self.input = self.add_input('in', triggers_execution=True)
+        self.rate_input = self.add_input('sample rate', widget_type='drag_float', default_value=rate)
+        self.window_input = self.add_input('window', widget_type='input_int', default_value=window)
+        self.overlap_input = self.add_input('overlap', widget_type='drag_float', default_value=0.5)
+        self.power_output = self.add_output('power')
+        self.frequencies_output = self.add_output('frequencies')
+        self.times_output = None
+        if self.over_time:
+            self.times_output = self.add_output('times')
+        self.decibels_option = self.add_option('decibels', widget_type='checkbox', default_value=self.over_time)
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        if data.ndim > 1:
+            if sum(d > 1 for d in data.shape) > 1:
+                if self.app.verbose:
+                    print(self.label, 'takes a single line of samples, got shape', data.shape)
+                return
+            data = data.ravel()
+        rate = self.rate_input()
+        if rate <= 0 or data.size < 2:
+            return
+        window = min(max(self.window_input(), 2), data.size)
+        # overlap as a fraction of the window: 0.5 starts each window halfway into the last
+        overlap = int(window * min(max(self.overlap_input(), 0.0), 0.95))
+        data = np.nan_to_num(data)
+        if self.over_time:
+            frequencies, times, power = signal.spectrogram(data, fs=rate, nperseg=window, noverlap=overlap)
+        else:
+            frequencies, power = signal.welch(data, fs=rate, nperseg=window, noverlap=overlap)
+        if self.decibels_option():
+            # 10 log10 of power; a floor keeps silence from becoming -infinity
+            power = 10.0 * np.log10(np.maximum(power, 1e-12))
+        if self.times_output is not None:
+            self.times_output.send(times)
+        self.frequencies_output.send(frequencies)
+        self.power_output.send(power)
+
+
+class ScipyLabelNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyLabelNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        threshold = 0.5
+        if len(args) > 0:
+            threshold = any_to_float(args[0])
+        self.input = self.add_input('in', triggers_execution=True)
+        self.threshold_input = self.add_input('threshold', widget_type='drag_float', default_value=threshold)
+        self.labels_output = self.add_output('labels')
+        self.count_output = self.add_output('count')
+        self.sizes_output = self.add_output('sizes')
+        self.centres_output = self.add_output('centres')
+        self.diagonal_option = self.add_option('diagonals connect', widget_type='checkbox', default_value=False)
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if data.ndim < 1:
+            return
+        if data.dtype == np.bool_:
+            mask = data
+        else:
+            mask = np.nan_to_num(data.astype(float), nan=-np.inf) > self.threshold_input()
+        # neighbours: side by side only, or corners too
+        structure = ndimage.generate_binary_structure(mask.ndim, mask.ndim if self.diagonal_option() else 1)
+        labels, count = ndimage.label(mask, structure=structure)
+        index = np.arange(1, count + 1)
+        if count > 0:
+            centres = np.array(ndimage.center_of_mass(mask, labels, index), dtype=float).reshape(count, mask.ndim)
+            sizes = np.bincount(labels.ravel(), minlength=count + 1)[1:]
+        else:
+            centres = np.zeros((0, mask.ndim))
+            sizes = np.zeros(0, dtype=int)
+        self.centres_output.send(centres)
+        self.sizes_output.send(sizes)
+        self.count_output.send(int(count))
+        self.labels_output.send(labels.astype(np.int64))
+
+
+class ScipyImageFilterNode(Node):
+    # gaussian_filter: a smooth blur, sigma wide; median_filter: each value replaced
+    # by the median of its neighbourhood, which removes spikes and keeps edges
+    modes = ['reflect', 'nearest', 'wrap', 'constant']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = ScipyImageFilterNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.median = label == 'scipy.median_filter'
+        default = '3' if self.median else '1'
+        if len(args) > 0:
+            default = ' '.join(str(a) for a in args)
+        self.size = self.parse(default)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.size_input = self.add_input('size' if self.median else 'sigma', widget_type='text_input',
+                                         widget_width=100, default_value=default, callback=self.size_changed)
+        self.output = self.add_output('filtered')
+        self.mode_option = self.add_option('edges', widget_type='combo', default_value='reflect')
+        self.mode_option.widget.combo_items = self.modes
+
+    def parse(self, value):
+        if isinstance(value, str):
+            numbers = [float(v) for v in re.findall(r'[-+]?\d*\.?\d+', value)]
+        else:
+            numbers = [float(v) for v in np.ravel(np.asarray(value, dtype=float))]
+        return [max(n, 0.0) for n in numbers] or [1.0]
+
+    def size_changed(self):
+        self.size = self.parse(self.size_input())
+
+    def execute(self):
+        if self.size_input.fresh_input:
+            self.size_changed()
+        data = any_to_array(self.input()).astype(float)
+        if data.ndim == 0:
+            return
+        size = self.size
+        # one number for every axis, or one per axis (0 leaves that axis alone)
+        if len(size) == 1:
+            size = size * data.ndim
+        elif len(size) != data.ndim:
+            if self.app.verbose:
+                print(self.label, 'needs one size, or one per axis:', data.ndim, 'for shape', data.shape)
+            return
+        mode = self.mode_option()
+        if mode not in self.modes:
+            mode = 'reflect'
+        if self.median:
+            self.output.send(ndimage.median_filter(data, size=[max(int(round(s)), 1) for s in size], mode=mode))
+        else:
+            self.output.send(ndimage.gaussian_filter(data, sigma=size, mode=mode))
