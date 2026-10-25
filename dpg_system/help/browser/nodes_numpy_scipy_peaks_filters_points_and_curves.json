@@ -1,0 +1,416 @@
+{
+    "height": 416,
+    "width": 483,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1018,
+    "name": "nodes_numpy_scipy_peaks_filters_points_and_curves",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy_scipy_peaks_filters_points_and_curves.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 537,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment SciPy: peaks, filters, points and curves",
+            "name": "comment",
+            "position_x": 24,
+            "position_y": -4,
+            "width": 507,
+            "height": 30,
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SciPy: peaks, filters, points and curves",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SciPy: peaks, filters, points and curves",
+            "id": 574,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "2": {
+            "init": "help_link nodes_numpy < NumPy",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 52,
+            "width": 83,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "< NumPy",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 67,
+                    "value_type": "int"
+                }
+            },
+            "id": 611,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "3": {
+            "name": "close",
+            "position_x": 131,
+            "position_y": 52,
+            "width": 88,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            },
+            "id": 648,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "4": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 24,
+            "position_y": 108,
+            "width": 224,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "np. nodes work on numpy arrays.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 216,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "np. nodes work on numpy arrays.",
+            "id": 685,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "5": {
+            "init": "help_link scipy.find_peaks scipy.find_peaks",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 150,
+            "width": 150,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.find_peaks",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 134,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 722,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "6": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 188,
+            "position_y": 154,
+            "width": 188,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "find the peaks of a curve",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 180,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "find the peaks of a curve",
+            "id": 759,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "7": {
+            "init": "help_link scipy.filtfilt scipy.filtfilt",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 202,
+            "width": 150,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.filtfilt",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 134,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 796,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "8": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 188,
+            "position_y": 206,
+            "width": 255,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "filter a recording without any delay",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 247,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "filter a recording without any delay",
+            "id": 833,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "9": {
+            "init": "help_link scipy.kdtree scipy.kdtree",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 254,
+            "width": 150,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.kdtree",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 134,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 870,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "10": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 188,
+            "position_y": 258,
+            "width": 218,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "the nearest of a set of points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 210,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "the nearest of a set of points",
+            "id": 907,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "11": {
+            "init": "help_link scipy.cubic_spline scipy.cubic_spline",
+            "name": "help_link",
+            "position_x": 24,
+            "position_y": 306,
+            "width": 150,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "scipy.cubic_spline",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 134,
+                    "value_type": "int"
+                },
+                "2": {
+                    "name": "colour",
+                    "value": "green",
+                    "value_type": "str"
+                }
+            },
+            "id": 944,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "12": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 188,
+            "position_y": 310,
+            "width": 212,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "a smooth curve through points",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 204,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "a smooth curve through points",
+            "id": 981,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        }
+    },
+    "links": {}
+}

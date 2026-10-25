@@ -150,6 +150,7 @@ TREE = {
         ('Running totals and history', ['np.cumsum', 'np.cumprod', 'np.diff', 'np.gradient', 'np.trapezoid', 'np.cumulative_trapezoid', 'np.unwrap', 'np.maximum.accumulate', 'np.minimum.accumulate', 'np.sliding_window_view', 'np.rolling_buffer']),
         ('Curves and filters', ['np.interp', 'np.convolve', 'np.correlate', 'np.polyfit', 'np.polyval', 'np.fft.rfft', 'np.fft.irfft', 'np.fft.fft', 'np.fft.ifft', 'np.real', 'np.imag', 'np.angle', 'np.fft.rfft2', 'np.fft.irfft2', 'np.fft.fft2', 'np.fft.ifft2']),
         ('Linear algebra', ['np.dot', 'np.inner', 'np.outer', 'np.cross', 'np.matmul', 'np.linalg.norm', 'np.linalg.det', 'np.linalg.matrix_rank', 'np.linalg.inv', 'np.linalg.pinv', 'np.linalg.solve', 'np.linalg.lstsq', 'np.linalg.svd', 'np.linalg.eigh', 'np.linalg.eig', 'np.linalg.qr', 'np.diag', 'np.trace', 'np.tril', 'np.triu', 'np.einsum', 'np.tensordot']),
+        ('SciPy: peaks, filters, points and curves', ['scipy.find_peaks', 'scipy.filtfilt', 'scipy.kdtree', 'scipy.cubic_spline']),
         ('Geometry and targets', ['np.distance_from_target', 'np.proximity_to_target', 'proximity_trigger', 'np.line_intersection', 'rotate_position']),
     ]),
     'nodes_torch': ('PyTorch', 't. nodes work on torch tensors; k. and tv. nodes are under Video and images.', [

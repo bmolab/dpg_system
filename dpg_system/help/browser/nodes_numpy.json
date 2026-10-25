@@ -1,11 +1,11 @@
 {
-    "height": 588,
-    "width": 1470,
+    "height": 628,
+    "width": 1642,
     "position": [
         100,
         100
     ],
-    "id": 1610,
+    "id": 1684,
     "name": "nodes_numpy",
     "path": "/Users/drokeby/dpg_system/dpg_system/help/browser/nodes_numpy.json",
     "nodes": {
@@ -140,7 +140,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 150,
-            "width": 200,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -150,7 +150,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -162,7 +162,7 @@
         "6": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
+            "position_x": 324,
             "position_y": 154,
             "width": 459,
             "height": 64,
@@ -204,7 +204,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 222,
-            "width": 200,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -214,7 +214,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -226,7 +226,7 @@
         "8": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
+            "position_x": 324,
             "position_y": 226,
             "width": 446,
             "height": 52,
@@ -268,7 +268,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 282,
-            "width": 200,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -278,7 +278,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -290,7 +290,7 @@
         "10": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
+            "position_x": 324,
             "position_y": 286,
             "width": 428,
             "height": 52,
@@ -332,7 +332,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 342,
-            "width": 200,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -342,7 +342,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -354,7 +354,7 @@
         "12": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
+            "position_x": 324,
             "position_y": 346,
             "width": 446,
             "height": 40,
@@ -396,7 +396,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 394,
-            "width": 200,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -406,7 +406,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -418,7 +418,7 @@
         "14": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
+            "position_x": 324,
             "position_y": 398,
             "width": 175,
             "height": 28,
@@ -460,7 +460,7 @@
             "name": "help_link",
             "position_x": 24,
             "position_y": 446,
-            "width": 200,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -470,7 +470,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -482,7 +482,7 @@
         "16": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 238,
+            "position_x": 324,
             "position_y": 450,
             "width": 415,
             "height": 40,
@@ -522,9 +522,9 @@
         "17": {
             "init": "help_link nodes_numpy_reducing_to_an_answer Reducing to an answer",
             "name": "help_link",
-            "position_x": 757,
-            "position_y": 150,
-            "width": 200,
+            "position_x": 24,
+            "position_y": 498,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -534,7 +534,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -546,8 +546,8 @@
         "18": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 971,
-            "position_y": 154,
+            "position_x": 324,
+            "position_y": 502,
             "width": 452,
             "height": 64,
             "properties": {
@@ -586,9 +586,9 @@
         "19": {
             "init": "help_link nodes_numpy_spread_of_values Spread of values",
             "name": "help_link",
-            "position_x": 757,
-            "position_y": 222,
-            "width": 200,
+            "position_x": 843,
+            "position_y": 150,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -598,7 +598,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -610,8 +610,8 @@
         "20": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 971,
-            "position_y": 226,
+            "position_x": 1143,
+            "position_y": 154,
             "width": 403,
             "height": 40,
             "properties": {
@@ -650,9 +650,9 @@
         "21": {
             "init": "help_link nodes_numpy_running_totals_and_history Running totals and history",
             "name": "help_link",
-            "position_x": 757,
-            "position_y": 274,
-            "width": 200,
+            "position_x": 843,
+            "position_y": 202,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -662,7 +662,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -674,8 +674,8 @@
         "22": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 971,
-            "position_y": 278,
+            "position_x": 1143,
+            "position_y": 206,
             "width": 428,
             "height": 52,
             "properties": {
@@ -714,9 +714,9 @@
         "23": {
             "init": "help_link nodes_numpy_curves_and_filters Curves and filters",
             "name": "help_link",
-            "position_x": 757,
-            "position_y": 334,
-            "width": 200,
+            "position_x": 843,
+            "position_y": 262,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -726,7 +726,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -738,8 +738,8 @@
         "24": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 971,
-            "position_y": 338,
+            "position_x": 1143,
+            "position_y": 266,
             "width": 459,
             "height": 52,
             "properties": {
@@ -778,9 +778,9 @@
         "25": {
             "init": "help_link nodes_numpy_linear_algebra Linear algebra",
             "name": "help_link",
-            "position_x": 757,
-            "position_y": 394,
-            "width": 200,
+            "position_x": 843,
+            "position_y": 322,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
@@ -790,7 +790,7 @@
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -802,8 +802,8 @@
         "26": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 971,
-            "position_y": 398,
+            "position_x": 1143,
+            "position_y": 326,
             "width": 452,
             "height": 76,
             "properties": {
@@ -840,21 +840,21 @@
             "presentation_state": "show_all"
         },
         "27": {
-            "init": "help_link nodes_numpy_geometry_and_targets Geometry and targets",
+            "init": "help_link nodes_numpy_scipy_peaks_filters_points_and_curves SciPy: peaks, filters, points and curves",
             "name": "help_link",
-            "position_x": 757,
-            "position_y": 478,
-            "width": 200,
+            "position_x": 843,
+            "position_y": 406,
+            "width": 286,
             "height": 44,
             "properties": {
                 "0": {
-                    "name": "Geometry and targets",
+                    "name": "SciPy: peaks, filters, points and curves",
                     "value": null,
                     "value_type": "NoneType"
                 },
                 "1": {
                     "name": "width",
-                    "value": 184,
+                    "value": 270,
                     "value_type": "int"
                 }
             },
@@ -866,8 +866,72 @@
         "28": {
             "name": "text_block",
             "annotation": true,
-            "position_x": 971,
-            "position_y": 482,
+            "position_x": 1143,
+            "position_y": 410,
+            "width": 440,
+            "height": 28,
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "scipy.find_peaks, scipy.filtfilt, scipy.kdtree, scipy.cubic_spline",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 432,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 12,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "text": "scipy.find_peaks, scipy.filtfilt, scipy.kdtree, scipy.cubic_spline",
+            "id": 1573,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "29": {
+            "init": "help_link nodes_numpy_geometry_and_targets Geometry and targets",
+            "name": "help_link",
+            "position_x": 843,
+            "position_y": 458,
+            "width": 286,
+            "height": 44,
+            "properties": {
+                "0": {
+                    "name": "Geometry and targets",
+                    "value": null,
+                    "value_type": "NoneType"
+                },
+                "1": {
+                    "name": "width",
+                    "value": 270,
+                    "value_type": "int"
+                }
+            },
+            "id": 1610,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all"
+        },
+        "30": {
+            "name": "text_block",
+            "annotation": true,
+            "position_x": 1143,
+            "position_y": 462,
             "width": 446,
             "height": 40,
             "properties": {
@@ -898,7 +962,7 @@
                 }
             },
             "text": "np.distance_from_target, np.proximity_to_target, proximity_trigger,\nnp.line_intersection, rotate_position",
-            "id": 1573,
+            "id": 1647,
             "visibility": "show_all",
             "draggable": true,
             "presentation_state": "show_all"

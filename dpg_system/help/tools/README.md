@@ -402,6 +402,9 @@ help/data/np_loadtxt_example.csv.
 The sixth batch (np.logspace, np.geomspace, np.fft.rfft2, np.fft.fft2,
 np.fft.irfft2, np.fft.ifft2, np.isin, np.intersect1d, np.setdiff1d, np.union1d)
 is seeded by `seed_numpy_batch6_help.py`.
+The scipy nodes (scipy.find_peaks, scipy.filtfilt, scipy.kdtree,
+scipy.cubic_spline, in scipy_nodes.py) are seeded by `seed_scipy_help.py`; the
+peak and filter pages share a make_wobble subpatcher that makes the demo curve.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add
