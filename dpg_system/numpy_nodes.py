@@ -132,6 +132,23 @@ def register_numpy_nodes():
     Node.app.register_node('np.tensordot', NumpyTensordotNode.factory)
     Node.app.register_node('np.linalg.qr', NumpyQrNode.factory)
     Node.app.register_node('np.linalg.eig', NumpyEigNode.factory)
+    Node.app.register_node('np.real', NumpyComplexPartNode.factory)
+    Node.app.register_node('np.imag', NumpyComplexPartNode.factory)
+    Node.app.register_node('np.angle', NumpyComplexPartNode.factory)
+    Node.app.register_node('np.unwrap', NumpyUnwrapNode.factory)
+    Node.app.register_node('np.nanmin', NumpyUnaryNode.factory)
+    Node.app.register_node('np.nanmax', NumpyUnaryNode.factory)
+    Node.app.register_node('np.nanstd', NumpyUnaryNode.factory)
+    Node.app.register_node('np.nanvar', NumpyUnaryNode.factory)
+    Node.app.register_node('np.average', NumpyAverageNode.factory)
+    Node.app.register_node('np.histogram2d', NumpyHistogram2dNode.factory)
+    Node.app.register_node('np.top_k', NumpyTopKNode.factory)
+    Node.app.register_node('np.isclose', NumpyIsCloseNode.factory)
+    Node.app.register_node('np.allclose', NumpyIsCloseNode.factory)
+    Node.app.register_node('np.trapezoid', NumpyTrapezoidNode.factory)
+    Node.app.register_node('np.cumulative_trapezoid', NumpyTrapezoidNode.factory)
+    Node.app.register_node('np.fft.fft', NumpyFftNode.factory)
+    Node.app.register_node('np.fft.ifft', NumpyIfftNode.factory)
 
 class NumpyGeneratorNode(Node):
     operations = {'np.rand': np.random.Generator.random, 'np.ones': np.ones, 'np.zeros': np.zeros}
@@ -414,7 +431,7 @@ class NumpyNodeWithAxisNode(Node):
 
 
 class NumpyUnaryNode(NumpyNodeWithAxisNode):
-    operations = {'np.sum': np.sum, 'np.mean': np.mean, 'np.std': np.std, 'np.var': np.var, 'np.median': np.median, 'np.amax': np.amax, 'np.amin': np.amin, 'np.argmax': np.argmax, 'np.argmin': np.argmin, 'np.nansum': np.nansum, 'np.nanmean': np.nanmean, 'np.nanmedian': np.nanmedian, 'np.ptp': np.ptp}
+    operations = {'np.sum': np.sum, 'np.mean': np.mean, 'np.std': np.std, 'np.var': np.var, 'np.median': np.median, 'np.amax': np.amax, 'np.amin': np.amin, 'np.argmax': np.argmax, 'np.argmin': np.argmin, 'np.nansum': np.nansum, 'np.nanmean': np.nanmean, 'np.nanmedian': np.nanmedian, 'np.ptp': np.ptp, 'np.nanmin': np.nanmin, 'np.nanmax': np.nanmax, 'np.nanstd': np.nanstd, 'np.nanvar': np.nanvar}
 
     @staticmethod
     def factory(name, data, args=None):
@@ -441,7 +458,10 @@ class NumpyUnaryNode(NumpyNodeWithAxisNode):
     def execute(self):
         input_value = any_to_array(self.input())
         if self.adjust_dim_option(input_value):
-            output_value = self.op(input_value, axis=self.call_axis)
+            with warnings.catch_warnings():
+                # the nan- reductions warn on an all-nan slice; its nan is the answer
+                warnings.simplefilter('ignore', RuntimeWarning)
+                output_value = self.op(input_value, axis=self.call_axis)
             self.output.send(output_value)
         else:
             if self.app.verbose:
@@ -3825,3 +3845,354 @@ class NumpyEigNode(Node):
             vectors = vectors.real
         self.vectors_output.send(vectors)
         self.values_output.send(values)
+
+
+class NumpyComplexPartNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyComplexPartNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.part = label.split('.')[-1]
+        self.input = self.add_input('in', triggers_execution=True)
+        self.output = self.add_output(self.part)
+        self.degrees_option = None
+        if self.part == 'angle':
+            self.degrees_option = self.add_option('degrees', widget_type='checkbox', default_value=False)
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if self.part == 'real':
+            self.output.send(np.real(data))
+        elif self.part == 'imag':
+            self.output.send(np.imag(data))
+        else:
+            self.output.send(np.angle(data, deg=self.degrees_option()))
+
+
+class NumpyUnwrapNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyUnwrapNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        units = 'degrees'
+        if len(args) > 0 and args[0] in ['degrees', 'radians']:
+            units = args[0]
+        self.input = self.add_input('in', triggers_execution=True)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('unwrapped')
+        self.units_option = self.add_option('units', widget_type='combo', default_value=units)
+        self.units_option.widget.combo_items = ['degrees', 'radians']
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        period = 360.0 if self.units_option() == 'degrees' else 2 * np.pi
+        self.output.send(np.unwrap(data, period=period, axis=axis))
+
+
+class NumpyAverageNode(NumpyNodeWithAxisNode):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyAverageNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t == int:
+                self.axis = v
+        self.weights = None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.weights_input = self.add_input('weights')
+        # None averages the whole array to one value
+        self.add_dim_option()
+        self.output = self.add_output('average')
+
+    def execute(self):
+        if self.weights_input.fresh_input:
+            self.weights = any_to_array(self.weights_input()).astype(float)
+        data = any_to_array(self.input()).astype(float)
+        if not self.adjust_dim_option(data):
+            if self.app.verbose:
+                print(self.label, 'axis =', self.axis, 'out of range for shape', data.shape)
+            return
+        weights = self.weights
+        if weights is not None:
+            # one weight per element along the axis, or one per element of the whole array
+            fits = weights.shape == data.shape or \
+                (self.call_axis is not None and weights.ndim == 1 and weights.shape[0] == data.shape[self.call_axis])
+            if not fits:
+                if self.app.verbose:
+                    print(self.label, 'weights of shape', weights.shape, 'do not fit', data.shape,
+                          'along axis', self.call_axis)
+                return
+            if np.sum(weights) == 0:
+                return
+        self.output.send(np.average(data, axis=self.call_axis, weights=weights))
+
+
+class NumpyHistogram2dNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyHistogram2dNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        numbers = []
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                numbers.append(v)
+        bins = int(numbers[0]) if len(numbers) > 0 else 10
+        ranges = [float(n) for n in numbers[1:5]] if len(numbers) >= 5 else [0.0, 1.0, 0.0, 1.0]
+        auto_range = len(numbers) < 5
+        self.input = self.add_input('points', triggers_execution=True)
+        self.bins_input = self.add_input('bins', widget_type='input_int', default_value=bins)
+        self.x_min_input = self.add_input('x min', widget_type='drag_float', default_value=ranges[0])
+        self.x_max_input = self.add_input('x max', widget_type='drag_float', default_value=ranges[1])
+        self.y_min_input = self.add_input('y min', widget_type='drag_float', default_value=ranges[2])
+        self.y_max_input = self.add_input('y max', widget_type='drag_float', default_value=ranges[3])
+        self.counts_output = self.add_output('counts')
+        self.x_edges_output = self.add_output('x edges')
+        self.y_edges_output = self.add_output('y edges')
+        self.auto_range_option = self.add_option('auto range', widget_type='checkbox', default_value=auto_range)
+        self.density_option = self.add_option('density', widget_type='checkbox', default_value=False)
+
+    def execute(self):
+        points = any_to_array(self.input()).astype(float)
+        if points.ndim != 2 or points.shape[1] < 2:
+            if self.app.verbose:
+                print(self.label, 'needs points as rows of x y, got shape', points.shape)
+            return
+        x, y = points[:, 0], points[:, 1]
+        keep = np.isfinite(x) & np.isfinite(y)
+        x, y = x[keep], y[keep]
+        bins = max(self.bins_input(), 1)
+        if self.auto_range_option():
+            if x.size == 0:
+                return
+            value_range = [[x.min(), x.max()], [y.min(), y.max()]]
+        else:
+            value_range = [[self.x_min_input(), self.x_max_input()], [self.y_min_input(), self.y_max_input()]]
+            if value_range[0][1] <= value_range[0][0] or value_range[1][1] <= value_range[1][0]:
+                if self.app.verbose:
+                    print(self.label, 'each max must be above its min, got', value_range)
+                return
+        counts, x_edges, y_edges = np.histogram2d(x, y, bins=bins, range=value_range,
+                                                  density=self.density_option() and x.size > 0)
+        self.y_edges_output.send(y_edges)
+        self.x_edges_output.send(x_edges)
+        # as a picture: one row per y bin, one column per x bin
+        self.counts_output.send(counts.T)
+
+
+class NumpyTopKNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyTopKNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        k = 3
+        which = 'largest'
+        for i in range(len(args)):
+            v, t = decode_arg(args, i)
+            if t in [int, float]:
+                k = max(int(v), 1)
+            elif t == str and v in ['largest', 'smallest']:
+                which = v
+        self.input = self.add_input('in', triggers_execution=True)
+        self.k_input = self.add_input('k', widget_type='input_int', default_value=k)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.indices_output = self.add_output('indices')
+        self.values_output = self.add_output('values')
+        self.which_option = self.add_option('which', widget_type='combo', default_value=which)
+        self.which_option.widget.combo_items = ['largest', 'smallest']
+
+    def execute(self):
+        data = any_to_array(self.input())
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim or data.shape[axis] == 0:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range or empty for shape', data.shape)
+            return
+        n = data.shape[axis]
+        k = min(max(self.k_input(), 1), n)
+        largest = self.which_option() != 'smallest'
+        keys = -data if largest else data
+        # argpartition finds the k without sorting the rest; then only those k are sorted
+        part = np.argpartition(keys, k - 1, axis=axis) if k < n else np.argsort(keys, axis=axis)
+        part = np.take(part, np.arange(k), axis=axis)
+        order = np.argsort(np.take_along_axis(keys, part, axis=axis), axis=axis, kind='stable')
+        indices = np.take_along_axis(part, order, axis=axis)
+        self.values_output.send(np.take_along_axis(data, indices, axis=axis))
+        self.indices_output.send(indices)
+
+
+class NumpyIsCloseNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyIsCloseNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.all = label == 'np.allclose'
+        tolerance = 0.001
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                tolerance = float(v)
+        self.input_2_value = None
+        self.input = self.add_input('in', triggers_execution=True)
+        self.input_2 = self.add_input('in 2')
+        self.atol_input = self.add_input('tolerance', widget_type='drag_float', default_value=tolerance)
+        self.rtol_input = self.add_input('relative', widget_type='drag_float', default_value=0.0)
+        self.output = self.add_output('all close' if self.all else 'close')
+
+    def execute(self):
+        if self.input_2.fresh_input:
+            self.input_2_value = any_to_array(self.input_2())
+        if self.input_2_value is None:
+            return
+        a = any_to_array(self.input())
+        atol = max(self.atol_input(), 0.0)
+        rtol = max(self.rtol_input(), 0.0)
+        try:
+            if self.all:
+                self.output.send(bool(np.allclose(a, self.input_2_value, rtol=rtol, atol=atol)))
+            else:
+                self.output.send(np.isclose(a, self.input_2_value, rtol=rtol, atol=atol))
+        except ValueError:
+            if self.app.verbose:
+                print(self.label, 'shapes do not broadcast:', a.shape, self.input_2_value.shape)
+
+
+class NumpyTrapezoidNode(Node):
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyTrapezoidNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.cumulative = label == 'np.cumulative_trapezoid'
+        spacing = 1.0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                spacing = float(v)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.spacing_input = self.add_input('spacing', widget_type='drag_float', default_value=spacing)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('running total' if self.cumulative else 'area')
+
+    def execute(self):
+        data = any_to_array(self.input()).astype(float)
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range for shape', data.shape)
+            return
+        spacing = self.spacing_input()
+        if not self.cumulative:
+            self.output.send(np.trapezoid(data, dx=spacing, axis=axis))
+            return
+        # the area so far at every sample, starting from 0: the same length as the input
+        moved = np.moveaxis(data, axis, -1)
+        steps = (moved[..., 1:] + moved[..., :-1]) * 0.5 * spacing
+        totals = np.concatenate([np.zeros(moved.shape[:-1] + (1,)), np.cumsum(steps, axis=-1)], axis=-1)
+        self.output.send(np.moveaxis(totals, -1, axis))
+
+
+class NumpyFftNode(Node):
+    norms = ['backward', 'ortho', 'forward']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyFftNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        rate = 1.0
+        if len(args) > 0:
+            v, t = decode_arg(args, 0)
+            if t in [int, float]:
+                rate = float(v)
+        self.input = self.add_input('in', triggers_execution=True)
+        self.rate_input = self.add_input('sample rate', widget_type='drag_float', default_value=rate)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.spectrum_output = self.add_output('spectrum')
+        self.magnitude_output = self.add_output('magnitude')
+        self.phase_output = self.add_output('phase')
+        self.frequencies_output = self.add_output('frequencies')
+        self.norm_option = self.add_option('norm', widget_type='combo', default_value='backward')
+        self.norm_option.widget.combo_items = self.norms
+
+    def execute(self):
+        data = any_to_array(self.input())
+        if not np.iscomplexobj(data):
+            data = data.astype(float)
+        axis = self.axis_input()
+        if not -data.ndim <= axis < data.ndim or data.shape[axis] < 1:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range or empty for shape', data.shape)
+            return
+        norm = self.norm_option()
+        if norm not in self.norms:
+            norm = 'backward'
+        spectrum = np.fft.fft(data, axis=axis, norm=norm)
+        rate = self.rate_input()
+        if rate > 0:
+            self.frequencies_output.send(np.fft.fftfreq(data.shape[axis], d=1.0 / rate))
+        self.phase_output.send(np.angle(spectrum))
+        self.magnitude_output.send(np.abs(spectrum))
+        self.spectrum_output.send(spectrum)
+
+
+class NumpyIfftNode(Node):
+    norms = ['backward', 'ortho', 'forward']
+
+    @staticmethod
+    def factory(name, data, args=None):
+        node = NumpyIfftNode(name, data, args)
+        return node
+
+    def __init__(self, label: str, data, args):
+        super().__init__(label, data, args)
+        self.input = self.add_input('spectrum', triggers_execution=True)
+        self.axis_input = self.add_input('axis', widget_type='input_int', default_value=-1)
+        self.output = self.add_output('signal')
+        self.norm_option = self.add_option('norm', widget_type='combo', default_value='backward')
+        self.norm_option.widget.combo_items = self.norms
+
+    def execute(self):
+        spectrum = any_to_array(self.input())
+        axis = self.axis_input()
+        if not -spectrum.ndim <= axis < spectrum.ndim or spectrum.shape[axis] < 1:
+            if self.app.verbose:
+                print(self.label, 'axis', axis, 'out of range or empty for shape', spectrum.shape)
+            return
+        norm = self.norm_option()
+        if norm not in self.norms:
+            norm = 'backward'
+        signal = np.fft.ifft(spectrum, axis=axis, norm=norm)
+        # a spectrum that came from a real signal gives it back with only rounding
+        # dust in the imaginary part: send plain numbers then
+        if np.allclose(signal.imag, 0, atol=1e-9 * max(np.abs(signal).max(initial=0.0), 1.0)):
+            signal = signal.real
+        self.output.send(signal)
