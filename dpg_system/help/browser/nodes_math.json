@@ -1,5 +1,5 @@
 {
-    "height": 580,
+    "height": 600,
     "width": 687,
     "position": [
         100,
@@ -548,12 +548,12 @@
             "annotation": true,
             "position_x": 182,
             "position_y": 474,
-            "width": 428,
-            "height": 40,
+            "width": 434,
+            "height": 64,
             "properties": {
                 "0": {
                     "name": "block",
-                    "value": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, continuous_rotation",
+                    "value": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, continuous_rotation,\nscipy.slerp, scipy.rotation_mean, scipy.align_vectors,\nscipy.rotation_apply",
                     "value_type": "str"
                 },
                 "1": {
@@ -563,12 +563,12 @@
                 },
                 "2": {
                     "name": "width",
-                    "value": 420,
+                    "value": 426,
                     "value_type": "int"
                 },
                 "3": {
                     "name": "height",
-                    "value": 24,
+                    "value": 48,
                     "value_type": "int"
                 },
                 "4": {
@@ -577,7 +577,7 @@
                     "value_type": "str"
                 }
             },
-            "text": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, continuous_rotation",
+            "text": "rotation conversions, 6D rotations, comparing rotations,\nquaternion_norm, tracker_align, swing_twist, continuous_rotation,\nscipy.slerp, scipy.rotation_mean, scipy.align_vectors,\nscipy.rotation_apply",
             "id": 1203,
             "visibility": "show_all",
             "draggable": true,

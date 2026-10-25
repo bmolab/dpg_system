@@ -411,6 +411,14 @@ scipy.label, scipy.gaussian_filter, scipy.median_filter) is seeded by
 linked BEFORE the slow wave: an outlet sends in the order its links were made, and
 the ripple must reach the + operand before the slow wave triggers the sum, or the
 first tick (the only one a slow metro gives a quick check) adds nothing to it.
+The third scipy batch (scipy.slerp, scipy.rotation_mean, scipy.align_vectors,
+scipy.rotation_apply, scipy.circmean, scipy.circstd, scipy.hilbert, scipy.detrend,
+scipy.convex_hull, scipy.kmeans, scipy.procrustes, scipy.curve_fit) is seeded by
+`seed_scipy3_help.py`; its make_swell and make_drift subpatchers link the cold
+operand first for the same reason. The rotation nodes are scalar first (w x y z),
+like the quaternion nodes. smoke reports three ALWAYS ZERO outlets on these pages
+(align_vectors' error, circmean's np.mean, procrustes' same-shape difference): each
+demo is showing that the answer is 0.
 
 To hand-edit any generated page: open it, rework it, save over the same file
 in dpg_system/help, then remove its build() call from its generator (and add

@@ -1,0 +1,651 @@
+{
+    "height": 1271,
+    "width": 1670,
+    "position": [
+        100,
+        100
+    ],
+    "id": 1199,
+    "name": "scipy.align_vectors_help",
+    "path": "/Users/drokeby/dpg_system/dpg_system/help/scipy.align_vectors_help.json",
+    "nodes": {
+        "0": {
+            "name": "",
+            "id": 237,
+            "position_x": 0,
+            "position_y": 0,
+            "width": 9,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "protected": true,
+            "presentation_state": "hidden",
+            "properties": {
+                "0": {
+                    "name": "",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        },
+        "1": {
+            "init": "comment scipy.align_vectors - the best rotation from one set of points onto another",
+            "name": "comment",
+            "id": 274,
+            "position_x": 24,
+            "position_y": -4,
+            "width": 930,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "scipy.align_vectors - the best rotation from one set of points onto another",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "48",
+                    "value_type": "str"
+                }
+            },
+            "comment": "scipy.align_vectors - the best rotation from one set of points onto another"
+        },
+        "2": {
+            "name": "text_block",
+            "id": 311,
+            "position_x": 862,
+            "position_y": 45,
+            "width": 768,
+            "height": 1166,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "block",
+                    "value": "Finds the rotation that turns one set of points (or directions) onto another as closely as possible - the Kabsch method - and gives that rotation, the turned points and how well they fit.\n\nUse it to calibrate: line a sensor's or tracker's frame up with the room from a few matching points. To align a skeleton or a captured pose with a reference whatever way it faces. To compare two poses after taking their facing out, or to measure how much a rigid group of markers has turned between two moments.\n\nSYNTAX:\nscipy.align_vectors\n\nINPUTS and PARAMETERS:\n\nfrom:\nThe points to be turned, one row of x y z each. Every input is fitted and sent - the only inlet that makes the node send.\n\nonto:\nWhere they should end up, the same number of rows, held. Row n of from is matched with row n of onto.\n\ntreat as:\nAn option, under the node. points (the default): each set is first centred on its own middle, so the fit finds the turn of the shape whatever its position - the aligned output is moved onto the target too. directions: the rows are directions from the origin (unit vectors, axes) and are not centred.\n\nOUTPUTS:\n\nrotation:\nThe best rotation, as w x y z.\n\naligned:\nThe from points after the turn (and, for points, the move).\n\nerror:\nHow far off the fit is: the square root of the summed squared misses. 0 is a perfect fit. Sent first, then aligned, then rotation.\n\nQUATERNIONS:\nFour numbers w x y z, scalar first - the same order as the quaternion nodes. A turn of an angle about an axis is w = cos(angle / 2) and x y z = the axis times sin(angle / 2): no turn is 1 0 0 0; a quarter turn about z is 0.7071 0 0 0.7071. q and -q are the same turn.\n\nREADING THE DEMO:\nFour points, and the same four turned 30 degrees about y and moved 5 along x. The rotation found is 0.9659 0 0.2588 0 - exactly 30 degrees about y - and the error is 0. A metro re-sends the points twice a second.\n\nRELATED:\ntracker_align lines up a tracker with a body. scipy.procrustes compares shapes while also ignoring size. scipy.rotation_apply turns points by a rotation.",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "lock",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "2": {
+                    "name": "width",
+                    "value": 760,
+                    "value_type": "int"
+                },
+                "3": {
+                    "name": "height",
+                    "value": 1150,
+                    "value_type": "int"
+                },
+                "4": {
+                    "name": "text_size",
+                    "value": "30",
+                    "value_type": "str"
+                }
+            },
+            "text": "Finds the rotation that turns one set of points (or directions) onto another as closely as possible - the Kabsch method - and gives that rotation, the turned points and how well they fit.\n\nUse it to calibrate: line a sensor's or tracker's frame up with the room from a few matching points. To align a skeleton or a captured pose with a reference whatever way it faces. To compare two poses after taking their facing out, or to measure how much a rigid group of markers has turned between two moments.\n\nSYNTAX:\nscipy.align_vectors\n\nINPUTS and PARAMETERS:\n\nfrom:\nThe points to be turned, one row of x y z each. Every input is fitted and sent - the only inlet that makes the node send.\n\nonto:\nWhere they should end up, the same number of rows, held. Row n of from is matched with row n of onto.\n\ntreat as:\nAn option, under the node. points (the default): each set is first centred on its own middle, so the fit finds the turn of the shape whatever its position - the aligned output is moved onto the target too. directions: the rows are directions from the origin (unit vectors, axes) and are not centred.\n\nOUTPUTS:\n\nrotation:\nThe best rotation, as w x y z.\n\naligned:\nThe from points after the turn (and, for points, the move).\n\nerror:\nHow far off the fit is: the square root of the summed squared misses. 0 is a perfect fit. Sent first, then aligned, then rotation.\n\nQUATERNIONS:\nFour numbers w x y z, scalar first - the same order as the quaternion nodes. A turn of an angle about an axis is w = cos(angle / 2) and x y z = the axis times sin(angle / 2): no turn is 1 0 0 0; a quarter turn about z is 0.7071 0 0 0.7071. q and -q are the same turn.\n\nREADING THE DEMO:\nFour points, and the same four turned 30 degrees about y and moved 5 along x. The rotation found is 0.9659 0 0.2588 0 - exactly 30 degrees about y - and the error is 0. A metro re-sends the points twice a second.\n\nRELATED:\ntracker_align lines up a tracker with a body. scipy.procrustes compares shapes while also ignoring size. scipy.rotation_apply turns points by a rotation."
+        },
+        "3": {
+            "init": "comment twice a second",
+            "name": "comment",
+            "id": 348,
+            "position_x": 28,
+            "position_y": 53,
+            "width": 95,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "twice a second",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "twice a second"
+        },
+        "4": {
+            "name": "metro",
+            "id": 385,
+            "position_x": 28,
+            "position_y": 92,
+            "width": 129,
+            "height": 70,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "on",
+                    "value": true,
+                    "value_type": "bool"
+                },
+                "1": {
+                    "name": "period",
+                    "value": 500.0,
+                    "value_type": "float"
+                },
+                "2": {
+                    "name": "units",
+                    "value": "milliseconds",
+                    "value_type": "str"
+                }
+            },
+            "init": "metro 500"
+        },
+        "5": {
+            "init": "comment once at load",
+            "name": "comment",
+            "id": 422,
+            "position_x": 28,
+            "position_y": 175,
+            "width": 82,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "once at load",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "once at load"
+        },
+        "6": {
+            "name": "load_bang",
+            "id": 459,
+            "position_x": 28,
+            "position_y": 210,
+            "width": 88,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {}
+        },
+        "7": {
+            "init": "comment four points, x y z each",
+            "name": "comment",
+            "id": 496,
+            "position_x": 180,
+            "position_y": 53,
+            "width": 150,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "four points, x y z each",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "four points, x y z each"
+        },
+        "8": {
+            "name": "message",
+            "id": 533,
+            "position_x": 180,
+            "position_y": 92,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "1 0 0 0 2 0 0 0 3 1 1 1",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "9": {
+            "name": "np.reshape",
+            "id": 570,
+            "position_x": 510,
+            "position_y": 92,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 4 3"
+        },
+        "10": {
+            "init": "comment the same, turned 30 about y and moved 5 along x",
+            "name": "comment",
+            "id": 607,
+            "position_x": 180,
+            "position_y": 175,
+            "width": 297,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the same, turned 30 about y and moved 5 along x",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the same, turned 30 about y and moved 5 along x"
+        },
+        "11": {
+            "name": "message",
+            "id": 644,
+            "position_x": 180,
+            "position_y": 210,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "5.866 0 -0.5 5 2 0 6.5 0 2.598 6.366 1 0.366",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "12": {
+            "name": "np.reshape",
+            "id": 681,
+            "position_x": 650,
+            "position_y": 210,
+            "width": 208,
+            "height": 56,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "np.reshape 4 3"
+        },
+        "13": {
+            "init": "comment the turn that fits",
+            "name": "comment",
+            "id": 718,
+            "position_x": 180,
+            "position_y": 330,
+            "width": 119,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "the turn that fits",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "the turn that fits"
+        },
+        "14": {
+            "name": "scipy.align_vectors",
+            "id": 755,
+            "position_x": 180,
+            "position_y": 365,
+            "width": 125,
+            "height": 84,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "highlight": true
+        },
+        "15": {
+            "name": "round",
+            "id": 792,
+            "position_x": 420,
+            "position_y": 365,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 3,
+                    "value_type": "int"
+                }
+            }
+        },
+        "16": {
+            "name": "list",
+            "id": 829,
+            "position_x": 540,
+            "position_y": 365,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "17": {
+            "init": "comment error",
+            "name": "comment",
+            "id": 866,
+            "position_x": 420,
+            "position_y": 470,
+            "width": 39,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "error",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "error"
+        },
+        "18": {
+            "name": "round",
+            "id": 903,
+            "position_x": 420,
+            "position_y": 505,
+            "width": 45,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "decimals",
+                    "value": 3,
+                    "value_type": "int"
+                }
+            }
+        },
+        "19": {
+            "name": "list",
+            "id": 940,
+            "position_x": 540,
+            "position_y": 505,
+            "width": 130,
+            "height": 42,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text in",
+                    "value": "",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            }
+        },
+        "20": {
+            "init": "comment SEE ALSO - click to open",
+            "name": "comment",
+            "id": 977,
+            "position_x": 30,
+            "position_y": 650,
+            "width": 156,
+            "height": 30,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "text",
+                    "value": "SEE ALSO - click to open",
+                    "value_type": "str"
+                },
+                "1": {
+                    "name": "font size",
+                    "value": "24",
+                    "value_type": "str"
+                }
+            },
+            "comment": "SEE ALSO - click to open"
+        },
+        "21": {
+            "name": "help_link",
+            "id": 1014,
+            "position_x": 30,
+            "position_y": 684,
+            "width": 96,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link tracker_align"
+        },
+        "22": {
+            "name": "help_link",
+            "id": 1051,
+            "position_x": 174,
+            "position_y": 684,
+            "width": 115,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.procrustes"
+        },
+        "23": {
+            "name": "help_link",
+            "id": 1088,
+            "position_x": 341,
+            "position_y": 684,
+            "width": 139,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link scipy.rotation_apply"
+        },
+        "24": {
+            "name": "help_link",
+            "id": 1125,
+            "position_x": 539,
+            "position_y": 684,
+            "width": 133,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {},
+            "init": "help_link quaternion_to_euler"
+        },
+        "25": {
+            "name": "close",
+            "id": 1162,
+            "position_x": 24,
+            "position_y": 794,
+            "width": 88,
+            "height": 44,
+            "visibility": "show_all",
+            "draggable": true,
+            "presentation_state": "show_all",
+            "properties": {
+                "0": {
+                    "name": "close patch",
+                    "value": null,
+                    "value_type": "NoneType"
+                }
+            }
+        }
+    },
+    "links": {
+        "0": {
+            "source_node": 459,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "out",
+            "dest_node": 644,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "1": {
+            "source_node": 644,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 681,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "2": {
+            "source_node": 681,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "onto"
+        },
+        "3": {
+            "source_node": 385,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "",
+            "dest_node": 533,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "4": {
+            "source_node": 533,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "message out",
+            "dest_node": 570,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "tensor in"
+        },
+        "5": {
+            "source_node": 570,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "output",
+            "dest_node": 755,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "from"
+        },
+        "6": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "rotation",
+            "dest_node": 792,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "7": {
+            "source_node": 792,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 829,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        },
+        "8": {
+            "source_node": 755,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "error",
+            "dest_node": 903,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": "in"
+        },
+        "9": {
+            "source_node": 903,
+            "source_node_name": "",
+            "source_output_index": 0,
+            "source_output_name": "result",
+            "dest_node": 940,
+            "dest_node_name": "",
+            "dest_input_index": 0,
+            "dest_input_name": ""
+        }
+    }
+}
